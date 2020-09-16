@@ -10,13 +10,12 @@ from mock import patch
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
 from utils.test_helper import fake_request
 from zemauth.models import User
 
 
-class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
+class BaseDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml", "test_views.yaml"]
 
     def setUp(self):
@@ -191,7 +190,7 @@ class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
         """
 
 
-class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
+class AccountsDailyStatsTestCase(BaseDailyStatsTestCase):
 
     # def test_invalid_metrics(self):
     #     source_id = 3
@@ -365,11 +364,7 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
 
-class AccountsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountsDailyStatsTestCase):
-    pass
-
-
-class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
+class AccountDailyStatsTestCase(BaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -504,11 +499,7 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
 
-class AccountDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountDailyStatsTestCase):
-    pass
-
-
-class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
+class CampaignDailyStatsTestCase(BaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -643,11 +634,7 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
 
-class CampaignDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignDailyStatsTestCase):
-    pass
-
-
-class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
+class AdGroupDailyStatsTestCase(BaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -954,12 +941,8 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
 
-class AdGroupDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
+class AdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1102,12 +1085,8 @@ class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class AdGroupPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupPublishersDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1252,12 +1231,8 @@ class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class AdGroupPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupPlacementsDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
+class CampaignPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1401,12 +1376,8 @@ class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class CampaignPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignPublishersDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
+class CampaignPlacementDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1551,12 +1522,8 @@ class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class CampaignPlacementDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignPlacementDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAccountPublishersDailyStatsTestCase(DASHAPITestCase):
+class AccountPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1633,12 +1600,8 @@ class LegacyAccountPublishersDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class AccountPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountPublishersDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAccountPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AccountPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1716,12 +1679,8 @@ class LegacyAccountPlacementsDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class AccountPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountPlacementsDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
+class AllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1771,12 +1730,8 @@ class LegacyAllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
         )
 
 
-class AllAccountsPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAllAccountsPublishersDailyStatsTestCase):
-    pass
-
-
 @patch("stats.api_dailystats.query")
-class LegacyAllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1825,7 +1780,3 @@ class LegacyAllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
                 "success": True,
             },
         )
-
-
-class AllAccountsPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAllAccountsPlacementsDailyStatsTestCase):
-    pass

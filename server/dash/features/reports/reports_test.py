@@ -10,7 +10,6 @@ import dash.constants
 import utils.dates_helper
 import utils.test_helper
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.features import geolocation
 from dash.features import scheduled_reports
 from utils import dates_helper
@@ -35,7 +34,7 @@ TEST_FTP_REPORTS = {
 }
 
 
-class LegacyReportsExecuteTestCase(DASHAPITestCase):
+class ReportsExecuteTestCase(DASHAPITestCase):
     def setUp(self):
         super().setUp()
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -271,11 +270,7 @@ class LegacyReportsExecuteTestCase(DASHAPITestCase):
         self.assertEqual(ReportJobExecutor._get_csv_separators(self.reportJob), ("\t", "."))
 
 
-class ReportsExecuteTestCase(FutureDASHAPITestCase, LegacyReportsExecuteTestCase):
-    pass
-
-
-class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
+class ReportsGetReportCSVTestCase(DASHAPITestCase):
     def setUp(self):
         super().setUp()
         magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
@@ -512,13 +507,9 @@ class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
         self.assertEqual(expected, output)
 
 
-class ReportsGetReportCSVTestCase(FutureDASHAPITestCase, LegacyReportsGetReportCSVTestCase):
-    pass
-
-
-class LegacyIncludeEntityTagsReportTestCase(DASHAPITestCase):
+class IncludeEntityTagsReportTestCase(DASHAPITestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user()
+        super().setUp()
 
         self.agency = self.mix_agency(self.user, permissions=[Permission.WRITE, Permission.READ])
         self.agency.entity_tags.add("some/agency", "another/agency")
@@ -654,11 +645,7 @@ class LegacyIncludeEntityTagsReportTestCase(DASHAPITestCase):
         self.assertEqual(expected, output)
 
 
-class IncludeEntityTagsReportTestCase(FutureDASHAPITestCase, LegacyIncludeEntityTagsReportTestCase):
-    pass
-
-
-class LegacyReportsImplementationTestCase(DASHAPITestCase):
+class ReportsImplementationTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.report_job = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -1302,7 +1289,3 @@ class LegacyReportsImplementationTestCase(DASHAPITestCase):
         self.report_job.query = query
         with self.assertRaises(utils.exc.ValidationError):
             ReportJobExecutor.get_report(self.report_job)
-
-
-class ReportsImplementationTestCase(FutureDASHAPITestCase, LegacyReportsImplementationTestCase):
-    pass

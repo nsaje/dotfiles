@@ -22,12 +22,11 @@ from dash import constants
 from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 
-class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
+class AdGroupSourceSettingsTestCase(DASHAPITestCase):
     fixtures = ["test_models.yaml", "test_views.yaml"]
 
     def setUp(self):
@@ -183,11 +182,7 @@ class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
         self.assertTrue("0.13" in json_data["errors"]["cpm"][0])
 
 
-class AdGroupSourceSettingsTestCase(FutureDASHAPITestCase, LegacyAdGroupSourceSettingsTestCase):
-    pass
-
-
-class LegacyAdGroupSourcesTestCase(DASHAPITestCase):
+class AdGroupSourcesTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
@@ -336,11 +331,7 @@ class LegacyAdGroupSourcesTestCase(DASHAPITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class AdGroupSourcesTestCase(FutureDASHAPITestCase, LegacyAdGroupSourcesTestCase):
-    pass
-
-
-class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
+class AdGroupOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml", "users"]
 
     def setUp(self):
@@ -519,11 +510,7 @@ class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
         self.assertEqual("Complete", yesterday_data_setting["flag"])
 
 
-class AdGroupOverviewTestCase(FutureDASHAPITestCase, LegacyAdGroupOverviewTestCase):
-    pass
-
-
-class LegacyCampaignOverviewTestCase(DASHAPITestCase):
+class CampaignOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api", "users"]
 
     def setUp(self):
@@ -619,11 +606,7 @@ class LegacyCampaignOverviewTestCase(DASHAPITestCase):
             self.assertEqual("0.00% on plan", pacing_setting["description"])
 
 
-class CampaignOverviewTestCase(FutureDASHAPITestCase, LegacyCampaignOverviewTestCase):
-    pass
-
-
-class LegacyAccountOverviewTestCase(DASHAPITestCase):
+class AccountOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -717,11 +700,7 @@ class LegacyAccountOverviewTestCase(DASHAPITestCase):
         settings = response["data"]["basic_settings"]
 
 
-class AccountOverviewTestCase(FutureDASHAPITestCase, LegacyAccountOverviewTestCase):
-    pass
-
-
-class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
+class AllAccountsOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -782,10 +761,6 @@ class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
         self.assertTrue(response["success"])
 
         self.assertEqual(set(["Active accounts:"]), set(s["name"] for s in response["data"]["basic_settings"]))
-
-
-class AllAccountsOverviewTestCase(FutureDASHAPITestCase, LegacyAllAccountsOverviewTestCase):
-    pass
 
 
 class DemoTest(TestCase):

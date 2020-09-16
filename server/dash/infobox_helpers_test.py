@@ -12,13 +12,12 @@ import dash.models
 import zemauth.models
 from utils import dates_helper
 from utils import test_helper
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class InfoBoxHelpersTestCase(BaseTestCase):
+class InfoBoxHelpersTestCase(FutureBaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def test_format_flight_time(self):
@@ -429,7 +428,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         self.assertEqual(end_date, datetime.date(2018, 1, 20))
 
 
-class InfoBoxAccountHelpersTestCase(BaseTestCase):
+class InfoBoxAccountHelpersTestCase(FutureBaseTestCase):
     fixtures = ["test_models.yaml"]
 
     @classmethod
@@ -925,13 +924,15 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         )
 
 
-class LegacyCountActiveAgencyAccountsTestCase(BaseTestCase):
+class CountActiveAgencyAccountsTestCase(FutureBaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def setUp(self):
         super().setUp()
         self.account_manager = magic_mixer.blend_user()
         self.agency_manager = magic_mixer.blend_user()
+        self.account_manager.user_permissions.add(self.permission)
+        self.agency_manager.user_permissions.add(self.permission)
 
     def test_count_active_agency_accounts(self):
         today = datetime.datetime.utcnow()
@@ -971,14 +972,7 @@ class LegacyCountActiveAgencyAccountsTestCase(BaseTestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(self.agency_manager))
 
 
-class CountActiveAgencyAccountsTestCase(FutureBaseTestCase, LegacyCountActiveAgencyAccountsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.account_manager.user_permissions.add(self.permission)
-        self.agency_manager.user_permissions.add(self.permission)
-
-
-class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
+class AllAccountsInfoboxHelpersTestCase(FutureBaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def setUp(self):

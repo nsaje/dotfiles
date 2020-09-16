@@ -11,7 +11,6 @@ import core.features.publisher_groups
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.constants import Level
 from dash.views import breakdown
 from dash.views import breakdown_helpers
@@ -31,7 +30,7 @@ def get_publisher_group_targeting_dict():
 
 
 @patch("stats.api_breakdowns.query")
-class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
+class AllAccountsBreakdownTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -212,12 +211,8 @@ class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
         )
 
 
-class AllAccountsBreakdownTestCase(FutureDASHAPITestCase, LegacyAllAccountsBreakdownTestCase):
-    pass
-
-
 @patch("stats.api_breakdowns.query")
-class LegacyAccountBreakdownTestCase(DASHAPITestCase):
+class AccountBreakdownTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -489,12 +484,8 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
         )
 
 
-class AccountBreakdownTestCase(FutureDASHAPITestCase, LegacyAccountBreakdownTestCase):
-    pass
-
-
 @patch("stats.api_breakdowns.query")
-class LegacyCampaignBreakdownTestCase(DASHAPITestCase):
+class CampaignBreakdownTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -626,12 +617,8 @@ class LegacyCampaignBreakdownTestCase(DASHAPITestCase):
         )
 
 
-class CampaignBreakdownTestCase(FutureDASHAPITestCase, LegacyCampaignBreakdownTestCase):
-    pass
-
-
 @patch("stats.api_breakdowns.query")
-class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
+class AdGroupBreakdownTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -1064,11 +1051,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
         )
 
 
-class AdGroupBreakdownTestCase(FutureDASHAPITestCase, LegacyAdGroupBreakdownTestCase):
-    pass
-
-
-class RequestOverflowTest(FutureDASHAPITestCase):
+class RequestOverflowTest(DASHAPITestCase):
     def create_test_data(self):
         return [{"rows": [{}, {}, {}, {}, {}], "pagination": {"offset": 0, "limit": 5, "count": -1}}]
 
@@ -1112,7 +1095,7 @@ class RequestOverflowTest(FutureDASHAPITestCase):
         )
 
 
-class LimitOffsetToPageTest(FutureDASHAPITestCase):
+class LimitOffsetToPageTest(DASHAPITestCase):
     def test_get_page_and_size(self):
         self.assertEqual(breakdown._get_page_and_size(0, 10), (1, 10))
         self.assertEqual(breakdown._get_page_and_size(10, 20), (1, 30))
@@ -1120,7 +1103,7 @@ class LimitOffsetToPageTest(FutureDASHAPITestCase):
         self.assertEqual(breakdown._get_page_and_size(50, 20), (1, 70))
 
 
-class BreakdownHelperTest(FutureDASHAPITestCase):
+class BreakdownHelperTest(DASHAPITestCase):
     fixtures = ["test_augmenter.yaml"]
 
     def test_add_performance_indicators(self):

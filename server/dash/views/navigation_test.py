@@ -8,7 +8,6 @@ from mock import patch
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
 from zemauth.models import User
 
@@ -23,7 +22,7 @@ def _configure_datetime_utcnow_mock(mock_datetime, utcnow_value):
     mock_datetime.timedelta = datetime.timedelta
 
 
-class LegacyNavigationAllAccountsDataViewTestCase(DASHAPITestCase):
+class NavigationAllAccountsDataViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def _get(self, user_id, filtered_sources=None):
@@ -55,11 +54,7 @@ class LegacyNavigationAllAccountsDataViewTestCase(DASHAPITestCase):
         self.assertDictEqual(response, {"accounts_count": 0})
 
 
-class NavigationAllAccountsDataViewTestCase(FutureDASHAPITestCase, LegacyNavigationAllAccountsDataViewTestCase):
-    pass
-
-
-class LegacyNavigationDataViewTestCase(DASHAPITestCase):
+class NavigationDataViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def setUp(self):
@@ -287,11 +282,7 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
         )
 
 
-class NavigationDataViewTestCase(FutureDASHAPITestCase, LegacyNavigationDataViewTestCase):
-    pass
-
-
-class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
+class NavigationTreeViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def setUp(self):
@@ -557,7 +548,3 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
 
         response = self._get(1, filtered_account_types=[constants.AccountType.UNKNOWN])
         self.assertCountEqual(self.expected_response, response["data"])
-
-
-class NavigationTreeViewTestCase(FutureDASHAPITestCase, LegacyNavigationTreeViewTestCase):
-    pass

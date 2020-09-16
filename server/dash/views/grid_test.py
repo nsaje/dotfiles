@@ -8,12 +8,11 @@ from core.models import all_rtb
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils.test_helper import add_permissions
 from zemauth.models import User
 
 
-class LegacyRTBSourceSettingsTestCase(DASHAPITestCase):
+class RTBSourceSettingsTestCase(DASHAPITestCase):
 
     fixtures = ["test_api", "test_views", "test_non_superuser", "test_geolocations"]
 
@@ -120,7 +119,3 @@ class LegacyRTBSourceSettingsTestCase(DASHAPITestCase):
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
         self.assertTrue("Maximum CPM on RTB Sources is" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])
-
-
-class RTBSourceSettingsTestCase(FutureDASHAPITestCase, LegacyRTBSourceSettingsTestCase):
-    pass

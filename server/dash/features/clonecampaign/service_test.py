@@ -7,7 +7,6 @@ import core.features.bcm
 import core.features.goals
 import core.models
 import dash.constants
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
@@ -21,7 +20,7 @@ from . import service
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
-class LegacyCloneServiceTest(BaseTestCase):
+class CloneServiceTest(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -197,7 +196,3 @@ class LegacyCloneServiceTest(BaseTestCase):
 
         for contend_ad in cloned_campaign.adgroup_set.get().contentad_set.all():
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.INACTIVE)
-
-
-class CloneServiceTest(FutureBaseTestCase, LegacyCloneServiceTest):
-    pass

@@ -11,7 +11,6 @@ from mock import patch
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import s3helpers
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -19,7 +18,7 @@ from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
+class PublisherTargetingViewTestCase(DASHAPITestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
@@ -122,11 +121,7 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         self.assertEqual(response.json()["data"]["errors"], {"entries": ["Invalid field: placement"]})
 
 
-class PublisherTargetingViewTestCase(FutureDASHAPITestCase, LegacyPublisherTargetingViewTestCase):
-    pass
-
-
-class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
+class PublisherGroupsViewTestCase(DASHAPITestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -189,11 +184,7 @@ class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
             self.assertFalse(pgs.first().implicit)
 
 
-class PublisherGroupsViewTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsViewTestCase):
-    pass
-
-
-class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
+class PublisherGroupsUploadTestCase(DASHAPITestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -514,13 +505,11 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         )
 
 
-class PublisherGroupsUploadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsUploadTestCase):
-    pass
-
-
-class LegacyPublisherGroupsDownloadTestCase(DASHAPITestCase):
+class PublisherGroupsDownloadTestCase(DASHAPITestCase):
     def setUp(self):
-        self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
+        super().setUp()
+        self.user.set_password("secret")
+        self.user.save()
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
@@ -615,11 +604,7 @@ class LegacyPublisherGroupsDownloadTestCase(DASHAPITestCase):
         )
 
 
-class PublisherGroupsDownloadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsDownloadTestCase):
-    pass
-
-
-class LegacyPublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
+class PublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
         self.client = Client()
@@ -651,7 +636,3 @@ class LegacyPublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
                 (("Publisher", "some.example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
             },
         )
-
-
-class PublisherGroupsExampleDownloadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsExampleDownloadTestCase):
-    pass

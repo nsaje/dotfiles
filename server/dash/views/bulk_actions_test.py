@@ -14,12 +14,11 @@ from dash import constants
 from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.views import bulk_actions
 from zemauth.models import User
 
 
-class LegacyAdGroupSourceStateTestCase(DASHAPITestCase):
+class AdGroupSourceStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
@@ -175,11 +174,7 @@ class LegacyAdGroupSourceStateTestCase(DASHAPITestCase):
         self.assertTrue("0.13" in json_data["message"])
 
 
-class AdGroupSourceStateTestCase(FutureDASHAPITestCase, LegacyAdGroupSourceStateTestCase):
-    pass
-
-
-class LegacyAdGroupContentAdArchiveTestCase(DASHAPITestCase):
+class AdGroupContentAdArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_archive(self, ad_group_id, data):
@@ -360,11 +355,7 @@ class LegacyAdGroupContentAdArchiveTestCase(DASHAPITestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.")
 
 
-class AdGroupContentAdArchiveTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdArchiveTestCase):
-    pass
-
-
-class LegacyAdGroupContentAdRestoreTestCase(DASHAPITestCase):
+class AdGroupContentAdRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_restore(self, ad_group_id, data):
@@ -547,11 +538,7 @@ class LegacyAdGroupContentAdRestoreTestCase(DASHAPITestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.")
 
 
-class AdGroupContentAdRestoreTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdRestoreTestCase):
-    pass
-
-
-class LegacyAdGroupContentAdStateTestCase(DASHAPITestCase):
+class AdGroupContentAdStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_state(self, ad_group_id, data):
@@ -713,11 +700,7 @@ class LegacyAdGroupContentAdStateTestCase(DASHAPITestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.")
 
 
-class AdGroupContentAdStateTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdStateTestCase):
-    pass
-
-
-class LegacyAdGroupContentAdCSVTestCase(DASHAPITestCase):
+class AdGroupContentAdCSVTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
@@ -882,11 +865,7 @@ class LegacyAdGroupContentAdCSVTestCase(DASHAPITestCase):
         self.assertEqual(json.loads(response.content)["data"]["error_code"], "ValidationError")
 
 
-class AdGroupContentAdCSVTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdCSVTestCase):
-    pass
-
-
-class LegacyCampaignAdGroupStateTestCase(DASHAPITestCase):
+class CampaignAdGroupStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_state(self, campaign_id, data):
@@ -969,11 +948,7 @@ class LegacyCampaignAdGroupStateTestCase(DASHAPITestCase):
         )
 
 
-class CampaignAdGroupStateTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupStateTestCase):
-    pass
-
-
-class LegacyCampaignAdGroupArchiveTestCase(DASHAPITestCase):
+class CampaignAdGroupArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_archive(self, campaign_id, data):
@@ -1005,11 +980,7 @@ class LegacyCampaignAdGroupArchiveTestCase(DASHAPITestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(ad_group_id), "archived": True}])
 
 
-class CampaignAdGroupArchiveTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupArchiveTestCase):
-    pass
-
-
-class LegacyCampaignAdGroupRestoreTestCase(DASHAPITestCase):
+class CampaignAdGroupRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_restore(self, campaign_id, data):
@@ -1044,11 +1015,7 @@ class LegacyCampaignAdGroupRestoreTestCase(DASHAPITestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(ad_group_id), "archived": False}])
 
 
-class CampaignAdGroupRestoreTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupRestoreTestCase):
-    pass
-
-
-class LegacyAccountCampaignArchiveTestCase(DASHAPITestCase):
+class AccountCampaignArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_campaign_archive(self, account_id, data):
@@ -1080,11 +1047,7 @@ class LegacyAccountCampaignArchiveTestCase(DASHAPITestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(campaign_id), "archived": True}])
 
 
-class AccountCampaignArchiveTestCase(FutureDASHAPITestCase, LegacyAccountCampaignArchiveTestCase):
-    pass
-
-
-class LegacyAccountCampaignRestoreTestCase(DASHAPITestCase):
+class AccountCampaignRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_campaign_restore(self, account_id, data):
@@ -1119,11 +1082,7 @@ class LegacyAccountCampaignRestoreTestCase(DASHAPITestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(campaign_id), "archived": False}])
 
 
-class AccountCampaignRestoreTestCase(FutureDASHAPITestCase, LegacyAccountCampaignRestoreTestCase):
-    pass
-
-
-class LegacyAllAccountsAccountArchiveTestCase(DASHAPITestCase):
+class AllAccountsAccountArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_account_archive(self, data):
@@ -1154,11 +1113,7 @@ class LegacyAllAccountsAccountArchiveTestCase(DASHAPITestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(account_id), "archived": True}])
 
 
-class AllAccountsAccountArchiveTestCase(FutureDASHAPITestCase, LegacyAllAccountsAccountArchiveTestCase):
-    pass
-
-
-class LegacyAllAccountsAccountRestoreTestCase(DASHAPITestCase):
+class AllAccountsAccountRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_account_restore(self, data):
@@ -1194,7 +1149,3 @@ class LegacyAllAccountsAccountRestoreTestCase(DASHAPITestCase):
 
         self.assertTrue(response_dict["success"])
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(account_id), "archived": False}])
-
-
-class AllAccountsAccountRestoreTestCase(FutureDASHAPITestCase, LegacyAllAccountsAccountRestoreTestCase):
-    pass

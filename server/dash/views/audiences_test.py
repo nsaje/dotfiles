@@ -9,12 +9,11 @@ from dash import constants
 from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth import models as zmodels
 
 
-class LegacyAudiencesTestCase(DASHAPITestCase):
+class AudiencesTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
@@ -356,11 +355,7 @@ class LegacyAudiencesTestCase(DASHAPITestCase):
         k1_update_account_mock.assert_called_with(audience.pixel.account, msg="audience.create")
 
 
-class AudiencesTestCase(FutureDASHAPITestCase, LegacyAudiencesTestCase):
-    pass
-
-
-class LegacyAudienceArchiveTestCase(DASHAPITestCase):
+class AudienceArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
@@ -449,11 +444,7 @@ class LegacyAudienceArchiveTestCase(DASHAPITestCase):
         redirector_upsert_audience_mock.assert_not_called()
 
 
-class AudienceArchiveTestCase(FutureDASHAPITestCase, LegacyAudienceArchiveTestCase):
-    pass
-
-
-class LegacyAudienceRestoreTestCase(DASHAPITestCase):
+class AudienceRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
@@ -502,7 +493,3 @@ class LegacyAudienceRestoreTestCase(DASHAPITestCase):
         self.assertEqual(history[0].created_by_id, 3)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
-
-
-class AudienceRestoreTestCase(FutureDASHAPITestCase, LegacyAudienceRestoreTestCase):
-    pass

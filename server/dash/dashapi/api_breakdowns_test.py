@@ -21,7 +21,6 @@ from dash.dashapi import api_breakdowns
 from dash.dashapi import augmenter
 from dash.dashapi import helpers
 from utils import threads
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.dict_helper import dict_join
 from utils.magic_mixer import magic_mixer
@@ -513,7 +512,7 @@ PUBLISHER_5__SOURCE_2 = {
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
 @override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
-class QueryTestCase(BaseTestCase):
+class QueryTestCase(FutureBaseTestCase):
 
     fixtures = ["test_api_breakdowns.yaml"]
 
@@ -1059,7 +1058,7 @@ class QueryTestCase(BaseTestCase):
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 @override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
-class QueryOrderTestCase(BaseTestCase):
+class QueryOrderTestCase(FutureBaseTestCase):
 
     fixtures = ["test_api_breakdowns.yaml"]
 
@@ -1141,7 +1140,7 @@ class QueryOrderTestCase(BaseTestCase):
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
 @override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
-class LegacyQueryForRowsTestCase(BaseTestCase):
+class QueryForRowsTestCase(FutureBaseTestCase):
 
     fixtures = ["test_api_breakdowns.yaml"]
 
@@ -1884,14 +1883,7 @@ class LegacyQueryForRowsTestCase(BaseTestCase):
         )
 
 
-@patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-@patch("utils.sspd_client.get_content_ad_status", MagicMock())
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
-class QueryForRowsTestCase(FutureBaseTestCase, LegacyQueryForRowsTestCase):
-    pass
-
-
-class HelpersTestCase(BaseTestCase):
+class HelpersTestCase(FutureBaseTestCase):
     def test_get_adjusted_limits_for_additional_rows(self):
 
         self.assertEqual(helpers.get_adjusted_limits_for_additional_rows(list(range(5)), list(range(5)), 0, 10), (0, 5))

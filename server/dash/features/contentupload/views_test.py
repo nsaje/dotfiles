@@ -11,14 +11,13 @@ import utils.test_helper
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class LegacyUploadCsvTestCase(DASHAPITestCase):
+class UploadCsvTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -417,11 +416,7 @@ class LegacyUploadCsvTestCase(DASHAPITestCase):
         )
 
 
-class UploadCsvTestCase(FutureDASHAPITestCase, LegacyUploadCsvTestCase):
-    pass
-
-
-class LegacyUploadStatusTestCase(DASHAPITestCase):
+class UploadStatusTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -490,11 +485,7 @@ class LegacyUploadStatusTestCase(DASHAPITestCase):
         self.assertIsNone(response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"])
 
 
-class UploadStatusTestCase(FutureDASHAPITestCase, LegacyUploadStatusTestCase):
-    pass
-
-
-class LegacyUploadSaveTestCase(DASHAPITestCase):
+class UploadSaveTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -731,11 +722,7 @@ class LegacyUploadSaveTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadSaveTestCase(FutureDASHAPITestCase, LegacyUploadSaveTestCase):
-    pass
-
-
-class LegacyCandidatesDownloadTestCase(DASHAPITestCase):
+class CandidatesDownloadTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -834,11 +821,7 @@ class LegacyCandidatesDownloadTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class CandidatesDownloadTestCase(FutureDASHAPITestCase, LegacyCandidatesDownloadTestCase):
-    pass
-
-
-class LegacyUploadCancelTestCase(DASHAPITestCase):
+class UploadCancelTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -904,11 +887,7 @@ class LegacyUploadCancelTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadCancelTestCase(FutureDASHAPITestCase, LegacyUploadCancelTestCase):
-    pass
-
-
-class LegacyUploadBatchTestCase(DASHAPITestCase):
+class UploadBatchTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -951,11 +930,7 @@ class LegacyUploadBatchTestCase(DASHAPITestCase):
         self.assertEqual(400, response.status_code)
 
 
-class UploadBatchTestCase(FutureDASHAPITestCase, LegacyUploadBatchTestCase):
-    pass
-
-
-class LegacyCandidateTestCase(DASHAPITestCase):
+class CandidateTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -1149,11 +1124,7 @@ class LegacyCandidateTestCase(DASHAPITestCase):
         )
 
 
-class CandidateTestCase(FutureDASHAPITestCase, LegacyCandidateTestCase):
-    pass
-
-
-class LegacyCandidateUpdateTestCase(DASHAPITestCase):
+class CandidateUpdateTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -1263,7 +1234,3 @@ class LegacyCandidateUpdateTestCase(DASHAPITestCase):
             {"success": False, "data": {"error_code": "MissingDataError", "message": "Upload batch does not exist"}},
             json.loads(response.content),
         )
-
-
-class CandidateUpdateTestCase(FutureDASHAPITestCase, LegacyCandidateUpdateTestCase):
-    pass
