@@ -7,7 +7,6 @@ import core.features.audiences
 import core.features.history
 import core.models
 import core.signals
-import prodops.hacks
 from dash import constants
 from utils import email_helper
 from utils import exc
@@ -38,7 +37,6 @@ class AdGroupSettingsMixin(object):
         k1_sync=True,
         **updates
     ):
-        updates = prodops.hacks.override_ad_group_settings(self.ad_group, updates)
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
         if not skip_validation:
             self._validate_update(updates)

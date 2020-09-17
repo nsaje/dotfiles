@@ -34,7 +34,6 @@ from dash import models
 from dash.common.views_base import DASHAPIBaseView
 from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from dash.views import helpers
-from prodops import hacks
 from utils import email_helper
 from utils import exc
 from utils import k1_helper
@@ -585,7 +584,6 @@ class AdGroupSourceSettings(DASHAPIBaseView):
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
-        data = hacks.override_ad_group_source_settings_form_data(ad_group, data)
 
         self._update_ad_group_source(request, ad_group_source, data)
 

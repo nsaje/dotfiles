@@ -191,25 +191,16 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             dash.campaign_goals.delete_campaign_goal(request, goal_id, campaign)
 
         errors = []
-        campaign_goals_change = False
         for item in data:
             if item.get("id") is not None:
                 campaign_goal = self._get_campaign_goal(campaign_goals, item.get("id"))
-                campaign_goal_updated = campaign_goal.update(request, **item)
-                if campaign_goal_updated:
-                    campaign_goals_change = True
+                campaign_goal.update(request, **item)
                 # Updating campaign goal do not
                 # raise any validation errors.
                 errors.append(None)
-            elif len(prodops.hacks.filter_campaign_goals(campaign, [item])) == 1:
-                campaign_goals_change = True
-                errors.append(self._create_campaign_goal(request, campaign, item))
 
         if any([error is not None for error in errors]):
             raise utils.exc.ValidationError(errors={"goals": errors})
-
-        if campaign_goals_change:
-            prodops.hacks.apply_campaign_goals_change_hacks(request, campaign)
 
     def _handle_campaign_budgets(self, request, campaign, data):
         if not request.user.has_budget_perm_on(
