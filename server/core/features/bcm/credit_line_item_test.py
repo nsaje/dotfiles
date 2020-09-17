@@ -8,7 +8,7 @@ import dash.constants
 import utils.exc
 import utils.test_helper
 from utils import test_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -17,7 +17,7 @@ from .credit_line_item import CreditLineItem
 from .refund_line_item.model import RefundLineItem
 
 
-class TestCreditLineItemManager(FutureBaseTestCase):
+class TestCreditLineItemManager(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -43,7 +43,7 @@ class TestCreditLineItemManager(FutureBaseTestCase):
         self.assertEqual(item.service_fee, Decimal("0.11"))
 
 
-class TestCreditLineItemValidateLicenseServiceFee(FutureBaseTestCase):
+class TestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["can_see_service_fee"])
         self.request = get_request_mock(self.user)
@@ -114,7 +114,7 @@ class TestCreditLineItemValidateLicenseServiceFee(FutureBaseTestCase):
         self.assertEqual(Decimal("0.1"), self.item.service_fee)
 
 
-class TestCreditLineItemQuerySetFilterOverlapping(FutureBaseTestCase):
+class TestCreditLineItemQuerySetFilterOverlapping(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         request = get_request_mock(self.user)
@@ -177,7 +177,7 @@ class TestCreditLineItemQuerySetFilterOverlapping(FutureBaseTestCase):
         )
 
 
-class TestCreditLineItemAmounts(FutureBaseTestCase):
+class TestCreditLineItemAmounts(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
@@ -204,7 +204,7 @@ class TestCreditLineItemAmounts(FutureBaseTestCase):
         self.assertEqual(self.item.get_available_amount(), self.base_amount + refund.amount)
 
 
-class TestCreditLineItemAgency(FutureBaseTestCase):
+class TestCreditLineItemAgency(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
@@ -279,7 +279,7 @@ class TestCreditLineItemAgency(FutureBaseTestCase):
             credit.update(self.request, agency=agency_two, account=None)
 
 
-class TestCreditLineItemAccount(FutureBaseTestCase):
+class TestCreditLineItemAccount(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)

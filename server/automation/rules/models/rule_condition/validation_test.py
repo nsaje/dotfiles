@@ -1,5 +1,5 @@
 import core.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from ... import config
@@ -9,7 +9,7 @@ from .. import Rule
 from . import model
 
 
-class RuleConditionValidationTest(FutureBaseTestCase):
+class RuleConditionValidationTest(BaseTestCase):
     def setUp(self):
         self.rule = magic_mixer.blend(Rule)
         self.rule_condition = model.RuleCondition(

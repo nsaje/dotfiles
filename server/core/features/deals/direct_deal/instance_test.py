@@ -1,13 +1,13 @@
 import core.features.deals
 import core.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.exc import ValidationError
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class InstanceTestCase(FutureBaseTestCase):
+class InstanceTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)

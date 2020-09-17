@@ -4,11 +4,11 @@ from django.test import override_settings
 from rest_framework.test import APIClient
 
 from utils import json_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 
 
 @override_settings(R1_DEMO_MODE=True)
-class RESTAPITestCase(FutureBaseTestCase):
+class RESTAPITestCase(BaseTestCase):
 
     permissions = [
         "can_use_restapi",

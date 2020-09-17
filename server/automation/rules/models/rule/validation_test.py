@@ -2,7 +2,7 @@ import core.features.publisher_groups
 import core.models
 from core.features.bid_modifiers import MODIFIER_MAX
 from core.features.bid_modifiers import MODIFIER_MIN
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
@@ -10,7 +10,7 @@ from ... import exceptions
 from . import model
 
 
-class RuleValidationTest(FutureBaseTestCase):
+class RuleValidationTest(BaseTestCase):
     def setUp(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account, agency=agency)

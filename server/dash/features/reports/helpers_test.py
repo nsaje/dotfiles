@@ -4,7 +4,7 @@ import mock
 
 import dash.features.scheduled_reports.models
 from utils import dates_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import disable_auto_now_add
 
@@ -13,7 +13,7 @@ from . import constants
 from . import helpers
 
 
-class HelpersTestCase(FutureBaseTestCase):
+class HelpersTestCase(BaseTestCase):
     @mock.patch("prodops.helpers.reprocess_report_jobs_async")
     def test_reprocess_report_jobs_for_today(self, mock_reprocess_report_jobs_async):
         with disable_auto_now_add(ReportJob, "created_dt"):

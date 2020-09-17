@@ -1,6 +1,6 @@
 import core.models
 import dash.constants
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -8,7 +8,7 @@ from zemauth.features.entity_permission import Permission
 from . import exceptions
 
 
-class ValidationTestCase(FutureBaseTestCase):
+class ValidationTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)

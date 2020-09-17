@@ -1,13 +1,13 @@
 import core.models
 from utils import test_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 from . import nas
 
 
-class NASTestCase(FutureBaseTestCase):
+class NASTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request_user_no_access = magic_mixer.blend_request_user()

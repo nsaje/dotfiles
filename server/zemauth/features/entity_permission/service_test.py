@@ -4,7 +4,7 @@ from django.test import TestCase
 
 import core.models
 import zemauth.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from ...models.user.exceptions import MissingRequiredPermission
@@ -225,7 +225,7 @@ class EntityPermissionServiceTestCase(TestCase):
         self.assertIn(Permission.RESTAPI, account_permissions)
 
 
-class EntityPermissionServiceSetEntityPermissionsTestCase(FutureBaseTestCase):
+class EntityPermissionServiceSetEntityPermissionsTestCase(BaseTestCase):
     def test_is_change_allowed(self):
         #  An account manager can only create or edit another account manager, but can't promote him
         self._test_is_change_allowed_case("account_mgr", None, "account_mgr")

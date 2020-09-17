@@ -1,8 +1,8 @@
 import zemauth.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 
 
-class StatsTestCase(FutureBaseTestCase):
+class StatsTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

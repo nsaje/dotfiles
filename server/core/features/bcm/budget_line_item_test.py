@@ -10,7 +10,7 @@ import core.models
 import dash.constants
 from core.features.bcm.exceptions import BudgetAmountExceededCreditAmount
 from utils import dates_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.exc import MultipleValidationError
 from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
@@ -24,7 +24,7 @@ TODAY = datetime.datetime(2015, 12, 1).date()
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
-class TestBudgetLineItemManager(FutureBaseTestCase):
+class TestBudgetLineItemManager(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -304,7 +304,7 @@ class TestBudgetLineItemManager(FutureBaseTestCase):
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
-class TestMinimizeAmountEndToday(FutureBaseTestCase):
+class TestMinimizeAmountEndToday(BaseTestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account, real_time_campaign_stop=True)

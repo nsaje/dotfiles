@@ -6,7 +6,7 @@ from django.db import transaction
 import zemauth
 from utils import dates_helper
 from utils import test_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -15,7 +15,7 @@ from . import exceptions
 from .model import User
 
 
-class InstanceTestCase(FutureBaseTestCase):
+class InstanceTestCase(BaseTestCase):
     fixtures = ["test_users.yaml"]
 
     def test_get_full_name(self):

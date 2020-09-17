@@ -1,11 +1,11 @@
 from django.test import override_settings
 
 import zemauth.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 
 
 @override_settings(R1_DEMO_MODE=True)
-class DASHAPITestCase(FutureBaseTestCase):
+class DASHAPITestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

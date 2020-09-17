@@ -12,12 +12,12 @@ import dash.models
 import zemauth.models
 from utils import dates_helper
 from utils import test_helper
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class InfoBoxHelpersTestCase(FutureBaseTestCase):
+class InfoBoxHelpersTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def test_format_flight_time(self):
@@ -428,7 +428,7 @@ class InfoBoxHelpersTestCase(FutureBaseTestCase):
         self.assertEqual(end_date, datetime.date(2018, 1, 20))
 
 
-class InfoBoxAccountHelpersTestCase(FutureBaseTestCase):
+class InfoBoxAccountHelpersTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
 
     @classmethod
@@ -924,7 +924,7 @@ class InfoBoxAccountHelpersTestCase(FutureBaseTestCase):
         )
 
 
-class CountActiveAgencyAccountsTestCase(FutureBaseTestCase):
+class CountActiveAgencyAccountsTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def setUp(self):
@@ -972,7 +972,7 @@ class CountActiveAgencyAccountsTestCase(FutureBaseTestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(self.agency_manager))
 
 
-class AllAccountsInfoboxHelpersTestCase(FutureBaseTestCase):
+class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
 
     def setUp(self):

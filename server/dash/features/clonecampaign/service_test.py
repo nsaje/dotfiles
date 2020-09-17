@@ -7,7 +7,7 @@ import core.features.bcm
 import core.features.goals
 import core.models
 import dash.constants
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -20,7 +20,7 @@ from . import service
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
-class CloneServiceTest(FutureBaseTestCase):
+class CloneServiceTest(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)

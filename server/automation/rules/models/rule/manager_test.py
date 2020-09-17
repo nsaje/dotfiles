@@ -1,5 +1,5 @@
 import core.models
-from utils.base_test_case import FutureBaseTestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
@@ -7,7 +7,7 @@ from ... import exceptions
 from . import model
 
 
-class RuleManagerTest(FutureBaseTestCase):
+class RuleManagerTest(BaseTestCase):
     def test_create(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
