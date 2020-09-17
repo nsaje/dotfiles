@@ -53,7 +53,7 @@ export class BidRangeInfoStore extends Store<BidRangeInfoStoreState> {
         }
 
         const minFactor = this.state.minFactor ? this.state.minFactor : 1.0;
-        const maxFactor = this.state.maxFactor ? this.state.minFactor : 1.0;
+        const maxFactor = this.state.maxFactor ? this.state.maxFactor : 1.0;
 
         const bidModifierTypeGridRows = convertToTypeSummaryGridRows(
             splitSummaries.summaries

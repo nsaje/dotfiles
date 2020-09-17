@@ -244,6 +244,33 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.finalBidRangeValue).toEqual('$0.8800 - $1.3200');
     });
 
+    it('should correctly update bid range after a change', () => {
+        store.updateInputs(
+            bidModifier,
+            biddingType,
+            bid,
+            bidModifierTypeSummaries,
+            currency,
+            fractionSize,
+            adGroupAutopilotState,
+            modifierPercent
+        );
+        store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
+        expect(store.state.finalBidRangeValue).toEqual('$0.8800 - $1.3200');
+
+        store.updateInputs(
+            bidModifier,
+            biddingType,
+            bid,
+            bidModifierTypeSummaries,
+            currency,
+            fractionSize,
+            adGroupAutopilotState,
+            '-10.00'
+        );
+        expect(store.state.finalBidRangeValue).toEqual('$0.7200 - $1.0800');
+    });
+
     it('should correctly present bid range info for CPC / device / active autopilot / selected all dimensions', () => {
         adGroupAutopilotState = AdGroupAutopilotState.ACTIVE_CPC_BUDGET;
 
