@@ -119,10 +119,7 @@ class Command(Z1Command):
     def _pause_sources_without_retargeting(self, ad_group):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group).select_related("source")
         for ad_group_source in ad_group_sources:
-            if (
-                ad_group_source.source.can_modify_retargeting_automatically()
-                or ad_group_source.source.can_modify_retargeting_manually()
-            ):
+            if ad_group_source.source.can_modify_retargeting_automatically():
                 continue
 
             if ad_group_source.get_current_settings().state != constants.AdGroupSourceSettingsState.INACTIVE:

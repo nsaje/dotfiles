@@ -74,9 +74,6 @@ class SourceMixin:
     def can_modify_retargeting_automatically(self):
         return self.supports_retargeting and not self.maintenance and not self.deprecated
 
-    def can_modify_retargeting_manually(self):
-        return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
-
     def get_default_settings(self):
         try:
             default_settings = self.defaultsourcesettings

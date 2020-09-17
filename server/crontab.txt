@@ -42,7 +42,6 @@
 15 9-14 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 0 14 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 10 10-20 * * *   /home/ubuntu/docker-manage-py.sh send_scheduled_reports
-0 11 * * *       /home/ubuntu/docker-manage-py.sh nas_cpc_billing 220 --slack
 0 12 * * *       /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes

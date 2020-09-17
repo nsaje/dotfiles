@@ -28,16 +28,9 @@ class Source(instance.SourceMixin, models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     released = models.BooleanField(default=False)
-    cpc_billing = models.BooleanField(default=False)
-    billing_type = models.IntegerField(
-        default=dash.constants.BillingType.DEFAULT, choices=dash.constants.BillingType.get_choices()
-    )
 
     supports_retargeting = models.BooleanField(
         default=False, help_text=_("Designates whether source supports retargeting automatically.")
-    )
-    supports_retargeting_manually = models.BooleanField(
-        default=False, help_text=_("Designates whether source supports retargeting via manual action.")
     )
 
     supports_video = models.BooleanField(default=False, help_text=_("Designates whether source supports video."))
