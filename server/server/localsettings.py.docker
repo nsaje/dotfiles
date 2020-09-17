@@ -338,9 +338,6 @@ GA_CREDENTIALS = collections.OrderedDict()
 GA_CREDENTIALS["account-2@example.com"] = Secret("").get().decode("utf-8")
 GA_CREDENTIALS["account-1@example.com"] = Secret("").get().decode("utf-8")
 
-# bizwire
-BIZWIRE_API_SIGN_KEY = Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()
-
 S3_MOCK_DIR = "/tmp"
 
 BLUEKAI_API_PARTNER_ID = "2661"

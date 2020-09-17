@@ -19,7 +19,6 @@ logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_SOURCE_SLUG = "outbrain"
 TRIPLELIFT_SOURCE_SLUG = "triplelift"
-BIZWIRE_CAMPAIGN_ID = 1096
 
 
 class ContentAdsView(K1APIView):

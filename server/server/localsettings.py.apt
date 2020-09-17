@@ -299,9 +299,6 @@ SLACK_INCOMING_HOOK_URL = ""
 # GA credentials - order newest to oldest
 GA_CREDENTIALS = collections.OrderedDict()
 
-# bizwire
-BIZWIRE_API_SIGN_KEY = Secret("plain::fake").get()  # noqa
-
 S3_MOCK_DIR = ""
 
 BLUEKAI_API_PARTNER_ID = "2661"

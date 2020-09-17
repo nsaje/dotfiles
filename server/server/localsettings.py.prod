@@ -378,12 +378,6 @@ CACHES = {
         "TIMEOUT": 60 * 60 * 6,  # 6 hours
         "OPTIONS": {"MAX_ENTRIES": 1000},
     },
-    "bizwire_cache": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "integrations_bizwire_cache",
-        "TIMEOUT": 60 * 30,  # 30 minutes
-        "OPTIONS": {"MAX_ENTRIES": 10000},
-    },
     "local_memory_cache": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-snowflake",
@@ -592,11 +586,6 @@ GA_CREDENTIALS["account-1@zemanta-api.iam.gserviceaccount.com"] = (
     .get()
     .decode("utf-8")
 )
-
-# bizwire
-BIZWIRE_API_SIGN_KEY = Secret(
-    "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDtsszs9Y8ta5B7PEgIBEIArKhoNTUqBrzTjjwQs2BgvaOyvQXbHdnS1C6vY4V/QBYR3+rrlGrWZSproTA=="  # noqa
-).get()
 
 S3_MOCK_DIR = ""
 

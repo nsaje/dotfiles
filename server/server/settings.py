@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     "oauth2_provider",
     "analytics",
     "prodops",
-    "integrations.bizwire",
     "integrations.product_feeds",
     "dcron",
     "dev",
@@ -327,7 +326,6 @@ if TESTING:
         "audience_sample_size": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "inventory_planning": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "dash_db_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
-        "bizwire_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "local_memory_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "entity_permission_cache": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
