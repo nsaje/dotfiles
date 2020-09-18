@@ -20,7 +20,6 @@ import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import content_insights_helper
 from dash import forms
@@ -536,16 +535,8 @@ class History(DASHAPIBaseView):
 
 class Agencies(DASHAPIBaseView):
     def get(self, request):
-        queryset_user_perm = models.Agency.objects.filter_by_user(request.user).values(
+        agencies = models.Agency.objects.filter_by_entity_permission(request.user, Permission.READ).values(
             "id", "name", "is_externally_managed"
-        )
-        queryset_entity_perm = models.Agency.objects.filter_by_entity_permission(request.user, Permission.READ).values(
-            "id", "name", "is_externally_managed"
-        )
-        agencies = list(
-            zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-                request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
-            )
         )
 
         return self.create_api_response(

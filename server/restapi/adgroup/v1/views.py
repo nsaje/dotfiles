@@ -5,7 +5,6 @@ import core.models.ad_group.exceptions
 import utils.converters
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from core.models.settings.ad_group_settings import exceptions
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
@@ -36,29 +35,21 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         qpe = serializers.AdGroupQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
 
-        queryset_user_perm = core.models.AdGroup.objects.filter_by_user(request.user)
-        queryset_entity_perm = core.models.AdGroup.objects.filter_by_entity_permission(request.user, Permission.READ)
+        queryset = core.models.AdGroup.objects.filter_by_entity_permission(request.user, Permission.READ)
 
         account_id = qpe.validated_data.get("account_id", None)
         if account_id:
-            queryset_user_perm = queryset_user_perm.filter(campaign__account_id=account_id)
-            queryset_entity_perm = queryset_entity_perm.filter(campaign__account_id=account_id)
+            queryset = queryset.filter(campaign__account_id=account_id)
 
         campaign_id = qpe.validated_data.get("campaign_id", None)
         if campaign_id:
             campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
-            queryset_user_perm = queryset_user_perm.filter(campaign=campaign)
-            queryset_entity_perm = queryset_entity_perm.filter(campaign=campaign)
+            queryset = queryset.filter(campaign=campaign)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            queryset_user_perm = queryset_user_perm.exclude_archived()
-            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+            queryset = queryset.exclude_archived()
 
-        ad_groups = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
-        )
-
-        ad_groups = ad_groups.select_related("settings").order_by("pk")
+        ad_groups = queryset.select_related("settings").order_by("pk")
         paginator = StandardPagination()
         ad_groups_paginated = paginator.paginate_queryset(ad_groups, request)
         paginated_settings = [ad.settings for ad in ad_groups_paginated]

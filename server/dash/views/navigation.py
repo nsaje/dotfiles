@@ -3,7 +3,6 @@ from django.conf import settings
 
 import automation.campaignstop
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
@@ -67,16 +66,10 @@ class NavigationAllAccountsDataView(DASHAPIBaseView):
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
 
-        accounts_user_perm = (
-            models.Account.objects.all().filter_by_user(request.user).filter_by_sources(filtered_sources)
-        )
-        accounts_entity_perm = (
+        accounts = (
             models.Account.objects.all()
             .filter_by_entity_permission(request.user, Permission.READ)
             .filter_by_sources(filtered_sources)
-        )
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
 
         accounts_count = accounts.count()
@@ -197,16 +190,7 @@ class NavigationTreeView(DASHAPIBaseView):
         return data_campaigns
 
     def _fetch_account_data_from_db(self, user, view_filter):
-        accounts_user_perm = (
-            models.Account.objects.all()
-            .filter_by_user(user)
-            .filter_by_sources(view_filter.cleaned_data.get("filtered_sources"))
-            .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
-            .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
-            .exclude(pk__in=ACCOUNTS_EXCLUDED_FROM_SEARCH)
-            .exclude_archived()
-        )
-        accounts_entity_perm = (
+        accounts = (
             models.Account.objects.all()
             .filter_by_entity_permission(user, Permission.READ)
             .filter_by_sources(view_filter.cleaned_data.get("filtered_sources"))
@@ -214,9 +198,6 @@ class NavigationTreeView(DASHAPIBaseView):
             .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
             .exclude(pk__in=ACCOUNTS_EXCLUDED_FROM_SEARCH)
             .exclude_archived()
-        )
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
         return accounts
 

@@ -8,7 +8,6 @@ import utils.exc
 import utils.lc_helper
 import utils.string_helper
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from core.models.settings.ad_group_source_settings import exceptions
 from restapi.adgroupsource.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet

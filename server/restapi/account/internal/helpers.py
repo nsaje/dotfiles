@@ -68,13 +68,9 @@ def get_sales_representatives(user, account):
     users = zemauth.models.User.objects.get_users_with_perm("campaign_settings_sales_rep").filter(is_active=True)
     if account.agency_id in SUBAGENCY_MAP:
         subagencies = core.models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
-        queryset_user_permission = zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
-        queryset_entity_permission = zemauth.models.User.objects.filter(
+        queryset = zemauth.models.User.objects.filter(
             entitypermission__agency__in=subagencies, entitypermission__permission=Permission.READ
         ).distinct()
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, Permission.READ, queryset_user_permission, queryset_entity_permission
-        )
         users &= queryset
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 
@@ -83,13 +79,9 @@ def get_cs_representatives(user, account):
     users = zemauth.models.User.objects.get_users_with_perm("campaign_settings_cs_rep").filter(is_active=True)
     if account.agency_id in SUBAGENCY_MAP:
         subagencies = core.models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
-        queryset_user_permission = zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
-        queryset_entity_permission = zemauth.models.User.objects.filter(
+        queryset = zemauth.models.User.objects.filter(
             entitypermission__agency__in=subagencies, entitypermission__permission=Permission.READ
         ).distinct()
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, Permission.READ, queryset_user_permission, queryset_entity_permission
-        )
         users &= queryset
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 

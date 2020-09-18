@@ -4,7 +4,6 @@ from rest_framework import status
 import core.features.bid_modifiers
 import restapi.common.views_base
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from core.features.bid_modifiers import create_bid_modifier_dict
 from dash import models
 from restapi.common import pagination
@@ -19,13 +18,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
     def _filter_bid_modifiers(self, ad_group_id, user, permission):
-        user_permission_qs = models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
-        entity_permission_qs = models.BidModifier.objects.filter_by_entity_permission(user, permission).filter(
-            ad_group__id=ad_group_id
-        )
-        return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, user_permission_qs, entity_permission_qs
-        )
+        return models.BidModifier.objects.filter_by_entity_permission(user, permission).filter(ad_group__id=ad_group_id)
 
     def list(self, request, ad_group_id):
         bid_modifiers = (

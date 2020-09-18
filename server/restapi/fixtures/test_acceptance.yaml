@@ -57,7 +57,7 @@
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
-        users: [1]
+        users: []
     model: dash.agency
     pk: 1
 
@@ -77,7 +77,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        users: [1]
+        users: []
         allowed_sources: [1,2,3,4]
         agency: 1
         settings: 1
@@ -977,3 +977,61 @@
         modified_dt: 2019-03-04 15:36:35.437905
     model: dash.bidmodifier
     pk: 1241
+
+# entity permissions
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: write
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: user
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: budget
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: agency_spend_margin
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: media_cost_data_cost_licence_fee
+  model: zemauth.entitypermission
+  pk: 6
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: base_costs_service_fee
+  model: zemauth.entitypermission
+  pk: 7

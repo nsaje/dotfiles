@@ -1332,21 +1332,9 @@ class PublisherTargetingForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super(PublisherTargetingForm, self).__init__(*args, **kwargs)
-        ad_group_qs = (
-            models.AdGroup.objects.all().filter_by_entity_permission(user, Permission.WRITE)
-            if user.has_perm("zemauth.fea_use_entity_permission")
-            else models.AdGroup.objects.all().filter_by_user(user)
-        )
-        campaign_qs = (
-            models.Campaign.objects.all().filter_by_entity_permission(user, Permission.WRITE)
-            if user.has_perm("zemauth.fea_use_entity_permission")
-            else models.Campaign.objects.all().filter_by_user(user)
-        )
-        account_qs = (
-            models.Account.objects.all().filter_by_entity_permission(user, Permission.WRITE)
-            if user.has_perm("zemauth.fea_use_entity_permission")
-            else models.Account.objects.all().filter_by_user(user)
-        )
+        ad_group_qs = models.AdGroup.objects.all().filter_by_entity_permission(user, Permission.WRITE)
+        campaign_qs = models.Campaign.objects.all().filter_by_entity_permission(user, Permission.WRITE)
+        account_qs = models.Account.objects.all().filter_by_entity_permission(user, Permission.WRITE)
 
         self.fields["ad_group"].queryset = ad_group_qs
         self.fields["campaign"].queryset = campaign_qs

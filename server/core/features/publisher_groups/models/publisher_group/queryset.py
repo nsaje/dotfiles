@@ -18,15 +18,6 @@ class PublisherGroupQuerySet(
     def filter_by_implicit(self, implicit):
         return self.filter(implicit=implicit)
 
-    def filter_by_user(self, user):
-        if user.has_perm("zemauth.can_see_all_accounts"):
-            return self
-        return self.filter(
-            models.Q(account__users__id=user.id)
-            | models.Q(account__agency__users__id=user.id)
-            | models.Q(agency__users__id=user.id)
-        ).distinct()
-
     def filter_by_account(self, account):
         if account.agency:
             return self.filter(models.Q(account=account) | models.Q(agency=account.agency))

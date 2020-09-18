@@ -26,7 +26,6 @@ import dash.features.campaign_pacing
 import demo
 import stats.helpers
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
@@ -492,13 +491,8 @@ class AccountOverview(DASHAPIBaseView):
 class AvailableSources(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request):
-        accounts_user_perm = models.Account.objects.all().filter_by_user(request.user)
+        user_accounts = models.Account.objects.all().filter_by_entity_permission(request.user, Permission.READ)
 
-        accounts_entity_perm = models.Account.objects.all().filter_by_entity_permission(request.user, Permission.READ)
-
-        user_accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
-        )
         user_sources = (
             models.Source.objects.filter(account__in=user_accounts)
             .filter(deprecated=False)
@@ -838,21 +832,12 @@ class AllAccountsOverview(DASHAPIBaseView):
         return [setting.as_dict() for setting in settings]
 
     def _append_performance_agency_settings(self, overview_settings, user, view_filter):
-        accounts_user_perm = (
-            models.Account.objects.all()
-            .filter_by_user(user)
-            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
-        )
-
-        accounts_entity_perm = (
+        accounts = (
             models.Account.objects.all()
             .filter_by_entity_permission(user, Permission.READ)
             .exclude_archived(view_filter.cleaned_data.get("show_archived"))
         )
 
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, Permission.READ, accounts_user_perm, accounts_entity_perm
-        )
         currency = stats.helpers.get_report_currency(user, accounts)
 
         use_local_currency = currency != constants.Currency.USD
@@ -879,22 +864,11 @@ class AllAccountsOverview(DASHAPIBaseView):
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
         overview_settings.append(infobox_helpers.create_yesterday_data_setting())
 
-        accounts_user_perm = (
-            models.Account.objects.filter_by_user(user)
-            .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
-            .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
-            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
-        )
-
-        accounts_entity_perm = (
+        accounts = (
             models.Account.objects.filter_by_entity_permission(user, Permission.READ)
             .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
             .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
             .exclude_archived(view_filter.cleaned_data.get("show_archived"))
-        )
-
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
 
         currency = stats.helpers.get_report_currency(user, accounts)

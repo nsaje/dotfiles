@@ -5,7 +5,6 @@ import prodops.hacks
 import utils.converters
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
@@ -37,34 +36,18 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         account_id = qpe.validated_data.get("account_id", None)
         if account_id:
             account = zemauth.access.get_account(request.user, Permission.READ, account_id)
-            queryset_user_perm = core.models.Campaign.objects.filter(account=account)
-            queryset_entity_perm = core.models.Campaign.objects.filter(account=account)
+            campaigns = core.models.Campaign.objects.filter(account=account)
         else:
-            queryset_user_perm = core.models.Campaign.objects.filter_by_user(request.user)
-            queryset_entity_perm = core.models.Campaign.objects.filter_by_entity_permission(
-                request.user, Permission.READ
-            )
+            campaigns = core.models.Campaign.objects.filter_by_entity_permission(request.user, Permission.READ)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            queryset_user_perm = queryset_user_perm.exclude_archived()
-            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+            campaigns = campaigns.exclude_archived()
 
         exclude_inactive = qpe.validated_data.get("exclude_inactive", False)
         if exclude_inactive:
-            queryset_user_perm = queryset_user_perm.filter_has_active_ad_groups()
-            queryset_entity_perm = queryset_entity_perm.filter_has_active_ad_groups()
+            campaigns = campaigns.filter_has_active_ad_groups()
 
         paginator = StandardPagination()
-        if request.user.id == 886:  # HACK(msuber): skip logging differences for OEN due to performance
-            campaigns = (
-                queryset_entity_perm
-                if request.user.has_perm("zemauth.fea_use_entity_permission")
-                else queryset_user_perm
-            )
-        else:
-            campaigns = zemauth.features.entity_permission.helpers.log_paginated_differences_and_get_queryset(
-                request, paginator, Permission.READ, queryset_user_perm, queryset_entity_perm
-            )
 
         only_non_paginated_ids = qpe.validated_data.get("only_non_paginated_ids", False)
         if only_non_paginated_ids:

@@ -9,7 +9,6 @@ import stats.constants
 import stats.constraints_helper
 import stats.helpers
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from dash import campaign_goals
 from dash import constants
 from dash import forms
@@ -204,22 +203,11 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
 
-        accounts_user_perm = (
-            models.Account.objects.all()
-            .filter_by_user(request.user)
-            .filter_by_agencies(self.view_filter.cleaned_data.get("filtered_agencies"))
-            .filter_by_account_types(self.view_filter.cleaned_data.get("filtered_account_types"))
-        )
-
-        accounts_entity_perm = (
+        accounts = (
             models.Account.objects.all()
             .filter_by_entity_permission(request.user, Permission.READ)
             .filter_by_agencies(self.view_filter.cleaned_data.get("filtered_agencies"))
             .filter_by_account_types(self.view_filter.cleaned_data.get("filtered_account_types"))
-        )
-
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
 
         self.validate_metrics(request.GET.getlist("metrics"))
@@ -348,14 +336,7 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
 
-        campaigns_user_perm = self.account.campaign_set.all().filter_by_user(request.user)
-        campaigns_entity_perm = self.account.campaign_set.all().filter_by_entity_permission(
-            request.user, Permission.READ
-        )
-
-        campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, campaigns_user_perm, campaigns_entity_perm
-        )
+        campaigns = self.account.campaign_set.all().filter_by_entity_permission(request.user, Permission.READ)
 
         self.selected_objects = self._get_selected_objects(request, campaigns)
 

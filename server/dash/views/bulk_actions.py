@@ -9,7 +9,6 @@ import core.features.multicurrency
 import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from automation import autopilot
 from dash import api
 from dash import constants
@@ -591,17 +590,9 @@ class AccountCampaignRestore(BaseBulkActionView):
 class AllAccountsAccountArchive(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request):
-        accounts_user_perm = helpers.get_selected_entities_post_request(
-            models.Account.objects.all().filter_by_user(request.user), json.loads(request.body)
-        )
-
-        accounts_entity_perm = helpers.get_selected_entities_post_request(
+        accounts = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_entity_permission(request.user, Permission.WRITE),
             json.loads(request.body),
-        )
-
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.WRITE, accounts_user_perm, accounts_entity_perm
         )
 
         with transaction.atomic():
@@ -614,17 +605,10 @@ class AllAccountsAccountArchive(BaseBulkActionView):
 class AllAccountsAccountRestore(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request):
-        accounts_user_perm = helpers.get_selected_entities_post_request(
-            models.Account.objects.all().filter_by_user(request.user), json.loads(request.body), include_archived=True
-        )
-
-        accounts_entity_perm = helpers.get_selected_entities_post_request(
+        accounts = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_entity_permission(request.user, Permission.WRITE),
             json.loads(request.body),
             include_archived=True,
-        )
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.WRITE, accounts_user_perm, accounts_entity_perm
         )
 
         with transaction.atomic():

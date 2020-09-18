@@ -4,7 +4,6 @@ import newrelic.agent
 
 import core.features.publisher_groups
 import dash.constants
-import zemauth.features.entity_permission.helpers
 from dash import models
 from stats import constants
 from utils.queryset_helper import get_pk_list
@@ -42,14 +41,7 @@ def prepare_all_accounts_constraints(
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
     **kwargs,
 ):
-    allowed_accounts_user_perm = (
-        models.Account.objects.all()
-        .filter_by_user(user)
-        .filter_by_sources(filtered_sources)
-        .filter_by_agencies(filtered_agencies)
-        .filter_by_account_types(filtered_account_types)
-    )
-    allowed_accounts_entity_perm = (
+    allowed_accounts = (
         models.Account.objects.all()
         .filter_by_entity_permission(user, Permission.READ)
         .filter_by_sources(filtered_sources)
@@ -58,20 +50,10 @@ def prepare_all_accounts_constraints(
     )
 
     if filtered_businesses:
-        allowed_accounts_user_perm = allowed_accounts_user_perm.filter_by_business(filtered_businesses)
-        allowed_accounts_entity_perm = allowed_accounts_entity_perm.filter_by_business(filtered_businesses)
+        allowed_accounts = allowed_accounts.filter_by_business(filtered_businesses)
 
     if filtered_accounts:
-        allowed_accounts_user_perm = allowed_accounts_user_perm.filter(
-            id__in=filtered_accounts.values_list("id", flat=True)
-        )
-        allowed_accounts_entity_perm = allowed_accounts_entity_perm.filter(
-            id__in=filtered_accounts.values_list("id", flat=True)
-        )
-
-    allowed_accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-        user, Permission.READ, allowed_accounts_user_perm, allowed_accounts_entity_perm
-    )
+        allowed_accounts = allowed_accounts.filter(id__in=filtered_accounts.values_list("id", flat=True))
 
     allowed_campaigns = models.Campaign.objects.filter(account__in=allowed_accounts).filter_by_sources(filtered_sources)
 

@@ -6,7 +6,6 @@ import core.models
 import utils.converters
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from restapi.account.v1 import serializers
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
@@ -43,30 +42,23 @@ class AccountViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def list(self, request):
-        queryset_user_perm = core.models.Account.objects.filter_by_user(request.user)
-        queryset_entity_perm = core.models.Account.objects.filter_by_entity_permission(request.user, Permission.READ)
+        accounts = core.models.Account.objects.filter_by_entity_permission(request.user, Permission.READ)
 
         qpe = serializers.AccountListQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
 
         agency_id = qpe.validated_data.get("agency_id")
         if agency_id:
-            queryset_user_perm = queryset_user_perm.filter(agency_id=agency_id)
-            queryset_entity_perm = queryset_entity_perm.filter(agency_id=agency_id)
+            accounts = accounts.filter(agency_id=agency_id)
 
         if not utils.converters.x_to_bool(qpe.validated_data.get("include_archived")):
-            queryset_user_perm = queryset_user_perm.exclude_archived()
-            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+            accounts = accounts.exclude_archived()
 
         keyword = qpe.validated_data.get("keyword")
         if keyword:
-            queryset_user_perm = queryset_user_perm.filter(settings__name__icontains=keyword)
-            queryset_entity_perm = queryset_entity_perm.filter(settings__name__icontains=keyword)
+            accounts = accounts.filter(settings__name__icontains=keyword)
 
         paginator = StandardPagination()
-        accounts = zemauth.features.entity_permission.helpers.log_paginated_differences_and_get_queryset(
-            request, paginator, Permission.READ, queryset_user_perm, queryset_entity_perm
-        )
         accounts = accounts.order_by("pk")
         accounts_paginated = paginator.paginate_queryset(accounts, request)
 

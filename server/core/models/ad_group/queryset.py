@@ -9,13 +9,6 @@ import zemauth.models
 
 
 class AdGroupQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet):
-    def filter_by_user(self, user):
-        if user.has_perm("zemauth.can_see_all_accounts"):
-            return self
-        return self.filter(
-            models.Q(campaign__account__users__id=user.id) | models.Q(campaign__account__agency__users__id=user.id)
-        ).distinct()
-
     def filter_by_agencies(self, agencies):
         if not agencies:
             return self

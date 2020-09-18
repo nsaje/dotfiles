@@ -17,6 +17,13 @@ from zemauth.models import User
 class ReportViewsTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.users = User.objects.all()
+        for user in cls.users:
+            user.refresh_entity_permissions()
+
     def setUp(self):
         self.user = User.objects.get(pk=2)
 

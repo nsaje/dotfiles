@@ -10,7 +10,6 @@ from django.db import transaction
 from django.db.models import Count
 
 import core.models
-import zemauth.features.entity_permission.helpers
 from core.models.source import model as source_model
 from dash import constants as dash_constants
 from utils import decimal_helpers
@@ -597,8 +596,4 @@ def _write_upload_history(ad_group, number_of_deleted, number_of_created, user=N
 
 
 def _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, permission):
-    bid_modifiers_user_permission_qs = bid_modifiers_qs.filter_by_user(user)
-    bid_modifiers_entity_permission_qs = bid_modifiers_qs.filter_by_entity_permission(user, permission)
-    return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-        user, permission, bid_modifiers_user_permission_qs, bid_modifiers_entity_permission_qs
-    )
+    return bid_modifiers_qs.filter_by_entity_permission(user, permission)

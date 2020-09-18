@@ -10,19 +10,13 @@ import core.features.deals
 import core.features.publisher_groups
 import core.models
 import utils.exc
-import zemauth.features.entity_permission.helpers
 import zemauth.models
 from zemauth.features.entity_permission import Permission
 
 
 def get_agency(user: zemauth.models.User, permission: str, agency_id: str) -> core.models.Agency:
     try:
-        queryset_user_perm = core.models.Agency.objects.filter_by_user(user)
-        queryset_entity_perm = core.models.Agency.objects.filter_by_entity_permission(user, permission)
-
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, agency_id
-        )
+        queryset = core.models.Agency.objects.filter_by_entity_permission(user, permission)
         return queryset.get(id=agency_id)
     except core.models.Agency.DoesNotExist:
         raise utils.exc.MissingDataError("Agency does not exist")
@@ -34,15 +28,13 @@ def get_agencies(user: zemauth.models.User, permission: str) -> models.QuerySet:
 
 def get_account(user: zemauth.models.User, permission: str, account_id: str, **kwargs: Any) -> core.models.Account:
     try:
-        queryset_user_perm = core.models.Account.objects.filter_by_user(user).select_related("settings", "agency")
-        queryset_entity_perm = core.models.Account.objects.filter_by_entity_permission(user, permission).select_related(
+        queryset = core.models.Account.objects.filter_by_entity_permission(user, permission).select_related(
             "settings", "agency"
         )
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
+            queryset = queryset.filter_by_sources(sources)
 
         select_related_users = kwargs.get("select_related_users", False)
         if select_related_users is True:
@@ -53,12 +45,8 @@ def get_account(user: zemauth.models.User, permission: str, account_id: str, **k
                     "settings__default_sales_representative",
                 ]
             )
-            queryset_user_perm = queryset_user_perm.select_related(*paths)
-            queryset_entity_perm = queryset_entity_perm.select_related(*paths)
+            queryset = queryset.select_related(*paths)
 
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, account_id
-        )
         return queryset.get(id=account_id)
     except core.models.Account.DoesNotExist:
         raise utils.exc.MissingDataError("Account does not exist")
@@ -70,21 +58,14 @@ def get_accounts(user: zemauth.models.User, permission: str) -> models.QuerySet:
 
 def get_campaign(user: zemauth.models.User, permission: str, campaign_id: str, **kwargs: Any) -> core.models.Campaign:
     try:
-        queryset_user_perm = core.models.Campaign.objects.filter_by_user(user).select_related(
+        queryset = core.models.Campaign.objects.filter_by_entity_permission(user, permission).select_related(
             "settings", "account__agency"
         )
-        queryset_entity_perm = core.models.Campaign.objects.filter_by_entity_permission(
-            user, permission
-        ).select_related("settings", "account__agency")
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
+            queryset = queryset.filter_by_sources(sources)
 
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, campaign_id
-        )
         return queryset.get(id=campaign_id)
     except core.models.Campaign.DoesNotExist:
         raise utils.exc.MissingDataError("Campaign does not exist")
@@ -96,21 +77,14 @@ def get_campaigns(user: zemauth.models.User, permission: str) -> models.QuerySet
 
 def get_ad_group(user: zemauth.models.User, permission: str, ad_group_id: str, **kwargs: Any) -> core.models.AdGroup:
     try:
-        queryset_user_perm = core.models.AdGroup.objects.filter_by_user(user).select_related(
-            "settings", "campaign__account__agency"
-        )
-        queryset_entity_perm = core.models.AdGroup.objects.filter_by_entity_permission(user, permission).select_related(
+        queryset = core.models.AdGroup.objects.filter_by_entity_permission(user, permission).select_related(
             "settings", "campaign__account__agency"
         )
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
+            queryset = queryset.filter_by_sources(sources)
 
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, ad_group_id
-        )
         return queryset.get(id=ad_group_id)
     except core.models.AdGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Ad Group does not exist")
@@ -122,14 +96,10 @@ def get_ad_groups(user: zemauth.models.User, permission: str) -> models.QuerySet
 
 def get_content_ad(user: zemauth.models.User, permission: str, content_ad_id: str) -> core.models.ContentAd:
     try:
-        queryset_user_perm = core.models.ContentAd.objects.filter_by_user(user).select_related("ad_group")
-        queryset_entity_perm = core.models.ContentAd.objects.filter_by_entity_permission(
-            user, permission
-        ).select_related("ad_group")
-
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, content_ad_id
+        queryset = core.models.ContentAd.objects.filter_by_entity_permission(user, permission).select_related(
+            "ad_group"
         )
+
         return queryset.get(id=content_ad_id)
     except core.models.ContentAd.DoesNotExist:
         raise utils.exc.MissingDataError("Content Ad does not exist")
@@ -153,16 +123,10 @@ def get_upload_batch(user: zemauth.models.User, permission: str, batch_id: str) 
 
 def get_direct_deal(user: zemauth.models.User, permission: str, deal_id: str) -> core.features.deals.DirectDeal:
     try:
-        queryset_user_perm = core.features.deals.DirectDeal.objects.filter_by_user(user).select_related(
+        queryset = core.features.deals.DirectDeal.objects.filter_by_entity_permission(user, permission).select_related(
             "source", "agency", "account"
         )
-        queryset_entity_perm = core.features.deals.DirectDeal.objects.filter_by_entity_permission(
-            user, permission
-        ).select_related("source", "agency", "account")
 
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, deal_id
-        )
         deal = queryset.get(id=deal_id)
 
         if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
@@ -222,14 +186,7 @@ def get_refund_line_item(refund_id: str, credit: core.features.bcm.CreditLineIte
 
 def get_publisher_group(user: zemauth.models.User, permission: str, publisher_group_id: str, **kwargs: Any):
     try:
-        queryset_user_perm = core.features.publisher_groups.PublisherGroup.objects.filter_by_user(user)
-        queryset_entity_perm = core.features.publisher_groups.PublisherGroup.objects.filter_by_entity_permission(
-            user, permission
-        )
-
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, publisher_group_id
-        )
+        queryset = core.features.publisher_groups.PublisherGroup.objects.filter_by_entity_permission(user, permission)
 
         annotate_entities = kwargs.get("annotate_entities", None)
         if annotate_entities:
@@ -285,11 +242,7 @@ def get_user(
 
 
 def _get_model_queryset(user: zemauth.models.User, permission: str, model: models.Model) -> models.QuerySet:
-    queryset_user_perm = model.objects.filter_by_user(user)
-    queryset_entity_perm = model.objects.filter_by_entity_permission(user, permission)
-    return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-        user, permission, queryset_user_perm, queryset_entity_perm
-    )
+    return model.objects.filter_by_entity_permission(user, permission)
 
 
 def get_automation_rule(user: zemauth.models.User, permission: str, rule_id: str) -> automation.rules.Rule:
@@ -297,14 +250,10 @@ def get_automation_rule(user: zemauth.models.User, permission: str, rule_id: str
         if not user.has_perm("zemauth.fea_can_create_automation_rules"):
             raise utils.exc.AuthorizationError()
 
-        queryset_user_perm = automation.rules.Rule.objects.filter_by_user(user).select_related("agency", "account")
-        queryset_entity_perm = automation.rules.Rule.objects.filter_by_entity_permission(
-            user, permission
-        ).select_related("agency", "account")
-
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            user, permission, queryset_user_perm, queryset_entity_perm, rule_id
+        queryset = automation.rules.Rule.objects.filter_by_entity_permission(user, permission).select_related(
+            "agency", "account"
         )
+
         rule = queryset.get(id=rule_id)
 
         return rule

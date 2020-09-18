@@ -18,7 +18,6 @@ import redshiftapi.api_breakdowns
 import utils.cache_helper
 import utils.dates_helper
 import utils.lc_helper
-import zemauth.features.entity_permission.helpers
 import zemauth.models
 from utils import converters
 from zemauth.features.entity_permission import Permission
@@ -340,15 +339,8 @@ def count_active_campaigns(account):
 
 
 def count_active_agency_accounts(user):
-
-    accounts_user_perm = dash.models.AdGroup.objects.all().filter_current_and_active().filter_by_user(user)
-
-    accounts_entity_perm = (
+    accounts = (
         dash.models.AdGroup.objects.all().filter_current_and_active().filter_by_entity_permission(user, Permission.READ)
-    )
-
-    accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-        user, Permission.READ, accounts_user_perm, accounts_entity_perm
     )
     return accounts.order_by().values("campaign__account").distinct().count()
 

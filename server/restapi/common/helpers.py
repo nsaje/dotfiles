@@ -30,18 +30,9 @@ def get_users_for_manager(user, account, current_manager=None):
         users_queryset = zemauth.models.User.objects.all()
     else:
         if account.id is not None:
-            queryset_user_permission = account.users.all()
-            queryset_entity_permission = account.get_users_with(Permission.READ)
-            queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-                user, Permission.READ, queryset_user_permission, queryset_entity_permission
-            )
-            users_queryset = queryset
+            users_queryset = account.get_users_with(Permission.READ)
         if account.is_agency():
-            queryset_user_permission = account.agency.users.all()
-            queryset_entity_permission = account.agency.get_users_with(Permission.READ)
-            queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-                user, Permission.READ, queryset_user_permission, queryset_entity_permission
-            )
+            queryset = account.agency.get_users_with(Permission.READ)
             if users_queryset is not None:
                 users_queryset |= queryset
             else:

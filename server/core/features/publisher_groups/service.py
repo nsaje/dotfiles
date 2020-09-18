@@ -21,7 +21,6 @@ from typing_extensions import TypedDict
 
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import history_helpers
 from dash import models
@@ -509,20 +508,11 @@ def get_or_create_publisher_group(
     implicit=False,
 ):
     if publisher_group_id is not None:
-        queryset_user_perm = (
-            models.PublisherGroup.objects.filter_by_user(request.user)
-            .filter(agency_id=agency_id)
-            .filter(account_id=account_id)
-            .filter(default_include_subdomains=default_include_subdomains)
-        )
-        queryset_entity_perm = (
+        queryset = (
             models.PublisherGroup.objects.filter_by_entity_permission(request.user, Permission.WRITE)
             .filter(agency_id=agency_id)
             .filter(account_id=account_id)
             .filter(default_include_subdomains=default_include_subdomains)
-        )
-        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.WRITE, queryset_user_perm, queryset_entity_perm, entity_id=publisher_group_id
         )
         return queryset.get(id=publisher_group_id), False
 
@@ -578,9 +568,7 @@ def get_publisher_group_connections(
             model: Union[Type[models.Agency], Type[models.Account], Type[models.Campaign], Type[models.AdGroup]],
         ) -> QuerySet:
             queryset = model.objects.filter(id=OuterRef("id"))
-            if user.has_perm("zemauth.fea_use_entity_permission"):
-                return queryset.filter_by_entity_permission(user, Permission.READ)
-            return queryset.filter_by_user(user)
+            return queryset.filter_by_entity_permission(user, Permission.READ)
 
         query_sets = [
             (
@@ -670,9 +658,7 @@ def get_publisher_group_connections(
             user: User,
             model: Union[Type[models.Agency], Type[models.Account], Type[models.Campaign], Type[models.AdGroup]],
         ) -> QuerySet:
-            if user.has_perm("zemauth.fea_use_entity_permission"):
-                return model.objects.filter_by_entity_permission(user, Permission.READ)
-            return model.objects.filter_by_user(user)
+            return model.objects.filter_by_entity_permission(user, Permission.READ)
 
         query_sets = [
             (
@@ -765,11 +751,7 @@ def remove_publisher_group_connection(request: Request, publisher_group_id: int,
     if connection_type is None:
         raise connection_definitions.InvalidConnectionType("Invalid location")
 
-    queryset_user_perm = connection_type["model"].objects.filter_by_user(request.user)
-    queryset_entity_perm = connection_type["model"].objects.filter_by_entity_permission(request.user, Permission.WRITE)
-    queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-        request.user, Permission.WRITE, queryset_user_perm, queryset_entity_perm, entity_id=entity_id
-    )
+    queryset = connection_type["model"].objects.filter_by_entity_permission(request.user, Permission.WRITE)
 
     entity = queryset.get(id=entity_id)
     publisher_group_ids = getattr(entity.settings, connection_type["attribute"]).copy()

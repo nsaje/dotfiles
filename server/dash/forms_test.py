@@ -1661,6 +1661,13 @@ class AudienceFormTestCase(TestCase):
 class PublisherTargetingFormTestCase(TestCase):
     fixtures = ["test_models.yaml"]
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.users = User.objects.all()
+        for user in cls.users:
+            user.refresh_entity_permissions()
+
     def setUp(self):
         self.account = models.Account.objects.get(pk=1)
         self.user = User.objects.get(pk=2)

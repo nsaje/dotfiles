@@ -1,6 +1,5 @@
 import datetime
 
-import mock
 from django.db import models
 from django.test import TestCase
 
@@ -21,16 +20,6 @@ from .entity_access import get_user
 
 
 class ObjectAccessTestCaseMixin(object):
-    def side_effect_log_differences_and_get_queryset(
-        self,
-        user: zemauth.models.User,
-        permission: str,
-        user_permission_queryset: models.QuerySet,
-        entity_permission_queryset: models.QuerySet,
-        entity_id: str = None,
-    ) -> models.QuerySet:
-        return entity_permission_queryset
-
     def _for_all_entities(self, user: zemauth.models.User, permission: str, entity_access_fn, model: models.Model):
         user.entitypermission_set.all().delete()
         magic_mixer.blend(
@@ -103,10 +92,7 @@ class ObjectAccessTestCaseMixin(object):
 
 
 class AgencyAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_agency(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_agency(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         user: zemauth.models.User = magic_mixer.blend_user()
@@ -119,10 +105,7 @@ class AgencyAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class AccountAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_account(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_account(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         user: zemauth.models.User = magic_mixer.blend_user()
@@ -135,10 +118,7 @@ class AccountAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class CampaignAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_campaign(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_campaign(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign: core.models.Campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -152,10 +132,7 @@ class CampaignAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class AdGroupAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_ad_group(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_ad_group(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign: core.models.Campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -170,10 +147,7 @@ class AdGroupAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class ContentAdAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_content_ad(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_content_ad(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign: core.models.Campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -189,10 +163,7 @@ class ContentAdAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class UploadBatchAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_upload_batch(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_upload_batch(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign: core.models.Campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -208,10 +179,7 @@ class UploadBatchAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class DirectDealAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_direct_deal(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_direct_deal(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         deal_with_agency_scope: core.features.deals.DirectDeal = magic_mixer.blend(
@@ -233,10 +201,7 @@ class DirectDealAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
             self._for_account(user, permission, entity_access.get_direct_deal, account, deal_with_account_scope, False)
             self._for_none(user, permission, entity_access.get_direct_deal, deal_with_account_scope)
 
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_has_internal_deal_access_no_permission(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_has_internal_deal_access_no_permission(self):
         user: zemauth.models.User = magic_mixer.blend_user()
         permission: str = zemauth.features.entity_permission.constants.Permission.READ
         agency = magic_mixer.blend(core.models.Agency)
@@ -254,10 +219,7 @@ class DirectDealAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
         with self.assertRaises(utils.exc.AuthorizationError):
             entity_access.get_direct_deal(user, permission, deal.id)
 
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_has_internal_deal_access_permission(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_has_internal_deal_access_permission(self):
         user: zemauth.models.User = magic_mixer.blend_user()
         test_helper.add_permissions(user, ["can_see_internal_deals"])
         permission: str = zemauth.features.entity_permission.constants.Permission.READ
@@ -278,10 +240,7 @@ class DirectDealAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class CreditLineItemAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_credit_line_item(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_credit_line_item(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         credit_with_agency_scope: core.features.bcm.CreditLineItem = magic_mixer.blend(
@@ -315,10 +274,7 @@ class CreditLineItemAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class PublisherGroupAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_publisher_group(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_publisher_group(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         publisher_group_with_agency_scope: core.features.publisher_groups.PublisherGroup = magic_mixer.blend(
@@ -354,10 +310,7 @@ class PublisherGroupAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
 
 
 class AutomationRuleAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_automation_rule(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_automation_rule(self):
         agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
         account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
         rule_with_agency_scope: core.features.publisher_groups.PublisherGroup = magic_mixer.blend(
@@ -464,10 +417,7 @@ class UserAccessTestCase(TestCase):
 
 
 class ConversionPixelAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
-    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
-    def test_get_conversion_pixel(self, mock_log_differences_and_get_queryset):
-        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
-
+    def test_get_conversion_pixel(self):
         account: core.models.Account = magic_mixer.blend(core.models.Account)
         pixel: core.models.ConversionPixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         user: zemauth.models.User = magic_mixer.blend_user()
