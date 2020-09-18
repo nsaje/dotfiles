@@ -49,7 +49,7 @@ class TestGetAnyAppliedFilters(TestCase):
     def test_lookup_multiple_levels(self):
         agency1 = magic_mixer.blend(core.models.Agency, id=1)
         account1 = magic_mixer.blend(core.models.Account, id=1)
-        account2 = magic_mixer.blend(core.models.Account, id=2)
+        account2 = magic_mixer.blend(core.models.Account, id=20)
         campaign1 = magic_mixer.blend(core.models.Campaign, id=1)
         ad_group1 = magic_mixer.blend(core.models.AdGroup, id=1)
         content_ad1 = magic_mixer.blend(core.models.ContentAd, id=1)
@@ -79,7 +79,7 @@ class TestGetAnyAppliedFilters(TestCase):
             service._get_any_applied_filters(
                 dict(campaign__in=[campaign1], account__in=[account1, account2], ad_group_id__in=[ad_group1.pk])
             ),
-            {(2, "account", 1): sf2, (2, "account", 2): sf3, (1, "campaign", 1): sf4, (2, "ad_group", 1): sf6},
+            {(2, "account", 1): sf2, (2, "account", 20): sf3, (1, "campaign", 1): sf4, (2, "ad_group", 1): sf6},
         )
         self.assertEqual(
             service._get_any_applied_filters(
