@@ -5,7 +5,6 @@ from django.db import transaction
 from django.db.models import Q
 from rest_framework import permissions
 
-import prodops.hacks
 import zemauth.access
 from core.models import Account
 from core.models import Agency
@@ -201,7 +200,6 @@ class UserViewSet(RESTAPIBaseViewSet):
         if not user:
             user = ZemUser.objects.create_user(changes["email"])
             self._add_user_to_groups(user)
-            prodops.hacks.apply_create_user_hacks(user, agency)
             created = True
         elif not user.has_perm("zemauth.fea_use_entity_permission"):
             raise MissingDataError("User does not exist")

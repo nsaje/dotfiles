@@ -1,7 +1,3 @@
-# Hooks and hacks for Native server
-
-from django.contrib.auth import models as authmodels
-
 import dash.constants
 
 from . import constants
@@ -96,21 +92,6 @@ def override_campaign_settings(campaign, updates):
 
 
 ######################
-# User hacks
-######################
-
-
-def apply_create_user_hacks(user, agency):
-    if agency and agency.id == constants.AGENCY_RCS_ID:
-        for group in authmodels.Group.objects.filter(name__in=("NAS - RCS",)):
-            user.groups.add(group)
-        return
-    if agency and agency.id == constants.AGENCY_NEWSCORP_ID:
-        for group in authmodels.Group.objects.filter(name__in=("NAS - Newscorp",)):
-            user.groups.add(group)
-
-
-######################
 # Account hacks
 ######################
 def apply_account_create_hack(request, account):
@@ -133,7 +114,7 @@ def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
 def _get_cpc_goal_value(campaign):
     cpc_goal = campaign.campaigngoal_set.filter(type=dash.constants.CampaignGoalKPI.CPC).first()
     if not cpc_goal:
-        raise Exception("No CPC goal on the RCS campaign.")
+        raise Exception("No CPC goal on the campaign.")
     return cpc_goal.get_current_value()
 
 

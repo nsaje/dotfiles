@@ -2,6 +2,7 @@ import datetime
 
 import dash.constants
 from integrations.product_feeds import constants
+from integrations.product_feeds.models import ProductFeed
 from integrations.product_feeds.models import SyncAttempt
 from utils import slack
 from utils.command_helpers import Z1Command
@@ -14,6 +15,8 @@ class Command(Z1Command):
         pass
 
     def handle(self, *args, **options):
+        if not ProductFeed.objects.filter(status=constants.FeedStatus.ENABLED).exists():
+            return
         previous_sync_attempts = SyncAttempt.objects.filter(
             timestamp__range=((datetime.datetime.now() - datetime.timedelta(hours=HOURS)), datetime.datetime.now()),
             batches__isnull=False,

@@ -27,7 +27,6 @@ from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
-from prodops import hacks
 from utils import dates_helper
 from utils import email_helper
 from utils import exc
@@ -257,7 +256,6 @@ class AccountUsers(DASHAPIBaseView):
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
             self._add_user_to_groups(user)
-            hacks.apply_create_user_hacks(user, account.agency)
             email_helper.send_new_user_email(user, request, agency=account.agency)
 
             created = True
