@@ -7,7 +7,7 @@ logger = zlogging.getLogger(__name__)
 
 
 def _execute_query(db_name, query, *params):
-    with db.get_stats_cursor(db_name) as c:
+    with db.get_write_stats_cursor(db_name) as c:
         c.execute(query, params)
 
 
