@@ -129,3 +129,32 @@ class InstanceTestCase(TestCase):
         campaign.restore(None)
         self.assertEqual(Decimal("0.05"), goal1.get_current_value().value)
         self.assertEqual(20, goal2.get_current_value().value)
+
+    def test_update_archived_campaign_publisher_groups(self):
+        account = magic_mixer.blend(core.models.Account)
+        publisher_group_1 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_2 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_3 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        campaign.settings.update(
+            None,
+            whitelist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+            blacklist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+        )
+        campaign.archive(None)
+        campaign.refresh_from_db()
+        self.assertTrue(campaign.archived)
+        campaign.settings.update(None, whitelist_publisher_groups=[publisher_group_2.id])
+        campaign.settings.update(None, blacklist_publisher_groups=[publisher_group_2.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            campaign.settings.update(None, whitelist_publisher_groups=[publisher_group_3.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            campaign.settings.update(None, blacklist_publisher_groups=[publisher_group_3.id])
+        campaign.settings.update(None, whitelist_publisher_groups=[])
+        campaign.settings.update(None, blacklist_publisher_groups=[])

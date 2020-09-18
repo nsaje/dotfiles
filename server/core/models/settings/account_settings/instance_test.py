@@ -159,3 +159,31 @@ class AccountSettingsInstanceTestCase(test.TestCase):
             core.models.ImageAsset, id="icon_id", image_hash="icon_hash", width=9999, height=9999, file_size=1000
         )
         self.account.settings.update(None, default_icon=default_icon)
+
+    def test_update_archived_account_publisher_groups(self):
+        account = magic_mixer.blend(core.models.Account)
+        publisher_group_1 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_2 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_3 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        account.settings.update(
+            None,
+            whitelist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+            blacklist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+        )
+        account.archive(None)
+        account.refresh_from_db()
+        self.assertTrue(account.archived)
+        account.settings.update(None, whitelist_publisher_groups=[publisher_group_2.id])
+        account.settings.update(None, blacklist_publisher_groups=[publisher_group_2.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            account.settings.update(None, whitelist_publisher_groups=[publisher_group_3.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            account.settings.update(None, blacklist_publisher_groups=[publisher_group_3.id])
+        account.settings.update(None, whitelist_publisher_groups=[])
+        account.settings.update(None, blacklist_publisher_groups=[])

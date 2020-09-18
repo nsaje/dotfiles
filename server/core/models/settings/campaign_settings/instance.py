@@ -45,11 +45,27 @@ class CampaignSettingsMixin(object):
             if changes.get("archived") is False:
                 if not self.campaign.can_restore():
                     raise utils.exc.ForbiddenError("Campaign can not be restored.")
-            else:
+            elif not self._can_update_archived_campaign(changes):
                 raise utils.exc.EntityArchivedError("Campaign must not be archived in order to update it.")
 
         elif self.campaign.account.is_archived():
             raise utils.exc.EntityArchivedError("Account must not be archived in order to update a campaign.")
+
+    def _can_update_archived_campaign(self, changes):
+        changed_fields = set(changes.keys())
+        if not changed_fields.issubset({"whitelist_publisher_groups", "blacklist_publisher_groups"}):
+            return False
+
+        # it should be possible to delete a publisher group, even if it's linked to an archived campaign
+        if "whitelist_publisher_groups" in changes and not set(changes["whitelist_publisher_groups"]).issubset(
+            self.whitelist_publisher_groups
+        ):
+            return False
+        if "blacklist_publisher_groups" in changes and not set(changes["blacklist_publisher_groups"]).issubset(
+            self.blacklist_publisher_groups
+        ):
+            return False
+        return True
 
     def _update_campaign(self, changes):
         if any(field in changes for field in ["name", "archived"]):

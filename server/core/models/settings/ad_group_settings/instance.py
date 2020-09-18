@@ -210,11 +210,27 @@ class AdGroupSettingsMixin(object):
                 if not self.ad_group.can_restore():
                     raise exc.ForbiddenError("Ad group can not be restored.")
 
-            elif not (updates.get("archived") and len(updates) == 1):
+            elif not self._can_update_archived_ad_group(updates):
                 raise exc.EntityArchivedError("Ad group must not be archived in order to update it.")
 
         elif self.ad_group.campaign.is_archived():
             raise exc.EntityArchivedError("Account and campaign must not be archived in order to update an ad group.")
+
+    def _can_update_archived_ad_group(self, updates):
+        updated_fields = set(updates.keys())
+        if not updated_fields.issubset({"archived", "whitelist_publisher_groups", "blacklist_publisher_groups"}):
+            return False
+
+        # it should be possible to delete a publisher group, even if it's linked to an archived ad group
+        if "whitelist_publisher_groups" in updates and not set(updates["whitelist_publisher_groups"]).issubset(
+            self.whitelist_publisher_groups
+        ):
+            return False
+        if "blacklist_publisher_groups" in updates and not set(updates["blacklist_publisher_groups"]).issubset(
+            self.blacklist_publisher_groups
+        ):
+            return False
+        return True
 
     def _handle_archived(self, new_settings):
         if new_settings.archived:

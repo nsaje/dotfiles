@@ -4,6 +4,7 @@ import mock
 from django.test import TestCase
 from mock import patch
 
+import core.features.publisher_groups
 import core.models
 import dash.constants
 import utils.exc
@@ -628,3 +629,34 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.assertEqual(Decimal("0.4333"), ad_group.settings.cpm)
         self.assertEqual(Decimal("28.0000"), ad_group_source.settings.local_daily_budget_cc)
         self.assertEqual(Decimal("0.8001"), ad_group_source.settings.local_cpc_cc)
+
+    def test_update_archived_ad_group_publisher_groups(self):
+        account = magic_mixer.blend(core.models.Account)
+        publisher_group_1 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_2 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        publisher_group_3 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
+        )
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group.settings.update(
+            None,
+            whitelist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+            blacklist_publisher_groups=[publisher_group_1.id, publisher_group_2.id],
+        )
+        ad_group.archive(None)
+        ad_group.refresh_from_db()
+        self.assertTrue(ad_group.archived)
+        self.assertTrue(ad_group.settings.archived)
+        ad_group.settings.update(None, whitelist_publisher_groups=[publisher_group_2.id])
+        ad_group.settings.update(None, blacklist_publisher_groups=[publisher_group_2.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, whitelist_publisher_groups=[publisher_group_3.id])
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, blacklist_publisher_groups=[publisher_group_3.id])
+        ad_group.settings.update(None, whitelist_publisher_groups=[])
+        ad_group.settings.update(None, blacklist_publisher_groups=[])

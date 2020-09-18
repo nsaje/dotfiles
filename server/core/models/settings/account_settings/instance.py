@@ -27,8 +27,24 @@ class AccountSettingsMixin(object):
             if changes.get("archived") is False:
                 if not self.account.can_restore():
                     raise utils.exc.ForbiddenError("Account can not be restored")
-            else:
+            elif not self._can_update_archived_account(changes):
                 raise utils.exc.EntityArchivedError("Account must not be archived in order to update it.")
+
+    def _can_update_archived_account(self, changes):
+        changed_fields = set(changes.keys())
+        if not changed_fields.issubset({"whitelist_publisher_groups", "blacklist_publisher_groups"}):
+            return False
+
+        # it should be possible to delete a publisher group, even if it's linked to an archived account
+        if "whitelist_publisher_groups" in changes and not set(changes["whitelist_publisher_groups"]).issubset(
+            self.whitelist_publisher_groups
+        ):
+            return False
+        if "blacklist_publisher_groups" in changes and not set(changes["blacklist_publisher_groups"]).issubset(
+            self.blacklist_publisher_groups
+        ):
+            return False
+        return True
 
     def _handle_archived(self, request, changes):
         if changes.get("archived"):
