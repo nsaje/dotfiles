@@ -48,6 +48,22 @@
     model: zemauth.user
     pk: 3
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: regular.user+demo@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+        user_permissions: []
+        username: 'delta'
+    model: zemauth.user
+    pk: 4
+
 # test agencies
 
 -   fields:

@@ -21,6 +21,7 @@ from django.template import VariableDoesNotExist
 import dash.models
 import demo
 import demo.models
+import zemauth.features.entity_permission
 import zemauth.models
 from dash import constants
 from utils import demo_anonymizer
@@ -129,10 +130,9 @@ class Command(Z1Command):
             with transaction.atomic():
                 demo_mappings = demo.models.DemoMapping.objects.all()
                 demo_users_set = set(zemauth.models.User.objects.filter(email__endswith="+demo@zemanta.com"))
-                demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
 
                 serialize_list = unique_ordered_list.UniqueOrderedList()
-                _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
+                _prepare_demo_objects(serialize_list, list(demo_mappings), demo_users_set)
 
                 # roll back any changes we might have made (shouldn't be any)
                 transaction.set_rollback(True)
@@ -147,7 +147,6 @@ class Command(Z1Command):
 
             for i, group_data in enumerate(grouped_list):
                 dump_group_data = serialize("python", group_data)
-                _attach_demo_users(dump_group_data, demo_users_pks)
                 _remove_entity_tags(dump_group_data)
 
                 group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
@@ -216,7 +215,10 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
 
     # add demo accounts
+    demo_mappings_length = len(demo_mappings)
     for demo_mapping in demo_mappings:
+        demo_mapping_index = demo_mappings.index(demo_mapping)
+
         name_pools = demo_anonymizer.DemoNamePools(
             [demo_mapping.demo_account_name], demo_mapping.demo_campaign_name_pool, demo_mapping.demo_ad_group_name_pool
         )
@@ -226,8 +228,14 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
             pk=demo_mapping.real_account_id
         )
 
+        # create entity permissions
+        entity_permissions = _create_entity_permissions(
+            account, list(demo_users_set), demo_mappings_length, demo_mapping_index
+        )
+        _add_to_serialize_list(serialize_list, entity_permissions)
+
         # create fake credit so each account has at least some
-        fake_credit = _create_fake_credit(account)
+        fake_credit = _create_fake_credit(account, demo_mapping_index)
 
         # create fake global blacklist
         fake_global_blacklist = _create_global_blacklist()
@@ -246,9 +254,25 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
         # This way you would not have to loop over the serialize_list again.
 
 
-def _create_fake_credit(account):
+def _create_entity_permissions(account, users, demo_mappings_length, demo_mapping_index):
+    entity_permissions = []
+    users_length = len(users)
+    for user in users:
+        user_index = users.index(user)
+        permissions = zemauth.features.entity_permission.Permission.get_all()
+        for permission in permissions:
+            permission_index = permissions.index(permission)
+            pk = (demo_mappings_length * demo_mapping_index) + (users_length * user_index) + permission_index + 1
+            entity_permissions.append(
+                zemauth.models.EntityPermission(id=pk, user=user, agency=None, account=account, permission=permission)
+            )
+    return entity_permissions
+
+
+def _create_fake_credit(account, demo_mapping_index):
+    pk = demo_mapping_index + 1
     return dash.models.CreditLineItem(
-        id=1,
+        id=pk,
         account=account,
         amount=50000.0,
         start_date=datetime.date.today(),
@@ -266,12 +290,6 @@ def _create_global_blacklist():
         created_dt=datetime.datetime.now(),
         modified_dt=datetime.datetime.now(),
     )
-
-
-def _attach_demo_users(dump_data, demo_users_pks):
-    for entity in dump_data:
-        if entity["model"] == "dash.account":
-            entity["fields"]["users"] = list(demo_users_pks)
 
 
 def _remove_entity_tags(dump_data):
