@@ -151,7 +151,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
                 source_campaign_name=campaign.name,
                 source_campaign_id=campaign.id,
                 send_email=True,
-                **data
+                **data,
             )
             try:
                 cloned_campaign_id = result.get(timeout=10)
@@ -198,6 +198,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
                 # Updating campaign goal do not
                 # raise any validation errors.
                 errors.append(None)
+            else:
+                errors.append(self._create_campaign_goal(request, campaign, item))
 
         if any([error is not None for error in errors]):
             raise utils.exc.ValidationError(errors={"goals": errors})
