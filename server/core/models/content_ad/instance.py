@@ -97,6 +97,8 @@ class ContentAdInstanceMixin(object):
             ]
         if "document_features" in self.additional_data:
             document_features_updates["categories"] = self.additional_data["document_features"]
+        if "iab_categories_v1" in self.additional_data:
+            document_features_updates["iab_categories_v1"] = self.additional_data["iab_categories_v1"]
         if "domain" in self.additional_data:
             document_features_updates["domain"] = self.additional_data["domain"]
 

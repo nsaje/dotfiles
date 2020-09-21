@@ -79,6 +79,7 @@ class InstanceTest(TestCase):
             "document_id": 12345,
             "language": "EN",
             "document_features": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+            "iab_categories_v1": [{"value": "IAB1-2", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
             "domain": "zemanta.com",
         }
         content_ad.update(None, additional_data=additional_data)
@@ -88,6 +89,7 @@ class InstanceTest(TestCase):
             {
                 "language": [{"value": "en", "confidence": 1.0}],
                 "categories": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+                "iab_categories_v1": [{"value": "IAB1-2", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
                 "domain": "zemanta.com",
             },
         )
@@ -102,6 +104,7 @@ class InstanceTest(TestCase):
             "document_id": 12345,
             "language": "EN",
             "document_features": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+            "iab_categories_v1": [{"value": "IAB1-2", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
             "domain": "zemanta.com",
         }
         content_ad.update(None, additional_data=additional_data)
@@ -111,6 +114,7 @@ class InstanceTest(TestCase):
             {
                 "language": [{"value": "en", "confidence": 1.0}],
                 "categories": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+                "iab_categories_v1": [{"value": "IAB1-2", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
                 "domain": "zemanta.com",
             },
         )
