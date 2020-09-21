@@ -148,7 +148,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
 
     @staticmethod
     def _format_min_allowed_start_date(obj):
-        if "min_allowed_start_date" not in obj.context:
+        if not obj.context.get("min_allowed_start_date"):
             return "N/A"  # TODO (luka): this case can be removed one month after commit
         return "<b>" + obj.context["min_allowed_start_date"] + "</b>"
 
