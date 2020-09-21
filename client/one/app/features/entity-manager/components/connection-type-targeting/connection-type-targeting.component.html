@@ -1,0 +1,15 @@
+<zem-image-checkbox-input-group
+    class="zem-image-checkbox-input-group zem-connection-type-targeting__item"
+    [options]="connectionTypeOptions"
+    [values]="selectedConnectionTypes"
+>
+    <ng-template #imageCheckboxTemplate let-formattedOption="formattedOption">
+        <zem-image-checkbox-input
+            class="zem-image-checkbox-input"
+            [value]="formattedOption"
+            [isDisabled]="isDisabled"
+            (itemToggled)="connectionTypeToggle.emit($event)"
+        >
+        </zem-image-checkbox-input>
+    </ng-template>
+</zem-image-checkbox-input-group>

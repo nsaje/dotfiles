@@ -799,6 +799,11 @@ export enum BrowserFamily {
     OTHER = 'OTHER',
 }
 
+export enum ConnectionType {
+    WIFI = 'WIFI',
+    CELLULAR = 'CELLULAR',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,

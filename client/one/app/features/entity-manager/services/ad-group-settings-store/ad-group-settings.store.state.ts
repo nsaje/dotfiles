@@ -72,6 +72,7 @@ export class AdGroupSettingsStoreState {
             language: {
                 matchingEnabled: null,
             },
+            connectionTypes: [],
         },
         autopilot: {
             state: null,

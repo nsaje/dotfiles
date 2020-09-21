@@ -413,118 +413,157 @@
                             <div class="zem-settings-section__title">
                                 Advanced device targeting options
                             </div>
-                            <div class="zem-settings-section__description">
-                                Choose operating system:
+                        </div>
+                        <div
+                            class="zem-settings-section__description zem-settings-section__description--highlight"
+                        >
+                            Choose operating system:
+                        </div>
+                        <div
+                            *ngIf="state.entity.targeting.os.length === 0"
+                            class="zem-message"
+                        >
+                            You are currently targeting all operating systems.
+                            To target only specific operating system add it by
+                            clicking button below.
+                        </div>
+                        <zem-operating-system-list
+                            class="zem-operating-system-list zem-settings-section__item"
+                            [oses]="state.entity.targeting.os"
+                            [devices]="state.entity.targeting.devices"
+                            [isDisabled]="isReadOnly"
+                            (osAdded)="store.addDeviceTargetingOs($event)"
+                        >
+                            <ng-template #osItemTemplate let-os="os">
+                                <zem-operating-system
+                                    class="zem-operating-system"
+                                    [os]="os"
+                                    [isDisabled]="isReadOnly"
+                                    (osChange)="
+                                        store.changeDeviceTargetingOs($event)
+                                    "
+                                    (osDelete)="
+                                        store.deleteDeviceTargetingOs(os)
+                                    "
+                                >
+                                </zem-operating-system>
+                            </ng-template>
+                        </zem-operating-system-list>
+                        <hr />
+                        <ng-container
+                            *ngIf="
+                                authStore.hasPermission(
+                                    'zemauth.can_use_browser_targeting'
+                                )
+                            "
+                        >
+                            <div
+                                class="zem-settings-section__description zem-settings-section__description--highlight"
+                            >
+                                Choose browser:
                             </div>
                             <div
-                                *ngIf="state.entity.targeting.os.length === 0"
+                                *ngIf="
+                                    state.entity.targeting.browsers.included
+                                        .length === 0 &&
+                                    state.entity.targeting.browsers.excluded
+                                        .length === 0
+                                "
                                 class="zem-message"
                             >
-                                You are currently targeting all operating
-                                systems. To target only specific operating
-                                system add it by clicking button below.
+                                You are currently targeting all browsers.
                             </div>
-                            <zem-operating-system-list
-                                class="zem-operating-system-list zem-settings-section__item"
-                                [oses]="state.entity.targeting.os"
-                                [devices]="state.entity.targeting.devices"
+                            <zem-browser-targeting
+                                class="zem-browser-targeting zem-settings-section__item"
+                                [includedBrowsers]="
+                                    state.entity.targeting.browsers.included
+                                "
+                                [excludedBrowsers]="
+                                    state.entity.targeting.browsers.excluded
+                                "
+                                [selectedDeviceTypes]="
+                                    state.entity.targeting.devices
+                                "
                                 [isDisabled]="isReadOnly"
-                                (osAdded)="store.addDeviceTargetingOs($event)"
-                            >
-                                <ng-template #osItemTemplate let-os="os">
-                                    <zem-operating-system
-                                        class="zem-operating-system"
-                                        [os]="os"
-                                        [isDisabled]="isReadOnly"
-                                        (osChange)="
-                                            store.changeDeviceTargetingOs(
-                                                $event
-                                            )
-                                        "
-                                        (osDelete)="
-                                            store.deleteDeviceTargetingOs(os)
-                                        "
-                                    >
-                                    </zem-operating-system>
-                                </ng-template>
-                            </zem-operating-system-list>
+                                [browserTargetingErrors]="
+                                    state.fieldsErrors.targeting.browsers
+                                "
+                                (includeExcludeChange)="
+                                    store.browserTargetingIncludeExcludeChange(
+                                        $event
+                                    )
+                                "
+                                (addBrowserTargeting)="
+                                    store.addBrowserTargeting($event)
+                                "
+                                (removeBrowserTargeting)="
+                                    store.removeBrowserTargeting($event)
+                                "
+                            ></zem-browser-targeting>
                             <hr />
+                        </ng-container>
+                        <div class="zem-settings-section__inline-items">
+                            <div class="zem-settings-section__inline-item">
+                                <div
+                                    class="zem-settings-section__description zem-settings-section__description--highlight"
+                                >
+                                    Choose environment:
+                                </div>
+                                <zem-image-checkbox-input-group
+                                    class="zem-image-checkbox-input-group zem-settings-section__item"
+                                    [options]="targetingEnvironmentOptions"
+                                    [values]="
+                                        state.entity.targeting.environments
+                                    "
+                                >
+                                    >
+                                    <ng-template
+                                        #imageCheckboxTemplate
+                                        let-formattedOption="formattedOption"
+                                    >
+                                        <zem-image-checkbox-input
+                                            class="zem-image-checkbox-input"
+                                            [value]="formattedOption"
+                                            [isDisabled]="isReadOnly"
+                                            (itemToggled)="
+                                                store.toggleTargetingEnvironment(
+                                                    $event
+                                                )
+                                            "
+                                        >
+                                        </zem-image-checkbox-input>
+                                    </ng-template>
+                                </zem-image-checkbox-input-group>
+                                <hr />
+                            </div>
                             <ng-container
                                 *ngIf="
                                     authStore.hasPermission(
-                                        'zemauth.can_use_browser_targeting'
+                                        'zemauth.can_use_connection_type_targeting'
                                     )
                                 "
                             >
-                                <div class="zem-settings-section__description">
-                                    Choose browsers:
-                                </div>
-                                <div
-                                    *ngIf="
-                                        state.entity.targeting.browsers.included
-                                            .length === 0 &&
-                                        state.entity.targeting.browsers.excluded
-                                            .length === 0
-                                    "
-                                    class="zem-message"
-                                >
-                                    You are currently targeting all browsers.
-                                </div>
-                                <zem-browser-targeting
-                                    class="zem-browser-targeting zem-settings-section__item"
-                                    [includedBrowsers]="
-                                        state.entity.targeting.browsers.included
-                                    "
-                                    [excludedBrowsers]="
-                                        state.entity.targeting.browsers.excluded
-                                    "
-                                    [selectedDeviceTypes]="
-                                        state.entity.targeting.devices
-                                    "
-                                    [isDisabled]="isReadOnly"
-                                    [browserTargetingErrors]="
-                                        state.fieldsErrors.targeting.browsers
-                                    "
-                                    (includeExcludeChange)="
-                                        store.browserTargetingIncludeExcludeChange(
-                                            $event
-                                        )
-                                    "
-                                    (addBrowserTargeting)="
-                                        store.addBrowserTargeting($event)
-                                    "
-                                    (removeBrowserTargeting)="
-                                        store.removeBrowserTargeting($event)
-                                    "
-                                ></zem-browser-targeting>
-                                <hr />
-                            </ng-container>
-                            <div class="zem-settings-section__description">
-                                Choose environment:
-                            </div>
-                            <zem-image-checkbox-input-group
-                                class="zem-image-checkbox-input-group zem-settings-section__item"
-                                [options]="targetingEnvironmentOptions"
-                                [values]="state.entity.targeting.environments"
-                            >
-                                >
-                                <ng-template
-                                    #imageCheckboxTemplate
-                                    let-formattedOption="formattedOption"
-                                >
-                                    <zem-image-checkbox-input
-                                        class="zem-image-checkbox-input"
-                                        [value]="formattedOption"
+                                <div class="zem-settings-section__inline-item">
+                                    <div
+                                        class="zem-settings-section__description zem-settings-section__description--highlight"
+                                    >
+                                        Choose connection type:
+                                    </div>
+                                    <zem-connection-type-targeting
+                                        class="zem-connection-type-targeting zem-settings-section__item"
+                                        [selectedConnectionTypes]="
+                                            state.entity.targeting
+                                                .connectionTypes
+                                        "
                                         [isDisabled]="isReadOnly"
-                                        (itemToggled)="
-                                            store.toggleTargetingEnvironment(
+                                        (connectionTypeToggle)="
+                                            store.toggleConnectionTypeTargeting(
                                                 $event
                                             )
                                         "
-                                    >
-                                    </zem-image-checkbox-input>
-                                </ng-template>
-                            </zem-image-checkbox-input-group>
+                                    ></zem-connection-type-targeting>
+                                </div>
+                            </ng-container>
                         </div>
                     </div>
                 </zem-expandable-section>

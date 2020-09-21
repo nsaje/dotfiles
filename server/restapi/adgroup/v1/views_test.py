@@ -49,6 +49,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}],
         target_browsers=[{"family": constants.BrowserFamily.CHROME}],
+        target_connection_types=[constants.ConnectionType.WIFI],
         interest_targeting=[constants.InterestCategory.WOMEN, constants.InterestCategory.FASHION],
         exclusion_interest_targeting=[constants.InterestCategory.POLITICS],
         demographic_targeting=[],
@@ -106,6 +107,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
                 "customAudiences": {"included": audience_targeting, "excluded": exclusion_audience_targeting},
                 "retargetingAdGroups": {"included": retargeting_ad_groups, "excluded": exclusion_retargeting_ad_groups},
                 "language": {"matchingEnabled": language_targeting_enabled},
+                "connectionTypes": restapi.serializers.targeting.ConnectionTypesSerializer(
+                    target_connection_types
+                ).data,
             },
             "autopilot": {
                 "state": constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
@@ -181,6 +185,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             target_environments=settings_db.target_environments,
             target_os=settings_db.target_os,
             target_browsers=settings_db.target_browsers,
+            target_connection_types=settings_db.target_connection_types,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
             click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
             frequency_capping=settings_db.frequency_capping,
@@ -1393,3 +1398,49 @@ class AdGroupViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(resp_json["data"]["targeting"]["language"]["matchingEnabled"], True)
         self.validate_against_db(resp_json["data"])
+
+    def test_put_adgroups_invalid_target_connection_types(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "Demo adgroup"
+
+        put_data["targeting"]["connectionTypes"] = ["abcd"]
+
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+    def test_put_adgroups_valid_target_connection_types(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "Demo adgroup"
+
+        put_data["targeting"]["connectionTypes"] = [
+            dash.constants.ConnectionType.get_name(dash.constants.ConnectionType.WIFI)
+        ]
+
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(
+            [dash.constants.ConnectionType.get_name(dash.constants.ConnectionType.WIFI)],
+            resp_json["data"]["targeting"]["connectionTypes"],
+        )

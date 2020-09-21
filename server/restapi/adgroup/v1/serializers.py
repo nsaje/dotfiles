@@ -98,7 +98,10 @@ class AdGroupTargetingSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {"language": "zemauth.can_use_language_targeting"}
+        permissioned_fields = {
+            "language": "zemauth.can_use_language_targeting",
+            "connection_types": "zemauth.can_use_connection_type_targeting",
+        }
 
     # TODO: PLAC: remove after legacy grace period
     def to_representation(self, instance):
@@ -128,6 +131,9 @@ class AdGroupTargetingSerializer(
     custom_audiences = AdGroupCustomAudiencesSerializer(source="*", required=False)
     retargeting_ad_groups = AdGroupRetargetingSerializer(source="*", required=False)
     language = AdGroupLanguageSerializer(source="*", required=False)
+    connection_types = restapi.serializers.targeting.ConnectionTypesSerializer(
+        source="target_connection_types", required=False
+    )
 
 
 class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

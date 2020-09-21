@@ -14,6 +14,7 @@ import {
     GeolocationType,
     IncludeExcludeType,
     BrowserFamily,
+    ConnectionType,
 } from '../../../../app.constants';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
@@ -1570,6 +1571,47 @@ describe('AdGroupSettingsStore', () => {
         expect(store.state.entity.targeting.browsers.included).toEqual([]);
         expect(store.state.entity.targeting.browsers.excluded).toEqual([
             mockedBrowser,
+        ]);
+    });
+
+    it('should allow adding connection type targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.connectionTypes = [ConnectionType.WIFI];
+        store.toggleConnectionTypeTargeting(ConnectionType.CELLULAR);
+        expect(store.state.entity.targeting.connectionTypes).toEqual([
+            ConnectionType.WIFI,
+            ConnectionType.CELLULAR,
+        ]);
+    });
+
+    it('should allow deleting connection type targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.connectionTypes = [
+            ConnectionType.WIFI,
+            ConnectionType.CELLULAR,
+        ];
+        store.toggleConnectionTypeTargeting(ConnectionType.WIFI);
+        expect(store.state.entity.targeting.connectionTypes).toEqual([
+            ConnectionType.CELLULAR,
+        ]);
+    });
+
+    it('should select all connection types if all are deleted', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.connectionTypes = [ConnectionType.WIFI];
+        store.toggleConnectionTypeTargeting(ConnectionType.WIFI);
+        expect(store.state.entity.targeting.connectionTypes).toEqual([
+            ConnectionType.WIFI,
+            ConnectionType.CELLULAR,
         ]);
     });
 });

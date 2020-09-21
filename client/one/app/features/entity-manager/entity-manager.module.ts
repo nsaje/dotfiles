@@ -44,6 +44,7 @@ import {RouterModule} from '@angular/router';
 import {ENTITY_MANAGER_ROUTES} from './entity-manager.routes';
 import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySettings.guard';
 import {BrowserTargetingComponent} from './components/browser-targeting/browser-targeting.component';
+import {ConnectionTypeTargetingComponent} from './components/connection-type-targeting/connection-type-targeting.component';
 
 @NgModule({
     declarations: [
@@ -63,6 +64,7 @@ import {BrowserTargetingComponent} from './components/browser-targeting/browser-
         OperatingSystemListComponent,
         OperatingSystemComponent,
         BrowserTargetingComponent,
+        ConnectionTypeTargetingComponent,
         TrackingCodeSettingComponent,
         TrackingPixelSettingComponent,
         InterestTargetingComponent,

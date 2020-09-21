@@ -149,23 +149,14 @@ class BrowsersSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
 
-class ConnectionTypesSerializer(rest_framework.serializers.ListSerializer):
-    def __init__(self, *args, **kwargs):
-        self.child = restapi.serializers.fields.DashConstantField(dash.constants.ConnectionType)
-        kwargs["allow_null"] = True
-        super(ConnectionTypesSerializer, self).__init__(*args, **kwargs)
-
-
 class AdGroupTargetingSerializer(restapi.adgroup.v1.serializers.AdGroupTargetingSerializer):
     class Meta:
         permissioned_fields = {
             "language": "zemauth.can_use_language_targeting",
             "browsers": "zemauth.can_use_browser_targeting",
-            "connection_types": "zemauth.can_use_connection_type_targeting",
         }
 
     browsers = BrowsersSerializer(source="*", required=False)
-    connection_types = ConnectionTypesSerializer(source="target_connection_types", required=False)
 
     def validate(self, data):
         super().validate(data)

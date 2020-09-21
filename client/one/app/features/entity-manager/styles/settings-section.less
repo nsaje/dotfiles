@@ -32,6 +32,11 @@
     color: @text-color--lighter;
 }
 
+.zem-settings-section__description--highlight {
+    color: @color--secondary;
+    font-weight: bold;
+}
+
 .zem-settings-section__item {
     display: block;
     margin-top: @spacing--default;
@@ -59,4 +64,13 @@
 .zem-settings-section__title .zem-internal-feature__indicator,
 .zem-settings-section__item .zem-internal-feature__indicator {
     left: -3px;
+}
+
+.zem-settings-section__inline-items {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-settings-section__inline-item {
+    flex: 1 1 100%;
 }

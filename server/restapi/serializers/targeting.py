@@ -69,6 +69,13 @@ class DevicesSerializer(rest_framework.serializers.ListSerializer):
         super(DevicesSerializer, self).__init__(*args, **kwargs)
 
 
+class ConnectionTypesSerializer(rest_framework.serializers.ListSerializer):
+    def __init__(self, *args, **kwargs):
+        self.child = restapi.serializers.fields.DashConstantField(dash.constants.ConnectionType)
+        kwargs["allow_null"] = True
+        super(ConnectionTypesSerializer, self).__init__(*args, **kwargs)
+
+
 class AudienceSerializer(rest_framework.serializers.BaseSerializer):
     operators = ("and", "not", "or")
     types = (

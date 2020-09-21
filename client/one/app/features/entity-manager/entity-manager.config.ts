@@ -7,6 +7,7 @@ import {
     Language,
     AccountType,
     IncludeExcludeType,
+    ConnectionType,
 } from '../../app.constants';
 import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
@@ -1474,3 +1475,16 @@ export const INCLUDE_EXCLUDE_TYPES = [
 ];
 
 export const DEFAULT_ZIP_TARGETING_LOCATION_KEY = 'US';
+
+export const CONNECTION_TYPE_TARGETING_OPTIONS: ImageCheckboxInputGroupItem[] = [
+    {
+        value: ConnectionType.WIFI,
+        displayValue: 'Wi-Fi',
+        icon: ImageCheckboxInputIcon.WIFI,
+    },
+    {
+        value: ConnectionType.CELLULAR,
+        displayValue: 'Cellular',
+        icon: ImageCheckboxInputIcon.CELLULAR,
+    },
+];

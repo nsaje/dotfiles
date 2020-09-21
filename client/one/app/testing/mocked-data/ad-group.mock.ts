@@ -61,6 +61,7 @@ export const adGroupMock: AdGroup = {
         language: {
             matchingEnabled: null,
         },
+        connectionTypes: [],
     },
     autopilot: {
         state: null,

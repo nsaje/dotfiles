@@ -4,4 +4,6 @@ export enum ImageCheckboxInputIcon {
     MOBILE = 'zem-image-checkbox-input__icon--mobile',
     SITE = 'zem-image-checkbox-input__icon--website',
     APP = 'zem-image-checkbox-input__icon--in-app',
+    WIFI = 'zem-image-checkbox-input__icon--connection-type-wifi',
+    CELLULAR = 'zem-image-checkbox-input__icon--connection-type-cellular',
 }

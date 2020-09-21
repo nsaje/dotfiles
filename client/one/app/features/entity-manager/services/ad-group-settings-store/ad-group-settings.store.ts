@@ -20,6 +20,7 @@ import {
     InterestCategory,
     GeolocationType,
     IncludeExcludeType,
+    ConnectionType,
 } from '../../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
@@ -39,6 +40,7 @@ import {
     TARGETING_DEVICE_OPTIONS,
     TARGETING_ENVIRONMENT_OPTIONS,
     DEFAULT_ZIP_TARGETING_LOCATION_KEY,
+    CONNECTION_TYPE_TARGETING_OPTIONS,
 } from '../../entity-manager.config';
 import {isEmpty} from '../../../../shared/helpers/array.helpers';
 import {GeolocationsService} from '../../../../core/geolocations/services/geolocations.service';
@@ -578,6 +580,27 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         };
 
         this.patchState(newBrowserTargeting, 'entity', 'targeting', 'browsers');
+        this.validateEntity();
+    }
+
+    toggleConnectionTypeTargeting(connectionType: ConnectionType) {
+        const oldConnectionTypes: ConnectionType[] = this.state.entity.targeting
+            .connectionTypes;
+        const allConnectionTypes: ConnectionType[] = CONNECTION_TYPE_TARGETING_OPTIONS.map(
+            option => option.value as ConnectionType
+        );
+        const newConnectionTypes: ConnectionType[] = this.toggleTargetingItem(
+            connectionType,
+            oldConnectionTypes,
+            allConnectionTypes
+        );
+
+        this.patchState(
+            newConnectionTypes,
+            'entity',
+            'targeting',
+            'connectionTypes'
+        );
         this.validateEntity();
     }
 
