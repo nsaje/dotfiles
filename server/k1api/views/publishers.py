@@ -18,10 +18,13 @@ class PublisherGroupsView(K1APIView):
     @method_decorator(cache_page(10 * 60, cache="dash_db_cache"))
     def get(self, request):
         account_id = request.GET.get("account_id")
+        exclude_account_id = request.GET.get("exclude_account_id")
 
         publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_active_candidate_adgroups()
         if account_id:
             publisher_groups = publisher_groups.filter_by_account(dash.models.Account.objects.get(pk=account_id))
+        if exclude_account_id:
+            publisher_groups = publisher_groups.exclude(account_id=exclude_account_id)
 
         return self.response_ok(list(publisher_groups.values("id", "account_id")))
 
