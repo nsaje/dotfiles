@@ -9,8 +9,8 @@ class CustomFlagsFormMixin(forms.Form):
         super(CustomFlagsFormMixin, self).__init__(data, files, auto_id, prefix, initial, *args, **kwargs)
         self.fields["custom_flags"] = fields.CustomFlagsField(
             entity_flags=initial.get("custom_flags", {}),
-            all_custom_flags=list(model.CustomFlag.objects.all().order_by("advanced")),
-            help_text="Fields with a background color are advanced flags.",
+            all_custom_flags=list(model.CustomFlag.objects.all().order_by("advanced", "name")),
+            help_text="Orange fields represent advanced flags.",
         )
 
     def clean_custom_flags(self):

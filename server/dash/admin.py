@@ -1997,7 +1997,7 @@ class CustomHackAdmin(admin.ModelAdmin):
 class CustomFlagAdmin(admin.ModelAdmin):
     model = models.CustomFlag
 
-    list_display = ("id", "name", "description")
+    list_display = ("id", "name", "description", "advanced")
 
     def get_actions(self, request):
         actions = super(CustomFlagAdmin, self).get_actions(request)
