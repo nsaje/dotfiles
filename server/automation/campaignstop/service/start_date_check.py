@@ -23,14 +23,15 @@ def _update_campaigns_start_date(campaigns):
 
 def _update_campaign_start_date(campaign):
     campaign_stop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
-    min_start_date = _find_min_start_date(campaign)
+    log = RealTimeCampaignStopLog(campaign=campaign, event=constants.CampaignStopEvent.MIN_ALLOWED_START_DATE_UPDATE)
+    min_start_date = _find_min_start_date(log, campaign)
+    log.add_context({"min_allowed_start_date": min_start_date})
     campaign_stop_state.update_min_allowed_start_date(min_start_date)
 
 
-def _find_min_start_date(campaign):
+def _find_min_start_date(log, campaign):
     today = dates_helper.local_today()
     budgets = list(campaign.budgets.exclude(end_date__lt=today).order_by("start_date"))
-    log = RealTimeCampaignStopLog(campaign=campaign, event=constants.CampaignStopEvent.MIN_ALLOWED_START_DATE_UPDATE)
     spend_estimates = spends_helper.get_budget_spend_estimates(log, campaign, budgets)
     for budget in budgets:
         if (

@@ -126,6 +126,8 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             return self._format_almost_depleted(obj)
         elif obj.event == constants.CampaignStopEvent.MAX_ALLOWED_END_DATE_UPDATE:
             return self._format_max_allowed_end_date(obj)
+        elif obj.event == constants.CampaignStopEvent.MIN_ALLOWED_START_DATE_UPDATE:
+            return self._format_min_allowed_start_date(obj)
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
         return "N/A"
@@ -143,6 +145,12 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     @staticmethod
     def _format_max_allowed_end_date(obj):
         return "<b>" + obj.context["max_allowed_end_date"] + "</b>"
+
+    @staticmethod
+    def _format_min_allowed_start_date(obj):
+        if "min_allowed_start_date" not in obj.context:
+            return "N/A"  # TODO (luka): this case can be removed one month after commit
+        return "<b>" + obj.context["min_allowed_start_date"] + "</b>"
 
     @staticmethod
     def _format_almost_depleted(obj):
