@@ -49,9 +49,6 @@ class AccountsLoaderTest(TestCase):
         self.assertCountEqual(self.loader.objs_ids, [1])
         self.assertDictEqual(self.loader.objs_map, {1: models.Account.objects.get(pk=1)})
 
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.accounts))
-
     def test_settings_map(self):
         self.assertDictEqual(
             self.loader.settings_map,
@@ -123,11 +120,11 @@ class CampaignsLoaderTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
-        self.campaigns = models.Campaign.objects.all()
-        self.sources = models.Source.objects.all()
+        campaigns = models.Campaign.objects.all()
+        sources = models.Source.objects.all()
         self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.CampaignsLoader(self.campaigns, self.sources, self.user)
+        self.loader = loaders.CampaignsLoader(campaigns, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.CampaignsLoader.from_constraints(
@@ -143,9 +140,6 @@ class CampaignsLoaderTest(TestCase):
         self.assertDictEqual(
             self.loader.objs_map, {1: models.Campaign.objects.get(pk=1), 2: models.Campaign.objects.get(pk=2)}
         )
-
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.campaigns))
 
     def test_settings_map(self):
         self.assertDictEqual(
@@ -214,11 +208,11 @@ class AdGroupsLoaderTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
-        self.ad_groups = models.AdGroup.objects.all()
-        self.sources = models.Source.objects.all()
+        ad_groups = models.AdGroup.objects.all()
+        sources = models.Source.objects.all()
         self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.AdGroupsLoader(self.ad_groups, self.sources, self.user)
+        self.loader = loaders.AdGroupsLoader(ad_groups, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.AdGroupsLoader.from_constraints(
@@ -274,9 +268,6 @@ class AdGroupsLoaderTest(TestCase):
                 3: models.AdGroup.objects.get(pk=3),
             },
         )
-
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.ad_groups))
 
     def test_status_map_filtered_sources(self):
         ad_groups = models.AdGroup.objects.all()
@@ -345,11 +336,11 @@ class ContentAdLoaderTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
-        self.content_ads = models.ContentAd.objects.all()
-        self.sources = models.Source.objects.all()
+        content_ads = models.ContentAd.objects.all()
+        sources = models.Source.objects.all()
 
         self.user = magic_mixer.blend_user()
-        self.loader = loaders.ContentAdsLoader(self.content_ads, self.sources, self.user)
+        self.loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.ContentAdsLoader.from_constraints(
@@ -370,9 +361,6 @@ class ContentAdLoaderTest(TestCase):
                 3: models.ContentAd.objects.get(pk=3),
             },
         )
-
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.content_ads))
 
     def test_batch_map(self):
         self.assertDictEqual(
@@ -567,8 +555,8 @@ class SourcesLoaderTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
-        self.sources = models.Source.objects.all()
-        self.loader = loaders.SourcesLoader(self.sources, models.AdGroup.objects.all())
+        sources = models.Source.objects.all()
+        self.loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
     def test_from_constraints(self):
         loader = loaders.SourcesLoader.from_constraints(
@@ -585,9 +573,6 @@ class SourcesLoaderTest(TestCase):
             self.loader.objs_map, {1: models.Source.objects.get(pk=1), 2: models.Source.objects.get(pk=2)}
         )
 
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.sources))
-
     def test_settings_map(self):
         self.assertDictEqual(self.loader.settings_map, {1: {}, 2: {}})
 
@@ -602,10 +587,8 @@ class AdGroupSourcesLoaderTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
-        self.sources = models.Source.objects.all()
-        self.loader = loaders.AdGroupSourcesLoader(
-            self.sources, models.AdGroup.objects.get(pk=1), User.objects.get(pk=1)
-        )
+        sources = models.Source.objects.all()
+        self.loader = loaders.AdGroupSourcesLoader(sources, models.AdGroup.objects.get(pk=1), User.objects.get(pk=1))
 
     def test_from_constraints_select_loader_class(self):
         loader = loaders.AdGroupSourcesLoader.from_constraints(
@@ -621,9 +604,6 @@ class AdGroupSourcesLoaderTest(TestCase):
         self.assertDictEqual(
             self.loader.objs_map, {1: models.Source.objects.get(pk=1), 2: models.Source.objects.get(pk=2)}
         )
-
-    def test_objs_count(self):
-        self.assertEqual(self.loader.objs_count, len(self.sources))
 
     def test_status_with_blockers(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)

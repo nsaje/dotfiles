@@ -89,17 +89,6 @@ class PostprocessTest(TestCase):
             ],
         )
 
-    def test_generate_time_dimension_counts(self):
-        constraints = {"date__gte": datetime.date(2016, 2, 2), "date__lte": datetime.date(2016, 2, 5)}
-
-        rows = postprocess.generate_time_dimension_counts(
-            [stats.constants.StructureDimension.CAMPAIGN, stats.constants.TimeDimension.DAY],
-            constraints,
-            [{"campaign_id": 1}, {"campaign_id": 2}],
-        )
-
-        self.assertEqual(rows, [{"campaign_id": 1, "count": 4}, {"campaign_id": 2, "count": 4}])
-
 
 class PostprocessGoalsTest(TestCase):
     fixtures = ["test_augmenter.yaml"]

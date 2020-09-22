@@ -103,9 +103,9 @@ FROM (
               {% endif %}
     ) a
 ) b
-{% if offset is not None and limit is not None %} WHERE {% endif %}
+WHERE
     -- limit number of rows per group (row_number() is 1-based)
-    {% if offset is not None %} r >= {{ offset }} + 1 AND {% endif %}
-    {% if limit is not None %} r <= {{ limit }} {% endif %}
+    {% if offset %} r >= {{ offset }} + 1 AND {% endif %}
+    {% if limit %} r <= {{ limit }} {% endif %}
 
 {% endautoescape %}

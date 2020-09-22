@@ -12,6 +12,7 @@ from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.constants import Level
+from dash.views import breakdown
 from dash.views import breakdown_helpers
 from stats.helpers import Goals
 from utils import test_helper
@@ -38,9 +39,7 @@ class AllAccountsBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("stats.api_breakdowns.counts")
-    def test_post(self, mock_counts, mock_query):
-        mock_counts.return_value = []
+    def test_post(self, mock_query):
         mock_query.return_value = {}
 
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
@@ -93,14 +92,13 @@ class AllAccountsBreakdownTestCase(DASHAPITestCase):
             ["1-2-33", "1-2-34", "1-3-22"],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level(self, mock_totals, mock_counts, mock_query):
+    def test_post_base_level(self, mock_totals, mock_query):
         mock_totals.return_value = {"ctr": 0.9, "clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 3}]
+
         mock_query.return_value = [
             {
                 "account_id": 116,
@@ -223,11 +221,9 @@ class AccountBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("stats.api_breakdowns.counts")
-    def test_post(self, mock_counts, mock_query):
+    def test_post(self, mock_query):
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
-        mock_counts.return_value = []
         mock_query.return_value = {}
 
         params = {
@@ -281,14 +277,11 @@ class AccountBreakdownTestCase(DASHAPITestCase):
             ["1-2-33", "1-2-34", "1-3-22"],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level(self, mock_totals, mock_counts, mock_query):
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 3}]
+    def test_post_base_level(self, mock_totals, mock_query):
         mock_query.return_value = [
             {
                 "campaign_id": 198,
@@ -317,6 +310,8 @@ class AccountBreakdownTestCase(DASHAPITestCase):
                 "status": 1,
             },
         ]
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 2,
@@ -389,11 +384,8 @@ class AccountBreakdownTestCase(DASHAPITestCase):
             },
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_delivery(self, mock_totals, mock_counts, mock_query):
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 3}]
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
         mock_query.return_value = [
             {
                 "campaign_id": 198,
@@ -422,6 +414,8 @@ class AccountBreakdownTestCase(DASHAPITestCase):
                 "status": 1,
             },
         ]
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 2,
@@ -500,11 +494,9 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("stats.api_breakdowns.counts")
-    def test_post(self, mock_counts, mock_query):
+    def test_post(self, mock_query):
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
-        mock_counts.return_value = []
         mock_query.return_value = {}
 
         params = {
@@ -559,18 +551,16 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
             ["1-2-33", "1-2-34", "1-3-22"],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
     @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_delivery(self, mock_totals, mock_counts, mock_query):
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
-        mock_totals.return_value = {}
-        mock_counts.return_value = []
         mock_query.return_value = {}
+        mock_totals.return_value = {}
 
         params = {
             "limit": 5,
@@ -623,7 +613,7 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
 
@@ -637,11 +627,9 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("stats.api_breakdowns.counts")
-    def test_post(self, mock_counts, mock_query):
+    def test_post(self, mock_query):
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
-        mock_counts.return_value = []
         mock_query.return_value = {}
 
         params = {
@@ -685,18 +673,16 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             ["1-2-33", "1-2-34", "1-3-22"],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
     @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_delivery(self, mock_totals, mock_counts, mock_query):
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
         test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
-        mock_totals.return_value = {}
-        mock_counts.return_value = []
         mock_query.return_value = {}
+        mock_totals.return_value = {}
 
         params = {
             "limit": 5,
@@ -737,15 +723,14 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_content_ads(self, mock_totals, mock_counts, mock_query):
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 33}]
+    def test_post_base_level_content_ads(self, mock_totals, mock_query):
         mock_query.return_value = {}
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 5,
@@ -788,7 +773,7 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
         self.maxDiff = None
@@ -821,16 +806,15 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             },
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_source(self, mock_totals, mock_counts, mock_query):
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 33}]
+    def test_post_base_level_source(self, mock_totals, mock_query):
         mock_query.return_value = {}
 
         s = models.AdGroup.objects.get(pk=1).get_current_settings().copy_settings()
         s.b1_sources_group_enabled = False
         s.save(None)
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 5,
@@ -873,7 +857,7 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            breakdown.LIMIT_SOURCE + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
         self.assertDictEqual(
@@ -907,12 +891,11 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             },
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_publisher(self, mock_totals, mock_counts, mock_query):
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 33}]
+    def test_post_base_level_publisher(self, mock_totals, mock_query):
         mock_query.return_value = {}
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 5,
@@ -955,7 +938,7 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
         self.assertDictEqual(
@@ -987,14 +970,13 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             },
         )
 
-    @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
-    def test_post_base_level_placement(self, mock_totals, mock_counts, mock_query):
+    def test_post_base_level_placement(self, mock_totals, mock_query):
         test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
 
-        mock_totals.return_value = {"clicks": 123}
-        mock_counts.return_value = [{"parent_breakdown_id": None, "count": 33}]
         mock_query.return_value = {}
+
+        mock_totals.return_value = {"clicks": 123}
 
         params = {
             "limit": 5,
@@ -1037,7 +1019,7 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
             [],
             "-clicks",
             33,
-            5,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
         self.assertDictEqual(
@@ -1067,6 +1049,58 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
                 "success": True,
             },
         )
+
+
+class RequestOverflowTest(DASHAPITestCase):
+    def create_test_data(self):
+        return [{"rows": [{}, {}, {}, {}, {}], "pagination": {"offset": 0, "limit": 5, "count": -1}}]
+
+    def test_complete_exact(self):
+        self.assertEqual(
+            breakdown._process_request_overflow(self.create_test_data(), 5, 1),
+            [{"rows": [{}, {}, {}, {}, {}], "pagination": {"offset": 0, "limit": 5, "count": 5}}],
+        )
+
+    def test_complete_overflow(self):
+        self.assertEqual(
+            breakdown._process_request_overflow(self.create_test_data(), 4, 2),
+            [{"rows": [{}, {}, {}, {}], "pagination": {"offset": 0, "limit": 4, "count": 5}}],
+        )
+
+    def test_complete_less(self):
+        self.assertEqual(
+            breakdown._process_request_overflow(self.create_test_data(), 10, 1),
+            [{"rows": [{}, {}, {}, {}, {}], "pagination": {"offset": 0, "limit": 5, "count": 5}}],
+        )
+
+    def test_not_complete(self):
+        self.assertEqual(
+            breakdown._process_request_overflow(self.create_test_data(), 3, 2),
+            [{"rows": [{}, {}, {}], "pagination": {"offset": 0, "limit": 3, "count": -1}}],
+        )
+
+    def test_next_page(self):
+        rows = [{"rows": [{1}, {2}, {3}, {4}, {5}], "pagination": {"offset": 0, "limit": 5, "count": -1}}]
+
+        self.assertEqual(
+            breakdown._process_request_overflow(rows, 4, 1),
+            [{"rows": [{1}, {2}, {3}, {4}], "pagination": {"offset": 0, "limit": 4, "count": -1}}],
+        )
+
+        rows = [{"rows": [{5}, {6}, {7}], "pagination": {"offset": 0, "limit": 3, "count": 3}}]
+
+        self.assertEqual(
+            breakdown._process_request_overflow(rows, 10, 1),
+            [{"rows": [{5}, {6}, {7}], "pagination": {"offset": 0, "limit": 3, "count": 3}}],
+        )
+
+
+class LimitOffsetToPageTest(DASHAPITestCase):
+    def test_get_page_and_size(self):
+        self.assertEqual(breakdown._get_page_and_size(0, 10), (1, 10))
+        self.assertEqual(breakdown._get_page_and_size(10, 20), (1, 30))
+        self.assertEqual(breakdown._get_page_and_size(30, 20), (1, 50))
+        self.assertEqual(breakdown._get_page_and_size(50, 20), (1, 70))
 
 
 class BreakdownHelperTest(DASHAPITestCase):
@@ -1153,6 +1187,7 @@ class BreakdownHelperTest(DASHAPITestCase):
         self.assertEqual(rows, [{"ad_group_id": 1}, {"ad_group_id": 2}])
 
     def test_clean_non_relevant_fields(self):
+
         rows = [
             {"ad_group_id": 1, "campaign_has_available_budget": 1, "performance": {}, "status_per_source": 1},
             {"ad_group_id": 2, "campaign_has_available_budget": 1, "performance": {}},

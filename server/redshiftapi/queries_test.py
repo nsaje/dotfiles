@@ -423,35 +423,6 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
-    def test_query_counts(self):
-        sql, params, _ = queries.prepare_query_counts(
-            ["account_id", "country"],
-            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
-            [{"account_id": 1}],
-            False,
-        )
-
-        self.assertSQLEquals(
-            sql,
-            """
-            SELECT
-                temp_base_table.account_id AS account_id,
-                COUNT(*)
-            FROM (
-                SELECT
-                    base_table.account_id AS account_id, base_table.country AS country
-                FROM
-                    mv_account_geo base_table
-                WHERE
-                    ((base_table.date>=%s AND base_table.date<=%s) AND ((base_table.account_id=%s)))
-                GROUP BY 1, 2
-            ) temp_base_table
-            GROUP BY 1
-            """,
-        )
-
-        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1])
-
 
 class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))

@@ -52,7 +52,7 @@ class ApiBreakdownQueryTest(StatsTestCase):
         goals = api_breakdowns.get_goals(constraints, breakdown)
         parents = []
         order = "clicks"
-        offset = 0
+        offset = 1
         limit = 2
 
         result = api_breakdowns.query(
@@ -71,7 +71,7 @@ class ApiBreakdownQueryTest(StatsTestCase):
             None,
             goals,
             "clicks",
-            0,
+            1,
             2,
             use_publishers_view=False,
         )
@@ -185,23 +185,6 @@ class ApiBreakdownQueryTest(StatsTestCase):
                 [constants.AD_GROUP, constants.CONTENT_AD, constants.PUBLISHER, constants.PLACEMENT]
             )
         )
-
-    def test_query_counts_dash(self):
-        breakdown = ["campaign_id"]
-        constraints = {
-            "show_archived": True,
-            "account": models.Account.objects.get(pk=1),
-            "filtered_sources": models.Source.objects.all(),
-            "allowed_campaigns": models.Campaign.objects.filter(pk__in=[1, 2]),
-            "date__gte": datetime.date(2016, 8, 1),
-            "date__lte": datetime.date(2016, 8, 5),
-        }
-        parents = []
-        goals = api_breakdowns.get_goals(constraints, breakdown)
-
-        result = api_breakdowns.counts(dash.constants.Level.ACCOUNTS, self.user, breakdown, constraints, parents, goals)
-
-        self.assertEqual(result, [{"parent_breakdown_id": None, "count": 2}])
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)

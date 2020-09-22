@@ -36,7 +36,7 @@ def query_async_start(level, user, breakdown, constraints, parents):
     return query_threads
 
 
-def query_async_get_results(query_threads, breakdown, order=None, offset=None, limit=None):
+def query_async_get_results(query_threads, breakdown, order, offset=None, limit=None):
     target_dimension = stats.constants.get_target_dimension(breakdown)
 
     rows = []
@@ -44,12 +44,10 @@ def query_async_get_results(query_threads, breakdown, order=None, offset=None, l
         thread.join()
         thread_rows = thread.get_result()["rows"]
 
-        if order is not None:
-            thread_rows = sort_helper.sort_rows_by_order_and_archived(
-                thread_rows, [order] + get_default_order(target_dimension, order)
-            )
-        if offset is not None or limit is not None:
-            thread_rows = sort_helper.apply_offset_limit(thread_rows, offset, limit)
+        thread_rows = sort_helper.sort_rows_by_order_and_archived(
+            thread_rows, [order] + get_default_order(target_dimension, order)
+        )
+        thread_rows = sort_helper.apply_offset_limit(thread_rows, offset, limit)
 
         rows.extend(thread_rows)
 
@@ -113,11 +111,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
                 stats_rows_target_ids, all_used_ids, offset, limit
             )
 
-            extra_rows = [
-                x
-                for x in dash_rows
-                if x[target_dimension] not in all_used_ids and x[target_dimension] not in stats_rows_target_ids
-            ]
+            extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
             extra_rows = sort_helper.sort_rows_by_order_and_archived(
                 extra_rows, get_default_order(target_dimension, order)
             )
@@ -125,27 +119,6 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
 
         result.extend(selected_rows)
     return result
-
-
-def query_counts_async_start(level, user, breakdown, constraints, parents):
-    query_threads = []
-    for parent in parents or [None]:
-        fn = partial(query_count, level, user, breakdown, constraints, parent)
-        thread = threads.AsyncFunction(fn)
-        thread.start()
-
-        query_threads.append(thread)
-
-    return query_threads
-
-
-def query_counts_async_get_results(query_threads):
-    rows = []
-    for thread in query_threads:
-        thread.join()
-        row = thread.get_result()
-        rows.append(row)
-    return rows
 
 
 @newrelic.agent.function_trace()
@@ -187,19 +160,6 @@ def get_totals(level, user, breakdown, constraints):
             augmenter.augment_campaigns_totals(row, loader)
 
     return row
-
-
-@newrelic.agent.function_trace()
-def query_count(level, user, breakdown, constraints, parent):
-    target_dimension = stats.constants.get_target_dimension(breakdown)
-    constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)
-
-    loader_cls = loaders.get_loader_for_dimension(target_dimension, level)
-    loader = loader_cls.from_constraints(user, constraints, breakdown=breakdown)
-
-    if parent is not None:
-        return {**parent, "count": loader.objs_count}
-    return {"count": loader.objs_count}
 
 
 def get_default_order(target_dimension, order):

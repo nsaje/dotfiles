@@ -61,6 +61,7 @@ def map_by_breakdown(rows, breakdown, mapper):
 
 
 def dissect_order(order):
+
     prefix = ""
     field_name = order
     if order.startswith("-"):

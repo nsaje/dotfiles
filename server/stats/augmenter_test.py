@@ -511,23 +511,3 @@ class AugmenterTestCase(TestCase):
                 },
             ],
         )
-
-    def test_augment_counts_top_level(self):
-        rows = [{"count": 7}]
-
-        augmenter.augment_counts(["account_id"], rows)
-
-        self.assertEqual(rows, [{"parent_breakdown_id": None, "count": 7}])
-
-    def test_augment_counts_breakdown_level(self):
-        rows = [{"account_id": 1, "count": 7}, {"account_id": 2, "count": 3}]
-
-        augmenter.augment_counts(["account_id", "campaign_id"], rows)
-
-        self.assertEqual(
-            rows,
-            [
-                {"account_id": 1, "parent_breakdown_id": "1", "count": 7},
-                {"account_id": 2, "parent_breakdown_id": "2", "count": 3},
-            ],
-        )

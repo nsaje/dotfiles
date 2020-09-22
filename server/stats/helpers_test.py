@@ -264,13 +264,11 @@ class HelpersTest(TestCase):
             self.assertFalse(helpers.should_query_dashapi([dimension, "day"], dimension))
 
     def test_should_query_dashapi_first(self):
-        for dimension in ("account_id", "campaign_id", "ad_group_id", "content_ad_id"):
+        for dimension in ("account_id", "campaign_id", "ad_group_id", "content_ad_id", "source_id"):
             self.assertTrue(helpers.should_query_dashapi_first("name", dimension))
             self.assertTrue(helpers.should_query_dashapi_first("status", dimension))
             self.assertFalse(helpers.should_query_dashapi_first("clicks", dimension))
 
-        self.assertTrue(helpers.should_query_dashapi_first("name", "source_id"))
-        self.assertTrue(helpers.should_query_dashapi_first("status", "source_id"))
         self.assertFalse(helpers.should_query_dashapi_first("name", "publisher_id"))
         self.assertFalse(helpers.should_query_dashapi_first("status", "publisher_id"))
         self.assertFalse(helpers.should_query_dashapi_first("name", "placement_id"))
@@ -295,15 +293,6 @@ class HelpersTest(TestCase):
             self.assertTrue(helpers.should_query_dashapi_first(field, "account_id"))
             self.assertTrue(helpers.should_query_dashapi_first(field, "ad_group_id"))
 
-    def test_should_query_counts_dashapi(self):
-        for dimension in constants.StructureDimension._ALL:
-            if dimension in set(constants.StructureDimension._EXTENDED):
-                self.assertFalse(helpers.should_query_counts_dashapi(dimension))
-            else:
-                self.assertTrue(helpers.should_query_counts_dashapi(dimension))
-        for dimension in constants.get_top_level_delivery_dimensions():
-            self.assertFalse(helpers.should_query_counts_dashapi(dimension))
-
     def test_merge_rows(self):
         self.assertEqual(
             helpers.merge_rows(
@@ -320,33 +309,6 @@ class HelpersTest(TestCase):
                 {"account_id": 1, "source_id": 2, "bla": 22},
                 {"account_id": 1, "source_id": 3, "bla": 33, "clicks": 13},
             ],
-        )
-
-    def test_extract_counts(self):
-        self.assertEqual(
-            helpers.extract_counts(
-                None,
-                [
-                    {"account_id": 1, "parent_breakdown_id": None, "source_id": 1, "bla": 11, "clicks": 12},
-                    {"account_id": 1, "parent_breakdown_id": None, "source_id": 2, "bla": 22},
-                    {"account_id": 1, "parent_breakdown_id": None, "source_id": 3, "bla": 33, "clicks": 13},
-                ],
-            ),
-            [{"parent_breakdown_id": None, "count": 3}],
-        )
-
-        self.assertEqual(
-            helpers.extract_counts(
-                [{"account_id": 1}, {"account_id": 2}],
-                [
-                    {"account_id": 1, "parent_breakdown_id": "1", "source_id": 1, "bla": 11, "clicks": 12},
-                    {"account_id": 1, "parent_breakdown_id": "1", "source_id": 2, "bla": 22},
-                    {"account_id": 1, "parent_breakdown_id": "1", "source_id": 3, "bla": 33, "clicks": 13},
-                    {"account_id": 2, "parent_breakdown_id": "2", "source_id": 4, "bla": 11, "clicks": 12},
-                    {"account_id": 2, "parent_breakdown_id": "2", "source_id": 5, "bla": 22},
-                ],
-            ),
-            [{"parent_breakdown_id": "1", "count": 3}, {"parent_breakdown_id": "2", "count": 2}],
         )
 
 

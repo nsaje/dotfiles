@@ -61,7 +61,7 @@ FROM
     {% endif %}
 
 ORDER BY {{ orders|only_alias }}
-{% if limit is not None %} LIMIT {{ limit }} {% endif %}
-{% if offset is not None %} OFFSET {{ offset }} {% endif %}
+{% if limit %} LIMIT {{ limit }} {% endif %}
+{% if offset %} OFFSET {{ offset }} {% endif %}
 
 {% endautoescape %}

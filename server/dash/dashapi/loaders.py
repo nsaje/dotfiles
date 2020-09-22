@@ -41,12 +41,6 @@ Notes on implementation:
 OUTBRAIN_SOURCE_ID = 3
 SOURCES_SSPD_REQUIRED = (120, 170)  # MSN
 
-# In case the target_dimension is publisher_id or
-# placement_id or is a delivery dimension we can't
-# fetch the objects count from RDS. For this dimensions
-# objects count is fetched from Redshift.
-DEFAULT_OBJS_COUNT = 0
-
 
 def get_loader_for_dimension(target_dimension, level):
     if target_dimension == "account_id":
@@ -95,10 +89,6 @@ class Loader(object):
     @cached_property
     def objs_ids(self):
         return list(self.objs_map.keys())
-
-    @cached_property
-    def objs_count(self):
-        return self.objs_qs.count()
 
     @property
     def start_date(self):
@@ -639,10 +629,6 @@ class PublisherBlacklistLoader(Loader):
     def _get_obj_id(cls, obj):
         return publisher_helpers.create_publisher_id(obj.publisher, obj.source_id)
 
-    @cached_property
-    def objs_count(self):
-        return DEFAULT_OBJS_COUNT
-
     @classmethod
     def from_constraints(cls, user, constraints, **kwargs):
         return cls(
@@ -963,10 +949,6 @@ class DeliveryLoader(Loader):
             end_date=constraints.get("date__lte"),
             **kwargs,
         )
-
-    @cached_property
-    def objs_count(self):
-        return DEFAULT_OBJS_COUNT
 
 
 class PlacementLoader(PublisherBlacklistLoader):

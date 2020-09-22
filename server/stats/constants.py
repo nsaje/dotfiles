@@ -15,8 +15,6 @@ class StructureDimension:
 
     _ALL = [ACCOUNT, CAMPAIGN, AD_GROUP, CONTENT_AD, SOURCE, PUBLISHER, PLACEMENT]
 
-    _EXTENDED = [PUBLISHER, PLACEMENT]
-
 
 class DeliveryDimension:
     DEVICE = "device_type"

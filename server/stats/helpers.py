@@ -369,41 +369,12 @@ def update_with_refunds(row, refunds):
 
 
 def should_query_dashapi_first(order, target_dimension):
-    if target_dimension == constants.StructureDimension.PUBLISHER:
+
+    if target_dimension == "publisher_id":
         return False
 
-    if target_dimension == constants.StructureDimension.PLACEMENT:
+    if target_dimension == "placement_id":
         return False
-
-    if target_dimension == constants.StructureDimension.SOURCE:
-        """
-        IMPORTANT
-        ------------------------------------------
-        We must first query RDS for source_id breakdown in order to avoid a
-        bug with pagination and removing deprecated sources with no stats.
-
-        SAMPLE STATE:
-        ------------------------------------------
-        - RDS entries: s1, s2, s3 (deprecated), s4, s5, s6, s7
-        - RS entries: s1, s2, s3, s6, s7
-        - count: 7 (we have 7 sources with stats or not deprecated)
-
-        BUG DESCRIPTION:
-        ------------------------------------------
-        - offset: 6
-        - limit: 2
-        - expected result: s7 (because count is 7)
-        - actual result: None (INFINITE load more)
-
-        BUG REASON:
-        ------------------------------------------
-        - RDS returns 7 rows, RS return 0 rows (because of offset, limit)
-        - merge (s1...s7) but s3 is deprecated and with not stats
-        - s3 is removed from the result set
-        - in memory we apply offset/limit cut
-        - [s1, s2, s4, s5, s6, s7][6:7] = []
-        """
-        return True
 
     _, order_field = sort_helper.dissect_order(order)
 
@@ -413,7 +384,13 @@ def should_query_dashapi_first(order, target_dimension):
     if order_field == "status" and target_dimension in constants.StructureDimension._ALL:
         return True
 
-    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == constants.StructureDimension.CONTENT_AD:
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == "content_ad_id":
+        return True
+
+    if order_field in fields.SOURCE_FIELDS and target_dimension == "source_id":
+        return True
+
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == "content_ad_id":
         return True
 
     if order_field in fields.OTHER_DASH_FIELDS:
@@ -428,10 +405,6 @@ def should_query_dashapi(breakdown, target_dimension):
         or len(breakdown) == 1
         and constants.is_top_level_delivery_dimension(target_dimension)
     )
-
-
-def should_query_counts_dashapi(target_dimension):
-    return target_dimension in set(constants.StructureDimension._ALL) - set(constants.StructureDimension._EXTENDED)
 
 
 def merge_rows(breakdown, dash_rows, stats_rows):
@@ -505,17 +478,3 @@ def remap_delivery_stats_keys(stats_rows, target_dimension):
             core.features.bid_modifiers.exceptions.BidModifierUnsupportedTarget,
         ):
             pass
-
-
-def extract_counts(parents, rows):
-    if not parents:
-        return [{"parent_breakdown_id": None, "count": len(rows)}]
-
-    rows_by_parent_br_id = collections.defaultdict(list)
-    for row in rows:
-        rows_by_parent_br_id[row["parent_breakdown_id"]].append(row)
-
-    counts = []
-    for key, values in rows_by_parent_br_id.items():
-        counts.append({"parent_breakdown_id": key, "count": len(values)})
-    return counts

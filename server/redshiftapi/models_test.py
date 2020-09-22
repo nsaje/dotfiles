@@ -234,25 +234,6 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(temp_table.name, "tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221")
         self.assertEqual(temp_table.values, [1, 2, 3])
 
-    def test_get_query_counts_context(self):
-        breakdown = ["account_id", "country"]
-        view = "mv_account_geo"
-
-        context = self.model.get_query_counts_context(breakdown, {"account_id": [1, 2, 3]}, [{"account_id": 1}], view)
-
-        self.assertEqual(context["parent_breakdown"], self.model.select_columns(["account_id"]))
-        self.assertEqual(context["breakdown"], self.model.select_columns(["account_id", "country"]))
-        self.assertSQLEquals(
-            context["constraints"].generate("A"),
-            """((a.account_id IN (SELECT account_id FROM tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221)) AND ((A.account_id=%s)))""",
-        )
-        self.assertEqual(context["view"], view)
-
-        self.assertEqual(len(context["temp_tables"]), 1)
-        temp_table = list(context["temp_tables"])[0]
-        self.assertEqual(temp_table.name, "tmp_filter_account_id_0017c395f39ceeaee171dff6a1b5bb3d6388e221")
-        self.assertEqual(temp_table.values, [1, 2, 3])
-
 
 class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
     def setUp(self):
