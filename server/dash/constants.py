@@ -847,7 +847,7 @@ class IABCategory(ConstantBase):
         IAB5_1: "7-12 Education",
         IAB5_2: "Adult Education",
         IAB5_3: "Art History",
-        IAB5_4: "Colledge Administration",
+        IAB5_4: "College Administration",
         IAB5_5: "College Life",
         IAB5_6: "Distance Learning",
         IAB5_7: "English as a 2nd Language",
