@@ -1177,7 +1177,7 @@ class IABCategory(ConstantBase):
         IAB26_1: "Illegal Content",
         IAB26_2: "Warez",
         IAB26_3: "Spyware/Malware",
-        IAB26_4: "CopyrightInfringement",
+        IAB26_4: "Copyright Infringement",
     }
 
 
