@@ -38,6 +38,12 @@ def augment(breakdown, rows):
             row.pop("state", None)
 
 
+def augment_counts(breakdown, rows):
+    for row in rows:
+        parent_breakdown = constants.get_parent_breakdown(breakdown)
+        row["parent_breakdown_id"] = helpers.encode_breakdown_id(parent_breakdown, row) if parent_breakdown else None
+
+
 def cleanup(rows, target_dimension, constraints):
     to_remove = []
 

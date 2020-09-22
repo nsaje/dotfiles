@@ -51,6 +51,19 @@ def fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, 
     return rows
 
 
+def generate_time_dimension_counts(breakdown, constraints, parents):
+    target_dimension = constants.get_target_dimension(breakdown)
+    all_dates = _get_representative_dates(target_dimension, constraints)
+
+    rows = []
+    for parent in parents:
+        row = {"count": len(all_dates)}
+        row.update(**parent)
+        rows.append(row)
+
+    return rows
+
+
 def _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, constraints, parent):
     """
     When querying time dimensions add rows that are missing from a query

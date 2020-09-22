@@ -1,6 +1,7 @@
 import datetime
 
 from django.test import TestCase
+from mock import ANY
 from mock import patch
 
 import stats.constants
@@ -8,33 +9,33 @@ from redshiftapi import api_breakdowns
 from stats.helpers import Goals
 
 
-class ApiTest(TestCase):
+class ApiTestCase(TestCase):
     def test_should_query_all(self):
-        self.assertTrue(api_breakdowns.should_query_all([]))
-        self.assertTrue(api_breakdowns.should_query_all(["publisher_id", "week"]))
+        self.assertTrue(api_breakdowns._should_query_all([]))
+        self.assertTrue(api_breakdowns._should_query_all(["publisher_id", "week"]))
 
-        self.assertTrue(api_breakdowns.should_query_all(["account_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["publisher_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["placement_id"]))
+        self.assertTrue(api_breakdowns._should_query_all(["account_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["publisher_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["placement_id"]))
 
-        self.assertFalse(api_breakdowns.should_query_all(["publisher_id", "placement_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["publisher_id", "placement_id"]))
 
-        self.assertFalse(api_breakdowns.should_query_all(["source_id", "placement_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["source_id", "placement_id"]))
 
-        self.assertFalse(api_breakdowns.should_query_all(["account_id", "ad_group_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["campaign_id", "content_ad_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["account_id", "ad_group_id"]))
+        self.assertFalse(api_breakdowns._should_query_all(["campaign_id", "content_ad_id"]))
 
-        self.assertTrue(api_breakdowns.should_query_all(["source_id", "ad_group_id"]))
-        self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "ad_group_id"]))
-        self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "source_id"]))
+        self.assertTrue(api_breakdowns._should_query_all(["source_id", "ad_group_id"]))
+        self.assertTrue(api_breakdowns._should_query_all(["campaign_id", "ad_group_id"]))
+        self.assertTrue(api_breakdowns._should_query_all(["campaign_id", "source_id"]))
 
         for field in stats.constants.get_top_level_delivery_dimensions():
-            self.assertFalse(api_breakdowns.should_query_all([field]))
-            self.assertFalse(api_breakdowns.should_query_all([field, field]))
+            self.assertFalse(api_breakdowns._should_query_all([field]))
+            self.assertFalse(api_breakdowns._should_query_all([field, field]))
 
 
-class QueryTest(TestCase):
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+class QueryTestCase(TestCase):
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_all_base(self, mock_query, _):
         mock_query.return_value = [
@@ -72,7 +73,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_all_depth_2(self, mock_query, _):
         mock_query.return_value = [
@@ -110,7 +111,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_all_depth_3(self, mock_query, _):
         mock_query.return_value = [
@@ -161,7 +162,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.db.execute_query")
     def test_query_joint_base(self, mock_query, _):
         mock_query.return_value = [
@@ -200,7 +201,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.db.execute_query")
     def test_query_joint_levels(self, mock_query, _):
         mock_query.return_value = [
@@ -252,7 +253,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.db.execute_query")
     def test_remove_postclicks(self, mock_query, _):
         mock_query.return_value = [
@@ -302,7 +303,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.db.execute_query")
     def test_postprocess_time(self, mock_query, _):
         mock_query.return_value = [
@@ -338,7 +339,7 @@ class QueryTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.db.execute_query")
     def test_postprocess_time_offset(self, mock_query, _):
         mock_query.return_value = [
@@ -373,8 +374,8 @@ class QueryTest(TestCase):
         )
 
 
-class QueryStatsForRowsTest(TestCase):
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+class QueryStatsForRowsTestCase(TestCase):
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_all_base(self, mock_query, _):
         mock_query.return_value = [
@@ -399,7 +400,7 @@ class QueryStatsForRowsTest(TestCase):
 
         self.assertCountEqual(rows, [{"campaign_id": 1, "clicks": 1}, {"campaign_id": 2, "clicks": 2}])
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_all_depth_2(self, mock_query, _):
         mock_query.return_value = [
@@ -438,7 +439,7 @@ class QueryStatsForRowsTest(TestCase):
             ],
         )
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=False)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=False)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_only_relevant_depth_1(self, mock_query, _):
         mock_query.return_value = [{"campaign_id": 1, "clicks": 1}, {"campaign_id": 2, "clicks": 2}]
@@ -459,7 +460,7 @@ class QueryStatsForRowsTest(TestCase):
 
         self.assertCountEqual(rows, [{"campaign_id": 1, "clicks": 1}, {"campaign_id": 2, "clicks": 2}])
 
-    @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
+    @patch("redshiftapi.api_breakdowns._should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_only_relevant_depth_2(self, mock_query, _):
         mock_query.return_value = [
@@ -497,7 +498,7 @@ class QueryStatsForRowsTest(TestCase):
         )
 
 
-class QueryTotalsTest(TestCase):
+class QueryTotalsTestCase(TestCase):
     @patch("redshiftapi.api_breakdowns._query_all")
     def test_query_totals(self, mock_query):
         mock_query.return_value = [{"clicks": 4}]
@@ -516,3 +517,25 @@ class QueryTotalsTest(TestCase):
         )
 
         self.assertCountEqual(rows, [{"clicks": 4}])
+
+
+class QueryCountsTestCase(TestCase):
+    @patch("redshiftapi.db.execute_query")
+    def test_query_counts(self, mock_query):
+        mock_query.return_value = [{"account_id": 1, "count": 3}, {"account_id": 2, "count": 7}]
+
+        rows = api_breakdowns.query_counts(
+            ["account_id", "country"],
+            {"date__gte": datetime.date(2016, 9, 30), "date__lte": datetime.date(2016, 10, 10)},
+            [{"account_id": 1}, {"account_id": 2}],
+            False,
+        )
+
+        mock_query.assert_called_once_with(
+            ANY,
+            [datetime.date(2016, 9, 30), datetime.date(2016, 10, 10), [1, 2]],
+            "account_id__country__counts_base",
+            temp_tables=set(),
+        )
+
+        self.assertEqual(rows, [{"account_id": 1, "count": 3}, {"account_id": 2, "count": 7}])
