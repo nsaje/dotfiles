@@ -78,13 +78,19 @@ def _aggregate_conversions(stats_row, pixel_rows):
     for slug in conversions:
         for window in conversions[slug]:
             conversions[slug][window]["local_avg_etfm_per_conversion_cost_click"] = (
-                stats_row["local_etfm_cost"] / conversions[slug][window]["count_click"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_click"])
+                if conversions[slug][window]["count_click"]
+                else None
             )
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_view"] = (
-                stats_row["local_etfm_cost"] / conversions[slug][window]["count_view"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_view"])
+                if conversions[slug][window]["count_view"]
+                else None
             )
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_total"] = (
-                stats_row["local_etfm_cost"] / conversions[slug][window]["count_total"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_total"])
+                if conversions[slug][window]["count_total"]
+                else None
             )
 
     return conversions
