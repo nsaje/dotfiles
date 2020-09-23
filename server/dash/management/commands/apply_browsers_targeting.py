@@ -807,9 +807,14 @@ class Command(Z1Command):
     def _handle_included_browsers_targeting(ad_group_qs, browsers):
         for ad_group in ad_group_qs:
             target_browsers = ad_group.settings.target_browsers or []
+            exclusion_target_browsers = [x.get("family") for x in ad_group.settings.exclusion_target_browsers or []]
             for browser in browsers:
-                target_browsers.append({"family": browser})
-            ad_group.settings.update(None, target_browsers=target_browsers)
+                if browser not in exclusion_target_browsers:
+                    target_browsers.append({"family": browser})
+            if len(exclusion_target_browsers) > 0:
+                ad_group.settings.update(None, target_browsers=target_browsers, exclusion_target_browsers=None)
+            else:
+                ad_group.settings.update(None, target_browsers=target_browsers)
 
     @staticmethod
     def _handle_excluded_browsers_targeting(ad_group_qs, browsers):
