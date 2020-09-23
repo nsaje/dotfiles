@@ -716,7 +716,7 @@ class Command(Z1Command):
     help = "Apply B1 browsers targeting hacks to ad groups."
 
     def add_arguments(self, parser):
-        parser.add_argument("--reset", type=bool)
+        parser.add_argument("--revert", type=bool)
 
     def handle(self, *args, **options):
         """
@@ -726,105 +726,152 @@ class Command(Z1Command):
 
         logger.info("Star applying B1 browsers targeting hacks to ad groups...")
 
-        reset = options.get("reset")
+        revert = options.get("revert", False)
 
         with transaction.atomic():
-            logger.info("Start handling EXCLUDE_BROWSERS_AD_GROUPS...", count=len(EXCLUDE_BROWSERS_AD_GROUPS.items()))
-            for key, value in EXCLUDE_BROWSERS_AD_GROUPS.items():
-                qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+            if revert:
+                logger.info("Start reverting EXCLUDE_BROWSERS_AD_GROUPS...")
+                qs = core.models.AdGroup.objects.filter(
+                    pk__in=list(EXCLUDE_BROWSERS_AD_GROUPS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Finish reverting EXCLUDE_BROWSERS_AD_GROUPS...")
+            else:
+                logger.info(
+                    "Start handling EXCLUDE_BROWSERS_AD_GROUPS...", count=len(EXCLUDE_BROWSERS_AD_GROUPS.items())
+                )
+                for key, value in EXCLUDE_BROWSERS_AD_GROUPS.items():
+                    qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
                     self._handle_excluded_browsers_targeting(qs, value)
-            logger.info("Finish handling EXCLUDE_BROWSERS_AD_GROUPS...", count=len(EXCLUDE_BROWSERS_AD_GROUPS.items()))
+                logger.info(
+                    "Finish handling EXCLUDE_BROWSERS_AD_GROUPS...", count=len(EXCLUDE_BROWSERS_AD_GROUPS.items())
+                )
 
         with transaction.atomic():
-            logger.info("Start handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=len(EXCLUDE_BROWSERS_CAMPAIGNS.items()))
-            for key, value in EXCLUDE_BROWSERS_CAMPAIGNS.items():
-                campaign = core.models.Campaign.objects.filter(pk=key).exclude_archived().first()
-                if not campaign:
-                    continue
-
-                qs = core.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
-                logger.info("Campaign ad_groups count...", campaign=campaign.id, count=qs.count())
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+            if revert:
+                logger.info("Start reverting EXCLUDE_BROWSERS_CAMPAIGNS...")
+                qs = core.models.AdGroup.objects.filter(
+                    campaign_id__in=list(EXCLUDE_BROWSERS_CAMPAIGNS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Finish reverting EXCLUDE_BROWSERS_CAMPAIGNS...")
+            else:
+                logger.info(
+                    "Start handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=len(EXCLUDE_BROWSERS_CAMPAIGNS.items())
+                )
+                for key, value in EXCLUDE_BROWSERS_CAMPAIGNS.items():
+                    campaign = core.models.Campaign.objects.filter(pk=key).exclude_archived().first()
+                    if not campaign:
+                        continue
+                    qs = core.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
+                    logger.info("Campaign ad_groups count...", campaign=campaign.id, count=qs.count())
                     self._handle_excluded_browsers_targeting(qs, value)
-            logger.info("Finish handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=len(EXCLUDE_BROWSERS_CAMPAIGNS.items()))
+                logger.info(
+                    "Finish handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=len(EXCLUDE_BROWSERS_CAMPAIGNS.items())
+                )
 
         with transaction.atomic():
-            logger.info("Start handling EXCLUDE_BROWSERS_ACCOUNTS...", count=len(EXCLUDE_BROWSERS_ACCOUNTS.items()))
-            for key, value in EXCLUDE_BROWSERS_ACCOUNTS.items():
-                account = core.models.Account.objects.filter(pk=key).exclude_archived().first()
-                if not account:
-                    continue
+            if revert:
+                logger.info("Start reverting EXCLUDE_BROWSERS_ACCOUNTS...")
+                qs = core.models.AdGroup.objects.filter(
+                    campaign__account_id__in=list(EXCLUDE_BROWSERS_ACCOUNTS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Start reverting EXCLUDE_BROWSERS_ACCOUNTS...")
+            else:
+                logger.info("Start handling EXCLUDE_BROWSERS_ACCOUNTS...", count=len(EXCLUDE_BROWSERS_ACCOUNTS.items()))
+                for key, value in EXCLUDE_BROWSERS_ACCOUNTS.items():
+                    account = core.models.Account.objects.filter(pk=key).exclude_archived().first()
+                    if not account:
+                        continue
 
-                qs = core.models.AdGroup.objects.filter(campaign__account=account).exclude_archived()
-                logger.info("Account ad_groups count...", account=account.id, count=qs.count())
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+                    qs = core.models.AdGroup.objects.filter(campaign__account=account).exclude_archived()
+                    logger.info("Account ad_groups count...", account=account.id, count=qs.count())
                     self._handle_excluded_browsers_targeting(qs, value)
-            logger.info("Finish handling EXCLUDE_BROWSERS_ACCOUNTS...", count=len(EXCLUDE_BROWSERS_ACCOUNTS.items()))
+                logger.info(
+                    "Finish handling EXCLUDE_BROWSERS_ACCOUNTS...", count=len(EXCLUDE_BROWSERS_ACCOUNTS.items())
+                )
 
         with transaction.atomic():
-            logger.info("Start handling EXCLUDE_BROWSERS_AGENCIES...", count=len(EXCLUDE_BROWSERS_AGENCIES.items()))
-            for key, value in EXCLUDE_BROWSERS_AGENCIES.items():
-                agency = core.models.Agency.objects.filter(pk=key).first()
-                if not agency:
-                    continue
+            if revert:
+                logger.info("Start reverting EXCLUDE_BROWSERS_AGENCIES...")
+                qs = core.models.AdGroup.objects.filter(
+                    campaign__account__agency_id__in=list(EXCLUDE_BROWSERS_AGENCIES.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Start reverting EXCLUDE_BROWSERS_AGENCIES...")
+            else:
+                logger.info("Start handling EXCLUDE_BROWSERS_AGENCIES...", count=len(EXCLUDE_BROWSERS_AGENCIES.items()))
+                for key, value in EXCLUDE_BROWSERS_AGENCIES.items():
+                    agency = core.models.Agency.objects.filter(pk=key).first()
+                    if not agency:
+                        continue
 
-                qs = core.models.AdGroup.objects.filter(campaign__account__agency=agency).exclude_archived()
-                logger.info("Agency ad_groups count...", agency=agency.id, count=qs.count())
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+                    qs = core.models.AdGroup.objects.filter(campaign__account__agency=agency).exclude_archived()
+                    logger.info("Agency ad_groups count...", agency=agency.id, count=qs.count())
                     self._handle_excluded_browsers_targeting(qs, value)
-            logger.info("Finish handling EXCLUDE_BROWSERS_AGENCIES...", count=len(EXCLUDE_BROWSERS_AGENCIES.items()))
+                logger.info(
+                    "Finish handling EXCLUDE_BROWSERS_AGENCIES...", count=len(EXCLUDE_BROWSERS_AGENCIES.items())
+                )
 
         with transaction.atomic():
-            logger.info("Start handling INCLUDED_BROWSERS_AD_GROUPS...", count=len(INCLUDED_BROWSERS_AD_GROUPS.items()))
-            for key, value in INCLUDED_BROWSERS_AD_GROUPS.items():
-                qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+            if revert:
+                logger.info("Start reverting INCLUDED_BROWSERS_AD_GROUPS...")
+                qs = core.models.AdGroup.objects.filter(
+                    pk__in=list(INCLUDED_BROWSERS_AD_GROUPS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Start reverting INCLUDED_BROWSERS_AD_GROUPS...")
+            else:
+                logger.info(
+                    "Start handling INCLUDED_BROWSERS_AD_GROUPS...", count=len(INCLUDED_BROWSERS_AD_GROUPS.items())
+                )
+                for key, value in INCLUDED_BROWSERS_AD_GROUPS.items():
+                    qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
                     self._handle_included_browsers_targeting(qs, value)
-            logger.info(
-                "Finish handling INCLUDED_BROWSERS_AD_GROUPS...", count=len(INCLUDED_BROWSERS_AD_GROUPS.items())
-            )
+                logger.info(
+                    "Finish handling INCLUDED_BROWSERS_AD_GROUPS...", count=len(INCLUDED_BROWSERS_AD_GROUPS.items())
+                )
 
         with transaction.atomic():
-            logger.info("Start handling INCLUDED_BROWSERS_CAMPAIGNS...", count=len(INCLUDED_BROWSERS_CAMPAIGNS.items()))
-            for key, value in INCLUDED_BROWSERS_CAMPAIGNS.items():
-                campaign = core.models.Campaign.objects.filter(pk=key).exclude_archived().first()
-                if not campaign:
-                    continue
-
-                qs = core.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
-                logger.info("Campaign ad_groups count...", campaign=campaign.id, count=qs.count())
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
+            if revert:
+                logger.info("Start reverting INCLUDED_BROWSERS_CAMPAIGNS...")
+                qs = core.models.AdGroup.objects.filter(
+                    campaign_id__in=list(INCLUDED_BROWSERS_CAMPAIGNS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Start reverting INCLUDED_BROWSERS_CAMPAIGNS...")
+            else:
+                logger.info(
+                    "Start handling INCLUDED_BROWSERS_CAMPAIGNS...", count=len(INCLUDED_BROWSERS_CAMPAIGNS.items())
+                )
+                for key, value in INCLUDED_BROWSERS_CAMPAIGNS.items():
+                    campaign = core.models.Campaign.objects.filter(pk=key).exclude_archived().first()
+                    if not campaign:
+                        continue
+                    qs = core.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
+                    logger.info("Campaign ad_groups count...", campaign=campaign.id, count=qs.count())
                     self._handle_included_browsers_targeting(qs, value)
-            logger.info(
-                "Finish handling INCLUDED_BROWSERS_CAMPAIGNS...", count=len(INCLUDED_BROWSERS_CAMPAIGNS.items())
-            )
+                logger.info(
+                    "Finish handling INCLUDED_BROWSERS_CAMPAIGNS...", count=len(INCLUDED_BROWSERS_CAMPAIGNS.items())
+                )
 
         with transaction.atomic():
+            if revert:
+                logger.info("Start reverting INCLUDED_BROWSERS_ACCOUNTS...")
+                qs = core.models.AdGroup.objects.filter(
+                    campaign__account_id__in=list(INCLUDED_BROWSERS_ACCOUNTS.keys())
+                ).exclude_archived()
+                self._handle_reset_browsers_targeting(qs)
+                logger.info("Start reverting INCLUDED_BROWSERS_ACCOUNTS...")
             logger.info("Start handling INCLUDED_BROWSERS_ACCOUNTS...", count=len(INCLUDED_BROWSERS_ACCOUNTS.items()))
             for key, value in INCLUDED_BROWSERS_ACCOUNTS.items():
                 account = core.models.Account.objects.filter(pk=key).exclude_archived().first()
                 if not account:
                     continue
-
                 qs = core.models.AdGroup.objects.filter(campaign__account=account).exclude_archived()
                 logger.info("Account ad_groups count...", account=account.id, count=qs.count())
-                if reset:
-                    self._handle_reset_browsers_targeting(qs)
-                else:
-                    self._handle_included_browsers_targeting(qs, value)
+                self._handle_included_browsers_targeting(qs, value)
             logger.info("Finish handling INCLUDED_BROWSERS_ACCOUNTS...", count=len(INCLUDED_BROWSERS_ACCOUNTS.items()))
 
         logger.info("Applying B1 browsers targeting hacks to ad groups completed...")
