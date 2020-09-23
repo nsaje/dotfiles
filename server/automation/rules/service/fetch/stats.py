@@ -77,7 +77,7 @@ def _aggregate_conversions(stats_row, pixel_rows):
 
     for slug in conversions:
         for window in conversions[slug]:
-            conversions[slug][window]["local_avg_etfm_per_conversion_cost_click"] = (
+            conversions[slug][window]["local_avg_etfm_cost_per_conversion_click"] = (
                 (stats_row["local_etfm_cost"] / conversions[slug][window]["count_click"])
                 if conversions[slug][window]["count_click"]
                 else None

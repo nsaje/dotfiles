@@ -149,7 +149,7 @@ class QueryStatsTest(TestCase):
                             "count_view": 250,
                             "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                             "local_avg_etfm_cost_per_conversion_view": 0.4,
-                            "local_avg_etfm_per_conversion_cost_click": 1.0,
+                            "local_avg_etfm_cost_per_conversion_click": 1.0,
                         },
                         168: {
                             "count_click": 110,
@@ -157,7 +157,7 @@ class QueryStatsTest(TestCase):
                             "count_view": 300,
                             "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.24, 2),
                             "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.33, 2),
-                            "local_avg_etfm_per_conversion_cost_click": test_helper.AlmostMatcher(0.91, 2),
+                            "local_avg_etfm_cost_per_conversion_click": test_helper.AlmostMatcher(0.91, 2),
                         },
                         720: {
                             "count_click": 112,
@@ -165,7 +165,7 @@ class QueryStatsTest(TestCase):
                             "count_view": 308,
                             "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.24, 2),
                             "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.32, 2),
-                            "local_avg_etfm_per_conversion_cost_click": test_helper.AlmostMatcher(0.89, 2),
+                            "local_avg_etfm_cost_per_conversion_click": test_helper.AlmostMatcher(0.89, 2),
                         },
                     }
                 }
@@ -234,7 +234,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             168: {
                                 "count_click": 100,
@@ -242,7 +242,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             720: {
                                 "count_click": 100,
@@ -250,7 +250,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                         }
                     },
@@ -352,7 +352,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             168: {
                                 "count_click": 100,
@@ -360,7 +360,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             720: {
                                 "count_click": 100,
@@ -368,7 +368,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                         }
                     },
@@ -387,7 +387,7 @@ class AugmentTest(TestCase):
                                 "count_view": 500,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             168: {
                                 "count_click": 200,
@@ -395,7 +395,7 @@ class AugmentTest(TestCase):
                                 "count_view": 500,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             720: {
                                 "count_click": 200,
@@ -403,7 +403,7 @@ class AugmentTest(TestCase):
                                 "count_view": 500,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                         }
                     },
@@ -475,7 +475,7 @@ class AugmentTest(TestCase):
                                 "count_view": 250,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
                                 "local_avg_etfm_cost_per_conversion_view": 0.4,
-                                "local_avg_etfm_per_conversion_cost_click": 1.0,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
                             },
                             168: {
                                 "count_click": 125,
@@ -483,7 +483,7 @@ class AugmentTest(TestCase):
                                 "count_view": 285,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.24, 2),
                                 "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.35, 2),
-                                "local_avg_etfm_per_conversion_cost_click": 0.8,
+                                "local_avg_etfm_cost_per_conversion_click": 0.8,
                             },
                             720: {
                                 "count_click": 137,
@@ -491,7 +491,7 @@ class AugmentTest(TestCase):
                                 "count_view": 301,
                                 "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.23, 2),
                                 "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.33, 2),
-                                "local_avg_etfm_per_conversion_cost_click": test_helper.AlmostMatcher(0.73, 2),
+                                "local_avg_etfm_cost_per_conversion_click": test_helper.AlmostMatcher(0.73, 2),
                             },
                         }
                     },
