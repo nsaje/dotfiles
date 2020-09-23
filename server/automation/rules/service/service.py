@@ -98,6 +98,7 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
             except exceptions.ApplyFailedBase as e:
                 history = _write_fail_history(rule, ad_group, exception=e)
             except Exception as e:
+                logger.exception("Unhandled exception in rule application")
                 history = _write_fail_history(rule, ad_group, exception=e, stack_trace=traceback.format_exc())
             else:
                 history = _write_history(rule, ad_group, changes)
