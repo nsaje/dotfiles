@@ -17,10 +17,12 @@ import {AdGroupService} from '../../../../../core/entities/services/ad-group/ad-
 import {CampaignService} from '../../../../../core/entities/services/campaign/campaign.service';
 import {EntityType} from '../../../../../app.constants';
 import {AuthStore} from '../../../../../core/auth/services/auth.store';
+import {ConversionPixelsService} from '../../../../../core/conversion-pixels/services/conversion-pixels.service';
 
 describe('RuleEditFormStore', () => {
     let rulesServiceStub: jasmine.SpyObj<RulesService>;
     let publisherGroupsServiceStub: jasmine.SpyObj<PublisherGroupsService>;
+    let conversionPixelsServiceStub: jasmine.SpyObj<ConversionPixelsService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
     let adGroupServiceStub: jasmine.SpyObj<AdGroupService>;
@@ -41,6 +43,10 @@ describe('RuleEditFormStore', () => {
             PublisherGroupsService.name,
             ['listImplicit', 'listExplicit']
         );
+        conversionPixelsServiceStub = jasmine.createSpyObj(
+            ConversionPixelsService.name,
+            ['list']
+        );
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
@@ -57,6 +63,7 @@ describe('RuleEditFormStore', () => {
         store = new RuleEditFormStore(
             rulesServiceStub,
             publisherGroupsServiceStub,
+            conversionPixelsServiceStub,
             accountsServiceStub,
             campaignServiceStub,
             adGroupServiceStub,

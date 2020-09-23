@@ -40,6 +40,10 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         else:
             raise utils.exc.ValidationError("Either agency id or account id must be provided.")
 
+        keyword = qpe.validated_data.get("keyword")
+        if keyword:
+            pixels = pixels.filter(name__icontains=keyword)
+
         audience_enabled_only = utils.converters.x_to_bool(qpe.validated_data.get("audience_enabled_only"))
         if audience_enabled_only:
             pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))

@@ -1,5 +1,8 @@
 <div
     class="zem-rule-edit-form-condition__operand-container zem-rule-edit-form-condition__operand-container--left"
+    [ngClass]="{
+        'zem-rule-edit-form-condition__operand-container--pixel': showPixelSelector
+    }"
 >
     <zem-select-input
         class="zem-rule-edit-form-condition__operand-select zem-select-input"
@@ -30,10 +33,52 @@
         >
         </zem-rule-edit-form-condition-modifier>
     </ng-template>
+    <ng-template #conversionPixelPopoverTemplate>
+        <zem-rule-edit-form-condition-conversion-pixel
+            class="zem-rule-edit-form-condition-conversion-pixel"
+            [availableConversionPixels]="availableConversionPixels"
+            [conversionPixel]="ruleCondition.metric.conversionPixel"
+            [conversionPixelWindow]="ruleCondition.metric.conversionPixelWindow"
+            [conversionPixelAttribution]="
+                ruleCondition.metric.conversionPixelAttribution
+            "
+            [isDisabled]="isDisabled"
+            [metricErrors]="conditionErrors?.metric"
+            (pixelChange)="updateConversionPixel($event)"
+            (windowChange)="updateConversionPixelWindow($event)"
+            (attributionChange)="updateConversionPixelAttribution($event)"
+            (conversionPixelsSearch)="conversionPixelsSearch.emit($event)"
+        >
+        </zem-rule-edit-form-condition-conversion-pixel>
+        <zem-rule-edit-form-condition-modifier
+            class="zem-rule-edit-form-condition-modifier"
+            [value]="ruleCondition.metric.modifier"
+            [valueLabel]="selectedMetricConfig.label"
+            [timeRange]="ruleCondition.metric.window"
+            [hasTimeRangeModifier]="selectedMetricConfig.hasTimeRangeModifier"
+            [valueModifier]="selectedMetricConfig.valueModifier"
+            [modifierErrors]="conditionErrors?.metric?.type"
+            [isDisabled]="isDisabled"
+            (valueChange)="updateMetricModifier($event)"
+            (timeRangeChange)="updateMetricWindow($event)"
+        >
+        </zem-rule-edit-form-condition-modifier>
+    </ng-template>
     <button
         class="zem-rule-edit-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
-        [zemPopover]="metricModifierPopoverTemplate"
-        [disabled]="!areModifiersAvailable(selectedMetricConfig)"
+        [ngClass]="{
+            'zem-rule-edit-form-condition__pixels-toggle': showPixelSelector,
+            'zem-rule-edit-form-condition__modifiers-toggle--error':
+                conditionErrors?.metric?.conversionPixel?.length > 0 ||
+                conditionErrors?.metric?.conversionPixelWindow?.length > 0 ||
+                conditionErrors?.metric?.conversionPixelAttribution?.length > 0
+        }"
+        [zemPopover]="
+            showPixelSelector
+                ? conversionPixelPopoverTemplate
+                : metricModifierPopoverTemplate
+        "
+        [disabled]="!areModifiersAvailable(selectedMetricConfig) || isDisabled"
         [autoClose]="'outside'"
         placement="bottom"
     ></button>

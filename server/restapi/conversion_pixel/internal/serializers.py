@@ -14,4 +14,5 @@ class ConversionPixelQueryParams(
 ):
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
+    keyword = restapi.serializers.fields.PlainCharField(max_length=50, required=False)
     audience_enabled_only = restapi.serializers.fields.NullBooleanField(required=False)

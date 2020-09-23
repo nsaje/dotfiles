@@ -369,7 +369,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     loadConversionPixelsForAccount(accountId: string) {
         this.conversionPixelsService
-            .list(accountId, this.requestStateUpdater)
+            .list(null, accountId, null, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 conversionPixels => {

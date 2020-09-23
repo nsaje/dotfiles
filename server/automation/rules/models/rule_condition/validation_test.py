@@ -1,4 +1,5 @@
 import core.models
+import dash.constants
 from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
@@ -130,6 +131,8 @@ class RuleConditionValidationTest(BaseTestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_window=None,
             right_operand_value="300",
+            conversion_pixel_window=dash.constants.ConversionWindows.LEQ_7_DAYS,
+            conversion_pixel_attribution=dash.constants.ConversionType.CLICK,
         )
         rule_condition.clean({"conversion_pixel": pixel})
 
@@ -150,6 +153,8 @@ class RuleConditionValidationTest(BaseTestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_window=None,
             right_operand_value="300",
+            conversion_pixel_window=dash.constants.ConversionWindows.LEQ_7_DAYS,
+            conversion_pixel_attribution=dash.constants.ConversionType.CLICK,
         )
 
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=rule_account)
@@ -158,3 +163,46 @@ class RuleConditionValidationTest(BaseTestCase):
         pixel_without_rule_account = magic_mixer.blend(core.models.ConversionPixel, account=account)
         with self.assert_multiple_validation_error([exceptions.InvalidConversionPixel]):
             rule_condition.clean({"conversion_pixel": pixel_without_rule_account})
+
+    def test_validate_conversion_pixel_window(self):
+        account = magic_mixer.blend(core.models.Account)
+        rule = magic_mixer.blend(Rule, account=account)
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        rule_condition = model.RuleCondition(
+            rule=rule,
+            operator=constants.Operator.GREATER_THAN,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            left_operand_window=None,
+            left_operand_modifier=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_window=None,
+            right_operand_value="300",
+            conversion_pixel=pixel,
+            conversion_pixel_attribution=dash.constants.ConversionType.CLICK,
+        )
+
+        rule_condition.clean({"conversion_pixel_window": dash.constants.ConversionWindows.LEQ_7_DAYS})
+
+        with self.assert_multiple_validation_error([exceptions.InvalidConversionPixelWindow]):
+            rule_condition.clean({"conversion_pixel_window": None})
+
+    def test_validate_conversion_pixel_attribution(self):
+        account = magic_mixer.blend(core.models.Account)
+        rule = magic_mixer.blend(Rule, account=account)
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        rule_condition = model.RuleCondition(
+            rule=rule,
+            operator=constants.Operator.GREATER_THAN,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            left_operand_window=None,
+            left_operand_modifier=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_window=None,
+            right_operand_value="300",
+            conversion_pixel=pixel,
+            conversion_pixel_window=dash.constants.ConversionWindows.LEQ_7_DAYS,
+        )
+        rule_condition.clean({"conversion_pixel_attribution": dash.constants.ConversionType.CLICK})
+
+        with self.assert_multiple_validation_error([exceptions.InvalidConversionPixelAttribution]):
+            rule_condition.clean({"conversion_pixel_attribution": None})

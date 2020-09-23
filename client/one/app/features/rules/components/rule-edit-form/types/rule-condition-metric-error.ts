@@ -4,4 +4,7 @@ export class RuleConditionMetricError {
     window: FieldErrors = [];
     type: FieldErrors = [];
     modifier: FieldErrors = [];
+    conversionPixel: FieldErrors = [];
+    conversionPixelWindow: FieldErrors = [];
+    conversionPixelAttribution: FieldErrors = [];
 }

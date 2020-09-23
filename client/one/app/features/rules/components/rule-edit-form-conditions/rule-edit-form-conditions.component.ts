@@ -15,6 +15,7 @@ import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-c
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {RuleConditionError} from '../rule-edit-form/types/rule-condition-error';
+import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
 
 @Component({
     selector: 'zem-rule-edit-form-conditions',
@@ -27,6 +28,8 @@ export class RuleEditFormConditionsComponent implements OnChanges {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Input()
+    availableConversionPixels: ConversionPixel[];
+    @Input()
     ruleConditionsErrors: RuleConditionError[] | string[];
     @Input()
     isDisabled: boolean = false;
@@ -36,6 +39,8 @@ export class RuleEditFormConditionsComponent implements OnChanges {
     ruleConditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()
     ruleConditionRemove = new EventEmitter<RuleCondition>();
+    @Output()
+    conversionPixelsSearch = new EventEmitter<string>();
 
     generalConditionsError: string;
     perConditionErrors: RuleConditionError[] = [];

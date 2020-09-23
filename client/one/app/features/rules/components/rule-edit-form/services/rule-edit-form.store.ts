@@ -36,6 +36,8 @@ import * as clone from 'clone';
 import {EntityType} from '../../../../../app.constants';
 import {EntitySelectorItem} from '../../../../../shared/components/entity-selector/types/entity-selector-item';
 import {AuthStore} from '../../../../../core/auth/services/auth.store';
+import {ConversionPixelsService} from '../../../../../core/conversion-pixels/services/conversion-pixels.service';
+import {ConversionPixel} from '../../../../../core/conversion-pixels/types/conversion-pixel';
 
 @Injectable()
 export class RuleEditFormStore extends Store<RuleEditFormStoreState>
@@ -46,10 +48,12 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     private accountsRequestStateUpdater: RequestStateUpdater;
     private campaignsRequestStateUpdater: RequestStateUpdater;
     private adGroupsRequestStateUpdater: RequestStateUpdater;
+    private conversionPixelsRequestStateUpdater: RequestStateUpdater;
 
     constructor(
         private rulesService: RulesService,
         private publisherGroupsService: PublisherGroupsService,
+        private conversionPixelService: ConversionPixelsService,
         private accountService: AccountService,
         private campaignService: CampaignService,
         private adGroupService: AdGroupService,
@@ -62,6 +66,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         this.publisherGroupsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'publisherGroupsRequests'
+        );
+        this.conversionPixelsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'conversionPixelsRequests'
         );
         this.accountsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
@@ -359,6 +367,33 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         });
     }
 
+    loadAvailableConversionPixels(
+        keyword: string | null
+    ): Promise<ConversionPixel[]> {
+        return new Promise<ConversionPixel[]>((resolve, reject) => {
+            this.conversionPixelService
+                .list(
+                    this.state.agencyId,
+                    this.state.accountId,
+                    commonHelpers.isDefined(keyword) ? keyword.trim() : null,
+                    this.conversionPixelsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (conversionPixels: ConversionPixel[]) => {
+                        this.patchState(
+                            conversionPixels,
+                            'availableConversionPixels'
+                        );
+                        resolve();
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     getRuleEntitySelectorItems(): EntitySelectorItem[] {
         const entities: EntitySelectorItem[] = [];
         [EntityType.ACCOUNT, EntityType.CAMPAIGN, EntityType.AD_GROUP].forEach(
@@ -559,16 +594,8 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpc],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpm],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Conversions],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ConversionsView],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ConversionsTotal],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversion
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.AvgCostPerConversionView
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.AvgCostPerConversionTotal
             ],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
             RULE_CONDITIONS_OPTIONS[

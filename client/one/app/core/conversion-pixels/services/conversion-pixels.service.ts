@@ -9,10 +9,17 @@ export class ConversionPixelsService {
     constructor(private endpoint: ConversionPixelsEndpoint) {}
 
     list(
-        accountId: string,
+        agencyId: string | null,
+        accountId: string | null,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel[]> {
-        return this.endpoint.list(accountId, requestStateUpdater);
+        return this.endpoint.list(
+            agencyId,
+            accountId,
+            keyword,
+            requestStateUpdater
+        );
     }
 
     create(

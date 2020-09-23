@@ -61,7 +61,7 @@
 <div *ngIf="hasTimeRangeModifier">
     <div class="zem-rule-edit-form__section-title">Time range:</div>
     <zem-radio-input
-        class="zem-rule-edit-form__section-item zem-radio-input"
+        class="zem-radio-input zem-rule-edit-form-condition-modifier__value-modifier-item"
         *ngFor="let availableTimeRange of availableTimeRanges"
         [groupModel]="timeRange"
         [value]="availableTimeRange.value"

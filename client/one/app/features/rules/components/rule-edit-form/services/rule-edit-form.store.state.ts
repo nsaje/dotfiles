@@ -10,6 +10,7 @@ import {RulesEditFormStoreFieldsErrorsState} from './rule-edit-form.fields-error
 import {PublisherGroup} from '../../../../../core/publisher-groups/types/publisher-group';
 import {ScopeSelectorState} from '../../../../../shared/components/scope-selector/scope-selector.constants';
 import {EntitySelectorItem} from '../../../../../shared/components/entity-selector/types/entity-selector-item';
+import {ConversionPixel} from '../../../../../core/conversion-pixels/types/conversion-pixel';
 
 export class RuleEditFormStoreState {
     agencyId: string = null;
@@ -52,6 +53,7 @@ export class RuleEditFormStoreState {
     };
     fieldsErrors: RulesEditFormStoreFieldsErrorsState = null;
     accounts: Account[] = [];
+    availableConversionPixels: ConversionPixel[] = [];
     accountsRequests = {
         list: {} as RequestState,
     };
@@ -66,5 +68,8 @@ export class RuleEditFormStoreState {
     };
     publisherGroupsRequests = {
         search: {} as RequestState,
+    };
+    conversionPixelsRequests = {
+        list: {} as RequestState,
     };
 }

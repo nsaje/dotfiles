@@ -7,13 +7,16 @@ import {map, catchError} from 'rxjs/operators';
 import {ConversionPixel} from '../types/conversion-pixel';
 import {CONVERSION_PIXELS_CONFIG} from '../conversion-pixels.config';
 import {replaceUrl} from '../../../shared/helpers/endpoint.helpers';
+import * as commonHelpers from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class ConversionPixelsEndpoint {
     constructor(private http: HttpClient) {}
 
     list(
-        accountId: string,
+        agencyId: string | null,
+        accountId: string | null,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel[]> {
         const request = CONVERSION_PIXELS_CONFIG.requests.conversionPixels.list;
@@ -21,7 +24,11 @@ export class ConversionPixelsEndpoint {
         requestStateUpdater(request.name, {
             inProgress: true,
         });
-        const params = {accountId};
+        const params = {
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
+        };
 
         return this.http
             .get<ApiResponse<ConversionPixel[]>>(request.url, {params})

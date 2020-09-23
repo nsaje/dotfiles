@@ -15,6 +15,7 @@ import {RulesActionsComponent} from './components/rules-actions/rules-actions.co
 import {RulesHistoriesFiltersComponent} from './components/rules-histories-filters/rules-histories-filters.component';
 import {RuleActionsCellComponent} from './components/rule-actions-cell/rule-actions-cell.component';
 import {RuleRunsOnCellComponent} from './components/rule-runs-on-cell/rule-runs-on-cell.component';
+import {RuleEditFormConditionConversionPixelComponent} from './components/rule-edit-form-condition-conversion-pixel/rule-edit-form-condition-conversion-pixel.component';
 
 @NgModule({
     declarations: [
@@ -26,6 +27,7 @@ import {RuleRunsOnCellComponent} from './components/rule-runs-on-cell/rule-runs-
         RuleEditFormConditionsComponent,
         RuleEditFormConditionComponent,
         RuleEditFormConditionModifierComponent,
+        RuleEditFormConditionConversionPixelComponent,
         RulesHistoriesGridComponent,
         RulesHistoriesFiltersComponent,
         RulesHistoriesView,

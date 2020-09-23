@@ -7,10 +7,12 @@
     "
     [ruleCondition]="ruleCondition"
     [availableConditions]="availableConditions"
+    [availableConversionPixels]="availableConversionPixels"
     [conditionErrors]="perConditionErrors[i]"
     [isDisabled]="isDisabled"
     (conditionChange)="onConditionChange($event)"
     (conditionRemove)="onConditionRemove($event)"
+    (conversionPixelsSearch)="conversionPixelsSearch.emit($event)"
 >
 </zem-rule-edit-form-condition>
 <div class="zem-rule-edit-form__section-item">

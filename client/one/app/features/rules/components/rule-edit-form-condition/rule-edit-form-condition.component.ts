@@ -17,7 +17,7 @@ import {
     RuleConditionOperandType,
     RuleConditionOperandGroup,
 } from '../../../../core/rules/rules.constants';
-import {DataType, Unit} from '../../../../app.constants';
+import {DataType, Unit, ConversionWindow} from '../../../../app.constants';
 import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-config';
 import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-condition-operand-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
@@ -27,6 +27,8 @@ import {
     RULE_CONDITIONS_OPTIONS,
     RULE_CURRENCY_HELP_TEXT,
 } from '../../rules.config';
+import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
+import {ConversionPixelAttribution} from '../../../../core/conversion-pixels/conversion-pixel.constants';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -39,6 +41,8 @@ export class RuleEditFormConditionComponent implements OnChanges {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Input()
+    availableConversionPixels: ConversionPixel[];
+    @Input()
     conditionErrors: RuleConditionError;
     @Input()
     isDisabled: boolean = false;
@@ -46,6 +50,8 @@ export class RuleEditFormConditionComponent implements OnChanges {
     conditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()
     conditionRemove = new EventEmitter<RuleCondition>();
+    @Output()
+    conversionPixelsSearch = new EventEmitter<string | null>();
 
     availableMetrics: {
         label: string;
@@ -64,6 +70,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
     inputUnitSymbol: string;
 
     isOnlyAbsoluteValue: boolean;
+    showPixelSelector: boolean;
 
     RuleConditionOperandType = RuleConditionOperandType;
     Unit = Unit;
@@ -105,6 +112,11 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 this.selectedConditionConfig,
                 this.ruleCondition
             );
+            this.showPixelSelector =
+                this.ruleCondition.metric.type ===
+                    RuleConditionOperandType.Conversions ||
+                this.ruleCondition.metric.type ===
+                    RuleConditionOperandType.AvgCostPerConversion;
 
             this.inputUnitSymbol =
                 this.selectedValueConfig?.unit === Unit.CurrencySign
@@ -126,6 +138,9 @@ export class RuleEditFormConditionComponent implements OnChanges {
                     type: metricType,
                     modifier: null,
                     window: null,
+                    conversionPixel: null,
+                    conversionPixelWindow: null,
+                    conversionPixelAttribution: null,
                 },
                 value: {
                     type: isOnlyAbsoluteValueMetric
@@ -157,6 +172,45 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 metric: {
                     ...this.ruleCondition.metric,
                     window: window,
+                },
+            },
+        });
+    }
+
+    updateConversionPixel(conversionPixel: string) {
+        this.conditionChange.emit({
+            target: this.ruleCondition,
+            changes: {
+                metric: {
+                    ...this.ruleCondition.metric,
+                    conversionPixel: conversionPixel,
+                },
+            },
+        });
+    }
+
+    updateConversionPixelWindow(conversionWindow: ConversionWindow) {
+        this.conditionChange.emit({
+            target: this.ruleCondition,
+            changes: {
+                metric: {
+                    ...this.ruleCondition.metric,
+                    conversionPixelWindow: conversionWindow,
+                },
+            },
+        });
+    }
+
+    updateConversionPixelAttribution(
+        conversionAttribution: ConversionPixelAttribution
+    ) {
+        this.conditionChange.emit({
+            target: this.ruleCondition,
+            changes: {
+                metric: {
+                    ...this.ruleCondition.metric,
+                    conversionPixelAttribution: conversionAttribution,
+                    conversionPixelWindow: null,
                 },
             },
         });

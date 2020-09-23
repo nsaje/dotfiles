@@ -18,6 +18,8 @@ class RuleConditionValidationMixin:
             self._validate_right_operand_window,
             self._validate_right_operand_value,
             self._validate_conversion_pixel,
+            self._validate_conversion_pixel_window,
+            self._validate_conversion_pixel_attribution,
             changes=changes,
         )
 
@@ -100,3 +102,17 @@ class RuleConditionValidationMixin:
         account = self.rule.account
         if account and conversion_pixel.account != account:
             raise exceptions.InvalidConversionPixel("Conversion pixel does not belong to the rule's account")
+
+    def _validate_conversion_pixel_window(self, changes):
+        conversion_pixel = changes.get("conversion_pixel", self.conversion_pixel)
+        conversion_pixel_window = changes.get("conversion_pixel_window", self.conversion_pixel_window)
+
+        if conversion_pixel and not conversion_pixel_window:
+            raise exceptions.InvalidConversionPixelWindow("Conversion pixel window must not be empty")
+
+    def _validate_conversion_pixel_attribution(self, changes):
+        conversion_pixel = changes.get("conversion_pixel", self.conversion_pixel)
+        conversion_pixel_attribution = changes.get("conversion_pixel_attribution", self.conversion_pixel_attribution)
+
+        if conversion_pixel and not conversion_pixel_attribution:
+            raise exceptions.InvalidConversionPixelAttribution("Conversion pixel attribution must not be empty")

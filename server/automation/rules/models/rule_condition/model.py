@@ -20,6 +20,9 @@ class RuleCondition(instance.RuleConditionInstanceMixin, validation.RuleConditio
         "right_operand_window",
         "right_operand_type",
         "right_operand_value",
+        "conversion_pixel",
+        "conversion_pixel_window",
+        "conversion_pixel_attribution",
     ]
 
     id = models.AutoField(primary_key=True)

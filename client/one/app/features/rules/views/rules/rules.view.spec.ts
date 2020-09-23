@@ -20,6 +20,7 @@ import {RuleEditFormConditionModifierComponent} from '../../components/rule-edit
 import {RuleEditFormNotificationComponent} from '../../components/rule-edit-form-notification/rule-edit-form-notification.component';
 import {RuleEditFormConditionsComponent} from '../../components/rule-edit-form-conditions/rule-edit-form-conditions.component';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {RuleEditFormConditionConversionPixelComponent} from '../../components/rule-edit-form-condition-conversion-pixel/rule-edit-form-condition-conversion-pixel.component';
 
 describe('RulesView', () => {
     let component: RulesView;
@@ -43,6 +44,7 @@ describe('RulesView', () => {
                 RuleEditFormConditionModifierComponent,
                 RuleEditFormNotificationComponent,
                 RuleEditFormConditionsComponent,
+                RuleEditFormConditionConversionPixelComponent,
             ],
             imports: [
                 FormsModule,

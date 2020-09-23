@@ -19,6 +19,9 @@ import {CampaignEndpoint} from '../../../../core/entities/services/campaign/camp
 import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroupEndpoint} from '../../../../core/entities/services/ad-group/ad-group.endpoint';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {ConversionPixelsEndpoint} from '../../../../core/conversion-pixels/services/conversion-pixels.endpoint';
+import {ConversionPixelsService} from '../../../../core/conversion-pixels/services/conversion-pixels.service';
+import {RuleEditFormConditionConversionPixelComponent} from '../rule-edit-form-condition-conversion-pixel/rule-edit-form-condition-conversion-pixel.component';
 
 describe('RuleEditFormComponent', () => {
     let component: RuleEditFormComponent;
@@ -38,11 +41,14 @@ describe('RuleEditFormComponent', () => {
                 RuleEditFormConditionsComponent,
                 RuleEditFormConditionModifierComponent,
                 RuleEditFormNotificationComponent,
+                RuleEditFormConditionConversionPixelComponent,
             ],
             imports: [FormsModule, SharedModule],
             providers: [
                 PublisherGroupsService,
                 PublisherGroupsEndpoint,
+                ConversionPixelsService,
+                ConversionPixelsEndpoint,
                 RulesService,
                 RulesEndpoint,
                 AccountService,

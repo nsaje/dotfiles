@@ -123,3 +123,11 @@ class InvalidRightOperandValue(ValidationError):
 
 class InvalidConversionPixel(ValidationError):
     pass
+
+
+class InvalidConversionPixelWindow(ValidationError):
+    pass
+
+
+class InvalidConversionPixelAttribution(ValidationError):
+    pass

@@ -48,13 +48,15 @@ describe('ConversionPixelsService', () => {
             .calls.reset();
 
         service
-            .list(accountId, requestStateUpdater)
+            .list(null, accountId, null, requestStateUpdater)
             .subscribe(conversionPixels => {
                 expect(conversionPixels).toEqual(mockedConversionPixels);
             });
         expect(conversionPixelsEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(conversionPixelsEndpointStub.list).toHaveBeenCalledWith(
+            null,
             accountId,
+            null,
             requestStateUpdater
         );
     });

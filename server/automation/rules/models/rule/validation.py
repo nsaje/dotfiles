@@ -277,6 +277,15 @@ class RuleValidationMixin:
                     if isinstance(e, exceptions.InvalidLeftOperandWindow):
                         condition_errors.setdefault("metric", {})
                         condition_errors["metric"]["window"] = str(e)
+                    if isinstance(e, exceptions.InvalidConversionPixel):
+                        condition_errors.setdefault("metric", {})
+                        condition_errors["metric"].setdefault("conversion_pixel", []).append(str(e))
+                    if isinstance(e, exceptions.InvalidConversionPixelWindow):
+                        condition_errors.setdefault("metric", {})
+                        condition_errors["metric"].setdefault("conversion_pixel_window", []).append(str(e))
+                    if isinstance(e, exceptions.InvalidConversionPixelAttribution):
+                        condition_errors.setdefault("metric", {})
+                        condition_errors["metric"].setdefault("conversion_pixel_attribution", []).append(str(e))
                     if isinstance(e, exceptions.InvalidRightOperandType):
                         condition_errors.setdefault("value", {})
                         condition_errors["value"]["type"] = str(e)

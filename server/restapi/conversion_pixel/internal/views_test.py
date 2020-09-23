@@ -63,6 +63,23 @@ class ConversionPixelViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual("Either agency id or account id must be provided.", resp_json["details"])
 
+    def test_list_keyword(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        test_pixel_1 = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test")
+        test_pixel_2 = magic_mixer.blend(core.models.ConversionPixel, account=account, name="also test")
+        new_pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="new name")
+
+        r = self.client.get(
+            reverse("restapi.conversion_pixel.internal:pixels_list"), {"accountId": account.id, "keyword": "test"}
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(2, len(resp_json["data"]))
+
+        response_pixel_ids = [pixel["id"] for pixel in resp_json["data"]]
+        self.assertIn(str(test_pixel_1.id), response_pixel_ids)
+        self.assertIn(str(test_pixel_2.id), response_pixel_ids)
+        self.assertNotIn(str(new_pixel.id), response_pixel_ids)
+
     def test_list_audience_enabled_only(self):
         account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.blend(

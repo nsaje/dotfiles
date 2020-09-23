@@ -100,11 +100,15 @@
             class="zem-rule-edit-form__section-item zem-rule-edit-form-conditions"
             [ruleConditions]="state.rule.conditions"
             [availableConditions]="state.availableConditions"
+            [availableConversionPixels]="state.availableConversionPixels"
             [ruleConditionsErrors]="state.fieldsErrors?.conditions"
             [isDisabled]="state.isReadOnly"
             (ruleConditionAdd)="store.addCondition($event)"
             (ruleConditionChange)="store.updateCondition($event)"
             (ruleConditionRemove)="store.removeCondition($event)"
+            (conversionPixelsSearch)="
+                store.loadAvailableConversionPixels($event)
+            "
         >
         </zem-rule-edit-form-conditions>
         <zem-select-form-group

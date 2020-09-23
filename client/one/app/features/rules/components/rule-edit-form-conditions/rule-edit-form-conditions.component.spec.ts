@@ -4,6 +4,7 @@ import {SharedModule} from '../../../../shared/shared.module';
 import {RuleEditFormConditionsComponent} from './rule-edit-form-conditions.component';
 import {RuleEditFormConditionComponent} from '../rule-edit-form-condition/rule-edit-form-condition.component';
 import {RuleEditFormConditionModifierComponent} from '../rule-edit-form-condition-modifier/rule-edit-form-condition-modifier.component';
+import {RuleEditFormConditionConversionPixelComponent} from '../rule-edit-form-condition-conversion-pixel/rule-edit-form-condition-conversion-pixel.component';
 
 describe('RuleEditFormConditionsComponent', () => {
     let component: RuleEditFormConditionsComponent;
@@ -15,6 +16,7 @@ describe('RuleEditFormConditionsComponent', () => {
                 RuleEditFormConditionsComponent,
                 RuleEditFormConditionComponent,
                 RuleEditFormConditionModifierComponent,
+                RuleEditFormConditionConversionPixelComponent,
             ],
             imports: [FormsModule, SharedModule],
         });

@@ -21,6 +21,10 @@
     flex: 0 0 175px;
 }
 
+.zem-rule-edit-form-condition__operand-container--pixel .zem-popover.popover {
+    min-width: 500px;
+}
+
 .zem-rule-edit-form-condition__operand-select {
     flex: 0 1 290px;
     margin-right: 2px;
@@ -30,6 +34,32 @@
     flex: 0;
 }
 
+.zem-rule-edit-form-condition__modifiers-toggle.zem-rule-edit-form-condition__pixels-toggle {
+    border-color: @color--primary;
+
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            box-shadow: 0px 0px 6px 0px fade(@color--primary, 60%);
+            border-color: @color--primary;
+        }
+    }
+}
+
+.zem-rule-edit-form-condition__modifiers-toggle.zem-rule-edit-form-condition__modifiers-toggle--error {
+    border-color: @color--danger;
+    box-shadow: 0px 0px 6px 0px fade(@color--danger, 60%);
+
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            box-shadow: 0px 0px 6px 0px fade(@color--danger, 60%);
+            border-color: @color--danger;
+        }
+    }
+}
 .zem-rule-edit-form-condition__absolute-value-input {
     flex: 0 0 135px;
     margin-right: 2px;

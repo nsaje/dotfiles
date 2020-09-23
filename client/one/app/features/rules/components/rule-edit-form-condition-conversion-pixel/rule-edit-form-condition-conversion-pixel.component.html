@@ -1,0 +1,120 @@
+<div class="zem-rule-edit-form__section-title">
+    Conversion pixel
+</div>
+<div class="zem-rule-edit-form-condition-conversion-pixel__section">
+    <zem-radio-input
+        class="zem-radio-input"
+        [value]="ConversionPixelOptions.CAMPAIGN_GOAL"
+        [groupModel]="conversionPixelOption"
+        (select)="changeConversionPixelOption($event)"
+    >
+        Use campaign goal pixel
+    </zem-radio-input>
+    <zem-radio-input
+        class="zem-radio-input"
+        [value]="'PIXEL'"
+        [groupModel]="conversionPixelOption"
+        (select)="changeConversionPixelOption($event)"
+    >
+        <div
+            class="zem-rule-edit-form-condition-conversion-pixel__pixel-selector-container"
+        >
+            <div
+                class="zem-rule-edit-form-condition-conversion-pixel__pixel-selector-label"
+            >
+                Use specific conversion pixel
+            </div>
+            <zem-select-input
+                class="zem-select-input zem-rule-edit-form-condition-conversion-pixel__pixel-selector-item"
+                *ngIf="conversionPixelOption == ConversionPixelOptions.PIXEL"
+                [value]="conversionPixel"
+                bindLabel="name"
+                bindValue="id"
+                [items]="availableConversionPixels"
+                [placeholder]="'Select conversion pixel'"
+                [isSearchable]="true"
+                [isDisabled]="isDisabled"
+                [hasError]="metricErrors?.conversionPixel"
+                (valueChange)="pixelChange.emit($event)"
+                (search)="conversionPixelsSearch.emit($event)"
+                (open)="conversionPixelsSearch.emit(null)"
+            ></zem-select-input>
+        </div>
+    </zem-radio-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of metricErrors?.conversionPixel"
+    >
+        {{ error }}
+    </div>
+</div>
+<div class="zem-rule-edit-form-condition-conversion-pixel__section">
+    <div
+        class="zem-rule-edit-form-condition-conversion-pixel__section-label"
+        [ngClass]="{
+            'zem-rule-edit-form-condition-conversion-pixel__section-label--error':
+                metricErrors?.conversionPixelAttribution
+        }"
+    >
+        Attribution model
+    </div>
+    <zem-radio-input
+        *ngIf="conversionPixelOption == ConversionPixelOptions.CAMPAIGN_GOAL"
+        class="zem-radio-input"
+        [value]="null"
+        [groupModel]="conversionPixelAttribution"
+        (select)="attributionChange.emit($event)"
+    >
+        Use campaign goal's default attribution model
+    </zem-radio-input>
+    <zem-radio-input
+        *ngFor="let attribution of conversionAttributions"
+        class="zem-radio-input"
+        [value]="attribution.value"
+        [groupModel]="conversionPixelAttribution"
+        (select)="attributionChange.emit($event)"
+    >
+        {{ attribution.name }}
+    </zem-radio-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of metricErrors?.conversionPixelAttribution"
+    >
+        {{ error }}
+    </div>
+</div>
+<div class="zem-rule-edit-form-condition-conversion-pixel__section">
+    <div
+        class="zem-rule-edit-form-condition-conversion-pixel__section-label"
+        [ngClass]="{
+            'zem-rule-edit-form-condition-conversion-pixel__section-label--error':
+                metricErrors?.conversionPixelWindow
+        }"
+    >
+        Attribution window
+    </div>
+    <zem-radio-input
+        *ngIf="conversionPixelOption == ConversionPixelOptions.CAMPAIGN_GOAL"
+        class="zem-radio-input"
+        [value]="null"
+        [groupModel]="conversionPixelWindow"
+        (select)="windowChange.emit($event)"
+    >
+        Use campaign goal's default attribution window
+    </zem-radio-input>
+    <zem-radio-input
+        *ngFor="let window of conversionWindows"
+        class="zem-radio-input"
+        [value]="window.value"
+        [groupModel]="conversionPixelWindow"
+        (select)="windowChange.emit($event)"
+    >
+        {{ window.name }}
+    </zem-radio-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of metricErrors?.conversionPixelWindow"
+    >
+        {{ error }}
+    </div>
+</div>

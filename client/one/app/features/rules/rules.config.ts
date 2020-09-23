@@ -537,37 +537,13 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
     },
     [RuleConditionOperandType.Conversions]: {
         type: RuleConditionOperandType.Conversions,
-        label: 'Conversions - click attribution',
-        group: RuleConditionOperandGroup.Conversions,
-        hasTimeRangeModifier: true,
-    },
-    [RuleConditionOperandType.ConversionsView]: {
-        type: RuleConditionOperandType.ConversionsView,
-        label: 'Conversions - view attribution',
-        group: RuleConditionOperandGroup.Conversions,
-        hasTimeRangeModifier: true,
-    },
-    [RuleConditionOperandType.ConversionsTotal]: {
-        type: RuleConditionOperandType.ConversionsTotal,
-        label: 'Conversions - total',
+        label: 'Conversions',
         group: RuleConditionOperandGroup.Conversions,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.AvgCostPerConversion]: {
         type: RuleConditionOperandType.AvgCostPerConversion,
-        label: 'Avg. cost per conversion - click attribution',
-        group: RuleConditionOperandGroup.Conversions,
-        hasTimeRangeModifier: true,
-    },
-    [RuleConditionOperandType.AvgCostPerConversionView]: {
-        type: RuleConditionOperandType.AvgCostPerConversionView,
-        label: 'Avg. cost per conversion - view attribution',
-        group: RuleConditionOperandGroup.Conversions,
-        hasTimeRangeModifier: true,
-    },
-    [RuleConditionOperandType.AvgCostPerConversionTotal]: {
-        type: RuleConditionOperandType.AvgCostPerConversionTotal,
-        label: 'Avg. cost per conversion - total',
+        label: 'Avg. cost per conversion',
         group: RuleConditionOperandGroup.Conversions,
         hasTimeRangeModifier: true,
     },
@@ -1260,86 +1236,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.ConversionsView]: {
-        metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.ConversionsView
-            ],
-        availableOperators: [
-            RuleConditionOperator.LessThan,
-            RuleConditionOperator.GreaterThan,
-        ],
-        availableValueTypes: [
-            {
-                ...RULE_CONDITION_OPERANDS_OPTIONS[
-                    RuleConditionOperandType.AbsoluteValue
-                ],
-                dataType: DataType.Integer,
-            },
-        ],
-    },
-    [RuleConditionOperandType.ConversionsTotal]: {
-        metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.ConversionsTotal
-            ],
-        availableOperators: [
-            RuleConditionOperator.LessThan,
-            RuleConditionOperator.GreaterThan,
-        ],
-        availableValueTypes: [
-            {
-                ...RULE_CONDITION_OPERANDS_OPTIONS[
-                    RuleConditionOperandType.AbsoluteValue
-                ],
-                dataType: DataType.Integer,
-            },
-        ],
-    },
     [RuleConditionOperandType.AvgCostPerConversion]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversion
-            ],
-        availableOperators: [
-            RuleConditionOperator.LessThan,
-            RuleConditionOperator.GreaterThan,
-        ],
-        availableValueTypes: [
-            {
-                ...RULE_CONDITION_OPERANDS_OPTIONS[
-                    RuleConditionOperandType.AbsoluteValue
-                ],
-                dataType: DataType.Currency,
-                unit: Unit.CurrencySign,
-                fractionSize: 2,
-            },
-        ],
-    },
-    [RuleConditionOperandType.AvgCostPerConversionView]: {
-        metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AvgCostPerConversionView
-            ],
-        availableOperators: [
-            RuleConditionOperator.LessThan,
-            RuleConditionOperator.GreaterThan,
-        ],
-        availableValueTypes: [
-            {
-                ...RULE_CONDITION_OPERANDS_OPTIONS[
-                    RuleConditionOperandType.AbsoluteValue
-                ],
-                dataType: DataType.Currency,
-                unit: Unit.CurrencySign,
-                fractionSize: 2,
-            },
-        ],
-    },
-    [RuleConditionOperandType.AvgCostPerConversionTotal]: {
-        metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AvgCostPerConversionTotal
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,

@@ -17,8 +17,8 @@ class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializ
         automation.rules.MetricWindow, source="left_operand_window", allow_null=True, initial=None
     )
     modifier = rest_framework.serializers.FloatField(source="left_operand_modifier", allow_null=True)
-    conversion_pixel = rest_framework.serializers.SlugRelatedField(
-        queryset=core.models.ConversionPixel, required=False, allow_null=True, slug_field="id"
+    conversion_pixel = rest_framework.serializers.PrimaryKeyRelatedField(
+        queryset=core.models.ConversionPixel.objects.all(), required=False, allow_null=True
     )
     conversion_pixel_window = restapi.serializers.fields.DashConstantField(
         dash.constants.ConversionWindows, required=False, allow_null=True, initial=None
@@ -26,6 +26,12 @@ class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializ
     conversion_pixel_attribution = restapi.serializers.fields.DashConstantField(
         dash.constants.ConversionType, required=False, allow_null=True, initial=None
     )
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if ret["conversion_pixel"]:
+            ret["conversion_pixel"] = str(ret["conversion_pixel"])
+        return ret
 
 
 class RuleConditionValueSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
