@@ -2,6 +2,7 @@ from django.db import transaction
 
 import core.models
 import dash.constants
+import utils.k1_helper
 from utils import zlogging
 from utils.command_helpers import Z1Command
 
@@ -901,3 +902,4 @@ class Command(Z1Command):
     def _handle_reset_browsers_targeting(ad_group_qs):
         for ad_group in ad_group_qs:
             ad_group.settings.update(None, target_browsers=None, exclusion_target_browsers=None)
+            utils.k1_helper.update_ad_group(ad_group=ad_group, priority=True)
