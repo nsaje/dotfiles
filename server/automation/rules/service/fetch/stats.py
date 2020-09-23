@@ -1,8 +1,9 @@
+import operator
 from collections import defaultdict
+from typing import Any
 from typing import DefaultDict
 from typing import Dict
 from typing import List
-from typing import Optional
 from typing import Sequence
 
 import automation.models
@@ -22,13 +23,13 @@ from ... import models
 
 def query_stats(
     target_type: int, rules_map: Dict[core.models.AdGroup, List[models.Rule]]
-) -> Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]]:
+) -> Dict[int, Dict[str, Dict[str, Dict[int, Any]]]]:
     ad_groups = list(rules_map.keys())
-    raw_stats = redshiftapi.api_rules.query(target_type, ad_groups)
+    stats = redshiftapi.api_rules.query(target_type, ad_groups)
     cpa_ad_groups = _get_cpa_ad_groups(rules_map)
     conversion_stats = redshiftapi.api_rules.query_conversions(target_type, cpa_ad_groups)
-    merged_stats = _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats)
-    formatted_stats = _format(target_type, merged_stats)
+    _augment_with_conversion_stats(target_type, cpa_ad_groups, stats, conversion_stats)
+    formatted_stats = _format(target_type, stats)
     return _add_missing_targets(target_type, ad_groups, formatted_stats)
 
 
@@ -41,74 +42,57 @@ def _get_cpa_ad_groups(rules_map):
     return cpa_ad_groups
 
 
-def _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats):
+def _augment_with_conversion_stats(target_type, cpa_ad_groups, stats, conversion_stats):
     target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
     conversion_stats_by_pixel_breakdown = sort_helper.group_rows_by_breakdown_key(
-        target_column_keys + ["slug", "window_key"], conversion_stats
+        target_column_keys + ["window_key"], conversion_stats
     )
     cpa_ad_groups_map = {ad_group.id: ad_group for ad_group in cpa_ad_groups}
-    target_goals_per_campaign = {}
 
-    merged_stats = []
-    for row in raw_stats:
-        ad_group_id = row["ad_group_id"]
-        if ad_group_id not in cpa_ad_groups_map:
-            merged_stats.append(row)
-            continue
-
-        ad_group = cpa_ad_groups_map[ad_group_id]
-        if ad_group.campaign_id not in target_goals_per_campaign:
-            target_goals_per_campaign[ad_group.campaign_id] = _get_target_goal(ad_group)
-
-        target_goal = target_goals_per_campaign[ad_group.campaign_id]
-        if not target_goal:
-            merged_stats.append(row)
-            continue
-
-        pixel_rows = conversion_stats_by_pixel_breakdown.get(
-            tuple(row[col] for col in target_column_keys) + (target_goal.pixel.slug, row["window_key"])
-        )
-        merged_stats.append(_merge_row(target_goal, row, pixel_rows))
-    return merged_stats
+    for stats_row in stats:
+        ad_group_id = stats_row["ad_group_id"]
+        if ad_group_id in cpa_ad_groups_map:
+            pixel_rows = conversion_stats_by_pixel_breakdown.get(
+                tuple(stats_row[col] for col in target_column_keys) + (stats_row["window_key"],)
+            )
+            stats_row["conversions"] = _aggregate_conversions(stats_row, pixel_rows)
 
 
-def _merge_row(target_goal, row, pixel_rows):
-    merged_row = dict(row)
-    if pixel_rows:
-        count = sum(x["count"] for x in pixel_rows if x["window"] <= target_goal.conversion_window)
-        count_view = sum(x["count_view"] for x in pixel_rows if x["window"] <= target_goal.conversion_window)
-        count_total = count + count_view
-        local_avg_etfm_cost = float(merged_row["local_etfm_cost"]) / count if count else None
-        local_avg_etfm_cost_view = float(merged_row["local_etfm_cost"]) / count_view if count_view else None
-        local_avg_etfm_cost_total = float(merged_row["local_etfm_cost"]) / count_total if count_total else None
-    else:
-        count = None
-        count_view = None
-        count_total = None
-        local_avg_etfm_cost = None
-        local_avg_etfm_cost_view = None
-        local_avg_etfm_cost_total = None
+def _aggregate_conversions(stats_row, pixel_rows):
+    conversions = {}
+    if not pixel_rows:
+        return conversions
 
-    merged_row["conversions_click"] = count
-    merged_row["conversions_view"] = count_view
-    merged_row["conversions_total"] = count_total
-    merged_row["local_avg_etfm_cost_per_conversion"] = local_avg_etfm_cost
-    merged_row["local_avg_etfm_cost_per_conversion_view"] = local_avg_etfm_cost_view
-    merged_row["local_avg_etfm_cost_per_conversion_total"] = local_avg_etfm_cost_total
+    all_conversion_windows = dash.constants.ConversionWindows.get_all()
+    for pixel_row in sorted(pixel_rows, key=operator.itemgetter("slug", "window")):
+        slug = pixel_row["slug"]
+        row_window = pixel_row["window"]
+        conversions.setdefault(slug, {})
+        for window in all_conversion_windows:
+            if window >= row_window:
+                conversions[slug].setdefault(window, {"count_click": 0, "count_view": 0, "count_total": 0})
+                conversions[slug][window]["count_click"] += pixel_row["count"]
+                conversions[slug][window]["count_view"] += pixel_row["count_view"]
+                conversions[slug][window]["count_total"] += pixel_row["count"] + pixel_row["count_view"]
 
-    return merged_row
+    for slug in conversions:
+        for window in conversions[slug]:
+            conversions[slug][window]["local_avg_etfm_per_conversion_cost_click"] = (
+                stats_row["local_etfm_cost"] / conversions[slug][window]["count_click"]
+            )
+            conversions[slug][window]["local_avg_etfm_cost_per_conversion_view"] = (
+                stats_row["local_etfm_cost"] / conversions[slug][window]["count_view"]
+            )
+            conversions[slug][window]["local_avg_etfm_cost_per_conversion_total"] = (
+                stats_row["local_etfm_cost"] / conversions[slug][window]["count_total"]
+            )
 
-
-def _get_target_goal(ad_group) -> Optional[core.features.goals.ConversionGoal]:
-    for goal in ad_group.campaign.campaigngoal_set.all().select_related("conversion_goal__pixel").order_by("-primary"):
-        if goal.type == dash.constants.CampaignGoalKPI.CPA:
-            return goal.conversion_goal
-    return None  # campaign has no cpa goal set
+    return conversions
 
 
-def _format(target_type: int, stats: Sequence[Dict]) -> Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]]:
+def _format(target_type: int, stats: Sequence[Dict]) -> Dict[int, Dict[str, Dict[str, Dict[int, Any]]]]:
     target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
-    formatted_stats: Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]] = {}
+    formatted_stats: Dict[int, Dict[str, Dict[str, Dict[int, Any]]]] = {}
     for row in stats:
         ad_group_id = row.pop("ad_group_id", None)
         default_key = ad_group_id if target_type == constants.TargetType.AD_GROUP else None
@@ -133,9 +117,7 @@ def _format(target_type: int, stats: Sequence[Dict]) -> Dict[int, Dict[str, Dict
 
 
 def _add_missing_targets(
-    target_type: int,
-    ad_groups: List[core.models.AdGroup],
-    stats: Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]],
+    target_type: int, ad_groups: List[core.models.AdGroup], stats: Dict[int, Dict[str, Dict[str, Dict[int, Any]]]]
 ):
     all_possible_targets = _get_all_possible_targets_per_ad_group(target_type, ad_groups)
     for ad_group in ad_groups:

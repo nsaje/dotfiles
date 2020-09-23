@@ -45,5 +45,5 @@ class RuleCondition(instance.RuleConditionInstanceMixin, validation.RuleConditio
         choices=dash.constants.ConversionWindows.get_choices(), null=True, blank=True
     )
     conversion_pixel_attribution = models.IntegerField(
-        choices=dash.constants.ConversionType.get_choices(), null=True, blank=True
+        choices=constants.ConversionAttributionType.get_choices(), null=True, blank=True
     )

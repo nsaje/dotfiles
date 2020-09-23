@@ -2084,66 +2084,6 @@ export const EMAIL_MACROS = [
         label: 'Avg. cost per unique user (last 60 days)',
         value: Macro.AvgCostPerUniqueUserLastSixtyDays,
     },
-    {
-        label: 'Avg. cost per conversion (last day)',
-        value: Macro.AvgCostPerConversionLastDay,
-    },
-    {
-        label: 'Avg. cost per conversion (last 3 days)',
-        value: Macro.AvgCostPerConversionLastThreeDays,
-    },
-    {
-        label: 'Avg. cost per conversion (last 7 days)',
-        value: Macro.AvgCostPerConversionLastSevenDays,
-    },
-    {
-        label: 'Avg. cost per conversion (last 30 days)',
-        value: Macro.AvgCostPerConversionLastThirtyDays,
-    },
-    {
-        label: 'Avg. cost per conversion (last 60 days)',
-        value: Macro.AvgCostPerConversionLastSixtyDays,
-    },
-    {
-        label: 'Avg. cost per conversion - view attribution (last day)',
-        value: Macro.AvgCostPerConversionViewLastDay,
-    },
-    {
-        label: 'Avg. cost per conversion - view attribution (last 3 days)',
-        value: Macro.AvgCostPerConversionViewLastThreeDays,
-    },
-    {
-        label: 'Avg. cost per conversion - view attribution (last 7 days)',
-        value: Macro.AvgCostPerConversionViewLastSevenDays,
-    },
-    {
-        label: 'Avg. cost per conversion - view attribution (last 30 days)',
-        value: Macro.AvgCostPerConversionViewLastThirtyDays,
-    },
-    {
-        label: 'Avg. cost per conversion - view attribution (last 60 days)',
-        value: Macro.AvgCostPerConversionViewLastSixtyDays,
-    },
-    {
-        label: 'Avg. cost per conversion - total (last day)',
-        value: Macro.AvgCostPerConversionTotalLastDay,
-    },
-    {
-        label: 'Avg. cost per conversion - total (last 3 days)',
-        value: Macro.AvgCostPerConversionTotalLastThreeDays,
-    },
-    {
-        label: 'Avg. cost per conversion - total (last 7 days)',
-        value: Macro.AvgCostPerConversionTotalLastSevenDays,
-    },
-    {
-        label: 'Avg. cost per conversion - total (last 30 days)',
-        value: Macro.AvgCostPerConversionTotalLastThirtyDays,
-    },
-    {
-        label: 'Avg. cost per conversion - total (last 60 days)',
-        value: Macro.AvgCostPerConversionTotalLastSixtyDays,
-    },
 ];
 
 export const PAGINATION_URL_PARAMS = ['page', 'pageSize'];

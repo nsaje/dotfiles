@@ -1,5 +1,6 @@
 import dataclasses
 from decimal import Decimal
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -143,12 +144,7 @@ def turn_off(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -
 
 
 def send_email(
-    target: str,
-    rule: Rule,
-    ad_group: core.models.AdGroup,
-    *,
-    target_stats: Dict[str, Dict[int, Optional[float]]],
-    **kwargs
+    target: str, rule: Rule, ad_group: core.models.AdGroup, *, target_stats: Dict[str, Dict[int, Any]], **kwargs
 ):
     if rule.action_type != constants.ActionType.SEND_EMAIL:
         raise Exception("Invalid action type")

@@ -58,7 +58,9 @@ def execute_rules_daily_run() -> None:
             )
             .filter(rule_history_exists_today=False, state=constants.RuleState.ENABLED, target_type=target_type)
             .exclude_archived()
-            .prefetch_related("ad_groups_included", "campaigns_included", "accounts_included", "conditions")
+            .prefetch_related(
+                "ad_groups_included", "campaigns_included", "accounts_included", "conditions__conversion_pixel"
+            )
         )
 
         rules_map = helpers.get_rules_by_ad_group_map(rules, exclude_inactive_yesterday=True)
@@ -72,6 +74,7 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
     stats = fetch.query_stats(target_type, rules_map)
     ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
     campaign_budgets_map = fetch.prepare_budgets(ad_groups)
+    cpa_goals_map = fetch.prepare_cpa_goal_by_campaign_id(ad_groups)
     content_ad_settings_map = {}
     if target_type == constants.TargetType.AD:
         content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
@@ -88,6 +91,7 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
                     ad_group_settings_map.get(ad_group.id, {}),
                     content_ad_settings_map.get(ad_group.id, {}),
                     campaign_budgets_map.get(ad_group.campaign_id, {}),
+                    cpa_goals_map.get(ad_group.campaign_id, None),
                 )
             except exceptions.RuleArchived:
                 continue

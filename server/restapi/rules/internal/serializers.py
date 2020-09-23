@@ -24,7 +24,7 @@ class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializ
         dash.constants.ConversionWindows, required=False, allow_null=True, initial=None
     )
     conversion_pixel_attribution = restapi.serializers.fields.DashConstantField(
-        dash.constants.ConversionType, required=False, allow_null=True, initial=None
+        automation.rules.ConversionAttributionType, required=False, allow_null=True, initial=None
     )
 
     def to_representation(self, instance):

@@ -2,7 +2,6 @@ from django.db import transaction
 from django.utils.functional import cached_property
 
 from ... import constants
-from ...common import macros
 from ..rule_condition import RuleCondition
 
 
@@ -25,22 +24,12 @@ class RuleInstanceMixin:
 
     @cached_property
     def requires_cpa_stats(self):
-        return self._has_cpa_operands() or self._has_cpa_macros()
+        return self._has_cpa_operands()
 
     def _has_cpa_operands(self):
         for condition in self.conditions.all():
-            if condition.left_operand_type in constants.CONVERSION_METRICS:
+            if condition.left_operand_type in constants.METRIC_CONVERSIONS_MAPPING:
                 return True
-        return False
-
-    def _has_cpa_macros(self):
-        if self.action_type == constants.ActionType.SEND_EMAIL:
-            if self.send_email_subject:
-                if macros.has_cpa_macros(self.send_email_subject):
-                    return True
-            if self.send_email_body:
-                if macros.has_cpa_macros(self.send_email_body):
-                    return True
         return False
 
     @transaction.atomic

@@ -12,6 +12,7 @@ from typing import Union
 from django.db import transaction
 
 import core.features.bid_modifiers
+import core.features.goals
 import core.models
 import utils.dates_helper
 import utils.exc
@@ -51,10 +52,11 @@ class ConditionValues:
 def apply_rule(
     rule: models.Rule,
     ad_group: core.models.AdGroup,
-    ad_group_stats: Union[Dict[str, Dict[str, Dict[int, Optional[float]]]], Dict],
+    ad_group_stats: Union[Dict[str, Dict[str, Dict[int, Any]]], Dict],
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
     campaign_budget: Dict[str, Any],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
 ) -> Tuple[Sequence[ValueChangeData], Dict[str, Dict[str, ConditionValues]]]:
 
     if rule.archived:
@@ -73,7 +75,7 @@ def apply_rule(
             rule, ad_group, target, campaign_budget, ad_group_settings, content_ads_settings
         )
         try:
-            values_by_condition = _compute_values_by_condition(rule, target_stats, settings_dict)
+            values_by_condition = _compute_values_by_condition(rule, target_stats, settings_dict, cpa_goal)
             if _meets_all_conditions(values_by_condition):
                 update = _apply_action(target, rule, ad_group, target_stats)
                 if update.has_changes():
@@ -127,11 +129,16 @@ def _construct_target_settings_dict(
 
 
 def _compute_values_by_condition(
-    rule: models.Rule, target_stats: Dict[str, Dict[int, Optional[float]]], settings_dict: Dict[str, Union[int, str]]
+    rule: models.Rule,
+    target_stats: Dict[str, Dict[int, Any]],
+    settings_dict: Dict[str, Union[int, str]],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
 ):
     values_by_condition = {}
     for condition in rule.conditions.all():
-        left_operand_value, right_operand_value = _prepare_operands(rule, condition, target_stats, settings_dict)
+        left_operand_value, right_operand_value = _prepare_operands(
+            rule, condition, target_stats, settings_dict, cpa_goal
+        )
         values_by_condition[condition] = left_operand_value, right_operand_value
     return values_by_condition
 
@@ -147,12 +154,16 @@ def _meets_all_conditions(values_by_condition) -> bool:
 def _prepare_operands(
     rule: models.Rule,
     condition: models.RuleCondition,
-    target_stats: Dict[str, Dict[int, Optional[float]]],
+    target_stats: Dict[str, Dict[int, Any]],
     settings_dict: Dict[str, Union[int, str]],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
 ):
     _validate_condition(condition)
-    if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
-        return _prepare_stats_operands(rule, condition, target_stats)
+    if (
+        condition.left_operand_type in constants.METRIC_STATS_MAPPING
+        or condition.left_operand_type in constants.METRIC_CONVERSIONS_MAPPING
+    ):
+        return _prepare_stats_operands(rule, condition, target_stats, cpa_goal)
     elif condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING:
         return _prepare_settings_operands(condition, settings_dict)
 
@@ -168,20 +179,25 @@ def _validate_condition(condition):
 
 
 def _prepare_stats_operands(
-    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: Dict[str, Dict[int, Any]],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
 ):
-    left_operand_value = _prepare_left_stat_operand(rule, condition, target_stats)
+    left_operand_value = _prepare_left_stat_operand(rule, condition, target_stats, cpa_goal)
     right_operand_value = _prepare_right_stat_operand(rule, condition, target_stats)
     return left_operand_value, right_operand_value
 
 
 def _prepare_left_stat_operand(
-    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: Dict[str, Dict[int, Any]],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
 ):
+    if condition.left_operand_type in constants.METRIC_CONVERSIONS_MAPPING:
+        return _prepare_left_stat_operand_conversions(rule, condition, target_stats, cpa_goal)
     left_operand_key = constants.METRIC_STATS_MAPPING[condition.left_operand_type]
-    if condition.left_operand_type in constants.CONVERSION_METRICS and left_operand_key not in target_stats:
-        raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
-
     window = condition.left_operand_window or rule.window
     left_operand_stat_value = target_stats[left_operand_key].get(window)
     if left_operand_stat_value is None:
@@ -192,8 +208,39 @@ def _prepare_left_stat_operand(
     return left_operand_stat_value * left_operand_modifier
 
 
+def _prepare_left_stat_operand_conversions(
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: Dict[str, Dict[int, Any]],
+    cpa_goal: Optional[core.features.goals.CampaignGoal],
+):
+    attribution = condition.conversion_pixel_attribution
+    conversion_window = condition.conversion_pixel_window
+    if condition.conversion_pixel is None:
+        if cpa_goal is None:
+            raise exceptions.NoCPAGoal(
+                "Conversion pixel could not be determined from campaign goals - no CPA goal is set on the ad group’s campaign"
+            )
+        # NOTE: the exact conversion pixel is determined during prefetch
+        slug = cpa_goal.conversion_goal.pixel.slug
+        if not conversion_window:
+            conversion_window = cpa_goal.conversion_goal.conversion_window
+        if not attribution:
+            # NOTE: using default since campaign goal doesn't contain this information yet
+            attribution = constants.ConversionAttributionType.CLICK
+    else:
+        slug = condition.conversion_pixel.slug
+    metric_key = (
+        constants.METRIC_CONVERSIONS_MAPPING[condition.left_operand_type]
+        + constants.METRIC_CONVERSIONS_SUFFIX[attribution]
+    )
+    conversion_stats = target_stats["conversions"]
+    condition_window = condition.left_operand_window or rule.window
+    return conversion_stats[condition_window][slug][conversion_window][metric_key]
+
+
 def _prepare_right_stat_operand(
-    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
+    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Any]]
 ):
     # TODO: handle constants
     if condition.right_operand_type == constants.ValueType.ABSOLUTE:

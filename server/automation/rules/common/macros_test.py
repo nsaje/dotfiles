@@ -32,14 +32,6 @@ class ValidateTestCase(TestCase):
             macros.validate("This is a macro test {TOTAL_SPEND_LAST_30_DAYS {ACCOUNT_NAME}}")
 
 
-class HasCPAMacrosTest(TestCase):
-    def test_has_cpa_macros(self):
-        self.assertFalse(macros.has_cpa_macros("{TOTAL_SPEND_LAST_7_DAYS}"))
-        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_LAST_7_DAYS}"))
-        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_VIEW_LAST_7_DAYS}"))
-        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_TOTAL_LAST_7_DAYS}"))
-
-
 class ExpandTestCase(TestCase):
     def setUp(self):
         patcher = patch("automation.autopilot.recalculate_budgets_ad_group")
@@ -116,13 +108,7 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: {AVG_COST_PER_PAGEVIEW_LAST_30_DAYS}
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: {AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS}
             AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}
-            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: {AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS}
-            AVG_COST_PER_CONVERSION_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_LAST_30_DAYS}
-            AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS}
-            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS}
-            CONVERSIONS_LAST_30_DAYS: {CONVERSIONS_LAST_30_DAYS}
-            CONVERSIONS_VIEW_LAST_30_DAYS: {CONVERSIONS_VIEW_LAST_30_DAYS}
-            CONVERSIONS_TOTAL_LAST_30_DAYS: {CONVERSIONS_TOTAL_LAST_30_DAYS}"""
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: {AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS}"""
         )
         self.target_stats = {
             "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
@@ -143,18 +129,12 @@ class ExpandTestCase(TestCase):
             "bounce_rate": {constants.MetricWindow.LAST_30_DAYS: 0.89},
             "total_seconds": {constants.MetricWindow.LAST_30_DAYS: 30200},
             "avg_tos": {constants.MetricWindow.LAST_30_DAYS: 25.2},
-            "conversions_click": {constants.MetricWindow.LAST_30_DAYS: 18},
-            "conversions_view": {constants.MetricWindow.LAST_30_DAYS: 29},
-            "conversions_total": {constants.MetricWindow.LAST_30_DAYS: 47},
             "local_avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
             "local_avg_etfm_cost_per_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
             "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
             "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
             "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
             "local_avg_etfm_cost_per_unique_user": {constants.MetricWindow.LAST_30_DAYS: 8.12},
-            "local_avg_etfm_cost_per_conversion": {constants.MetricWindow.LAST_30_DAYS: 0.12},
-            "local_avg_etfm_cost_per_conversion_view": {constants.MetricWindow.LAST_30_DAYS: 0.23},
-            "local_avg_etfm_cost_per_conversion_total": {constants.MetricWindow.LAST_30_DAYS: 0.34},
         }
 
     def test_expand_macros(self):
@@ -194,46 +174,10 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: $0.11
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: $0.44
             AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22
-            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: $8.12
-            AVG_COST_PER_CONVERSION_LAST_30_DAYS: $0.12
-            AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: $0.23
-            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: $0.34
-            CONVERSIONS_LAST_30_DAYS: 18
-            CONVERSIONS_VIEW_LAST_30_DAYS: 29
-            CONVERSIONS_TOTAL_LAST_30_DAYS: 47"""
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: $8.12"""
         )
         self.assertEqual(expected, expanded)
         self.assertTrue(all(macro in expanded for macro in constants.EmailActionMacro.get_all()))
-
-    def test_missing_cpa_stats(self):
-        target_stats = {
-            "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
-            "clicks": {constants.MetricWindow.LAST_30_DAYS: 2000},
-            "impressions": {constants.MetricWindow.LAST_30_DAYS: 200000},
-            "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
-            "local_etfm_cpm": {constants.MetricWindow.LAST_30_DAYS: 0.7},
-            "visits": {constants.MetricWindow.LAST_30_DAYS: 300},
-            "unique_users": {constants.MetricWindow.LAST_30_DAYS: 202},
-            "new_users": {constants.MetricWindow.LAST_30_DAYS: 15},
-            "returning_users": {constants.MetricWindow.LAST_30_DAYS: 89},
-            "percent_new_users": {constants.MetricWindow.LAST_30_DAYS: 0.75},
-            "click_discrepancy": {constants.MetricWindow.LAST_30_DAYS: 0.17},
-            "pageviews": {constants.MetricWindow.LAST_30_DAYS: 1231},
-            "pv_per_visit": {constants.MetricWindow.LAST_30_DAYS: 5.2},
-            "bounced_visits": {constants.MetricWindow.LAST_30_DAYS: 300},
-            "non_bounced_visits": {constants.MetricWindow.LAST_30_DAYS: 55},
-            "bounce_rate": {constants.MetricWindow.LAST_30_DAYS: 0.89},
-            "total_seconds": {constants.MetricWindow.LAST_30_DAYS: 30200},
-            "avg_tos": {constants.MetricWindow.LAST_30_DAYS: 25.2},
-            "local_avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
-            "local_avg_etfm_cost_per_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
-            "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
-            "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
-            "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
-            "local_avg_etfm_cost_per_unique_user": {constants.MetricWindow.LAST_30_DAYS: 8.12},
-        }
-        with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
-            macros.expand(self.content, self.ad_group, target_stats)
 
     def test_missing_window(self):
         target_stats = {

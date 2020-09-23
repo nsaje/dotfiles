@@ -15,3 +15,7 @@ class BudgetAutopilotInactive(ApplyFailedBase):
 
 class RuleArchived(ApplyFailedBase):
     pass
+
+
+class NoCPAGoal(ValidationError):
+    pass
