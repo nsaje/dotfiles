@@ -752,7 +752,6 @@ export enum RoutePathName {
     SCHEDULED_REPORTS = 'reports',
     CREDITS = 'credits',
     PUBLISHER_GROUPS = 'publishergroups',
-    USER_PERMISSIONS = 'users',
     PIXELS_LIBRARY = 'pixels',
     INVENTORY_PLANNING = 'inventory-planning',
     ARCHIVED = 'archived',

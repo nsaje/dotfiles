@@ -8,7 +8,6 @@ import {CREDITS_ROUTES} from './features/credits/credits.routes';
 import {PIXELS_LIBRARY_ROUTES} from './features/pixels-library/pixels-library.routes';
 import {PUBLISHER_GROUPS_ROUTES} from './features/publisher-groups/publisher-groups.routes';
 import {SCHEDULED_REPORTS_ROUTES} from './features/scheduled-reports/scheduled-reports.routes';
-import {USER_PERMISSIONS_ROUTES} from './features/user-permissions/user-permissions.routes';
 import {ANALYTICS_ROUTES} from './features/analytics/analytics.routes';
 import {ARCHIVED_ROUTES} from './features/archived/archived.routes';
 import {NEW_ENTITY_ANALYTICS_MOCK_ROUTES} from './features/new-entity-analytics-mock/new-entity-analytics-mock.routes';
@@ -47,10 +46,6 @@ export const APP_ROUTES: Routes = [
             {
                 path: RoutePathName.PUBLISHER_GROUPS,
                 children: PUBLISHER_GROUPS_ROUTES,
-            },
-            {
-                path: RoutePathName.USER_PERMISSIONS,
-                children: USER_PERMISSIONS_ROUTES,
             },
             {
                 path: RoutePathName.PIXELS_LIBRARY,

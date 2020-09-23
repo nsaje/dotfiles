@@ -16,7 +16,6 @@ import {ToastrModule} from 'ngx-toastr';
 import {CreditsModule} from './features/credits/credits.module';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
-import {UserPermissionsModule} from './features/user-permissions/user-permissions.module';
 import {ScheduledReportsModule} from './features/scheduled-reports/scheduled-reports.module';
 import {PublisherGroupsModule} from './features/publisher-groups/publisher-groups.module';
 import {DashboardView} from './views/dashboard/dashboard.view';
@@ -85,7 +84,6 @@ if (APP_CONFIG.env.prod) {
         DealsModule,
         CreditsModule,
         PixelsLibraryModule,
-        UserPermissionsModule,
         ScheduledReportsModule,
         PublisherGroupsModule,
         SidebarContentModule,

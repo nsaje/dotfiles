@@ -44,14 +44,6 @@ angular
                 isAvailable: true,
                 isInternalFeature: false,
             },
-            {
-                text: 'User permissions',
-                callback: navigateToUserPermissionsView,
-                isAvailable: isUserPermissionsViewAvailable,
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.account_agency_access_permissions'
-                ),
-            },
         ];
 
         var MANAGEMENT_CONSOLE_ACTIONS = [
@@ -205,30 +197,6 @@ angular
                 keyboard: false,
                 windowClass: 'modal-default',
             });
-        }
-
-        function isUserPermissionsViewAvailable() {
-            if (
-                !zemAuthStore.hasPermission(
-                    'zemauth.account_agency_access_permissions'
-                ) ||
-                zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
-            ) {
-                return false;
-            }
-            return commonHelpers.isDefined(
-                zemNavigationNewService.getActiveAccount()
-            );
-        }
-
-        function navigateToUserPermissionsView() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-            NgRouter.navigate([
-                RoutePathName.APP_BASE,
-                RoutePathName.USER_PERMISSIONS,
-                LevelParam.ACCOUNT,
-                activeAccount.id,
-            ]);
         }
 
         function isPixelsViewAvailable() {

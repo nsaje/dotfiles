@@ -129,23 +129,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 : null;
             var queryParams = NgRouter.browserUrlTree.queryParams;
             var urlTree = [];
-            if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USER_PERMISSIONS)) {
-                urlTree = [
-                    RoutePathName.APP_BASE,
-                    RoutePathName.USER_PERMISSIONS
-                ];
-                if (levelParam) {
-                    urlTree.push(levelParam);
-                }
-                if (entityId) {
-                    urlTree.push(entityId);
-                }
-                return {
-                    typeName: 'Account settings',
-                    name: 'User permissions',
-                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
-                };
-            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS)) {
+            if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
                     RoutePathName.CREDITS
