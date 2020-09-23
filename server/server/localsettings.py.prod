@@ -603,15 +603,8 @@ REST_FRAMEWORK = {
     "UNICODE_JSON": False,
     "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
     "DEFAULT_THROTTLE_CLASSES": ("restapi.throttling.UserRateOverrideThrottle",),
-    "DEFAULT_THROTTLE_RATES": {"user": "10/second", "reportjob-create": "10/minute"},  # per compute node
-    "DEFAULT_OVERRIDE_THROTTLE_RATES": {
-        "oendev@outbrain.com": "320/second",
-        "filippo.portolano@inpwrd.com": "30/second",
-        "orz@cortexmg.com": "30/second",
-        "ariel@bruleemedia.com": "30/second",
-        "clients@adrizer.com": "30/second",
-        "nsaje@outbrain.com": "30/second",  # FIXME(nsaje): remove after test
-    },
+    "DEFAULT_THROTTLE_RATES": {"user": "30/second", "reportjob-create": "10/minute"},  # per compute node
+    "DEFAULT_OVERRIDE_THROTTLE_RATES": {"oendev@outbrain.com": "320/second"},
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
 
