@@ -177,6 +177,16 @@ class BreakdownsBase(backtosql.Model):
             "orders": self.get_order(orders),
         }
 
+    def get_query_counts_context(self, breakdown, constraints, parents, view):
+        constraints, temp_tables = self._constraints_to_temp_tables(constraints)
+        return {
+            "parent_breakdown": self.get_breakdown(stats.constants.get_parent_breakdown(breakdown)),
+            "breakdown": self.get_breakdown(breakdown),
+            "constraints": self.get_constraints(constraints, parents),
+            "temp_tables": temp_tables,
+            "view": view,
+        }
+
     @staticmethod
     def _constraints_to_temp_tables(constraints):
         constraints = copy.copy(constraints)

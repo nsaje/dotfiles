@@ -38,23 +38,25 @@ def augment(breakdown, rows):
             row.pop("state", None)
 
 
-def cleanup(rows, target_dimension, constraints):
+def augment_counts(breakdown, rows):
+    for row in rows:
+        parent_breakdown = constants.get_parent_breakdown(breakdown)
+        row["parent_breakdown_id"] = helpers.encode_breakdown_id(parent_breakdown, row) if parent_breakdown else None
+
+
+def remove_deprecated_sources_with_no_stats(rows, constraints):
     to_remove = []
 
-    # remove rows of deprecated sources without stats
-    if target_dimension == "source_id":
-        deprecated_source_ids = list(
-            constraints["filtered_sources"].filter(deprecated=True).values_list("pk", flat=True)
-        )
-        if deprecated_source_ids:
-            for row in rows:
-                if (
-                    row["source_id"] in deprecated_source_ids
-                    and not _has_traffic_data(row)
-                    and not _has_postclick_data(row)
-                    and not _has_conversion_goal_data(row)
-                ):
-                    to_remove.append(row)
+    deprecated_source_ids = list(constraints["filtered_sources"].filter(deprecated=True).values_list("pk", flat=True))
+    if deprecated_source_ids:
+        for row in rows:
+            if (
+                row["source_id"] in deprecated_source_ids
+                and not _has_traffic_data(row)
+                and not _has_postclick_data(row)
+                and not _has_conversion_goal_data(row)
+            ):
+                to_remove.append(row)
 
     for row in to_remove:
         rows.remove(row)

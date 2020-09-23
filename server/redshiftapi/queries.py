@@ -68,6 +68,27 @@ def prepare_query_all_touchpoints(breakdown, constraints, parents):
     return _prepare_query_all_for_model(model, context)
 
 
+def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):
+    needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents=None)
+    view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
+
+    model = models.MVMaster()
+
+    context = model.get_query_all_context(breakdown, constraints, None, ["-media_cost"] + breakdown, view)
+
+    return _prepare_query_all_for_model(model, context, "breakdown_no_aggregates.sql")
+
+
+def prepare_query_counts(breakdown, constraints, parents, use_publishers_view):
+    needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
+    view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
+    model = models.MVMaster()
+
+    context = model.get_query_counts_context(breakdown, constraints, parents, view)
+
+    return _prepare_query_all_for_model(model, context, template_name="breakdown_counts.sql")
+
+
 def _prepare_query_all_for_model(model, context, template_name="breakdown.sql"):
     sql = backtosql.generate_sql(template_name, context)
     return sql, context["constraints"].get_params(), context["temp_tables"]
@@ -141,14 +162,3 @@ def _prepare_query_joint_for_model(context, template_name):
         params.extend(context["touchpoints_constraints"].get_params())
 
     return sql, params, context["temp_tables"]
-
-
-def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):
-    needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents=None)
-    view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
-
-    model = models.MVMaster()
-
-    context = model.get_query_all_context(breakdown, constraints, None, ["-media_cost"] + breakdown, view)
-
-    return _prepare_query_all_for_model(model, context, "breakdown_no_aggregates.sql")
