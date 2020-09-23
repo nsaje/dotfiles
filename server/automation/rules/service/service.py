@@ -1,6 +1,7 @@
 import traceback
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Sequence
 from typing import Union
 
@@ -99,10 +100,11 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
                 history = _write_fail_history(rule, ad_group, exception=e)
             except Exception as e:
                 logger.exception("Unhandled exception in rule application")
-                history = _write_fail_history(rule, ad_group, exception=e, stack_trace=traceback.format_exc())
+                history = _write_fail_history(rule, ad_group, exception=e)
+                _write_history_details(rule, history, stack_trace=traceback.format_exc())
             else:
                 history = _write_history(rule, ad_group, changes)
-                _write_history_details(rule, history, per_target_condition_values)
+                _write_history_details(rule, history, per_target_condition_values=per_target_condition_values)
 
             notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
 
@@ -154,7 +156,7 @@ def _write_history(rule: models.Rule, ad_group: core.models.AdGroup, changes: Se
 
 
 def _write_fail_history(
-    rule: models.Rule, ad_group: core.models.AdGroup, *, exception: Exception, stack_trace: str = None
+    rule: models.Rule, ad_group: core.models.AdGroup, *, exception: Exception
 ) -> models.RuleHistory:
     return models.RuleHistory.objects.create(
         rule=rule,
@@ -177,17 +179,22 @@ def _get_failure_reason(exception):
 
 def _write_history_details(
     rule: models.Rule,
-    history: models.RuleHistory,
-    per_target_condition_values: Dict[str, Dict[str, apply.ConditionValues]],
+    history: Optional[models.RuleHistory],
+    *,
+    per_target_condition_values: Optional[Dict[str, Dict[str, apply.ConditionValues]]] = None,
+    stack_trace: Optional[str] = None,
 ):
     conditions_dict = {condition.id: condition.to_dict() for condition in rule.conditions.all()}
-    values_dict = {
-        target: {
-            condition_id: condition_values.to_dict() for condition_id, condition_values in condition_values_dict.items()
+    values_dict = None
+    if per_target_condition_values:
+        values_dict = {
+            target: {
+                condition_id: condition_values.to_dict()
+                for condition_id, condition_values in condition_values_dict.items()
+            }
+            for target, condition_values_dict in per_target_condition_values.items()
         }
-        for target, condition_values_dict in per_target_condition_values.items()
-    }
-    history = models.RuleHistoryDetails.objects.create(
-        rule_history=history, conditions=conditions_dict, target_condition_values=values_dict
+    details = models.RuleHistoryDetails.objects.create(
+        rule_history=history, conditions=conditions_dict, target_condition_values=values_dict, stack_trace=stack_trace
     )
-    return history
+    return details
