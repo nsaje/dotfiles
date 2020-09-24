@@ -105,6 +105,10 @@ describe('BrowserTargetingComponent', () => {
                 name: BROWSER_NAMES[BrowserFamily.EDGE],
             },
             {
+                family: BrowserFamily.UC_BROWSER,
+                name: BROWSER_NAMES[BrowserFamily.UC_BROWSER],
+            },
+            {
                 family: BrowserFamily.OTHER,
                 name: BROWSER_NAMES[BrowserFamily.OTHER],
             },

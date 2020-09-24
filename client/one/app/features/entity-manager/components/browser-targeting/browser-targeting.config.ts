@@ -10,9 +10,11 @@ export const BROWSER_NAMES: {
     [BrowserFamily.FIREFOX]: 'Firefox',
     [BrowserFamily.IE]: 'Internet Explorer',
     [BrowserFamily.OPERA]: 'Opera',
-    [BrowserFamily.EDGE]: 'Edge',
+    [BrowserFamily.EDGE]: 'Microsoft Edge',
     [BrowserFamily.SAMSUNG]: 'Samsung',
-    [BrowserFamily.OTHER]: 'Other',
+    [BrowserFamily.UC_BROWSER]: 'UC Browser',
+    [BrowserFamily.OTHER]:
+        'Other (any browser other than the others named here)',
 };
 
 export const AVAILABLE_BROWSERS: FormattedBrowser[] = [
@@ -23,6 +25,10 @@ export const AVAILABLE_BROWSERS: FormattedBrowser[] = [
     {family: BrowserFamily.OPERA, name: BROWSER_NAMES[BrowserFamily.OPERA]},
     {family: BrowserFamily.EDGE, name: BROWSER_NAMES[BrowserFamily.EDGE]},
     {family: BrowserFamily.SAMSUNG, name: BROWSER_NAMES[BrowserFamily.SAMSUNG]},
+    {
+        family: BrowserFamily.UC_BROWSER,
+        name: BROWSER_NAMES[BrowserFamily.UC_BROWSER],
+    },
     {family: BrowserFamily.OTHER, name: BROWSER_NAMES[BrowserFamily.OTHER]},
 ];
 
@@ -36,5 +42,6 @@ export const BROWSER_DEVICE_MAPPING: {
     [BrowserFamily.OPERA]: ['DESKTOP', 'TABLET', 'MOBILE'],
     [BrowserFamily.EDGE]: ['DESKTOP', 'TABLET', 'MOBILE'],
     [BrowserFamily.SAMSUNG]: ['TABLET', 'MOBILE'],
+    [BrowserFamily.UC_BROWSER]: ['DESKTOP', 'TABLET', 'MOBILE'],
     [BrowserFamily.OTHER]: ['DESKTOP', 'TABLET', 'MOBILE'],
 };

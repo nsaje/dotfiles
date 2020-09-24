@@ -795,6 +795,7 @@ export enum BrowserFamily {
     OPERA = 'OPERA',
     EDGE = 'EDGE',
     SAMSUNG = 'SAMSUNG',
+    UC_BROWSER = 'UC_BROWSER',
     OTHER = 'OTHER',
 }
 
