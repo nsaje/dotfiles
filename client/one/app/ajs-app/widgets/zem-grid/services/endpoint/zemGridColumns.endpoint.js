@@ -495,6 +495,7 @@ angular
                     'Bid modifiers allow you to adjust bid per selected breakdown.',
                 shown: [
                     {
+                        permissions: [],
                         breakdowns: [
                             constants.breakdown.CONTENT_AD,
                             constants.breakdown.COUNTRY,
