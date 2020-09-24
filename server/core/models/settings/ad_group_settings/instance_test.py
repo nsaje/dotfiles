@@ -69,7 +69,7 @@ class InstanceTest(TestCase):
         )
 
     def test_b1_sources_group_adjustments_sets_default_cpm_and_daily_budget(self):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(request)
         current_settings = self.ad_group.get_current_settings()
@@ -151,7 +151,7 @@ class InstanceTest(TestCase):
         )
 
     def test_b1_sources_group_adjustments_sets_new_cpm_daily_budget(self):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(request)
         current_settings = self.ad_group.get_current_settings()
@@ -237,7 +237,7 @@ class InstanceTest(TestCase):
         )
 
     def test_b1_sources_group_adjustments_obeys_new_adgroup_cpm(self):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(request)
         current_settings = self.ad_group.get_current_settings()
@@ -485,7 +485,7 @@ class InstanceTest(TestCase):
 @patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
 class DefaultBidsTest(TestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
         self.ad_group.settings.update_unsafe(
             self.request, cpc="8.0000", cpm="8.0000", autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE

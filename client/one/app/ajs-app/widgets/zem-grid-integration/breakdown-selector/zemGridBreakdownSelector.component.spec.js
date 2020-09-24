@@ -1,6 +1,6 @@
 describe('component: zemGridBreakdownSelector', function() {
     var $componentController;
-    var $ctrl, api, zemAuthStore;
+    var $ctrl, api;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -8,10 +8,6 @@ describe('component: zemGridBreakdownSelector', function() {
 
     beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
-        zemAuthStore = $injector.get('zemAuthStore');
-        zemAuthStore.setMockedPermissions([
-            'zemauth.can_view_breakdown_by_delivery',
-        ]);
 
         var zemGridMocks = $injector.get('zemGridMocks');
         api = zemGridMocks.createApi(

@@ -52,7 +52,6 @@
         </div>
         <zem-report-column-selector
             disabled="$ctrl.disabled"
-            ng-if="$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
             on-column-toggled="$ctrl.onColumnToggled(field)"
             on-columns-toggled="$ctrl.onColumnsToggled(fields)"
             on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
@@ -96,25 +95,6 @@
                 class="input-checkbox"
             />
             <span class="checkbox-text"></span>
-        </label>
-    </div>
-</div>
-<div
-    ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
-    class="form__group"
->
-    <label class="form__label" for="add-ids-checkbox">Add IDs to report</label>
-    <div class="form__checkbox">
-        <label>
-            <input
-                id="add-ids-checkbox"
-                type="checkbox"
-                ng-model="$ctrl.config.includeIds"
-                ng-disabled="$ctrl.disabled"
-                ng-change="$ctrl.update()"
-                class="input-checkbox"
-            />
-            <span class="checkbox-text" for="add-ids-checkbox"></span>
         </label>
     </div>
 </div>
@@ -197,113 +177,110 @@
         </label>
     </div>
 </div>
-<div ng-if="$ctrl.hasPermission('zemauth.can_set_export_delimiter_separator')">
-    <hr />
-    <div class="form__group">
-        <label class="form__label"> CSV separator </label>
-        <div class="form__radio">
-            <label>
-                <input
-                    id="csv-delimiter-radio-comma"
-                    type="radio"
-                    ng-model="$ctrl.config.csvSeparator"
-                    value=","
-                    ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
-                />
-                <span class="radio-text"> Comma </span>
-            </label>
-        </div>
-        <div class="form__radio">
-            <label>
-                <input
-                    id="csv-delimiter-radio-semicolon"
-                    type="radio"
-                    ng-model="$ctrl.config.csvSeparator"
-                    value=";"
-                    ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
-                />
-                <span class="radio-text"> Semicolon </span>
-            </label>
-        </div>
-        <div class="form__radio">
-            <label>
-                <input
-                    id="csv-delimiter-radio-tab"
-                    type="radio"
-                    ng-model="$ctrl.config.csvSeparator"
-                    value="{{ '\t' }}"
-                    ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
-                />
-                <span class="radio-text"> Tab </span>
-            </label>
-        </div>
-        <div class="form__radio">
-            <label>
-                <input
-                    id="csv-delimiter-radio-other"
-                    type="radio"
-                    ng-model="$ctrl.config.csvSeparator"
-                    ng-value="$ctrl.csvSeparatorOther"
-                    ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
-                />
-                <span class="radio-text">
-                    Other
-                    <input
-                        id="csv-delimiter-other-text"
-                        type="text"
-                        ng-model="$ctrl.csvSeparatorOther"
-                        ng-disabled="$ctrl.disabled"
-                        ng-change="$ctrl.onCsvSeparatorOtherChanged()"
-                        class="zem-report-query-config__csv-delimiter--other-text input-text"
-                        size="1"
-                        maxlength="1"
-                    />
-                </span>
-            </label>
-        </div>
+<hr />
+<div class="form__group">
+    <label class="form__label"> CSV separator </label>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-delimiter-radio-comma"
+                type="radio"
+                ng-model="$ctrl.config.csvSeparator"
+                value=","
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text"> Comma </span>
+        </label>
     </div>
-    <div class="form__group">
-        <label class="form__label"> CSV decimal separator </label>
-        <div class="form__radio">
-            <label>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-delimiter-radio-semicolon"
+                type="radio"
+                ng-model="$ctrl.config.csvSeparator"
+                value=";"
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text"> Semicolon </span>
+        </label>
+    </div>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-delimiter-radio-tab"
+                type="radio"
+                ng-model="$ctrl.config.csvSeparator"
+                value="{{ '\t' }}"
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text"> Tab </span>
+        </label>
+    </div>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-delimiter-radio-other"
+                type="radio"
+                ng-model="$ctrl.config.csvSeparator"
+                ng-value="$ctrl.csvSeparatorOther"
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text">
+                Other
                 <input
-                    id="csv-decimal-separator-radio-dot"
-                    type="radio"
-                    ng-model="$ctrl.config.csvDecimalSeparator"
-                    value="."
+                    id="csv-delimiter-other-text"
+                    type="text"
+                    ng-model="$ctrl.csvSeparatorOther"
                     ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
+                    ng-change="$ctrl.onCsvSeparatorOtherChanged()"
+                    class="zem-report-query-config__csv-delimiter--other-text input-text"
+                    size="1"
+                    maxlength="1"
                 />
-                <span class="radio-text">
-                    Dot (used in AU, US, UK and other english speaking
-                    countries)
-                </span>
-            </label>
-        </div>
-        <div class="form__radio">
-            <label>
-                <input
-                    id="csv-decimal-separator-radio-comma"
-                    type="radio"
-                    ng-model="$ctrl.config.csvDecimalSeparator"
-                    value=","
-                    ng-disabled="$ctrl.disabled"
-                    ng-change="$ctrl.update()"
-                    class="input-radio"
-                />
-                <span class="radio-text">
-                    Comma (Europe, South America and Russia)
-                </span>
-            </label>
-        </div>
+            </span>
+        </label>
+    </div>
+</div>
+<div class="form__group">
+    <label class="form__label"> CSV decimal separator </label>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-decimal-separator-radio-dot"
+                type="radio"
+                ng-model="$ctrl.config.csvDecimalSeparator"
+                value="."
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text">
+                Dot (used in AU, US, UK and other english speaking countries)
+            </span>
+        </label>
+    </div>
+    <div class="form__radio">
+        <label>
+            <input
+                id="csv-decimal-separator-radio-comma"
+                type="radio"
+                ng-model="$ctrl.config.csvDecimalSeparator"
+                value=","
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-radio"
+            />
+            <span class="radio-text">
+                Comma (Europe, South America and Russia)
+            </span>
+        </label>
     </div>
 </div>

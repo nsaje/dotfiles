@@ -10,7 +10,6 @@ import dash.constants
 import dash.history_helpers
 import utils.exc
 from utils import dates_helper
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
@@ -73,19 +72,13 @@ class AdGroupCreate(TestCase):
         )
 
     def test_set_bidding_type(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
-        ad_group = core.models.AdGroup.objects.create(
-            self.request, self.campaign, bidding_type=dash.constants.BiddingType.CPM
-        )
-        self.assertEqual(dash.constants.BiddingType.CPC, ad_group.bidding_type)
-
-        request_with_permission = magic_mixer.blend_request_user(["fea_can_use_cpm_buying"])
+        request_with_permission = magic_mixer.blend_request_user()
         ad_group = core.models.AdGroup.objects.create(
             request_with_permission, self.campaign, bidding_type=dash.constants.BiddingType.CPM
         )
         self.assertEqual(dash.constants.BiddingType.CPM, ad_group.bidding_type)
 
     def test_set_initial_bids(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
-        test_helper.add_permissions(self.request.user, ["fea_can_use_cpm_buying"])
         core.features.multicurrency.CurrencyExchangeRate.objects.create(
             currency=dash.constants.Currency.ILS,
             date=dates_helper.local_today(),

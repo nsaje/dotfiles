@@ -7,7 +7,6 @@ import zemauth.access
 from core.features.bid_modifiers import create_bid_modifier_dict
 from dash import models
 from restapi.common import pagination
-from restapi.common import permissions as restapi_permissions
 from utils import exc
 from zemauth.features.entity_permission import Permission
 
@@ -15,7 +14,7 @@ from . import serializers
 
 
 class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def _filter_bid_modifiers(self, ad_group_id, user, permission):
         return models.BidModifier.objects.filter_by_entity_permission(user, permission).filter(ad_group__id=ad_group_id)

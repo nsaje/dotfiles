@@ -344,7 +344,6 @@ class AccountUsers(DASHAPIBaseView):
             "last_login": user.last_login and user.last_login.date(),
             "is_active": not user.last_login or user.last_login != user.date_joined,
             "is_agency_manager": agency_managers,
-            "can_use_restapi": user.has_perm("zemauth.can_use_restapi"),
         }
 
 
@@ -456,9 +455,6 @@ class AccountUserAction(DASHAPIBaseView):
 class CampaignContentInsights(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def get(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.can_view_campaign_content_insights_side_tab"):
-            raise exc.AuthorizationError()
-
         campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():
@@ -481,8 +477,6 @@ class CampaignContentInsights(DASHAPIBaseView):
 
 class History(DASHAPIBaseView):
     def get(self, request):
-        if not request.user.has_perm("zemauth.can_view_new_history_backend"):
-            raise exc.AuthorizationError()
         # in case somebody wants to fetch entire history disallow it for the
         # moment
         entity_filter = self._extract_entity_filter(request)

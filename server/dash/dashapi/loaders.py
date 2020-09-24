@@ -851,8 +851,6 @@ class AdGroupSourcesLoader(Loader):
 
     @cached_property
     def bid_modifiers_by_source(self):
-        if not self.user.has_perm("zemauth.can_set_source_bid_modifiers"):
-            return {}
         bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
             type=bid_modifiers.BidModifierType.SOURCE, ad_group=self.ad_group
         )

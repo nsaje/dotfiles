@@ -9,7 +9,7 @@ from dash import constants
 
 class AdGroupSourcesRTBSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     class Meta:
-        permissioned_fields = {"cpm": "zemauth.fea_can_use_cpm_buying"}
+        permissioned_fields = {}
 
     @property
     def fields(self):

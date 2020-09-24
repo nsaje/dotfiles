@@ -393,10 +393,7 @@ class AdGroupContentAdCSV(DASHAPIBaseView):
             if content_ad.crop_areas:
                 content_ad_dict["crop_areas"] = content_ad.crop_areas
 
-            if (
-                request.user.has_perm("zemauth.can_use_creative_icon")
-                and ad_group.campaign.type != constants.CampaignType.DISPLAY
-            ):
+            if ad_group.campaign.type != constants.CampaignType.DISPLAY:
                 content_ad_dict["icon_url"] = content_ad.get_base_icon_url()
 
             if content_ad.tracker_urls:

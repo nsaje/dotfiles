@@ -151,10 +151,7 @@ class BrowsersSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class AdGroupTargetingSerializer(restapi.adgroup.v1.serializers.AdGroupTargetingSerializer):
     class Meta:
-        permissioned_fields = {
-            "language": "zemauth.can_use_language_targeting",
-            "browsers": "zemauth.can_use_browser_targeting",
-        }
+        permissioned_fields = {"browsers": "zemauth.can_use_browser_targeting"}
 
     browsers = BrowsersSerializer(source="*", required=False)
 
@@ -202,9 +199,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "deals",
         )
         permissioned_fields = {
-            "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
-            "frequency_capping": "zemauth.can_set_frequency_capping",
             "additional_data": "zemauth.can_use_ad_additional_data",
             "deals": "zemauth.can_see_direct_deals_section",
         }

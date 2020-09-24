@@ -14,10 +14,7 @@ from zemauth.features.entity_permission import Permission
 class PublisherGroupEntryTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        add_permissions(
-            self.user,
-            ["can_use_restapi", "can_access_additional_outbrain_publisher_settings", "can_use_placement_targeting"],
-        )
+        add_permissions(self.user, ["can_access_additional_outbrain_publisher_settings", "can_use_placement_targeting"])
 
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)

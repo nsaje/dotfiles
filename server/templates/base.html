@@ -13,7 +13,7 @@
         <link href='https://fonts.googleapis.com/css?family=Roboto:700,400,500,300,400italic' rel='stylesheet' type='text/css'>
 
         {% if not debug %}
-            {% if perms.zemauth.has_intercom and whitelabel != 'mediamond' %}
+            {% if whitelabel != 'mediamond' %}
                 <!-- Intercom -->
                 <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/anyekw96';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()</script>
             {% endif %}
@@ -26,7 +26,7 @@
         {% block content %}{% endblock %}
         {% block footer %}{% endblock %}
 
-        {% if true or not debug and perms.zemauth.has_supporthero %}
+        {% if true or not debug %}
             <!-- SupportHero -->
             <script async data-cfasync='false' src='https://d29l98y0pmei9d.cloudfront.net/js/widget.min.js?k=Y2xpZW50SWQ9MjQwJmhvc3ROYW1lPXplbWFudGEuc3VwcG9ydGhlcm8uaW8='></script>
         {% endif %}

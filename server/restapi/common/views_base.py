@@ -41,11 +41,6 @@ class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):
         return super(RESTAPIJSONRenderer, self).render(camelize(data), *args, **kwargs)
 
 
-class CanUseRESTAPIPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.can_use_restapi"))
-
-
 class RESTAPIBaseView(APIView):
     authentication_classes = [
         utils.rest_common.authentication.OAuth2Authentication,
@@ -54,7 +49,7 @@ class RESTAPIBaseView(APIView):
 
     renderer_classes = [RESTAPIJSONRenderer]
     parser_classes = [CamelCaseJSONParser]
-    permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_serializer_context(self):
         return {"request": self.request, "format": self.format_kwarg, "view": self}

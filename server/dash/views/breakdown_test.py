@@ -43,8 +43,6 @@ class AllAccountsBreakdownTestCase(DASHAPITestCase):
         mock_counts.return_value = []
         mock_query.return_value = {}
 
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         params = {
             "limit": 5,
             "offset": 33,
@@ -225,8 +223,6 @@ class AccountBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.counts")
     def test_post(self, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         mock_counts.return_value = []
         mock_query.return_value = {}
 
@@ -502,8 +498,6 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.counts")
     def test_post(self, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         mock_counts.return_value = []
         mock_query.return_value = {}
 
@@ -566,8 +560,6 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         mock_totals.return_value = {}
         mock_counts.return_value = []
         mock_query.return_value = {}
@@ -639,8 +631,6 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.counts")
     def test_post(self, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         mock_counts.return_value = []
         mock_query.return_value = {}
 
@@ -692,8 +682,6 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
-
         mock_totals.return_value = {}
         mock_counts.return_value = []
         mock_query.return_value = {}

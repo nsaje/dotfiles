@@ -18,7 +18,7 @@ from utils.magic_mixer import magic_mixer
 
 class SourceBidValidationMixin(object):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user(["fea_can_use_cpm_buying"])
+        self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(models.AdGroup)
         self.ad_group.settings.update_unsafe(
             None, b1_sources_group_enabled=False, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
@@ -1339,7 +1339,7 @@ class MirrorOldAndNewBidValuesTestCase(TestCase):
 @mock.patch.object(core.features.multicurrency, "get_current_exchange_rate")
 class MirrorOldBidValuesOnCreateTest(TestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        self.request = magic_mixer.blend_request_user()
         self.campaign = magic_mixer.blend(models.Campaign)
         self.exchange_rate = decimal.Decimal("2.0")
         self.max_autopilot_bid = decimal.Decimal("5.0")
@@ -1975,7 +1975,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.account.allowed_sources.add(self.source_1, self.source_2)
         self.campaign = magic_mixer.blend(models.Campaign, account=self.account)
 
-        self.request = magic_mixer.blend_request_user(["fea_can_use_cpm_buying"])
+        self.request = magic_mixer.blend_request_user()
 
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_enable_full_autopilot_cpc(self, mock_autopilot):

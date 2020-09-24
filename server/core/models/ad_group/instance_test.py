@@ -41,7 +41,7 @@ class AdGroupInstanceTest(TestCase):
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_update_set_fields(self, mock_k1_ping):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(core.models.Campaign)
         ad_group = magic_mixer.blend(
             core.models.AdGroup,
@@ -74,7 +74,7 @@ class AdGroupInstanceTest(TestCase):
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_update_unset_fields(self, mock_k1_ping):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(core.models.Campaign)
         ad_group = magic_mixer.blend(
             core.models.AdGroup,
@@ -103,7 +103,7 @@ class AdGroupInstanceTest(TestCase):
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_amplify_review_update(self, mock_k1_ping):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(core.models.Campaign)
         source_type_outbrain = core.models.SourceType.objects.create(type=dash.constants.SourceType.OUTBRAIN)
         outbrain_source = magic_mixer.blend(core.models.Source, source_type=source_type_outbrain)

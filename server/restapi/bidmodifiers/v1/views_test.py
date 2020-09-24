@@ -6,7 +6,6 @@ import restapi.common.views_base_test_case
 from core.features import bid_modifiers
 from dash import constants
 from dash.features import geolocation
-from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -1006,55 +1005,3 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
 
     def _get_bid_modifier_response(self, ad_group_id, pk):
         return self.client.get(reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": ad_group_id, "pk": pk}))
-
-
-class NoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
-    def setUp(self):
-        super(NoPermissionTest, self).setUp()
-        test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
-
-    def test_list(self):
-        response = self.client.get(reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": 1}))
-        self.assertEqual(response.status_code, 403)
-        result = self.assertResponseError(response, "PermissionDenied")
-        self.assertEqual(
-            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
-        )
-
-    def test_retrieve(self):
-        response = self.client.get(reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": 1, "pk": 1}))
-        self.assertEqual(response.status_code, 403)
-        result = self.assertResponseError(response, "PermissionDenied")
-        self.assertEqual(
-            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
-        )
-
-    def test_create(self):
-        response = self.client.post(
-            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": 1}), data={}, format="json"
-        )
-        self.assertEqual(response.status_code, 403)
-        result = self.assertResponseError(response, "PermissionDenied")
-        self.assertEqual(
-            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
-        )
-
-    def test_update(self):
-        response = self.client.put(
-            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": 1, "pk": 1}), data={}, format="json"
-        )
-        self.assertEqual(response.status_code, 403)
-        result = self.assertResponseError(response, "PermissionDenied")
-        self.assertEqual(
-            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
-        )
-
-    def test_destroy(self):
-        response = self.client.delete(
-            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": 1, "pk": 1}), format="json"
-        )
-        self.assertEqual(response.status_code, 403)
-        result = self.assertResponseError(response, "PermissionDenied")
-        self.assertEqual(
-            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
-        )

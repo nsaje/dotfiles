@@ -42,11 +42,6 @@
                 <div class="zem-settings-section">
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.fea_can_change_campaign_type'
-                            )
-                        "
                         [label]="'Campaign Type'"
                         [helpMessage]="
                             'Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first ad group.'
@@ -113,16 +108,6 @@
                     ></zem-select-form-group>
                     <zem-integer-form-group
                         class="zem-integer-form-group zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_set_frequency_capping'
-                            )
-                        "
-                        [zemInternalFeature]="
-                            authStore.isPermissionInternal(
-                                'zemauth.can_set_frequency_capping'
-                            )
-                        "
                         [label]="'Daily impression frequency cap'"
                         helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
                         [value]="state.entity.frequencyCapping"
@@ -208,14 +193,7 @@
                 </div>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="
-                    authStore.hasPermission(
-                        'zemauth.can_set_white_blacklist_publisher_groups'
-                    )
-                "
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Audience targeting

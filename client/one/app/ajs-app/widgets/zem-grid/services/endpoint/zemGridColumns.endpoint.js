@@ -293,32 +293,6 @@ angular
             },
 
             // AdGroup Media Sources
-            bidCpcSetting: {
-                name: 'Bid CPC',
-                field: 'bid_cpc',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: '!zemauth.disable_ad_group_sources_bid',
-                fractionSize: 3,
-                help: 'Maximum bid price per click.',
-                totalRow: false,
-                order: true,
-                editable: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                defaultValue: '',
-            },
-            bidCpmSetting: {
-                name: 'Bid CPM',
-                field: 'bid_cpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: '!zemauth.disable_ad_group_sources_bid',
-                fractionSize: 3,
-                help: 'Maximum bid price per thousand impressions.',
-                totalRow: false,
-                order: true,
-                editable: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                defaultValue: '',
-            },
             dailyBudgetSetting: {
                 name: 'Daily Spend Cap',
                 field: 'daily_budget',
@@ -521,7 +495,6 @@ angular
                     'Bid modifiers allow you to adjust bid per selected breakdown.',
                 shown: [
                     {
-                        permissions: ['zemauth.can_set_bid_modifiers'],
                         breakdowns: [
                             constants.breakdown.CONTENT_AD,
                             constants.breakdown.COUNTRY,
@@ -530,19 +503,13 @@ angular
                             constants.breakdown.DEVICE,
                             constants.breakdown.ENVIRONMENT,
                             constants.breakdown.OPERATING_SYSTEM,
+                            constants.breakdown.PUBLISHER,
+                            constants.breakdown.MEDIA_SOURCE,
                         ],
-                    },
-                    {
-                        permissions: [],
-                        breakdowns: [constants.breakdown.PUBLISHER],
                     },
                     {
                         permissions: ['zemauth.can_use_placement_targeting'],
                         breakdowns: [constants.breakdown.PLACEMENT],
-                    },
-                    {
-                        permissions: ['zemauth.can_set_source_bid_modifiers'],
-                        breakdowns: [constants.breakdown.MEDIA_SOURCE],
                     },
                 ],
             },
@@ -1124,8 +1091,7 @@ angular
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 fractionSize: 2,
                 help: 'Return on advertising spend.',
-                internal: 'zemauth.fea_can_see_roas',
-                shown: 'zemauth.fea_can_see_roas',
+                shown: true,
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
@@ -1726,8 +1692,6 @@ angular
             COLUMNS.status,
             COLUMNS.submissionStatus,
             COLUMNS.performance,
-            COLUMNS.bidCpcSetting,
-            COLUMNS.bidCpmSetting,
             COLUMNS.bidModifier,
             COLUMNS.dailyBudgetSetting,
         ];
@@ -2077,22 +2041,12 @@ angular
         COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (source editable fields)
-        COLUMNS.bidCpcSetting.exceptions.breakdowns = [
-            constants.breakdown.MEDIA_SOURCE,
-        ];
-        COLUMNS.bidCpmSetting.exceptions.breakdowns = [
-            constants.breakdown.MEDIA_SOURCE,
-        ];
         COLUMNS.dailyBudgetSetting.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
         ];
-        COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
-        COLUMNS.bidCpmSetting.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.dailyBudgetSetting.exceptions.levels = [
             constants.level.AD_GROUPS,
         ];
-        COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
-        COLUMNS.bidCpmSetting.exceptions.breakdownBaseLevelOnly = true;
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
         COLUMNS.bidModifier.exceptions.breakdowns = [
@@ -2611,7 +2565,7 @@ angular
                         name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
                         performance: 'ROAS',
                         field: etfmRoasField,
-                        shown: ['zemauth.fea_can_see_roas'],
+                        shown: true,
                         costMode: constants.costMode.PUBLIC,
                         help: roasHelp,
                     }

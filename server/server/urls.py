@@ -7,7 +7,6 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 from rest_framework import permissions
@@ -20,7 +19,6 @@ import dash.views.audiences
 import dash.views.breakdown
 import dash.views.bulk_actions
 import dash.views.callbacks
-import dash.views.custom_report
 import dash.views.grid
 import dash.views.navigation
 import dash.views.publishers
@@ -28,7 +26,6 @@ import dash.views.views
 import etl.crossvalidation.views
 import stats.constants
 import zemauth.views
-from restapi.common.views_base import CanUseRESTAPIPermission
 from restapi.docs.swagger import RestAPISchemaGenerator
 from zemauth.forms import AuthenticationForm
 
@@ -44,8 +41,6 @@ class AdminRedirectView(RedirectView):
 
 def oauth2_permission_wrap(view):
     def check(request, *args, **kwargs):
-        if not request.user.has_perm("zemauth.can_manage_oauth2_apps"):
-            return render(request, "oauth2_provider/contact_for_access.html")
         return view(request, *args, **kwargs)
 
     return login_required(check)
@@ -583,7 +578,7 @@ schema_view = drf_yasg.views.get_schema_view(
         description="Find more info here http://dev.zemanta.com/one/api/ \n Note that this is a live production API and calls will affect your account(s)",
     ),
     public=False,
-    permission_classes=(permissions.IsAuthenticated, CanUseRESTAPIPermission),
+    permission_classes=(permissions.IsAuthenticated,),
     generator_class=RestAPISchemaGenerator,
 )
 schema_view_internal = drf_yasg.views.get_schema_view(

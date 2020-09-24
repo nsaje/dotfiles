@@ -281,8 +281,7 @@ def augment_content_ad(row, loader, is_base_level=False):
         batch = loader.batch_map[content_ad_id]
         row.update({"batch_id": batch.id, "batch_name": batch.name, "upload_time": batch.created_dt})
 
-        if loader.user.has_perm("zemauth.can_use_creative_icon"):
-            row["image_urls"]["icon"] = content_ad.get_hosted_icon_url(300)
+        row["image_urls"]["icon"] = content_ad.get_hosted_icon_url(300)
 
         if loader.user.has_perm("zemauth.can_see_amplify_live_preview"):
             row["amplify_live_preview_link"] = NEWSCORP_LIVE_PREVIEW_URL.format(ad_group_id=ad_group.id)

@@ -72,10 +72,7 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
             },
             {attribution: 'View attribution', performance: 'CPA'}
         );
-        if (
-            this.authStore.hasPermission('zemauth.fea_can_see_roas') &&
-            pixelsHaveRoas
-        ) {
+        if (pixelsHaveRoas) {
             this.METRICS_OPTIONS_CLICK.push({
                 attribution: 'Click attribution',
                 performance: 'ROAS',

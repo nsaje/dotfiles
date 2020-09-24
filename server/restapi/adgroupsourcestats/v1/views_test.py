@@ -6,7 +6,6 @@ from django.urls import reverse
 import core.models
 import core.models.ad_group
 from restapi.common.views_base_test_case import RESTAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -14,7 +13,6 @@ from zemauth.features.entity_permission import Permission
 class RealtimestatsViewsTest(RESTAPITestCase):
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats")
     def test_adgroup_sources_realtimestats(self, mock_get):
-        test_helper.remove_permissions(self.user, permissions=["can_use_restapi"])
         account = self.mix_account(self.user, permissions=[Permission.READ])
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
 

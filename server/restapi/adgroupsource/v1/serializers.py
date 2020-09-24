@@ -36,7 +36,7 @@ class AdGroupSourceListSerializer(serializers.ListSerializer):
 class AdGroupSourceSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
     class Meta:
         list_serializer_class = AdGroupSourceListSerializer
-        permissioned_fields = {"cpm": "zemauth.fea_can_use_cpm_buying"}
+        permissioned_fields = {}
 
     @property
     def fields(self):

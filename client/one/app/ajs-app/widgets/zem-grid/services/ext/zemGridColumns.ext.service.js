@@ -5,8 +5,7 @@ angular
         zemGridStorageService,
         zemUtils,
         zemCostModeService,
-        zemNavigationNewService,
-        zemGridEndpointColumns
+        zemNavigationNewService
     ) {
         // eslint-disable-line max-len
 
@@ -58,30 +57,17 @@ angular
                     .map(function(breakdown) {
                         return breakdown.query;
                     });
-                var activeEntity = zemNavigationNewService.getActiveEntity();
                 grid.header.columns.forEach(function(column) {
                     column.disabled = !isColumnAvailable(
                         column,
                         grid.meta.data.level,
-                        breakdowns,
-                        activeEntity
+                        breakdowns
                     );
                 });
                 pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
             }
 
-            function isColumnAvailable(
-                column,
-                level,
-                breakdowns,
-                activeEntity
-            ) {
-                if (
-                    isColumnBidSettingAndShouldBeExcluded(column, activeEntity)
-                ) {
-                    return false;
-                }
-
+            function isColumnAvailable(column, level, breakdowns) {
                 if (!column.data.exceptions) {
                     return true;
                 }
@@ -110,42 +96,6 @@ angular
                 }
 
                 return true;
-            }
-
-            function isColumnBidSettingAndShouldBeExcluded(
-                column,
-                activeEntity
-            ) {
-                if (
-                    column.field !==
-                        zemGridEndpointColumns.COLUMNS.bidCpcSetting.field &&
-                    column.field !==
-                        zemGridEndpointColumns.COLUMNS.bidCpmSetting.field
-                ) {
-                    return false;
-                }
-
-                if (
-                    !activeEntity ||
-                    !activeEntity.data ||
-                    activeEntity.type !== constants.entityType.AD_GROUP
-                ) {
-                    return true;
-                }
-
-                if (
-                    column.field ===
-                        zemGridEndpointColumns.COLUMNS.bidCpcSetting.field &&
-                    activeEntity.data.bidding_type !== constants.biddingType.CPC
-                ) {
-                    return true;
-                } else if (
-                    column.field ===
-                        zemGridEndpointColumns.COLUMNS.bidCpmSetting.field &&
-                    activeEntity.data.bidding_type !== constants.biddingType.CPM
-                ) {
-                    return true;
-                }
             }
 
             function getVisibleColumns() {

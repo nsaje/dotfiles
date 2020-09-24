@@ -8,7 +8,6 @@ from mock import ANY
 from mock import patch
 
 import core.models.source_type.model
-import utils.test_helper
 from dash import api
 from dash import constants
 from dash import history_helpers
@@ -705,7 +704,6 @@ class AdGroupContentAdCSVTestCase(DASHAPITestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
-        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
         self.client.login(username=self.user.email, password="secret")
 
     def _get_csv_from_server(self, data, ad_group_id=1):
@@ -727,25 +725,6 @@ class AdGroupContentAdCSVTestCase(DASHAPITestCase):
             )
             + b"\r\n"
         )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_all_no_icon_permission(self):
-        utils.test_helper.remove_permissions(self.user, permissions=["can_use_creative_icon"])
-
-        data = {"select_all": True}
-
-        response = self._get_csv_from_server(data)
-        expected_content = (
-            b"\r\n".join(
-                [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
-                ]
-            )
-            + b"\r\n"
-        )
-
         self.assertEqual(response.content, expected_content)
 
     def test_get_all_display(self):

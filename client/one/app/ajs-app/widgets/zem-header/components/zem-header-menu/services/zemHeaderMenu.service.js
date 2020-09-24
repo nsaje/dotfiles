@@ -86,12 +86,6 @@ angular
             {
                 text: 'Inventory planning',
                 callback: navigateToInventoryPlanning,
-                isAvailable: zemAuthStore.hasPermission(
-                    'zemauth.fea_can_see_inventory_planning'
-                ),
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.fea_can_see_inventory_planning'
-                ),
             },
         ];
 

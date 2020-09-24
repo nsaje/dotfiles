@@ -43,9 +43,6 @@ def get_ad_group_alerts(request, ad_group, **kwargs):
 
 
 def _get_account_default_icon_alert(alerts, request, account):
-    if request.user and not request.user.has_perm("zemauth.can_use_creative_icon"):
-        return alerts
-
     if account.settings.default_icon:
         return alerts
 

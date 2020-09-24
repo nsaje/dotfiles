@@ -43,7 +43,6 @@ class ContentAdSerializer(
             "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
-            "icon_url": "zemauth.can_use_creative_icon",
         }
 
     def to_representation(self, ad):
@@ -96,10 +95,7 @@ class ContentAdCandidateSerializer(
             "video_asset_id",
         )
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
-        permissioned_fields = {
-            "additional_data": "zemauth.can_use_ad_additional_data",
-            "icon_url": "zemauth.can_use_creative_icon",
-        }
+        permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
 
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)

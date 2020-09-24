@@ -62,18 +62,14 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     class Meta:
         permissioned_fields = {
-            "frequency_capping": "zemauth.can_set_frequency_capping",
             "account_type": "zemauth.can_modify_account_type",
             "default_account_manager": "zemauth.can_modify_account_manager",
             "default_sales_representative": "zemauth.can_set_account_sales_representative",
             "default_cs_representative": "zemauth.can_set_account_cs_representative",
             "ob_sales_representative": "zemauth.can_set_account_ob_representative",
             "ob_account_manager": "zemauth.can_set_account_ob_representative",
-            "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
             "deals": "zemauth.can_see_direct_deals_section",
-            "default_icon_url": "zemauth.can_use_creative_icon",
-            "default_icon_base64": "zemauth.can_use_creative_icon",
         }
 
     agency_id = restapi.serializers.fields.IdField(allow_null=False)

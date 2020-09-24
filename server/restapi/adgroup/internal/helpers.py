@@ -68,9 +68,6 @@ def get_default_settings(ad_group):
 
 
 def get_retargetable_ad_groups(user, ad_group, existing_targetings):
-    if not user.has_perm("zemauth.can_view_retargeting_settings"):
-        return []
-
     account = ad_group.campaign.account
     if account.id == settings.HARDCODED_ACCOUNT_ID_OEN:
         return []
@@ -81,25 +78,16 @@ def get_retargetable_ad_groups(user, ad_group, existing_targetings):
         .order_by("id")
     )
 
-    if user.has_perm("zemauth.can_target_custom_audiences"):
-        result = [
-            {"id": adg.id, "name": adg.name, "archived": adg.settings.archived, "campaign_name": adg.campaign.name}
-            for adg in ad_groups
-            if not adg.settings.archived or adg.id in existing_targetings
-        ]
-    else:
-        result = [
-            {"id": adg.id, "name": adg.name, "archived": adg.settings.archived, "campaign_name": adg.campaign.name}
-            for adg in ad_groups
-        ]
+    result = [
+        {"id": adg.id, "name": adg.name, "archived": adg.settings.archived, "campaign_name": adg.campaign.name}
+        for adg in ad_groups
+        if not adg.settings.archived or adg.id in existing_targetings
+    ]
 
     return result
 
 
 def get_audiences(user, ad_group, existing_targetings):
-    if not user.has_perm("zemauth.can_target_custom_audiences"):
-        return []
-
     audiences = (
         dash.models.Audience.objects.filter(pixel__account_id=ad_group.campaign.account.pk)
         .filter(Q(archived=False) | Q(pk__in=existing_targetings))

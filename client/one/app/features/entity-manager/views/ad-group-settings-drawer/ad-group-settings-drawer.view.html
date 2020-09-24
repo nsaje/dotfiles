@@ -80,16 +80,6 @@
                     </div>
                     <zem-delivery-type-setting
                         class="zem-delivery-type-setting zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_set_delivery_type'
-                            )
-                        "
-                        [zemInternalFeature]="
-                            authStore.isPermissionInternal(
-                                'zemauth.can_set_delivery_type'
-                            )
-                        "
                         [deliveryType]="state.entity.deliveryType"
                         [isDisabled]="isReadOnly"
                         [errors]="state.fieldsErrors.deliveryType"
@@ -135,16 +125,6 @@
                 <div class="zem-settings-section">
                     <zem-bidding-type-setting
                         class="zem-bidding-type-setting zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.fea_can_use_cpm_buying'
-                            )
-                        "
-                        [zemInternalFeature]="
-                            authStore.isPermissionInternal(
-                                'zemauth.fea_can_use_cpm_buying'
-                            )
-                        "
                         [biddingType]="state.entity.biddingType"
                         [bid]="state.entity.bid"
                         [maxBid]="state.entity.autopilot.maxBid"
@@ -201,14 +181,6 @@
                 </div>
                 <zem-expandable-section
                     class="zem-expandable-section"
-                    *ngIf="
-                        authStore.hasPermission(
-                            'zemauth.can_set_click_capping'
-                        ) ||
-                        authStore.hasPermission(
-                            'zemauth.can_set_frequency_capping'
-                        )
-                    "
                     [expandedByDefault]="
                         doesAnySettingHaveValue(
                             store.state.entity
@@ -226,16 +198,6 @@
                     <div class="zem-settings-section">
                         <zem-integer-form-group
                             class="zem-integer-form-group zem-settings-section__item"
-                            *ngIf="
-                                authStore.hasPermission(
-                                    'zemauth.can_set_click_capping'
-                                )
-                            "
-                            [zemInternalFeature]="
-                                authStore.isPermissionInternal(
-                                    'zemauth.can_set_click_capping'
-                                )
-                            "
                             label="Daily click cap"
                             helpMessage="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set."
                             [value]="
@@ -252,16 +214,6 @@
                         ></zem-integer-form-group>
                         <zem-integer-form-group
                             class="zem-integer-form-group zem-settings-section__item"
-                            *ngIf="
-                                authStore.hasPermission(
-                                    'zemauth.can_set_frequency_capping'
-                                )
-                            "
-                            [zemInternalFeature]="
-                                authStore.isPermissionInternal(
-                                    'zemauth.can_set_frequency_capping'
-                                )
-                            "
                             label="Daily impression frequency cap"
                             helpMessage="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
                             [value]="store.state.entity.frequencyCapping"
@@ -657,11 +609,6 @@
                     <div class="zem-settings-section">
                         <zem-checkbox-form-group
                             class="zem-checkbox-form-group zem-settings-section__item"
-                            *ngIf="
-                                authStore.hasPermission(
-                                    'zemauth.can_use_language_targeting'
-                                )
-                            "
                             label="Language matching"
                             helpMessage="Zemanta will show ads only when language of the page matches the language of your ads."
                             [value]="
@@ -725,14 +672,7 @@
                         Audience targeting
                     </h2>
                 </div>
-                <div
-                    class="zem-settings-section"
-                    *ngIf="
-                        authStore.hasPermission(
-                            'zemauth.can_set_white_blacklist_publisher_groups'
-                        )
-                    "
-                >
+                <div class="zem-settings-section">
                     <div class="zem-settings-section__header">
                         <div class="zem-settings-section__title">
                             Publishers & placements
@@ -765,14 +705,7 @@
                         placement list.
                     </div>
                 </div>
-                <div
-                    class="zem-settings-section"
-                    *ngIf="
-                        authStore.hasPermission(
-                            'zemauth.can_set_interest_targeting'
-                        )
-                    "
-                >
+                <div class="zem-settings-section">
                     <div class="zem-settings-section__header">
                         <div class="zem-settings-section__title">
                             Interest targeting
@@ -817,12 +750,6 @@
                 <zem-expandable-section
                     class="zem-expandable-section"
                     *ngIf="
-                        (authStore.hasPermission(
-                            'zemauth.can_target_custom_audiences'
-                        ) ||
-                            authStore.hasPermission(
-                                'can_use_bluekai_targeting'
-                            )) &&
                         !authStore.hasPermission('zemauth.disable_public_rcs')
                     "
                     [expandedByDefault]="
@@ -844,23 +771,13 @@
                     <div
                         class="zem-settings-section"
                         *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_target_custom_audiences'
-                            ) &&
                             !authStore.hasPermission(
                                 'zemauth.disable_public_rcs'
                             )
                         "
                     >
                         <div class="zem-settings-section__header">
-                            <div
-                                class="zem-settings-section__title"
-                                [zemInternalFeature]="
-                                    authStore.isPermissionInternal(
-                                        'zemauth.can_target_custom_audiences'
-                                    )
-                                "
-                            >
+                            <div class="zem-settings-section__title">
                                 Retargeting
                             </div>
                             <div class="zem-settings-section__description">
@@ -898,9 +815,6 @@
                     <div
                         class="zem-settings-section"
                         *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_use_bluekai_targeting'
-                            ) &&
                             !authStore.hasPermission(
                                 'zemauth.disable_public_rcs'
                             )

@@ -267,13 +267,11 @@ def _save_history(batch, content_ads):
 
 
 def get_candidates_with_errors(request, candidates):
-    has_icon_permission = request and request.user.has_perm("zemauth.can_use_creative_icon")
-
     _, errors = get_clean_candidates_and_errors(candidates)
 
     result = []
     for candidate in candidates:
-        can_use_icon = has_icon_permission and candidate.type not in DISPLAY_AD_TYPES
+        can_use_icon = candidate.type not in DISPLAY_AD_TYPES
         candidate_dict = candidate.to_dict(can_use_icon)
 
         candidate_dict["errors"] = {}
@@ -322,10 +320,6 @@ def _remove_specific_fields_and_rows(specific_fields, fields, rows):
 def _remove_permissioned_fields_and_rows(request, fields, rows):
     if not request or not request.user:
         return fields, rows
-
-    for field, permissions in forms.FIELD_PERMISSION_MAPPING.items():
-        if not all(request.user.has_perm(p) for p in permissions):
-            fields, rows = _remove_fields_and_rows(field, fields, rows)
 
     return fields, rows
 

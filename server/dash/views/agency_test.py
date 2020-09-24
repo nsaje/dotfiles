@@ -17,11 +17,9 @@ from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.views import agency
-from utils import exc
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
-from utils.test_helper import remove_permissions
 from zemauth.models import User
 
 
@@ -1131,14 +1129,6 @@ class CampaignContentInsightsTestCase(DASHAPITestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
-        add_permissions(self.user, ["can_view_campaign_content_insights_side_tab"])
-
-    @patch("redshiftapi.api_breakdowns.query")
-    def test_get_no_permission(self, mock_query):
-        cis = agency.CampaignContentInsights()
-        remove_permissions(self.user, ["can_view_campaign_content_insights_side_tab"])
-        with self.assertRaises(exc.AuthorizationError):
-            cis.get(fake_request(self.user), 1)
 
     @patch("redshiftapi.api_breakdowns.query")
     def test_basic_archived(self, mock_query):
@@ -1327,10 +1317,6 @@ class HistoryTest(DASHAPITestCase):
         response = self.get_history({})
         self.assertFalse(response["success"])
 
-        add_permissions(self.user, ["can_view_new_history_backend"])
-        response = self.get_history({})
-        self.assertFalse(response["success"])
-
         response = self.get_history({"campaign": 1})
         self.assertTrue(response["success"])
 
@@ -1338,8 +1324,6 @@ class HistoryTest(DASHAPITestCase):
         self.assertFalse(response["success"])
 
     def test_get_ad_group_history(self):
-        add_permissions(self.user, ["can_view_new_history_backend"])
-
         history_count = models.History.objects.all().count()
         self.assertEqual(0, history_count)
 
@@ -1354,8 +1338,6 @@ class HistoryTest(DASHAPITestCase):
         self.assertEqual("Name changed to 'test'", history["changes_text"])
 
     def test_get_campaign_history(self):
-        add_permissions(self.user, ["can_view_new_history_backend"])
-
         history_count = models.History.objects.all().count()
         self.assertEqual(0, history_count)
 
@@ -1382,8 +1364,6 @@ class HistoryTest(DASHAPITestCase):
         self.assertEqual("Name changed to 'test'", history["changes_text"])
 
     def test_get_account_history(self):
-        add_permissions(self.user, ["can_view_new_history_backend"])
-
         history_count = models.History.objects.all().count()
         self.assertEqual(0, history_count)
 
