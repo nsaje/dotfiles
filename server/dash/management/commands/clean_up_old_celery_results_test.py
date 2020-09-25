@@ -7,7 +7,7 @@ from dash.management.commands import clean_up_old_celery_results
 from utils.magic_mixer import magic_mixer
 
 
-class CleanUpOldHistoryStackTracesTest(TestCase):
+class CleanUpOldCeleryResultsTest(TestCase):
     def test_delete(self):
         magic_mixer.blend(django_celery_results.models.TaskResult, task_name="TEST")
 

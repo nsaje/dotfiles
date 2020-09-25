@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# import traceback
+import traceback
 
 from django.db import models
 
 from utils import zlogging
 
-# from .. import history_stacktrace
+from .. import history_stacktrace
 
 logger = zlogging.getLogger(__name__)
 
@@ -13,12 +13,11 @@ logger = zlogging.getLogger(__name__)
 class HistoryQuerySetManager(models.Manager):
     def create(self, *args, **kwargs):
         history = super().create(*args, **kwargs)
-        # TODO: HISTACK
-        # try:
-        #     stack_trace = "".join(traceback.format_stack())
-        #     history_stacktrace.model.HistoryStacktrace.objects.create(history=history, value=stack_trace)
-        # except Exception:
-        #     logger.exception("Could not save history stack trace!")
+        try:
+            stack_trace = "".join(traceback.format_stack())
+            history_stacktrace.model.HistoryStacktrace.objects.create(history=history, value=stack_trace)
+        except Exception:
+            logger.exception("Could not save history stack trace!")
         return history
 
     def get_queryset(self):
