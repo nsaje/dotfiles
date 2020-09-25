@@ -46,7 +46,6 @@
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
 0 15 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
-0 15 * * *       /home/ubuntu/docker-manage-py.sh send_daily_management_report
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 21 * * *       /home/ubuntu/docker-manage-py.sh clean_up_redshift  # has to run before vacuum_redshift_db
 0 22 * * *       /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats

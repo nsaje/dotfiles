@@ -456,14 +456,6 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_daily_management_report_email(html, attachment):
-    send_internal_email(
-        custom_html=html,
-        attachment=attachment,
-        **params_from_template(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT),
-    )
-
-
 def send_new_user_device_email(request, browser, os, city, country):
     send_official_email(
         agency_or_user=request.user,
