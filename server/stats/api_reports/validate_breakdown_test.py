@@ -38,22 +38,7 @@ class ValidateBreakdownTest(TestCase):
         with self.assertRaises(exc.InvalidBreakdownError):
             validate_breakdown_by_structure(Level.AD_GROUPS, ["publisher_id", "source_id"])
 
-    def test_breakdown_validate_placement_permissions(self):
-        self.add_permission_and_test(Level.AD_GROUPS, ["placement_id"], ["can_use_placement_targeting"])
-        self.add_permission_and_test(Level.CAMPAIGNS, ["placement_id"], ["can_use_placement_targeting"])
-
-        user = User.objects.get(pk=1)
-        # TODO should be structure validation, but leaving like this until refactor
-        with self.assertRaises(exc.MissingDataError):
-            validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["placement_id"])
-
-        with self.assertRaises(exc.MissingDataError):
-            validate_breakdown_by_permissions(Level.ACCOUNTS, user, ["placement_id"])
-
     def test_breakdown_validate_placement_structure(self):
-        user = User.objects.get(pk=1)
-        test_helper.add_permissions(user, ["can_use_placement_targeting"])
-
         validate_breakdown_by_structure(Level.CAMPAIGNS, ["placement_id"])
 
         validate_breakdown_by_structure(Level.AD_GROUPS, ["placement_id"])

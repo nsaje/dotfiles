@@ -9,11 +9,8 @@ describe('component: zemGridContainerTabsService', function() {
 
     beforeEach(angular.mock.module('one.widgets'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
-    beforeEach(inject(function(zemGridContainerTabsService, zemAuthStore) {
+    beforeEach(inject(function(zemGridContainerTabsService) {
         service = zemGridContainerTabsService;
-        zemAuthStore.setMockedPermissions([
-            'zemauth.can_use_placement_targeting',
-        ]);
     }));
 
     it('should allow placement breakdown on all entity levels', function() {
@@ -36,7 +33,6 @@ describe('component: zemGridContainerTabsService', function() {
             ).toEqual({
                 name: 'Placements',
                 breakdown: 'placement',
-                permissions: 'zemauth.can_use_placement_targeting',
             });
         }
     });

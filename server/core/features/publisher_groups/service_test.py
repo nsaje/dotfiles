@@ -531,35 +531,6 @@ class PublisherGroupCSVHelpersTestCase(CoreTestCase):
             ),
         )
 
-    def test_get_csv_content_all_cases_without_placement(self):
-        agency = magic_mixer.blend(models.Agency)
-        account = magic_mixer.blend(models.Account, agency=agency)
-        source = magic_mixer.blend(models.Source, bidder_slug="somesource")
-        publisher_group = magic_mixer.blend(models.PublisherGroup, account=account)
-        publisher_group_entries = [
-            magic_mixer.blend(models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com"),
-            magic_mixer.blend(
-                models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com", source=source
-            ),
-        ]
-
-        rows = [
-            row
-            for row in csv.DictReader(
-                io.StringIO(csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account))
-            )
-        ]
-        self.assertEqual(
-            set(tuple(row.items()) for row in rows),
-            {
-                (
-                    ("Publisher", e.publisher if e.publisher is not None else ""),
-                    ("Source", e.source.bidder_slug if e.source is not None else ""),
-                )
-                for e in publisher_group_entries
-            },
-        )
-
     def test_get_csv_content_all_cases_without_placement_existing_placement_entry(self):
         agency = magic_mixer.blend(models.Agency)
         account = magic_mixer.blend(models.Account, agency=agency)
@@ -630,11 +601,7 @@ class PublisherGroupCSVHelpersTestCase(CoreTestCase):
         rows = [
             row
             for row in csv.DictReader(
-                io.StringIO(
-                    csv_helper.get_csv_content(
-                        publisher_group.entries.all(), include_placement=True, account=publisher_group.account
-                    )
-                )
+                io.StringIO(csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account))
             )
         ]
         self.assertEqual(
@@ -649,18 +616,8 @@ class PublisherGroupCSVHelpersTestCase(CoreTestCase):
             },
         )
 
-    def test_get_example_csv_content_without_placement(self):
-        rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content()))]
-        self.assertEqual(
-            set(tuple(row.items()) for row in rows),
-            {
-                (("Publisher", "example.com"), ("Source (optional)", "")),
-                (("Publisher", "some.example.com"), ("Source (optional)", "")),
-            },
-        )
-
     def test_get_example_csv_content_with_placement(self):
-        rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content(include_placement=True)))]
+        rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content()))]
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
             {
@@ -771,9 +728,9 @@ class PublisherGroupCSVHelpersTestCase(CoreTestCase):
             csv_helper.get_entries_errors_csv_content(entries, account=account),
             textwrap.dedent(
                 """\
-            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id","Error"\r
-            "pub1","AdsNative","12345","123456","1234567","12345678",""\r
-            "pub2","","","","","",""\r
+            "Publisher","Placement","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id","Error"\r
+            "pub1","","AdsNative","12345","123456","1234567","12345678",""\r
+            "pub2","","","","","","",""\r
             """
             ),
         )

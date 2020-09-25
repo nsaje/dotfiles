@@ -506,11 +506,8 @@ angular
                             constants.breakdown.OPERATING_SYSTEM,
                             constants.breakdown.PUBLISHER,
                             constants.breakdown.MEDIA_SOURCE,
+                            constants.breakdown.PLACEMENT,
                         ],
-                    },
-                    {
-                        permissions: ['zemauth.can_use_placement_targeting'],
-                        breakdowns: [constants.breakdown.PLACEMENT],
                     },
                 ],
             },

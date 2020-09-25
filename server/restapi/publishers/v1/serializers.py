@@ -27,7 +27,6 @@ class PublisherListSerializer(serializers.ListSerializer):
 class PublisherSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
     class Meta:
         list_serializer_class = PublisherListSerializer
-        permissioned_fields = {"placement": "zemauth.can_use_placement_targeting"}
 
     name = restapi.serializers.fields.PlainCharField(max_length=127)
     placement = restapi.serializers.fields.PlainCharField(max_length=127, required=False, allow_null=True)

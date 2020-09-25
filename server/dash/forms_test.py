@@ -12,7 +12,6 @@ from mock import patch
 from dash import constants
 from dash import forms
 from dash import models
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -1690,8 +1689,13 @@ class PublisherTargetingFormTestCase(TestCase):
             f.cleaned_data,
             {
                 "entries": [
-                    {"publisher": "cnn.com", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "source": models.Source.objects.get(pk=1), "include_subdomains": True},
+                    {"publisher": "cnn.com", "source": None, "include_subdomains": False, "placement": None},
+                    {
+                        "publisher": "cnn2.com",
+                        "source": models.Source.objects.get(pk=1),
+                        "include_subdomains": True,
+                        "placement": None,
+                    },
                 ],
                 "status": constants.PublisherTargetingStatus.BLACKLISTED,
                 "ad_group": models.AdGroup.objects.get(pk=1),
@@ -1723,22 +1727,6 @@ class PublisherTargetingFormTestCase(TestCase):
             f.cleaned_data,
         )
 
-    def test_form_placement_no_permission(self):
-        f = forms.PublisherTargetingForm(
-            self.user,
-            {
-                "entries": [
-                    {"publisher": "cnn.com", "placement": "widget1", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "placement": "widget1", "source": 1, "include_subdomains": True},
-                ],
-                "status": constants.PublisherTargetingStatus.BLACKLISTED,
-                "ad_group": 1,
-            },
-        )
-
-        self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["entries"], ["Invalid field: placement"])
-
     def test_form_placement_invalid(self):
         f = forms.PublisherTargetingForm(
             self.user,
@@ -1756,7 +1744,6 @@ class PublisherTargetingFormTestCase(TestCase):
         self.assertEqual(f.errors["entries"], ["This field is required."])
 
     def test_form_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         f = forms.PublisherTargetingForm(
             self.user,
             {
@@ -1791,7 +1778,6 @@ class PublisherTargetingFormTestCase(TestCase):
         )
 
     def test_form_missing_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         f = forms.PublisherTargetingForm(
             self.user,
             {
@@ -1826,7 +1812,6 @@ class PublisherTargetingFormTestCase(TestCase):
         )
 
     def test_form_empty_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         f = forms.PublisherTargetingForm(
             self.user,
             {
@@ -1842,24 +1827,7 @@ class PublisherTargetingFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual(f.errors["entries"], ["Placement must not be empty"])
 
-    def test_form_empty_placement_no_permission(self):
-        f = forms.PublisherTargetingForm(
-            self.user,
-            {
-                "entries": [
-                    {"publisher": "cnn.com", "placement": "", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "placement": "", "source": 1, "include_subdomains": True},
-                ],
-                "status": constants.PublisherTargetingStatus.BLACKLISTED,
-                "ad_group": 1,
-            },
-        )
-
-        self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["entries"], ["Invalid field: placement"])
-
     def test_form_not_reported_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         f = forms.PublisherTargetingForm(
             self.user,
             {

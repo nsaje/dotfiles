@@ -14,7 +14,7 @@ from zemauth.features.entity_permission import Permission
 class PublisherGroupEntryTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        add_permissions(self.user, ["can_access_additional_outbrain_publisher_settings", "can_use_placement_targeting"])
+        add_permissions(self.user, ["can_access_additional_outbrain_publisher_settings"])
 
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -155,26 +155,6 @@ class PublisherGroupEntryTest(RESTAPITestCase):
         self.assertEqual(r.status_code, 404)
         self.assertResponseError(r, "MissingDataError")
 
-    def test_create_new_no_placement_permission(self):
-        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
-        r = self.client.post(
-            reverse(
-                "restapi.publishergroupentry.v1:publisher_group_entry_list",
-                kwargs={"publisher_group_id": self.publisher_group.id},
-            ),
-            data={
-                "publisher": "test",
-                "source": self.source_one.bidder_slug,
-                "includeSubdomains": False,
-                "placement": "best_plac",
-            },
-            format="json",
-        )
-        response = self.assertResponseValid(r, data_type=dict, status_code=201)
-        self.assertNotIn("placement", response["data"])
-        response["data"]["placement"] = None
-        self.validate_against_db(response["data"])
-
     def test_create_new_empty_placement(self):
         r = self.client.post(
             reverse(
@@ -249,24 +229,6 @@ class PublisherGroupEntryTest(RESTAPITestCase):
         self.assertEqual(r.status_code, 404)
         self.assertResponseError(r, "MissingDataError")
 
-    def test_get_no_placement_permission(self):
-        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
-        pge = magic_mixer.blend(
-            core.features.publisher_groups.PublisherGroupEntry, publisher_group=self.publisher_group
-        )
-        r = self.client.get(
-            reverse(
-                "restapi.publishergroupentry.v1:publisher_group_entry_details",
-                kwargs={"publisher_group_id": self.publisher_group.id, "entry_id": pge.id},
-            )
-        )
-        response = self.assertResponseValid(r, data_type=dict, status_code=200)
-        self.assertNotIn("placement", response["data"])
-        response["data"]["placement"] = core.features.publisher_groups.PublisherGroupEntry.objects.get(
-            pk=response["data"]["id"]
-        ).placement
-        self.validate_against_db(response["data"])
-
     def test_update(self):
         pge = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroupEntry, publisher_group=self.publisher_group
@@ -302,32 +264,6 @@ class PublisherGroupEntryTest(RESTAPITestCase):
         )
         self.assertEqual(r.status_code, 404)
         self.assertResponseError(r, "MissingDataError")
-
-    def test_update_no_placement_permission(self):
-        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
-        pge = magic_mixer.blend(
-            core.features.publisher_groups.PublisherGroupEntry, publisher_group=self.publisher_group, placement="test"
-        )
-        old_placement = pge.placement
-        new_placement = old_placement + "_new"
-
-        r = self.client.put(
-            reverse(
-                "restapi.publishergroupentry.v1:publisher_group_entry_details",
-                kwargs={"publisher_group_id": self.publisher_group.id, "entry_id": pge.id},
-            ),
-            data={
-                "publisher": "cnn",
-                "source": self.source_two.bidder_slug,
-                "outbrainPublisherId": "123",
-                "placement": new_placement,
-            },
-            format="json",
-        )
-        response = self.assertResponseValid(r, data_type=dict, status_code=200)
-        self.assertNotIn("placement", response["data"])
-        response["data"]["placement"] = old_placement
-        self.validate_against_db(response["data"])
 
     def test_delete(self):
         pge = magic_mixer.blend(

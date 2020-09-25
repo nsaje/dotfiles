@@ -30,7 +30,6 @@
       - ['account_credit_view', 'zemauth', 'user']
       - ["can_see_backend_hacks", "zemauth", "user"]
       - ["can_see_service_fee", "zemauth", "user"]
-      - ["can_use_placement_targeting", "zemauth", "user"]
 
 - model: oauth2_provider.application
   pk: 1

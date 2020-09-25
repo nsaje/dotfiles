@@ -10,7 +10,6 @@ from mock import patch
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
-from utils import test_helper
 from utils.test_helper import fake_request
 from zemauth.models import User
 
@@ -1094,7 +1093,6 @@ class AdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1385,7 +1383,6 @@ class CampaignPlacementDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1609,7 +1606,6 @@ class AccountPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1739,7 +1735,6 @@ class AllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)

@@ -139,14 +139,10 @@ class PublisherGroupsUpload(DASHAPIBaseView):
         entries = form.cleaned_data.get("entries")
         entities_count = 0
         if entries:
-            include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
-
-            validated_entries = core.features.publisher_groups.validate_entries(
-                entries, include_placement=include_placement
-            )
+            validated_entries = core.features.publisher_groups.validate_entries(entries)
             if any("error" in entry for entry in validated_entries):
                 errors_csv_key = core.features.publisher_groups.save_entries_errors_csv(
-                    validated_entries, include_placement=include_placement, agency=agency, account=account
+                    validated_entries, agency=agency, account=account
                 )
                 raise exc.ValidationError(errors={"errors_csv_key": errors_csv_key})
 
@@ -182,12 +178,10 @@ class PublisherGroupsDownload(DASHAPIBaseView):
         except core.features.publisher_groups.PublisherGroup.DoesNotExist:
             raise exc.MissingDataError("Publisher group does not exist")
 
-        include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
         return self.create_csv_response(
             "publisher_group_{}".format(slugify.slugify(publisher_group.name)),
             content=core.features.publisher_groups.get_csv_content(
                 publisher_group.entries.all().select_related("source"),
-                include_placement=include_placement,
                 agency=publisher_group.agency,
                 account=publisher_group.account,
             ),
@@ -196,8 +190,6 @@ class PublisherGroupsDownload(DASHAPIBaseView):
 
 class PublisherGroupsExampleDownload(DASHAPIBaseView):
     def get(self, request):
-        include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
         return self.create_csv_response(
-            "publisher_group_example",
-            content=core.features.publisher_groups.get_example_csv_content(include_placement=include_placement),
+            "publisher_group_example", content=core.features.publisher_groups.get_example_csv_content()
         )

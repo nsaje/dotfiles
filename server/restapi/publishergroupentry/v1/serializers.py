@@ -14,7 +14,6 @@ class PublisherGroupEntrySerializer(
     class Meta:
         model = core.features.publisher_groups.PublisherGroupEntry
         fields = ("id", "source", "publisher", "placement", "publisher_group_id", "include_subdomains")
-        permissioned_fields = {"placement": "zemauth.can_use_placement_targeting"}
         list_serializer_class = serializers.DataNodeListSerializer
 
     id = restapi.serializers.fields.IdField(read_only=True)
@@ -47,5 +46,4 @@ class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
             "outbrain_amplify_publisher_id",
             "outbrain_engage_publisher_id",
         )
-        permissioned_fields = {"placement": "zemauth.can_use_placement_targeting"}
         list_serializer_class = serializers.DataNodeListSerializer

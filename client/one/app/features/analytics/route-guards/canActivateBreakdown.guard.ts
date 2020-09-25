@@ -21,33 +21,6 @@ export class CanActivateBreakdownGuard implements CanActivate {
             this.router.navigate([parentUrl]);
             return false;
         }
-        if (!this.canSeeBreakdown(route.params.breakdown)) {
-            const parentUrl = this.getParentUrl(route, state);
-            this.router.navigate([parentUrl]);
-            return false;
-        }
-        return true;
-    }
-
-    private canSeeBreakdown(breakdown: BreakdownParam): boolean {
-        const isDeliveryBreakdown = [
-            BreakdownParam.COUNTRY,
-            BreakdownParam.STATE,
-            BreakdownParam.DMA,
-            BreakdownParam.DEVICE,
-            BreakdownParam.ENVIRONMENT,
-            BreakdownParam.OPERATING_SYSTEM,
-        ].includes(breakdown);
-        if (isDeliveryBreakdown) {
-            return true;
-        }
-
-        if (breakdown === BreakdownParam.PLACEMENTS) {
-            return this.authStore.hasPermission(
-                'zemauth.can_use_placement_targeting'
-            );
-        }
-
         return true;
     }
 

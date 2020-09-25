@@ -51,9 +51,6 @@ def _get_account_default_icon_alert(alerts, request, account):
 
 
 def _get_placement_conversion_alert(alerts, request, **kwargs):
-    if request.user and not request.user.has_perm("zemauth.can_use_placement_targeting"):
-        return alerts
-
     breakdown = kwargs.get("breakdown")
     if not breakdown:
         return alerts

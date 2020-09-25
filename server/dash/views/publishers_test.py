@@ -98,7 +98,6 @@ class PublisherTargetingViewTestCase(DASHAPITestCase):
 
     def test_post_placement_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         payload = self.get_payload(ad_group=ad_group.id, entries=[{"publisher": "cnn.com", "placement": "widget1"}])
 
         response = self.client.post(
@@ -109,16 +108,6 @@ class PublisherTargetingViewTestCase(DASHAPITestCase):
             ad_group.default_blacklist,
             entry_dicts=[{"publisher": "cnn.com", "placement": "widget1", "source": None, "include_subdomains": False}],
         )
-
-    def test_post_placement_ad_group_no_permission(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        payload = self.get_payload(ad_group=ad_group.id, entries=[{"publisher": "cnn.com", "placement": "widget1"}])
-
-        response = self.client.post(
-            reverse("publisher_targeting"), data=json.dumps(payload), content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["data"]["errors"], {"entries": ["Invalid field: placement"]})
 
 
 class PublisherGroupsViewTestCase(DASHAPITestCase):
@@ -277,24 +266,7 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertIsNone(entry.source)
             self.assertEqual(entry.include_subdomains, True)
 
-    def test_post_create_publisher_source_placement_no_permission(self):
-        account = models.Account.objects.get(pk=1)
-        rows = [
-            {"Publisher": "asd", "Placement": "widget1", "Source": ""},
-            {"Publisher": "qwe", "Placement": "widget2", "Source": "adsnative"},
-        ]
-
-        mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
-
-        response = self.client.post(reverse("publisher_groups_upload"), data=data)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertFalse(response.json()["success"])
-        self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Placement" is not supported'])
-
     def test_post_create_publisher_source_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "asd", "Placement": "widget1", "Source": ""},
@@ -319,21 +291,7 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.source.bidder_slug if entry.source else None, rows[i]["Source"] or None)
             self.assertEqual(entry.include_subdomains, True)
 
-    def test_post_create_publisher_placement_no_permission(self):
-        account = models.Account.objects.get(pk=1)
-        rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
-
-        mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
-
-        response = self.client.post(reverse("publisher_groups_upload"), data=data)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertFalse(response.json()["success"])
-        self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Placement" is not supported'])
-
     def test_post_create_publisher_placement(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
 
@@ -356,7 +314,6 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_unknown_columns(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Unknown": "foo"}, {"Publisher": "qwe", "Unknown": "bar"}]
 
@@ -370,7 +327,6 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
         self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Unknown" is not supported'])
 
     def test_post_create_publisher_mixed_entries(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "qwe", "Placement": "", "Source": ""},
@@ -398,7 +354,6 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_publisher_optional_in_column_names(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "qwe", "Placement (optional)": "", "Source (optional)": ""},
@@ -427,7 +382,6 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
 
     @patch.object(s3helpers.S3Helper, "put")
     def test_post_create_publisher_mixed_entries_errors(self, mock_s3):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "", "Placement": "", "Source": ""},
@@ -474,36 +428,6 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
             ],
         )
 
-    @patch.object(s3helpers.S3Helper, "put")
-    def test_post_create_publisher_mixed_entries_errors_no_permission(self, mock_s3):
-        account = models.Account.objects.get(pk=1)
-        rows = [
-            {"Publisher": "", "Source": ""},
-            {"Publisher": "qwe", "Source": "asw"},
-            {"Publisher": "qwe", "Source": ""},
-            {"Publisher": "", "Source": "asw"},
-        ]
-
-        mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
-
-        response = self.client.post(reverse("publisher_groups_upload"), data=data)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue(mock_s3.called)
-        error_file_contents = mock_s3.call_args_list[0][0][1]
-
-        rows = [row for row in csv.DictReader(io.StringIO(error_file_contents))]
-
-        self.assertEqual(
-            rows,
-            [
-                {"Publisher": "qwe", "Source": "asw", "Error": "Unknown source"},
-                {"Publisher": "qwe", "Source": "", "Error": ""},
-                {"Publisher": "", "Source": "asw", "Error": "Publisher is required; Unknown source"},
-            ],
-        )
-
 
 class PublisherGroupsDownloadTestCase(DASHAPITestCase):
     def setUp(self):
@@ -542,26 +466,6 @@ class PublisherGroupsDownloadTestCase(DASHAPITestCase):
             ),
         ]
 
-    def test_get_without_placement_permission(self):
-        models.PublisherGroupEntry.objects.filter(publisher_group=self.publisher_group).exclude(placement=None).delete()
-        response = self.client.get(
-            reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
-            data={"account_id": self.account.id},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        rows = [row for row in csv.DictReader(io.StringIO(response.content.decode()))]
-        self.assertEqual(
-            set(tuple(row.items()) for row in rows),
-            {
-                (
-                    ("Publisher", e.publisher if e.publisher is not None else ""),
-                    ("Source", e.source.bidder_slug if e.source is not None else ""),
-                )
-                for e in self.publisher_group_entries
-            },
-        )
-
     def test_get_without_placement_permission_existing_placement_entry(self):
         response = self.client.get(
             reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
@@ -583,7 +487,6 @@ class PublisherGroupsDownloadTestCase(DASHAPITestCase):
         )
 
     def test_get_with_placement_permission(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         response = self.client.get(
             reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
             data={"account_id": self.account.id},
@@ -610,21 +513,7 @@ class PublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    def test_get_without_placement_permission(self):
-        response = self.client.get(reverse("publisher_groups_example"))
-
-        self.assertEqual(response.status_code, 200)
-        rows = [row for row in csv.DictReader(io.StringIO(response.content.decode()))]
-        self.assertEqual(
-            set(tuple(row.items()) for row in rows),
-            {
-                (("Publisher", "example.com"), ("Source (optional)", "")),
-                (("Publisher", "some.example.com"), ("Source (optional)", "")),
-            },
-        )
-
     def test_get_with_placement_permission(self):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         response = self.client.get(reverse("publisher_groups_example"))
 
         self.assertEqual(response.status_code, 200)

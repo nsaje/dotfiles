@@ -37,7 +37,6 @@ angular
                     {
                         name: 'Placements',
                         breakdown: constants.breakdown.PLACEMENT,
-                        permissions: 'zemauth.can_use_placement_targeting',
                     },
                     {
                         name: 'Media Sources',

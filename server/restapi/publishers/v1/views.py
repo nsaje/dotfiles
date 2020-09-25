@@ -39,16 +39,14 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         publishers = []
 
         def add_entries(user, entries, level):
-            add_placement = user.has_perm("zemauth.can_use_placement_targeting")
             for entry in entries:
                 publisher = {
                     "name": entry.publisher,
                     "source": entry.source,
                     "status": dash.constants.PublisherStatus.BLACKLISTED,
                     "level": level,
+                    "placement": entry.placement,
                 }
-                if add_placement:
-                    publisher.update({"placement": entry.placement})
 
                 publishers.append(publisher)
 

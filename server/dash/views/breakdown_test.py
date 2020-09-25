@@ -978,8 +978,6 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.counts")
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_placement(self, mock_totals, mock_counts, mock_query):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
-
         mock_totals.return_value = {"clicks": 123}
         mock_counts.return_value = [{"parent_breakdown_id": None, "count": 33}]
         mock_query.return_value = {}

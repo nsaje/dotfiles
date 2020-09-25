@@ -1289,17 +1289,7 @@ class PublisherGroupEntryForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super(PublisherGroupEntryForm, self).__init__(*args, **kwargs)
 
-    def clean(self):
-        if self.user is None or not self.user.has_perm("zemauth.can_use_placement_targeting"):
-            self.cleaned_data.pop("placement", None)
-
-        return self.cleaned_data
-
     def clean_placement(self):
-        if self.user is None or not self.user.has_perm("zemauth.can_use_placement_targeting"):
-            if self.data.get("placement") is not None:
-                raise exceptions.ValidationError("Invalid field: placement")
-
         try:
             core.features.publisher_groups.validate_placement(self.data.get("placement"))
         except utils.exc.ValidationError as e:
@@ -1413,10 +1403,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
         if "publisher" not in column_names:
             raise forms.ValidationError("Publisher column is required")
 
-        include_placement = self.user is not None and self.user.has_perm("zemauth.can_use_placement_targeting")
-        allowed_columns = {"publisher", "source"}
-        if include_placement:
-            allowed_columns.add("placement")
+        allowed_columns = {"publisher", "source", "placement"}
 
         extra_columns = []
         for column in header:

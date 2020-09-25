@@ -190,7 +190,7 @@ class PlacementBreakdownQueryTestCase(StatsTestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "can_see_sspd_url"])
+        test_helper.add_permissions(self.user, permissions=["can_see_sspd_url"])
         self.maxDiff = None
 
     def _convert_to_placement_entries(self):

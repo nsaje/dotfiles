@@ -441,21 +441,8 @@ class ReportsGetReportCSVTestCase(DASHAPITestCase):
         expected = """"Environment","Environment Name"\r\n"APP","In-app"\r\n"""
         self.assertEqual(expected, output)
 
-    # TODO: PLAC: remove after legacy grace period
-    @mock.patch("stats.api_reports.query")
-    def test_environment_legacy(self, mock_query):
-        self.reportJob.query = self.build_query(["Placement"])
-        row = {"environment": "app", "etfm_cost": Decimal("12.3"), "clicks": 5}
-        mock_query.return_value = [row]
-        output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = (
-            """"Placement","Placement Name","Environment","Environment Name"\r\n"APP","In-app","APP","In-app"\r\n"""
-        )
-        self.assertEqual(expected, output)
-
     @mock.patch("stats.api_reports.query")
     def test_placement(self, mock_query):
-        utils.test_helper.add_permissions(self.reportJob.user, ["can_use_placement_targeting"])
         self.reportJob.query = self.build_query(["Placement"])
         row = {"placement": "00000000-0029-e16a-0000-000000000071", "etfm_cost": Decimal("12.3"), "clicks": 5}
         mock_query.return_value = [row]
@@ -465,7 +452,6 @@ class ReportsGetReportCSVTestCase(DASHAPITestCase):
 
     @mock.patch("stats.api_reports.query")
     def test_placement_all_related_columns(self, mock_query):
-        utils.test_helper.add_permissions(self.reportJob.user, ["can_use_placement_targeting"])
         self.reportJob.query = self.build_query(
             [
                 "Placement Id",
