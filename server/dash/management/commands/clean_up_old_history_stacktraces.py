@@ -14,7 +14,7 @@ PARTITION_CHECK_DAYS = 2
 
 class Command(Z1Command):
     def handle(self, *args, **options):
-        utc_today = utils.dates_helper.utc_today().date()
+        utc_today = utils.dates_helper.utc_today()
         logger.info("Creating new dash_historystacktrace partitions")
         self._create_new_partitions(utc_today)
 

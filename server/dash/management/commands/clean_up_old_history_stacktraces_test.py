@@ -7,7 +7,7 @@ from dash.management.commands import clean_up_old_history_stacktraces
 
 
 class CleanUpOldHistoryStackTracesTest(TestCase):
-    @mock.patch("utils.dates_helper.utc_today", mock.MagicMock(return_value=datetime.datetime(2020, 9, 17, 7, 7, 7)))
+    @mock.patch("utils.dates_helper.utc_today", mock.MagicMock(return_value=datetime.datetime(2020, 9, 17)))
     @mock.patch("django.db.connection.cursor")
     def test_generate(self, mock_cursor):
         clean_up_old_history_stacktraces.Command().handle()
