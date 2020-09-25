@@ -35,7 +35,6 @@ def prepare_constraints(
     only_used_sources=False,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
 ):
-
     # determine the basic structure that is allowed
     allowed_accounts = (
         dash.models.Account.objects.all()
@@ -152,7 +151,7 @@ def prepare_constraints(
         "ad_group": ad_group,
         "allowed_content_ads": allowed_content_ads if constrain_content_ads else None,
         "allowed_ad_groups": allowed_ad_groups if constrain_ad_group else None,
-        "allowed_campaigns": allowed_campaigns,
+        "allowed_campaigns": allowed_campaigns if constrain_campaigns else None,
         "allowed_accounts": allowed_accounts,
         "publisher_blacklist": blacklisted_entries if include_publisher_groups else None,
         "publisher_whitelist": whitelisted_entries if include_publisher_groups else None,
