@@ -917,10 +917,7 @@ class PublisherGroupConnectionsTestCase(CoreTestCase):
         self.campaign.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_1.id])
         self.ad_group.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_2.id])
 
-        num_queries = 1
-        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 1 query for all entities permission check
-            num_queries += 1
+        num_queries = 2
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_2.id)
@@ -943,9 +940,7 @@ class PublisherGroupConnectionsTestCase(CoreTestCase):
             ],
         )
 
-        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # reduce for all entities permission check (already in cache)
-            num_queries -= 1
+        num_queries = 1
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_1.id)
@@ -1034,10 +1029,7 @@ class PublisherGroupConnectionsTestCase(CoreTestCase):
         foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
         foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
 
-        num_queries = 1
-        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 1 query for all entities permission check
-            num_queries += 1
+        num_queries = 2
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
@@ -1054,10 +1046,7 @@ class PublisherGroupConnectionsTestCase(CoreTestCase):
         foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
         foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
 
-        num_queries = 1
-        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 1 query for all entities permission check
-            num_queries += 1
+        num_queries = 2
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)

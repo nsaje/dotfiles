@@ -116,23 +116,20 @@ def filter_columns_by_permission(user, constraints, rows, goals):
     constraints = _extract_constraints(constraints)
     fields_to_keep = _get_fields_to_keep(user, goals)
 
-    if user.has_perm("zemauth.fea_use_entity_permission"):
-        if user.has_perm_on_all_entities(Permission.READ):
-            for field, permission in FIELD_ENTITY_PERMISSION_MAPPING.items():
-                if user.has_perm_on_all_entities(permission):
-                    fields_to_keep.add(field)
-                else:
-                    fields_to_keep.discard(field)
-        else:
-            entity_permission_cache = _build_entity_permission_cache(user, constraints)
-            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                futures = [
-                    executor.submit(_entity_permission_fields_cleanup, entity_permission_cache, row, fields_to_keep)
-                    for row in rows
-                ]
-                concurrent.futures.wait(futures)
+    if user.has_perm_on_all_entities(Permission.READ):
+        for field, permission in FIELD_ENTITY_PERMISSION_MAPPING.items():
+            if user.has_perm_on_all_entities(permission):
+                fields_to_keep.add(field)
+            else:
+                fields_to_keep.discard(field)
     else:
-        _remove_fields(rows, fields_to_keep)
+        entity_permission_cache = _build_entity_permission_cache(user, constraints)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [
+                executor.submit(_entity_permission_fields_cleanup, entity_permission_cache, row, fields_to_keep)
+                for row in rows
+            ]
+            concurrent.futures.wait(futures)
 
 
 def _extract_constraints(constraints):

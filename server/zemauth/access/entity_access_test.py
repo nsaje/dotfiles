@@ -342,8 +342,7 @@ class UserAccessTestCase(TestCase):
     def setUp(self) -> None:
         self.request = magic_mixer.blend_request_user()
         self.calling_user: zemauth.models.User = self.request.user
-        test_helper.add_permissions(self.calling_user, ["fea_use_entity_permission"])
-        self.requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        self.requested_user: zemauth.models.User = magic_mixer.blend_user()
 
     def test_get_user_by_agency(self):
         agency = magic_mixer.blend(core.models.Agency)

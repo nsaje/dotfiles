@@ -108,10 +108,6 @@ class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class CurrentUserSerializer(UserSerializer):
     name = rest_framework.serializers.CharField(source="get_full_name", read_only=True)
-    # TODO (msuber): deleted agencies field after User Roles will be released.
-    agencies = rest_framework.serializers.ListSerializer(
-        source="get_agency_ids", child=rest_framework.serializers.IntegerField(), default=[], read_only=True
-    )
     permissions = PermissionSerializer(source="all_permissions", many=True, read_only=True)
     entity_permissions = EntityPermissionSerializer(source="all_entity_permissions", many=True, read_only=True)
     timezone_offset = rest_framework.serializers.IntegerField(source="get_timezone_offset", read_only=True)

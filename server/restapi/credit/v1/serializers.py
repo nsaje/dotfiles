@@ -19,14 +19,8 @@ class CreditSerializer(
                 "entity_access_fn": zemauth.access.get_credit_line_item,
             },
             "fields": {
-                "service_fee": {
-                    "permission": Permission.BASE_COSTS_SERVICE_FEE,
-                    "fallback_permission": "zemauth.can_see_service_fee",
-                },
-                "license_fee": {
-                    "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
-                    "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
-                },
+                "service_fee": Permission.BASE_COSTS_SERVICE_FEE,
+                "license_fee": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
         }
 

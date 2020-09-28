@@ -5,7 +5,6 @@ from django.db import transaction
 
 import zemauth
 from utils import dates_helper
-from utils import test_helper
 from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -117,12 +116,10 @@ class InstanceTestCase(BaseTestCase):
 
     def test_get_default_csv_separator(self):
         user = magic_mixer.blend_user()
-        test_helper.add_permissions(user, ["fea_use_entity_permission"])
         agency = self.mix_agency(user, permissions=[Permission.READ], default_csv_separator=";")
         self.assertEqual(user.get_default_csv_separator(), agency.default_csv_separator)
 
     def test_get_default_csv_decimal_separator(self):
         user = magic_mixer.blend_user()
-        test_helper.add_permissions(user, ["fea_use_entity_permission"])
         agency = self.mix_agency(user, permissions=[Permission.READ], default_csv_decimal_separator=",")
         self.assertEqual(user.get_default_csv_decimal_separator(), agency.default_csv_decimal_separator)

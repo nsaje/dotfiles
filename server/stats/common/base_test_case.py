@@ -8,5 +8,4 @@ class StatsTestCase(BaseTestCase):
         super().setUpClass()
         cls.users = zemauth.models.User.objects.all()
         for user in cls.users:
-            user.user_permissions.add(cls.permission)
             user.refresh_entity_permissions()

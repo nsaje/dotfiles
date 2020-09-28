@@ -126,17 +126,11 @@ class ScheduledReportsTestCase(DASHAPITestCase):
         self.user_1 = magic_mixer.blend(zemauth.models.User, is_active=True)
         self.user_2 = magic_mixer.blend(zemauth.models.User, is_active=True)
 
-        if self.user.has_perm("zemauth.fea_use_entity_permission"):
-            test_helper.add_entity_permissions(
-                self.user_1,
-                [
-                    zemauth.features.entity_permission.Permission.READ,
-                    zemauth.features.entity_permission.Permission.WRITE,
-                ],
-                self.account,
-            )
-        else:
-            self.account.users.add(self.user_1)
+        test_helper.add_entity_permissions(
+            self.user_1,
+            [zemauth.features.entity_permission.Permission.READ, zemauth.features.entity_permission.Permission.WRITE],
+            self.account,
+        )
 
         self.account_2 = self.mix_account(
             self.user_2,

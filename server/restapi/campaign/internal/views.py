@@ -205,9 +205,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             raise utils.exc.ValidationError(errors={"goals": errors})
 
     def _handle_campaign_budgets(self, request, campaign, data):
-        if not request.user.has_budget_perm_on(
-            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
-        ):
+        if not request.user.has_budget_perm_on(campaign):
             raise utils.exc.AuthorizationError()
 
         campaign_budgets = self._get_campaign_budgets(campaign)

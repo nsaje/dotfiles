@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 
-from django.contrib.auth.models import Permission
 from django.test import TestCase
 
 import core.models
@@ -16,11 +15,9 @@ class BaseTestCase(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.permission = Permission.objects.get(codename="fea_use_entity_permission")
 
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=self.permissions)
-        self.user.user_permissions.add(self.permission)
 
     def mix_agency(self, user=None, permissions=[], **kwargs):
         agency = magic_mixer.blend(core.models.Agency, **kwargs)

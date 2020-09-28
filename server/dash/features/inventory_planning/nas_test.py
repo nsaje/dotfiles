@@ -19,10 +19,6 @@ class NASTestCase(BaseTestCase):
 
         test_helper.add_permissions(self.request_user_with_permission.user, ["can_see_all_nas_in_inventory_planning"])
 
-        self.request_user_no_access.user.user_permissions.add(self.permission)
-        self.request_user_in_agency.user.user_permissions.add(self.permission)
-        self.request_user_with_permission.user.user_permissions.add(self.permission)
-
     def test_should_show_source(self):
         nas.NAS_MAPPING[self.source.id] = [self.agency.id]
 

@@ -22,9 +22,7 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
 
     def put(self, request, campaign_id, budget_id):
         campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
-        if not request.user.has_budget_perm_on(
-            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
-        ):
+        if not request.user.has_budget_perm_on(campaign):
             raise utils.exc.AuthorizationError()
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -52,9 +50,7 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
 
     def create(self, request, campaign_id):
         campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
-        if not request.user.has_budget_perm_on(
-            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
-        ):
+        if not request.user.has_budget_perm_on(campaign):
             raise utils.exc.AuthorizationError()
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)

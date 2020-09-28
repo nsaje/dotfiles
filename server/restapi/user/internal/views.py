@@ -11,7 +11,6 @@ from core.models import Agency
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils.email_helper import send_new_user_email
-from utils.exc import MissingDataError
 from utils.exc import ValidationError
 from zemauth.features.entity_permission import EntityPermission
 from zemauth.features.entity_permission import Permission
@@ -24,11 +23,6 @@ from zemauth.models.user.exceptions import MixedPermissionLevels
 from . import serializers
 
 
-class CanUseEntityPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.fea_use_entity_permission"))
-
-
 class CurrentUserViewSet(RESTAPIBaseViewSet):
     serializer = serializers.CurrentUserSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -39,23 +33,12 @@ class CurrentUserViewSet(RESTAPIBaseViewSet):
 
 class UserViewSet(RESTAPIBaseViewSet):
     serializer = serializers.UserSerializer
-    permission_classes = (permissions.IsAuthenticated, CanUseEntityPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def list(self, request):
         account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
 
         all_users = ZemUser.objects.order_by("first_name", "last_name")
-
-        """
-        TODO (msuber): deleted after User Roles will be released.
-        Show only users (agency managers, account managers) who have
-        fea_use_entity_permission permission.
-        """
-        all_users = all_users.filter(
-            Q(groups__permissions__codename="fea_use_entity_permission")
-            | Q(user_permissions__codename="fea_use_entity_permission")
-            | Q(is_superuser=True)
-        )
 
         if account is not None:
             users = all_users.filter_by_account(account)
@@ -201,8 +184,6 @@ class UserViewSet(RESTAPIBaseViewSet):
             user = ZemUser.objects.create_user(changes["email"])
             self._add_user_to_groups(user)
             created = True
-        elif not user.has_perm("zemauth.fea_use_entity_permission"):
-            raise MissingDataError("User does not exist")
         user.update(**changes)
         user.set_entity_permissions(request, account, agency, changes.get("entity_permissions"))
         self._augment_user(user, request, account, agency)
@@ -260,8 +241,6 @@ class UserViewSet(RESTAPIBaseViewSet):
 
     @staticmethod
     def _add_user_to_groups(user):
-        # TODO (msuber): deleted adding permissions after User Roles will be released.
-        user.user_permissions.add(auth_models.Permission.objects.get(codename="fea_use_entity_permission"))
         perm = auth_models.Permission.objects.get(codename="this_is_public_group")
         group = auth_models.Group.objects.filter(permissions=perm).first()
         if group is not None:

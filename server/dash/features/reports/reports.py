@@ -340,15 +340,12 @@ class ReportJobExecutor(JobExecutor):
         csv_separator = None
         csv_decimal_separator = None
 
-        if job.user.has_perm("zemauth.fea_use_entity_permission"):
-            entity_permission = (
-                job.user.entitypermission_set.filter(permission=Permission.READ, agency__isnull=False)
-                .select_related("agency")
-                .first()
-            )
-            agency = entity_permission.agency if entity_permission else None
-        else:
-            agency = job.user.agency_set.first()
+        entity_permission = (
+            job.user.entitypermission_set.filter(permission=Permission.READ, agency__isnull=False)
+            .select_related("agency")
+            .first()
+        )
+        agency = entity_permission.agency if entity_permission else None
 
         if agency:
             csv_separator = agency.default_csv_separator

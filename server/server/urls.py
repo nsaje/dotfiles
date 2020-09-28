@@ -414,11 +414,6 @@ urlpatterns += [
         login_required(dash.views.agency.CampaignContentInsights.as_view()),
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/(?P<action>\w+)$",
-        login_required(dash.views.agency.AccountUserAction.as_view()),
-        name="account_user_action",
-    ),
-    url(
         r"^api/accounts/(?P<account_id>\d+)/conversion_pixels/$",
         login_required(dash.views.agency.ConversionPixel.as_view()),
         name="account_conversion_pixels",
@@ -427,16 +422,6 @@ urlpatterns += [
         r"^api/conversion_pixel/(?P<conversion_pixel_id>\d+)/$",
         login_required(dash.views.agency.ConversionPixel.as_view()),
         name="conversion_pixel",
-    ),
-    url(
-        r"^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/$",
-        login_required(dash.views.agency.AccountUsers.as_view()),
-        name="account_users_manage",
-    ),
-    url(
-        r"^api/accounts/(?P<account_id>\d+)/users/$",
-        login_required(dash.views.agency.AccountUsers.as_view()),
-        name="account_users",
     ),
     url(
         r"^api/campaigns/(?P<campaign_id>\d+)/overview/$",

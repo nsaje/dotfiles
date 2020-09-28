@@ -17,18 +17,9 @@ class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBud
                 "entity_access_fn": zemauth.access.get_credit_line_item,
             },
             "fields": {
-                "margin": {
-                    "permission": Permission.AGENCY_SPEND_MARGIN,
-                    "fallback_permission": "zemauth.can_manage_agency_margin",
-                },
-                "license_fee": {
-                    "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
-                    "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
-                },
-                "service_fee": {
-                    "permission": Permission.BASE_COSTS_SERVICE_FEE,
-                    "fallback_permission": "zemauth.can_see_service_fee",
-                },
+                "margin": Permission.AGENCY_SPEND_MARGIN,
+                "license_fee": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                "service_fee": Permission.BASE_COSTS_SERVICE_FEE,
             },
         }
 

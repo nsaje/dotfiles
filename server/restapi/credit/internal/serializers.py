@@ -99,29 +99,27 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
         return value
 
     def has_entity_permission(
-        self, user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
     ) -> bool:
         credit_id = data.get("id")
         if credit_id is not None:
             return super().has_entity_permission(user, permission, config, data)
 
-        if user.has_perm("zemauth.fea_use_entity_permission"):
-            agency_id = data.get("agency_id")
-            if agency_id is not None:
-                try:
-                    zemauth.access.get_agency(user, permission["permission"], agency_id)
-                    return True
-                except utils.exc.MissingDataError:
-                    return False
-            account_id = data.get("account_id")
-            if account_id is not None:
-                try:
-                    zemauth.access.get_account(user, permission["permission"], account_id)
-                    return True
-                except utils.exc.MissingDataError:
-                    return False
-            return False
-        return user.has_perm(permission["fallback_permission"])
+        agency_id = data.get("agency_id")
+        if agency_id is not None:
+            try:
+                zemauth.access.get_agency(user, permission, agency_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+        account_id = data.get("account_id")
+        if account_id is not None:
+            try:
+                zemauth.access.get_account(user, permission, account_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+        return False
 
 
 class CreditQueryParams(

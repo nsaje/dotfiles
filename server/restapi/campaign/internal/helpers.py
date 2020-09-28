@@ -54,15 +54,9 @@ def get_credit_items(campaign):
 
 
 def get_budgets_overview(user, campaign, budget_items, credit_items):
-    can_add_base_costs = user.has_base_costs_and_service_fee_perm_on(
-        campaign, fallback_permission="zemauth.can_see_service_fee"
-    )
-    can_add_platform_costs = user.has_media_cost_data_cost_and_licence_fee_perm_on(
-        campaign, fallback_permission="zemauth.can_view_platform_cost_breakdown"
-    )
-    can_add_agency_margin = user.has_agency_spend_and_margin_perm_on(
-        campaign, fallback_permission="zemauth.can_manage_agency_margin"
-    )
+    can_add_base_costs = user.has_base_costs_and_service_fee_perm_on(campaign)
+    can_add_platform_costs = user.has_media_cost_data_cost_and_licence_fee_perm_on(campaign)
+    can_add_agency_margin = user.has_agency_spend_and_margin_perm_on(campaign)
 
     data = {
         "available_budgets_sum": Decimal("0.0000"),

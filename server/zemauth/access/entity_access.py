@@ -1,7 +1,6 @@
 from typing import Any
 
 from django.db import models
-from django.db.models import Q
 from django.db.models import QuerySet
 
 import automation.rules
@@ -211,16 +210,6 @@ def get_user(
     try:
         user_qs: QuerySet = zemauth.models.User.objects
         requested_user_qs: QuerySet = None
-
-        """
-        TODO (msuber): deleted after User Roles will be released.
-        Show only users who have fea_use_entity_permission permission.
-        """
-        user_qs = user_qs.filter(
-            Q(groups__permissions__codename="fea_use_entity_permission")
-            | Q(user_permissions__codename="fea_use_entity_permission")
-            | Q(is_superuser=True)
-        )
 
         if account is not None:
             requested_user_qs = user_qs.filter_by_account(account)

@@ -931,8 +931,6 @@ class CountActiveAgencyAccountsTestCase(BaseTestCase):
         super().setUp()
         self.account_manager = magic_mixer.blend_user()
         self.agency_manager = magic_mixer.blend_user()
-        self.account_manager.user_permissions.add(self.permission)
-        self.agency_manager.user_permissions.add(self.permission)
 
     def test_count_active_agency_accounts(self):
         today = datetime.datetime.utcnow()
@@ -949,10 +947,7 @@ class CountActiveAgencyAccountsTestCase(BaseTestCase):
         self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(self.account_manager))
 
         account = dash.models.Account.objects.get(pk=1)
-        if self.account_manager.has_perm("zemauth.fea_use_entity_permission"):
-            test_helper.add_entity_permissions(self.account_manager, [Permission.READ, Permission.WRITE], account)
-        else:
-            account.users.add(self.account_manager)
+        test_helper.add_entity_permissions(self.account_manager, [Permission.READ, Permission.WRITE], account)
         self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(self.account_manager))
 
         r = RequestFactory().get("")
@@ -965,10 +960,7 @@ class CountActiveAgencyAccountsTestCase(BaseTestCase):
 
         self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(self.agency_manager))
 
-        if self.agency_manager.has_perm("zemauth.fea_use_entity_permission"):
-            test_helper.add_entity_permissions(self.agency_manager, [Permission.READ, Permission.WRITE], agency)
-        else:
-            agency.users.add(self.agency_manager)
+        test_helper.add_entity_permissions(self.agency_manager, [Permission.READ, Permission.WRITE], agency)
         self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(self.agency_manager))
 
 

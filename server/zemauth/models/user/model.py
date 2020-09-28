@@ -224,7 +224,6 @@ class User(
             ("settings_defaults_on_campaign_level", "Can view ad group settings defaults on campaign level"),
             ("can_see_direct_deals_section", "User can see direct deals section."),
             ("can_see_internal_deals", "User can see and edit internal deals in the library."),
-            ("fea_use_entity_permission", "User can use entity permissions."),
             ("can_see_mrc100_metrics", "User can see the MRC100 viewability metrics"),
             ("can_see_vast4_metrics", "User can see the VAST4 viewability metrics"),
             (

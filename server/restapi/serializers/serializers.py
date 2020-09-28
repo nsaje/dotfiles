@@ -9,6 +9,7 @@ import restapi.serializers.fields
 import utils.exc
 import utils.list_helper
 import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 class QueryParamsExpectations(serializers.Serializer):
@@ -108,7 +109,7 @@ class EntityPermissionedFieldsMixin(object):
         return self.has_entity_permission(request.user, permission, config, data)
 
     def has_entity_permission(
-        self, user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
     ) -> bool:
         entity_id_getter_fn = config.get("entity_id_getter_fn")
         if entity_id_getter_fn is None:
@@ -118,14 +119,13 @@ class EntityPermissionedFieldsMixin(object):
         if entity_access_fn is None:
             return True
 
-        if user.has_perm("zemauth.fea_use_entity_permission"):
-            try:
-                entity_id = entity_id_getter_fn(data)
-                entity_access_fn(user, permission["permission"], entity_id)
-                return True
-            except utils.exc.MissingDataError:
-                return False
-        return user.has_perm(permission["fallback_permission"])
+        try:
+            entity_id = entity_id_getter_fn(data)
+            entity_access_fn(user, permission, entity_id)
+            return True
+        except utils.exc.MissingDataError:
+            return False
+        return False
 
 
 class DataNodeSerializerMixin(object):

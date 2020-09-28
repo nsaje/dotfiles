@@ -1,5 +1,4 @@
 import mock
-from django.contrib.auth.models import Permission as DjangoPermission
 from django.urls import reverse
 from django.utils.http import urlencode
 
@@ -15,7 +14,7 @@ from zemauth.features.entity_permission import Permission
 class UserViewSetTestBase(RESTAPITestCase):
     def _setup_test_users(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        requested_user: zemauth.models.User = magic_mixer.blend_user()
         return calling_user, requested_user
 
     def _prepare_callers_permissions(self, calling_user, caller_role):
@@ -491,7 +490,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 class UserViewSetDeleteTest(UserViewSetTestBase):
     def test_delete_account_manager_by_agency_manager_by_agency_id(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        requested_user: zemauth.models.User = magic_mixer.blend_user()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -507,7 +506,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_account_manager_by_agency_manager_by_account_id(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        requested_user: zemauth.models.User = magic_mixer.blend_user()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -524,7 +523,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_account_manager_by_account_manager(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        requested_user: zemauth.models.User = magic_mixer.blend_user()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "account_mgr"
@@ -540,7 +539,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_agency_manager_by_agency_manager(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        requested_user: zemauth.models.User = magic_mixer.blend_user()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
 
@@ -578,17 +577,6 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
 
 class UserViewSetListTest(UserViewSetTestBase):
-    def test_list_no_permission(self):
-        calling_user: zemauth.models.User = self.user
-        calling_user.user_permissions.remove(
-            DjangoPermission.objects.get(user=calling_user, codename="fea_use_entity_permission")
-        )
-
-        agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
-
-        r = self._call_list(agency)
-        self._assert_error(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
-
     def test_list_no_params(self):
         r = self._call_list(None)
         self._assert_validation_error(r, "Either agency id or account id must be provided.")
@@ -613,28 +601,24 @@ class UserViewSetListTest(UserViewSetTestBase):
         account, agency, users, permissions = self._prepare_test_case(calling_user, "agency_mgr")
 
         user2 = magic_mixer.blend(zemauth.models.User, first_name="test", last_name="test", email="test.test@test.com")
-        test_helper.add_permissions(user2, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user2, agency=agency, account=None, permission=Permission.READ
         )
         user3 = magic_mixer.blend(
             zemauth.models.User, first_name="test", last_name="test", email="kdfjzhgks.test@test.com"
         )
-        test_helper.add_permissions(user3, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user3, agency=agency, account=None, permission=Permission.READ
         )
         user4 = magic_mixer.blend(
             zemauth.models.User, first_name="test", last_name="Kdfjzhgks", email="test4.test@test.com"
         )
-        test_helper.add_permissions(user4, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user4, agency=agency, account=None, permission=Permission.READ
         )
         user5 = magic_mixer.blend(
             zemauth.models.User, first_name="Kdfjzhgks", last_name="test", email="test5.test@test.com"
         )
-        test_helper.add_permissions(user5, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user5, agency=agency, account=None, permission=Permission.READ
         )
@@ -746,7 +730,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
         permissions = [None] * 10
 
-        agency_mgr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        agency_mgr = magic_mixer.blend_user()
         # These 2 permissions should be visible to everybody
         permissions[0] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=agency_mgr, agency=agency, account=None, permission=Permission.READ
@@ -776,7 +760,7 @@ class UserViewSetListTest(UserViewSetTestBase):
             permission=Permission.BUDGET,
         )
 
-        account_mgr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        account_mgr = magic_mixer.blend_user()
         # These 2 permissions should be visible to everybody
         permissions[4] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=account_mgr, agency=None, account=account, permission=Permission.READ
@@ -808,7 +792,7 @@ class UserViewSetListTest(UserViewSetTestBase):
         )
         permissions[7].assert_readonly = True  # Because calling_user hasn't got BUDGET_MARGIN permission
 
-        internal_usr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
+        internal_usr = magic_mixer.blend_user()
         # These 2 permissions should only be visible to internal users IF the show_internal query parameter is set to True
         permissions[8] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=internal_usr, agency=None, account=None, permission=Permission.READ
@@ -864,17 +848,6 @@ class UserViewSetListTest(UserViewSetTestBase):
 
 
 class UserViewSetGetTest(UserViewSetTestBase):
-    def test_get_no_permission(self):
-        calling_user, requested_user = self._setup_test_users()
-        calling_user.user_permissions.remove(
-            DjangoPermission.objects.get(user=calling_user, codename="fea_use_entity_permission")
-        )
-
-        agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
-
-        r = self._call_get(requested_user, agency)
-        self._assert_error(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
-
     def test_get_no_params(self):
         calling_user, requested_user = self._setup_test_users()
 
@@ -1074,7 +1047,6 @@ class UserViewSetResendEmail(UserViewSetTestBase):
 
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
         test_helper.add_entity_permissions(requested_user, [Permission.READ], agency)
-        test_helper.add_permissions(requested_user, ["fea_use_entity_permission"])
 
         r = self._call_resend_email(requested_user, agency)
         mock_send.assert_called_with(
@@ -1116,10 +1088,7 @@ class CurrentUserViewSetTestCase(RESTAPITestCase):
             zemauth.models.user.constants.Status.get_name(zemauth.models.user.constants.Status.ACTIVE),
         )
         self.assertEqual(resp_json["data"]["name"], self.user.get_full_name())
-        self.assertEqual(resp_json["data"]["agencies"], [self.agency.id])
-        self.assertEqual(
-            resp_json["data"]["permissions"], [{"permission": "zemauth.fea_use_entity_permission", "isPublic": False}]
-        )
+        self.assertEqual(resp_json["data"]["permissions"], [])
         self.assertEqual(
             resp_json["data"]["entityPermissions"],
             [{"agencyId": str(self.agency.id), "accountId": None, "permission": Permission.READ}],

@@ -92,14 +92,6 @@ class UserMixin(object):
         else:
             return self.sspd_sources_markets
 
-    # TODO (msuber): deleted after User Roles will be released.
-    def get_agency_ids(self):
-        if self.has_perm("zemauth.fea_use_entity_permission"):
-            return [
-                ep.agency_id for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
-            ]
-        return list(self.agency_set.all().values_list("id", flat=True))
-
     @staticmethod
     def get_timezone_offset():
         return (
@@ -112,21 +104,11 @@ class UserMixin(object):
         ).hexdigest()
 
     def get_default_csv_separator(self):
-        if self.has_perm("zemauth.fea_use_entity_permission"):
-            agencies = [
-                ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
-            ]
-        else:
-            agencies = list(self.agency_set.all())
+        agencies = [ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ]
         return agencies[0].default_csv_separator if agencies else None
 
     def get_default_csv_decimal_separator(self):
-        if self.has_perm("zemauth.fea_use_entity_permission"):
-            agencies = [
-                ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
-            ]
-        else:
-            agencies = list(self.agency_set.all())
+        agencies = [ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ]
         return agencies[0].default_csv_decimal_separator if agencies else None
 
     @transaction.atomic

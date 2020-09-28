@@ -21,12 +21,7 @@ class CampaignBudgetSerializer(
                 "entity_id_getter_fn": lambda data: data.get("credit_id"),
                 "entity_access_fn": zemauth.access.get_credit_line_item,
             },
-            "fields": {
-                "margin": {
-                    "permission": Permission.AGENCY_SPEND_MARGIN,
-                    "fallback_permission": "zemauth.can_manage_agency_margin",
-                }
-            },
+            "fields": {"margin": Permission.AGENCY_SPEND_MARGIN},
         }
 
     id = restapi.serializers.fields.IdField(read_only=True)

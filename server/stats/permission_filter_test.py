@@ -98,7 +98,10 @@ class FilterTestCase(StatsTestCase):
         )
 
     def test_filter_columns_by_permission_platform_cost(self):
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown", "can_see_service_fee"])
+        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
+        test_helper.add_entity_permissions(
+            user, [Permission.BASE_COSTS_SERVICE_FEE, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE], None
+        )
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
 
@@ -133,7 +136,8 @@ class FilterTestCase(StatsTestCase):
         )
 
     def test_filter_columns_by_permission_agency_cost(self):
-        user = magic_mixer.blend_user(["can_view_agency_cost_breakdown", "can_view_agency_margin"])
+        user = magic_mixer.blend_user(["can_view_agency_cost_breakdown"])
+        test_helper.add_entity_permissions(user, [Permission.AGENCY_SPEND_MARGIN], None)
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
 
@@ -167,7 +171,8 @@ class FilterTestCase(StatsTestCase):
         self.assertEqual(self.rows[0]["status_per_source"], {1: {"source_id": 1, "source_status": 1}})
 
     def test_filter_columns_by_permission_service_fee_refund(self):
-        user = magic_mixer.blend_user(["can_see_service_fee"])
+        user = magic_mixer.blend_user()
+        test_helper.add_entity_permissions(user, [Permission.BASE_COSTS_SERVICE_FEE], None)
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
 
@@ -188,7 +193,6 @@ class FilterTestCase(StatsTestCase):
 
     def test_filter_columns_by_entity_permission_agency_spend_margin(self):
         user = magic_mixer.blend_user()
-        user.user_permissions.add(self.permission)  # enable entity permissions
         test_helper.add_entity_permissions(user, [Permission.READ, Permission.AGENCY_SPEND_MARGIN], self.account)
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
@@ -199,7 +203,6 @@ class FilterTestCase(StatsTestCase):
 
     def test_filter_columns_by_entity_permission_media_cost_data_cost_licence_fee(self):
         user = magic_mixer.blend_user()
-        user.user_permissions.add(self.permission)  # enable entity permissions
         test_helper.add_entity_permissions(
             user, [Permission.READ, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE], self.account
         )
@@ -219,7 +222,6 @@ class FilterTestCase(StatsTestCase):
 
     def test_filter_columns_by_entity_permission_base_cost_service_fee(self):
         user = magic_mixer.blend_user()
-        user.user_permissions.add(self.permission)  # enable entity permissions
         test_helper.add_entity_permissions(user, [Permission.READ, Permission.BASE_COSTS_SERVICE_FEE], self.account)
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
