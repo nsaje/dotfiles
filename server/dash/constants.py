@@ -2091,6 +2091,7 @@ class OperatingSystemVersion(ConstantBase):
     ANDROID_8_1 = "android_8_1"
     ANDROID_9_0 = "android_9_0"
     ANDROID_10_0 = "android_10_0"
+    ANDROID_11_0 = "android_11_0"
     IOS_3_2 = "ios_3_2"
     IOS_4_0 = "ios_4_0"
     IOS_4_1 = "ios_4_1"
@@ -2124,6 +2125,12 @@ class OperatingSystemVersion(ConstantBase):
     IOS_13_0 = "ios_13_0"
     IOS_13_1 = "ios_13_1"
     IOS_13_2 = "ios_13_2"
+    IOS_13_3 = "ios_13_3"
+    IOS_13_4 = "ios_13_4"
+    IOS_13_5 = "ios_13_5"
+    IOS_13_6 = "ios_13_6"
+    IOS_13_7 = "ios_13_7"
+    IOS_14_0 = "ios_14_0"
     WINPHONE_7 = "winphone_7"
     WINPHONE_8_0 = "winphone_8_0"
     WINPHONE_8_1 = "winphone_8_1"
@@ -2170,6 +2177,7 @@ class OperatingSystemVersion(ConstantBase):
         ANDROID_8_1: "8.1 Oreo",
         ANDROID_9_0: "9.0 Pie",
         ANDROID_10_0: "Android 10",
+        ANDROID_11_0: "Android 11",
         IOS_3_2: "3.2",
         IOS_4_0: "4.0",
         IOS_4_1: "4.1",
@@ -2203,6 +2211,12 @@ class OperatingSystemVersion(ConstantBase):
         IOS_13_0: "13.0",
         IOS_13_1: "13.1",
         IOS_13_2: "13.2",
+        IOS_13_3: "13.3",
+        IOS_13_4: "13.4",
+        IOS_13_5: "13.5",
+        IOS_13_6: "13.6",
+        IOS_13_7: "13.7",
+        IOS_14_0: "14.0",
         WINPHONE_7: "7",
         WINPHONE_8_0: "8.0",
         WINPHONE_8_1: "8.1",

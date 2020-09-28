@@ -1410,6 +1410,12 @@ export const OPERATING_SYSTEMS: {[key: string]: OperatingSystem} = {
             {name: 'IOS_13_0', displayName: '13.0'},
             {name: 'IOS_13_1', displayName: '13.1'},
             {name: 'IOS_13_2', displayName: '13.2'},
+            {name: 'IOS_13_3', displayName: '13.3'},
+            {name: 'IOS_13_4', displayName: '13.4'},
+            {name: 'IOS_13_5', displayName: '13.5'},
+            {name: 'IOS_13_6', displayName: '13.6'},
+            {name: 'IOS_13_7', displayName: '13.7'},
+            {name: 'IOS_14_0', displayName: '14.0'},
         ],
     },
     ANDROID: {
@@ -1439,6 +1445,7 @@ export const OPERATING_SYSTEMS: {[key: string]: OperatingSystem} = {
             {name: 'ANDROID_8_1', displayName: '8.1 Oreo'},
             {name: 'ANDROID_9_0', displayName: '9.0 Pie'},
             {name: 'ANDROID_10_0', displayName: 'Android 10'},
+            {name: 'ANDROID_11_0', displayName: 'Android 11'},
         ],
     },
     WINPHONE: {
