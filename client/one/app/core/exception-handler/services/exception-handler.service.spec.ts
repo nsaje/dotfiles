@@ -65,13 +65,6 @@ describe('ExceptionHandlerService', () => {
         expect(notificationServiceStub.error).not.toHaveBeenCalled();
     });
 
-    it('should not show an error popup if the HTTP response status is not a server error (500-599)', () => {
-        testException.status = 403;
-        service.handleHttpException(testException);
-
-        expect(notificationServiceStub.error).not.toHaveBeenCalled();
-    });
-
     it('should not show an error popup if the HTTP method is not correct', () => {
         testException.method = 'GET';
         service.handleHttpException(testException);

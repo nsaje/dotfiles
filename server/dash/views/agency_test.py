@@ -340,6 +340,29 @@ class ConversionPixelTestCase(DASHAPITestCase):
         self.assertFalse(ping_mock.called)
         self.assertFalse(redirector_mock.called)
 
+    def test_post_over_entity_limit(self):
+        account = models.Account.objects.get(pk=1)
+        magic_mixer.cycle(20).blend(models.ConversionPixel, account=account)
+        response = self.client.post(
+            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
+            json.dumps({"name": "name"}),
+            content_type="application/json",
+            follow=True,
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual(403, response.status_code)
+        self.assertFalse(decoded_response["success"])
+        self.assertEqual(
+            decoded_response["data"],
+            {
+                "error_code": "ForbiddenError",
+                "message": [
+                    "You have reached the limit of 20 of active entities of type ConversionPixel. Please archive some to be able to create more."
+                ],
+            },
+        )
+
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.k1_helper.update_account")
     def test_post_audience_enabled(self, ping_mock, redirector_mock):

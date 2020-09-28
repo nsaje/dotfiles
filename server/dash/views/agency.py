@@ -6,6 +6,7 @@ import newrelic.agent
 from django.conf import settings
 from django.db.models import Q
 
+import core.common
 import core.features.goals
 import core.features.goals.campaign_goal.exceptions
 import core.features.goals.conversion_goal.exceptions
@@ -132,6 +133,9 @@ class ConversionPixel(DASHAPIBaseView):
 
         except core.models.conversion_pixel.exceptions.AudiencePixelNotSet as err:
             raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
+
+        except core.common.entity_limits.EntityLimitExceeded as err:
+            raise utils.exc.ForbiddenError(message=[str(err)])
 
     def _format_pixel(self, pixel, user, date=None):
         data = {

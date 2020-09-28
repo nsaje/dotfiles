@@ -48,7 +48,10 @@ export class ExceptionHandlerService {
     }
 
     private isNotFoundHttpStatusCode(httpStatus: number): boolean {
-        return isDefined(httpStatus) && httpStatus === 404;
+        return (
+            (isDefined(httpStatus) && httpStatus === 404) ||
+            (isDefined(httpStatus) && httpStatus === 403)
+        );
     }
 
     private shouldShowErrorForHttpMethod(httpMethod: string): boolean {
