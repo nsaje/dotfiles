@@ -7,7 +7,7 @@ from utils.command_helpers import Z1Command
 
 
 class Command(Z1Command):
-    @metrics_compat.timer("campaignstop.job_run", job="selection")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="selection")
     def handle(self, *args, **options):
         campaigns = core.models.Campaign.objects.filter(
             real_time_campaign_stop=True,
@@ -16,4 +16,4 @@ class Command(Z1Command):
         )
         automation.campaignstop.mark_almost_depleted_campaigns(campaigns)
         metrics_compat.gauge("campaignstop.selection_job_campaigns", len(campaigns))
-        metrics_compat.incr("campaignstop.job_completed", 1, job="selection")
+        metrics_compat.incr("campaignstop.job_completed", 1, campaignstop_job="selection")

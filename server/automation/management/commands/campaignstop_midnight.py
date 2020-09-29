@@ -21,9 +21,9 @@ class Command(Z1Command):
             return
 
         self._run_midnight_job()
-        metrics_compat.incr("campaignstop.job_completed", 1, job="midnight")
+        metrics_compat.incr("campaignstop.job_completed", 1, campaignstop_job="midnight")
 
-    @metrics_compat.timer("campaignstop.job_run", job="midnight")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="midnight")
     def _run_midnight_job(self):
         logger.info("Updating end dates for every campaign")
         automation.campaignstop.update_campaigns_end_date()

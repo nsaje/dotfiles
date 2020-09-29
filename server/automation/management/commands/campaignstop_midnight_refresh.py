@@ -21,9 +21,9 @@ class Command(Z1Command):
             return
 
         self._run_job()
-        metrics_compat.incr("campaignstop.job_completed", 1, job="midnight_refresh")
+        metrics_compat.incr("campaignstop.job_completed", 1, campaignstop_job="midnight_refresh")
 
-    @metrics_compat.timer("campaignstop.job_run", job="midnight_refresh")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="midnight_refresh")
     def _run_job(self):
         local_tomorrow = dates_helper.day_after(dates_helper.local_today())
         rechecked_campaigns = core.models.Campaign.objects.filter(

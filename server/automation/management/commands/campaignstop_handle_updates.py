@@ -6,7 +6,7 @@ PARALLELISM = 20
 
 
 class Command(Z1Command):
-    @metrics_compat.timer("campaignstop.job_run", job="handle_updates")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="handle_updates")
     def handle(self, *args, **options):
         automation.campaignstop.handle_updates_parallel(PARALLELISM)
-        metrics_compat.incr("campaignstop.job_completed", 1, job="handle_updates")
+        metrics_compat.incr("campaignstop.job_completed", 1, campaignstop_job="handle_updates")

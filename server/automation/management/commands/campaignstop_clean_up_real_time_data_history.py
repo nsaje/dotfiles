@@ -14,7 +14,7 @@ REALTIME_DATA_KEEP_DAYS = 7
 
 
 class Command(Z1Command):
-    @metrics_compat.timer("campaignstop.job_run", job="clean_up")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="clean_up")
     def handle(self, *args, **options):
         logger.info("Start: deleting old realtime campaign stop data")
         self._delete_old_data()

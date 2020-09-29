@@ -7,7 +7,7 @@ from utils.command_helpers import Z1Command
 
 
 class Command(Z1Command):
-    @metrics_compat.timer("campaignstop.job_run", job="main")
+    @metrics_compat.timer("campaignstop.job_run", campaignstop_job="main")
     def handle(self, *args, **options):
         campaigns = core.models.Campaign.objects.filter(
             real_time_campaign_stop=True,
@@ -17,7 +17,7 @@ class Command(Z1Command):
         automation.campaignstop.update_campaigns_state(campaigns)
 
         self._monitor(campaigns)
-        metrics_compat.incr("campaignstop.job_completed", 1, job="main")
+        metrics_compat.incr("campaignstop.job_completed", 1, campaignstop_job="main")
 
     def _monitor(self, campaigns):
         campaigns = list(campaigns)
