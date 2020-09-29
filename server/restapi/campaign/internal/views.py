@@ -206,7 +206,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
     def _handle_campaign_budgets(self, request, campaign, data):
         if not request.user.has_budget_perm_on(campaign):
-            raise utils.exc.AuthorizationError()
+            return
 
         campaign_budgets = self._get_campaign_budgets(campaign)
 
