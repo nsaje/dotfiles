@@ -9,7 +9,6 @@ export class AuthStoreState {
         lastName: null,
         name: null,
         status: null,
-        agencies: [],
         timezoneOffset: null,
         intercomUserHash: null,
         defaultCsvSeparator: null,

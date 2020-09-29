@@ -186,15 +186,6 @@ angular
             }
 
             function hasReadOnlyAccessOnAnySelectedRow(level, selection) {
-                // TODO (msuber): deleted after User Roles will be released.
-                if (
-                    !zemAuthStore.hasPermission(
-                        'zemauth.fea_use_entity_permission'
-                    )
-                ) {
-                    return false;
-                }
-
                 if (
                     selection.type ===
                     zemGridConstants.gridSelectionFilterType.ALL

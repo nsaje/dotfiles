@@ -195,15 +195,7 @@ angular
             mockedEntityPermissions = entityPermissions;
         }
 
-        function hasPermissionOn(
-            agencyId,
-            accountId,
-            permission,
-            fallbackPermission
-        ) {
-            if (!hasPermission('zemauth.fea_use_entity_permission')) {
-                return hasPermission(fallbackPermission);
-            }
+        function hasPermissionOn(agencyId, accountId, permission) {
             return mockedEntityPermissions.some(function(ep) {
                 return (
                     [agencyId, null].includes(ep.agencyId) &&
@@ -213,13 +205,8 @@ angular
             });
         }
 
-        function hasPermissionOnAllEntities(permission, fallbackPermission) {
-            return this.hasPermissionOn(
-                null,
-                null,
-                permission,
-                fallbackPermission
-            );
+        function hasPermissionOnAllEntities(permission) {
+            return this.hasPermissionOn(null, null, permission);
         }
 
         function hasPermissionOnAnyEntity(permission) {

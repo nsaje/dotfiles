@@ -139,7 +139,6 @@ describe('UsersService', () => {
             lastName: 'test',
             name: 'test tests',
             status: UserStatus.ACTIVE,
-            agencies: [71],
             timezoneOffset: -4000,
             intercomUserHash: '$test$',
             defaultCsvSeparator: ',',

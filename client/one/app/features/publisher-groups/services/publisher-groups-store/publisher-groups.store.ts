@@ -363,9 +363,10 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
     }
 
     hasReadAccess(publisherGroup: PublisherGroup): boolean {
-        return this.authStore.hasReadPermissonOn(
+        return this.authStore.hasPermissionOn(
             this.state.agencyId,
-            publisherGroup.accountId
+            publisherGroup.accountId,
+            EntityPermissionValue.READ
         );
     }
 

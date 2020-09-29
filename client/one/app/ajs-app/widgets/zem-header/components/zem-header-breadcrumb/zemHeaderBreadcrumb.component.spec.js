@@ -1,7 +1,6 @@
 describe('component: zemHeaderBreadcrumb', function() {
     var $document;
     var $componentController;
-    var zemAuthStore;
     var ctrl;
     var zemNavigationNewService;
 
@@ -11,12 +10,10 @@ describe('component: zemHeaderBreadcrumb', function() {
     beforeEach(inject(function(
         _$document_,
         _$componentController_,
-        _zemNavigationNewService_,
-        _zemAuthStore_
+        _zemNavigationNewService_
     ) {
         $document = _$document_;
         $componentController = _$componentController_;
-        zemAuthStore = _zemAuthStore_;
         zemNavigationNewService = _zemNavigationNewService_;
 
         var locals = {zemNavigationNewService: zemNavigationNewService};
@@ -45,10 +42,6 @@ describe('component: zemHeaderBreadcrumb', function() {
         it('should update document title on entity update', function() {
             callback(null);
             expect($document[0].title).toEqual('My accounts | Zemanta');
-
-            zemAuthStore.setMockedPermissions('zemauth.can_see_all_accounts');
-            callback(null);
-            expect($document[0].title).toEqual('All accounts | Zemanta');
 
             var activeEntity = {
                 name: 'Account XY',

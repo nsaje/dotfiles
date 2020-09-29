@@ -25,6 +25,13 @@ describe('component: zemGridBulkActions', function() {
 
     it('should prepare actions on initialization using zemGridBulkAction service', function() {
         spyOn(zemGridBulkActionsService, 'createInstance').and.callThrough();
+        var selection = {
+            type: zemGridConstants.gridSelectionFilterType.NONE,
+            selected: [{level: 0}],
+        };
+        api.getSelection = function() {
+            return selection;
+        };
         $ctrl.$onInit();
         expect(zemGridBulkActionsService.createInstance).toHaveBeenCalled();
         expect($ctrl.actions).toBeDefined();
@@ -33,7 +40,7 @@ describe('component: zemGridBulkActions', function() {
     it('should enable actions when data row (level 1) is selected', function() {
         var selection = {
             type: zemGridConstants.gridSelectionFilterType.NONE,
-            selected: [{level: 1}],
+            selected: [{level: 1, data: {stats: {}}}],
         };
         api.getSelection = function() {
             return selection;

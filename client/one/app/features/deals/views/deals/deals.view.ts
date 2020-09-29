@@ -398,9 +398,10 @@ export class DealsView implements OnInit, OnDestroy {
     private canViewConnections(cellInfo: CellClassParams | CellClickedEvent) {
         return (
             cellInfo.value >= 1 &&
-            this.authStore.hasReadPermissonOn(
+            this.authStore.hasPermissionOn(
                 this.store.state.agencyId,
-                cellInfo.data.accountId
+                cellInfo.data.accountId,
+                EntityPermissionValue.READ
             )
         );
     }

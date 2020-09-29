@@ -732,3 +732,54 @@
     modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 7
+
+
+# entity permissions
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+    user: 1
+    agency: !!null
+    account: !!null
+    permission: write
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+    user: 2
+    agency: !!null
+    account: !!null
+    permission: read
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+    user: 2
+    agency: !!null
+    account: !!null
+    permission: write
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+    user: 3
+    agency: !!null
+    account: !!null
+    permission: read
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+    user: 3
+    agency: !!null
+    account: !!null
+    permission: write
+  model: zemauth.entitypermission
+  pk: 6

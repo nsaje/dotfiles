@@ -754,12 +754,7 @@ angular
                     zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
-                if (
-                    metric.shownForEntity &&
-                    zemAuthStore.hasPermission(
-                        'zemauth.fea_use_entity_permission'
-                    )
-                ) {
+                if (metric.shownForEntity) {
                     if (activeAccount) {
                         metric.shown = zemAuthStore.hasPermissionOn(
                             activeAccount.data.agencyId,

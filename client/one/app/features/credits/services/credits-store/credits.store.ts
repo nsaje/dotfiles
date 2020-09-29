@@ -583,14 +583,12 @@ export class CreditsStore extends Store<CreditsStoreState>
             showServiceFee: this.authStore.hasPermissionOn(
                 agencyId,
                 accountId,
-                EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
-                'zemauth.can_see_service_fee'
+                EntityPermissionValue.BASE_COSTS_SERVICE_FEE
             ),
             showLicenseFee: this.authStore.hasPermissionOn(
                 agencyId,
                 accountId,
-                EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
-                'zemauth.can_view_platform_cost_breakdown'
+                EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE
             ),
         };
     }

@@ -34,7 +34,6 @@ describe('AuthStore', () => {
             lastName: 'test',
             name: 'test tests',
             status: UserStatus.ACTIVE,
-            agencies: [],
             timezoneOffset: -4000,
             intercomUserHash: '$test$',
             defaultCsvSeparator: ',',
@@ -155,47 +154,17 @@ describe('AuthStore', () => {
     });
 
     describe('hasAgencyScope:', () => {
-        it("should return false if user doesn't have agency scope for specified agency", () => {
-            const user: User = {
-                ...mockedUser,
-                agencies: [5, 7],
-            };
-            store.dispatch(new SetCurrentUserAction(user));
-            expect(store.hasAgencyScope('9')).toBeFalse();
-        });
-
         it("should return false if user doesn't have agency scope for specified agency with entity permissions", () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
             };
             store.dispatch(new SetCurrentUserAction(user));
             expect(store.hasAgencyScope('9')).toBeFalse();
-        });
-
-        it('should return true if user has agency scope for specified agency', () => {
-            const user: User = {
-                ...mockedUser,
-                agencies: [5, 7],
-            };
-            store.dispatch(new SetCurrentUserAction(user));
-            expect(store.hasAgencyScope('5')).toBeTrue();
         });
 
         it('should return true if user has agency scope for specified agency with entity permissions', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: '5',
@@ -220,12 +189,6 @@ describe('AuthStore', () => {
         beforeEach(() => {
             user = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -264,39 +227,9 @@ describe('AuthStore', () => {
             expect(store.canCreateNewAccount()).toBeFalse();
         });
 
-        it('should return true if user can create new account', () => {
-            const user: User = {
-                ...mockedUser,
-                agencies: [5, 7],
-            };
-            store.dispatch(new SetCurrentUserAction(user));
-            expect(store.canCreateNewAccount()).toBeTrue();
-        });
-
-        it('should return true if user can create new account - internal user', () => {
-            const user: User = {
-                ...mockedUser,
-                agencies: [],
-                permissions: [
-                    {
-                        permission: 'zemauth.can_see_all_accounts',
-                        isPublic: true,
-                    },
-                ],
-            };
-            store.dispatch(new SetCurrentUserAction(user));
-            expect(store.canCreateNewAccount()).toBeTrue();
-        });
-
         it('should return false if user can not create new account with entity permissions', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
             };
             store.dispatch(new SetCurrentUserAction(user));
             expect(store.canCreateNewAccount()).toBeFalse();
@@ -305,12 +238,6 @@ describe('AuthStore', () => {
         it('should return true if user can create new account with entity permissions', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: '5',
@@ -338,12 +265,6 @@ describe('AuthStore', () => {
         it('should return true if user has the specified entity permission on all entities', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -361,12 +282,6 @@ describe('AuthStore', () => {
         it('should return false if user does not have the specified entity permission on all entities', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -427,12 +342,6 @@ describe('AuthStore', () => {
         it('should return true if user has read-only access on account', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -448,12 +357,6 @@ describe('AuthStore', () => {
         it('should return true if user has read-only access on agency', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: '123',
@@ -469,12 +372,6 @@ describe('AuthStore', () => {
         it('should return false if user has write access on account', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -495,12 +392,6 @@ describe('AuthStore', () => {
         it('should return false if user has write access on agency', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: '123',
@@ -523,12 +414,6 @@ describe('AuthStore', () => {
         it('should return true if user has read-only access on any entity', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,
@@ -554,12 +439,6 @@ describe('AuthStore', () => {
         it('should return true if user has write access on all entities', () => {
             const user: User = {
                 ...mockedUser,
-                permissions: [
-                    {
-                        permission: 'zemauth.fea_use_entity_permission',
-                        isPublic: true,
-                    },
-                ],
                 entityPermissions: [
                     {
                         agencyId: null,

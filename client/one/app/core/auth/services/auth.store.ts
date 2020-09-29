@@ -105,13 +105,6 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     //
 
     hasAgencyScope(agencyId: string) {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            if (this.hasPermission('zemauth.can_see_all_accounts')) {
-                return true;
-            }
-            return this.state.user.agencies.includes(Number(agencyId));
-        }
         return this.hasPermissionOn(
             agencyId,
             null,
@@ -119,33 +112,7 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         );
     }
 
-    // TODO (msuber): deleted after User Roles will be released.
-    hasReadPermissonOn(
-        agencyId: string | number,
-        accountId?: string | number
-    ): boolean {
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            if (isDefined(agencyId) && !isDefined(accountId)) {
-                return this.hasAgencyScope(`${agencyId}`);
-            } else {
-                return true;
-            }
-        }
-        return this.hasPermissionOn(
-            agencyId,
-            accountId,
-            EntityPermissionValue.READ
-        );
-    }
-
     canCreateNewAccount(): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            if (this.hasPermission('zemauth.can_see_all_accounts')) {
-                return true;
-            }
-            return !arrayHelpers.isEmpty(this.state.user.agencies);
-        }
         if (arrayHelpers.isEmpty(this.state.user.entityPermissions)) {
             return false;
         }
@@ -165,13 +132,6 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         agencyId: string | number,
         accountId: string | number
     ): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            if (isDefined(agencyId) && !isDefined(accountId)) {
-                return !this.hasAgencyScope(`${agencyId}`);
-            }
-            return false;
-        }
         return !this.hasPermissionOn(
             agencyId,
             accountId,
@@ -180,10 +140,6 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     }
 
     hasReadOnlyAccessOnAnyEntity(): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return false;
-        }
         if (arrayHelpers.isEmpty(this.state.user.entityPermissions)) {
             return false;
         }
@@ -223,14 +179,8 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     hasPermissionOn(
         agencyId: string | number,
         accountId: string | number,
-        permission: EntityPermissionValue,
-        fallbackPermission?: string | string[]
+        permission: EntityPermissionValue
     ): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return this.hasPermission(fallbackPermission);
-        }
-
         if (
             !commonHelpers.isDefined(permission) ||
             arrayHelpers.isEmpty(this.state.user.entityPermissions)
@@ -254,11 +204,8 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         });
     }
 
-    hasPermissionOnAllEntities(
-        permission: EntityPermissionValue,
-        fallbackPermission?: string | string[]
-    ): boolean {
-        return this.hasPermissionOn(null, null, permission, fallbackPermission);
+    hasPermissionOnAllEntities(permission: EntityPermissionValue): boolean {
+        return this.hasPermissionOn(null, null, permission);
     }
 
     hasPermissionOnAnyEntity(permission: EntityPermissionValue): boolean {

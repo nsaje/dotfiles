@@ -167,10 +167,7 @@ angular
         }
 
         function hasReadOnlyAccessOn(level, row) {
-            if (
-                row.dummy ||
-                !zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
-            ) {
+            if (row.dummy) {
                 return false;
             }
 

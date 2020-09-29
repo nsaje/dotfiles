@@ -20,7 +20,6 @@ describe('SetCurrentUserActionReducer', () => {
             lastName: 'test',
             name: 'test tests',
             status: UserStatus.ACTIVE,
-            agencies: [],
             timezoneOffset: -4000,
             intercomUserHash: '$test$',
             defaultCsvSeparator: ',',

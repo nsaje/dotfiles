@@ -9,7 +9,6 @@ export interface User {
     lastName?: string;
     name?: string;
     status: UserStatus;
-    agencies?: number[];
     timezoneOffset?: number;
     intercomUserHash?: string;
     defaultCsvSeparator?: string;

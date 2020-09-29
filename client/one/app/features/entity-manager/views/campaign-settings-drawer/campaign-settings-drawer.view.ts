@@ -143,14 +143,6 @@ export class CampaignSettingsDrawerView
     }
 
     canEditBudget(): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (
-            !this.authStore.hasPermission('zemauth.fea_use_entity_permission')
-        ) {
-            return !this.authStore.hasPermission(
-                'zemauth.disable_budget_management'
-            );
-        }
         return this.authStore.hasPermissionOn(
             this.store.state.extras.agencyId,
             this.store.state.entity.accountId,
@@ -162,8 +154,7 @@ export class CampaignSettingsDrawerView
         return this.authStore.hasPermissionOn(
             this.store.state.extras.agencyId,
             this.store.state.entity.accountId,
-            EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
-            'zemauth.can_view_platform_cost_breakdown'
+            EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE
         );
     }
 
@@ -171,8 +162,7 @@ export class CampaignSettingsDrawerView
         return this.authStore.hasPermissionOn(
             this.store.state.extras.agencyId,
             this.store.state.entity.accountId,
-            EntityPermissionValue.AGENCY_SPEND_MARGIN,
-            'zemauth.can_view_agency_cost_breakdown'
+            EntityPermissionValue.AGENCY_SPEND_MARGIN
         );
     }
 
@@ -180,8 +170,7 @@ export class CampaignSettingsDrawerView
         return this.authStore.hasPermissionOn(
             this.store.state.extras.agencyId,
             this.store.state.entity.accountId,
-            EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
-            'zemauth.can_see_service_fee'
+            EntityPermissionValue.BASE_COSTS_SERVICE_FEE
         );
     }
 

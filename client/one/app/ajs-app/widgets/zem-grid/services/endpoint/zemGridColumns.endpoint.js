@@ -2223,12 +2223,7 @@ angular
                     zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
-                if (
-                    column.shownForEntity &&
-                    zemAuthStore.hasPermission(
-                        'zemauth.fea_use_entity_permission'
-                    )
-                ) {
+                if (column.shownForEntity) {
                     if (activeAccount) {
                         column.shown = zemAuthStore.hasPermissionOn(
                             activeAccount.data.agencyId,

@@ -63,7 +63,7 @@ angular
             {
                 text: 'User management',
                 callback: navigateToUsersView,
-                isAvailable: isUsersViewAvailable,
+                isAvailable: true,
                 isNewFeature: true,
             },
             {
@@ -228,12 +228,6 @@ angular
                     RoutePathName.DEALS,
                 ]);
             }
-        }
-
-        function isUsersViewAvailable() {
-            return zemAuthStore.hasPermission(
-                'zemauth.fea_use_entity_permission'
-            );
         }
 
         function navigateToUsersView() {

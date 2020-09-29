@@ -56,11 +56,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             value: RoutePathName.USERS,
             displayValue: 'User management',
             icon: ListGroupItemIcon.User,
-            isVisible: () => {
-                return this.authStore.hasPermission(
-                    'zemauth.fea_use_entity_permission'
-                );
-            },
+            isVisible: () => true,
             isNewFeature: true,
         },
         {
