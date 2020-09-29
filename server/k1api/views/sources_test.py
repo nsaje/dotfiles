@@ -1,7 +1,6 @@
 import json
 import logging
 
-import mock
 from django.urls import reverse
 
 import dash.models
@@ -54,84 +53,3 @@ class SourcesTest(K1APIBaseTest):
         self.assertGreater(len(data), 0)
         for source in data:
             self.assertIn("id", source)
-
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_update_source_pixel_with_existing(self, redirector_mock):
-        body = {
-            "pixel_id": 1,
-            "source_type": "facebook",
-            "url": "http://www.dummy_fb.com/pixie_endpoint",
-            "source_pixel_id": "fb_dummy_id",
-        }
-        response = self.client.put(reverse("k1api.source_pixels"), json.dumps(body), "application/json")
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        self.assertDictEqual(body, data["response"])
-
-        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=3)
-        self.assertEqual(updated_pixel.url, "http://www.dummy_fb.com/pixie_endpoint")
-        self.assertEqual(updated_pixel.source_pixel_id, "fb_dummy_id")
-
-        audience = dash.models.Audience.objects.get(pixel_id=1)
-        redirector_mock.assert_called_once_with(audience)
-
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_update_source_pixel_with_existing_for_outbrain(self, redirector_mock):
-        body = {
-            "pixel_id": 2,
-            "source_type": "outbrain",
-            "url": "http://www.dummy_ob.com/pixie_endpoint",
-            "source_pixel_id": "ob_dummy_id",
-        }
-        response = self.client.put(reverse("k1api.source_pixels"), json.dumps(body), "application/json")
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        self.assertDictEqual(body, data["response"])
-
-        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=1)
-        self.assertEqual(updated_pixel.pixel.id, 2)
-
-        audiences = dash.models.Audience.objects.filter(pixel_id__in=[2, 1])
-        redirector_mock.assert_has_calls([mock.call(audiences[0]), mock.call(audiences[1])], any_order=True)
-
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_update_source_pixel_create_new(self, redirector_mock):
-        body = {
-            "pixel_id": 3,
-            "source_type": "facebook",
-            "url": "http://www.dummy_fb.com/pixie_endpoint",
-            "source_pixel_id": "fb_dummy_id",
-        }
-        response = self.client.put(reverse("k1api.source_pixels"), json.dumps(body), "application/json")
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        self.assertDictEqual(body, data["response"])
-
-        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=7)
-        self.assertEqual(updated_pixel.url, "http://www.dummy_fb.com/pixie_endpoint")
-        self.assertEqual(updated_pixel.source_pixel_id, "fb_dummy_id")
-
-        self.assertFalse(redirector_mock.called)
-
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_update_source_pixel_create_new_for_outbrain(self, redirector_mock):
-        body = {
-            "pixel_id": 3,
-            "source_type": "outbrain",
-            "url": "http://www.dummy_ob.com/pixie_endpoint",
-            "source_pixel_id": "ob_dummy_id",
-        }
-        response = self.client.put(reverse("k1api.source_pixels"), json.dumps(body), "application/json")
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        self.assertDictEqual(body, data["response"])
-
-        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=8)
-        self.assertEqual(updated_pixel.url, "http://www.dummy_ob.com/pixie_endpoint")
-        self.assertEqual(updated_pixel.source_pixel_id, "ob_dummy_id")
-
-        self.assertFalse(redirector_mock.called)

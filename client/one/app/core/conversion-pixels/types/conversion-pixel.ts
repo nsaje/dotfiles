@@ -5,8 +5,6 @@ export interface ConversionPixel {
     accountId: string;
     name: string;
     archived?: boolean;
-    audienceEnabled?: boolean;
-    additionalPixel?: boolean;
     url: string;
     redirectUrl?: string;
     notes?: string;

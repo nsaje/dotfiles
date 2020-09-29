@@ -29,13 +29,8 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
             $ctrl.stateService = $ctrl.resolve.stateService;
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.pixel = $ctrl.isCreationMode
-                ? {name: '', audienceEnabled: false}
+                ? {name: ''}
                 : $ctrl.resolve.pixel;
-            $ctrl.audiencePixel = $ctrl.stateService
-                .getState()
-                .conversionPixels.filter(function(pixie) {
-                    return pixie.audienceEnabled;
-                })[0];
         };
 
         function getRequest() {
@@ -50,13 +45,6 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
                 : $ctrl.stateService.update;
 
             fn($ctrl.pixel).then(function() {
-                // FIXME: avoid broadcast in pixelAudienceEnabled propagation
-                if ($ctrl.pixel.audienceEnabled) {
-                    $rootScope.$broadcast('pixelAudienceEnabled', {
-                        pixel: $ctrl.pixel,
-                    });
-                }
-
                 $ctrl.close();
             });
         }

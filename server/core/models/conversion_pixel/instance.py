@@ -24,10 +24,9 @@ class ConversionPixelInstanceMixin:
             self.clean(changes)
 
         self._apply_changes_and_save(request, changes)
+
         if not skip_propagation:
             self._write_change_history(request, changes)
-
-        if not skip_propagation and ("audience_enabled" in changes or "additional_pixel" in changes):
             utils.k1_helper.update_account(self.account, msg="conversion_pixel.update")
             self._r1_upsert_audiences()
 
@@ -39,8 +38,6 @@ class ConversionPixelInstanceMixin:
         new_updates = {}
 
         for field, value in list(updates.items()):
-            if field in ["audience_enabled", "additional_pixel"] and not value:
-                continue
             required_permission = not skip_permission_check and self._permissioned_fields.get(field)
             if required_permission and not (user is None or user.has_perm(required_permission)):
                 continue
@@ -56,22 +53,6 @@ class ConversionPixelInstanceMixin:
         self.save()
 
     def _write_change_history(self, request, changes):
-        if changes.get("audience_enabled"):
-            changes_text = "Pixel {} enabled for building audiences.".format(self.name)
-            self.account.write_history(
-                changes_text,
-                user=request.user,
-                action_type=dash.constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED,
-            )
-
-        if changes.get("additional_pixel"):
-            changes_text = "Set pixel {} as an additional audience pixel.".format(self.name)
-            self.account.write_history(
-                changes_text,
-                user=request.user,
-                action_type=dash.constants.HistoryActionType.CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL,
-            )
-
         if "archived" in changes:
             changes_text = "{} conversion pixel named {}.".format(
                 "Archived" if self.archived else "Restored", self.name

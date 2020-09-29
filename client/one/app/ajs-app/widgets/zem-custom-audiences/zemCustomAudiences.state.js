@@ -181,15 +181,7 @@ angular
                     .list(account.id)
                     .then(function(data) {
                         if (data.rows) {
-                            state.audiencePixels = data.rows.filter(function(
-                                pixel
-                            ) {
-                                return (
-                                    pixel.audienceEnabled ||
-                                    pixel.additionalPixel
-                                );
-                            });
-
+                            state.audiencePixels = data.rows;
                             return state.audiencePixels;
                         }
                     });

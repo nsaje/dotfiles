@@ -9,12 +9,9 @@ angular
         this.archive = archive;
         this.restore = restore;
 
-        function list(accountId, audienceEnabledOnly) {
+        function list(accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
-            if (audienceEnabledOnly) {
-                url = url + '?audience_enabled_only=1';
-            }
 
             $http
                 .get(url)

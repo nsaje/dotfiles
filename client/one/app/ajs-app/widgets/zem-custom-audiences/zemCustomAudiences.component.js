@@ -32,12 +32,6 @@ angular.module('one.widgets').component('zemCustomAudiences', {
             $ctrl.stateService.destroy();
         };
 
-        $scope.$on('pixelAudienceEnabled', function() {
-            // FIXME: avoid broadcast in pixelAudienceEnabled propagation
-            // Broadcasted to notify that custom Audience can be created
-            $ctrl.stateService.listAudiencePixels();
-        });
-
         function openAudienceModal() {
             if (!$ctrl.state.audiencePixels[0]) {
                 return;

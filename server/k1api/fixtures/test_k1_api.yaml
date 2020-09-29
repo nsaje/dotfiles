@@ -909,7 +909,6 @@
         account: 1
         name: 'Pixel 1'
         slug: 'testslug1'
-        audience_enabled: False
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 1
@@ -919,7 +918,6 @@
         account: 1
         name: 'Pixel 2'
         slug: 'testslug2'
-        audience_enabled: True
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 2
@@ -928,7 +926,6 @@
         account: 2
         name: 'Pixel 3'
         slug: 'testslug3'
-        audience_enabled: True
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 3

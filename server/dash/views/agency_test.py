@@ -157,7 +157,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                     "archived": False,
                     "audience_enabled": True,
-                    "additional_pixel": False,
                     "notes": "",
                     "impressions": 0,
                     "last_triggered": None,
@@ -166,49 +165,8 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "id": 2,
                     "name": "test2",
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
-                    "archived": False,
-                    "audience_enabled": False,
-                    "additional_pixel": False,
-                    "notes": "",
-                    "impressions": 0,
-                    "last_triggered": None,
-                },
-            ],
-            decoded_response["data"]["rows"],
-        )
-
-    def test_get_additional(self):
-        account = models.Account.objects.get(pk=1)
-
-        p = models.ConversionPixel.objects.get(pk=2)
-        p.additional_pixel = True
-        p.save()
-
-        response = self.client.get(reverse("account_conversion_pixels", kwargs={"account_id": account.id}), follow=True)
-
-        decoded_response = json.loads(response.content)
-        self.assertEqual(200, response.status_code)
-        self.assertTrue(decoded_response["success"])
-        self.assertCountEqual(
-            [
-                {
-                    "id": 1,
-                    "name": "test",
-                    "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                     "archived": False,
                     "audience_enabled": True,
-                    "additional_pixel": False,
-                    "notes": "",
-                    "impressions": 0,
-                    "last_triggered": None,
-                },
-                {
-                    "id": 2,
-                    "name": "test2",
-                    "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
-                    "archived": False,
-                    "audience_enabled": False,
-                    "additional_pixel": True,
                     "notes": "",
                     "impressions": 0,
                     "last_triggered": None,
@@ -241,7 +199,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                     "archived": False,
                     "audience_enabled": True,
-                    "additional_pixel": False,
                     "notes": "",
                     "impressions": 0,
                     "last_triggered": None,
@@ -252,8 +209,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "name": "test2",
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
                     "archived": False,
-                    "audience_enabled": False,
-                    "additional_pixel": False,
+                    "audience_enabled": True,
                     "notes": "",
                     "impressions": 0,
                     "last_triggered": None,
@@ -283,7 +239,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                     "archived": False,
                     "audience_enabled": True,
-                    "additional_pixel": False,
                     "notes": "test note",
                     "impressions": 0,
                     "last_triggered": None,
@@ -293,8 +248,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                     "name": "test2",
                     "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
                     "archived": False,
-                    "audience_enabled": False,
-                    "additional_pixel": False,
+                    "audience_enabled": True,
                     "notes": "",
                     "impressions": 0,
                     "last_triggered": None,
@@ -322,8 +276,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "name": "name",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/3/",
                 "archived": False,
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "",
                 "impressions": 0,
                 "last_triggered": None,
@@ -339,104 +292,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
 
         self.assertFalse(ping_mock.called)
         self.assertFalse(redirector_mock.called)
-
-    def test_post_over_entity_limit(self):
-        account = models.Account.objects.get(pk=1)
-        magic_mixer.cycle(20).blend(models.ConversionPixel, account=account)
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name"}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        decoded_response = json.loads(response.content)
-        self.assertEqual(403, response.status_code)
-        self.assertFalse(decoded_response["success"])
-        self.assertEqual(
-            decoded_response["data"],
-            {
-                "error_code": "ForbiddenError",
-                "message": [
-                    "You have reached the limit of 20 of active entities of type ConversionPixel. Please archive some to be able to create more."
-                ],
-            },
-        )
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.k1_helper.update_account")
-    def test_post_audience_enabled(self, ping_mock, redirector_mock):
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
-        audience_enabled_pixels[0].audience_enabled = False
-        audience_enabled_pixels[0].save()
-
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
-        self.assertEqual(audience_enabled_pixels[0].name, "name")
-
-        self.assertDictEqual(
-            {
-                "data": {
-                    "id": audience_enabled_pixels[0].id,
-                    "name": "name",
-                    "archived": False,
-                    "audience_enabled": True,
-                    "additional_pixel": False,
-                    "notes": "",
-                    "impressions": 0,
-                    "last_triggered": None,
-                    "url": "https://p1.zemanta.com/p/1/{}/".format(audience_enabled_pixels[0].slug),
-                },
-                "success": True,
-            },
-            json.loads(response.content),
-        )
-
-        ping_mock.assert_called_once_with(models.Account.objects.get(pk=1), msg="conversion_pixel.create")
-        self.assertFalse(redirector_mock.called)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.k1_helper.update_account")
-    def test_post_audience_enabled_invalid(self, ping_mock, redirector_mock):
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
-
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(400, response.status_code)
-        self.assertDictEqual(
-            {
-                "data": {
-                    "error_code": "ValidationError",
-                    "message": None,
-                    "errors": {
-                        "audience_enabled": "This pixel can not be used for building custom audiences because another pixel is already used: test."
-                    },
-                    "data": None,
-                },
-                "success": False,
-            },
-            json.loads(response.content),
-        )
-
-        self.assertFalse(ping_mock.called)
-        self.assertFalse(redirector_mock.called)
-
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
 
     @patch("utils.redirector_helper.update_pixel")
     @patch("utils.redirector_helper.upsert_audience")
@@ -461,8 +316,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "name": "name",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/{}/".format(decoded_response["data"]["id"]),
                 "archived": False,
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "",
                 "impressions": 0,
                 "last_triggered": None,
@@ -529,7 +383,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
     @patch("utils.k1_helper.update_account")
     def test_post_notes(self, ping_mock, redirector_mock, update_pixel_mock):
         conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        conversion_pixel.audience_enabled = False
         conversion_pixel.save()
         response = self.client.post(
             reverse("account_conversion_pixels", kwargs={"account_id": 1}),
@@ -546,9 +399,8 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "id": decoded_response["data"]["id"],
                 "name": "name",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/{}/".format(decoded_response["data"]["id"]),
+                "audience_enabled": True,
                 "archived": False,
-                "audience_enabled": False,
-                "additional_pixel": False,
                 "notes": "test notes",
                 "impressions": 0,
                 "last_triggered": None,
@@ -567,91 +419,11 @@ class ConversionPixelTestCase(DASHAPITestCase):
         self.assertTrue(update_pixel_mock.called)
 
     @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.k1_helper.update_account")
-    def test_put_audience_enabled(self, ping_mock, redirector_mock):
-        existing_audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(
-            account_id=1
-        )
-        self.assertEqual(1, len(existing_audience_enabled_pixels))
-        existing_audience_enabled_pixels[0].audience_enabled = False
-        existing_audience_enabled_pixels[0].save()
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": existing_audience_enabled_pixels[0].id}),
-            json.dumps({"audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
-        self.assertEqual(audience_enabled_pixels[0].id, existing_audience_enabled_pixels[0].id)
-
-        self.assertDictEqual(
-            {
-                "data": {
-                    "id": audience_enabled_pixels[0].id,
-                    "name": "test",
-                    "archived": False,
-                    "audience_enabled": True,
-                    "additional_pixel": False,
-                    "notes": "",
-                    "impressions": 0,
-                    "last_triggered": None,
-                    "url": "https://p1.zemanta.com/p/1/{}/".format(audience_enabled_pixels[0].slug),
-                },
-                "success": True,
-            },
-            json.loads(response.content),
-        )
-
-        ping_mock.assert_called_once_with(models.Account.objects.get(pk=1), msg="conversion_pixel.update")
-        self.assertEqual(redirector_mock.call_count, 4)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.k1_helper.update_account")
-    def test_put_audience_enabled_invalid(self, ping_mock, redirector_mock):
-        existing_audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(
-            account_id=1
-        )
-        self.assertEqual(1, len(existing_audience_enabled_pixels))
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 2}),
-            json.dumps({"name": "name", "audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(400, response.status_code)
-        self.assertDictEqual(
-            {
-                "data": {
-                    "error_code": "ValidationError",
-                    "message": None,
-                    "errors": {
-                        "audience_enabled": "This pixel can not be used for building custom audiences because another pixel is already used: test."
-                    },
-                    "data": None,
-                },
-                "success": False,
-            },
-            json.loads(response.content),
-        )
-
-        self.assertFalse(ping_mock.called)
-        self.assertFalse(redirector_mock.called)
-
-        audience_enabled_pixels = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1)
-        self.assertEqual(1, len(audience_enabled_pixels))
-        self.assertEqual(1, existing_audience_enabled_pixels[0].id)
-
-    @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive(self, redirector_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=2)
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 2}),
-            json.dumps({"archived": True, "name": conversion_pixel.name, "audience_enabled": False}),
+            json.dumps({"archived": True, "name": conversion_pixel.name}),
             content_type="application/json",
             follow=True,
         )
@@ -665,8 +437,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "archived": True,
                 "name": "test2",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "",
                 "impressions": 0,
                 "last_triggered": None,
@@ -677,71 +448,6 @@ class ConversionPixelTestCase(DASHAPITestCase):
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual("Archived conversion pixel named test2.", hist.changes_text)
-
-        self.assertFalse(redirector_mock.called)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    def test_put_archive_audience_enabled(self, redirector_mock):
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"archived": True, "name": conversion_pixel.name, "audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        self.assertFalse(conversion_pixel.archived)
-
-        self.assertDictEqual(
-            {
-                "data": {
-                    "error_code": "ValidationError",
-                    "message": None,
-                    "errors": {"audience_enabled": "Can not archive pixel used for building custom audiences."},
-                    "data": None,
-                },
-                "success": False,
-            },
-            json.loads(response.content),
-        )
-
-        self.assertFalse(redirector_mock.called)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    def test_put_archive_additional_pixel_enabled(self, redirector_mock):
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        conversion_pixel.additional_pixel = True
-        conversion_pixel.audience_enabled = False
-        conversion_pixel.save()
-        models.ConversionPixel.objects.create(
-            None, conversion_pixel.account, skip_notification=True, name="Audience pixel", audience_enabled=True
-        )
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"archived": True, "name": conversion_pixel.name, "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(400, response.status_code)
-
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        self.assertFalse(conversion_pixel.archived)
-        self.assertDictEqual(
-            {
-                "data": {
-                    "error_code": "ValidationError",
-                    "message": None,
-                    "errors": {"audience_enabled": "Can not archive pixel used for building custom audiences."},
-                    "data": None,
-                },
-                "success": False,
-            },
-            json.loads(response.content),
-        )
 
         self.assertFalse(redirector_mock.called)
 
@@ -782,11 +488,10 @@ class ConversionPixelTestCase(DASHAPITestCase):
     def test_put_redirect_url(self, update_pixel_mock, upsert_audience_mock):
         add_permissions(self.user, ["can_redirect_pixels"])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        conversion_pixel.audience_enabled = False
         conversion_pixel.save()
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "test", "audience_enabled": False, "redirect_url": "http://test.com"}),
+            json.dumps({"name": "test", "redirect_url": "http://test.com"}),
             content_type="application/json",
             follow=True,
         )
@@ -800,8 +505,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "archived": conversion_pixel.archived,
                 "name": "test",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "",
                 "impressions": 0,
                 "last_triggered": None,
@@ -814,7 +518,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL, hist.action_type)
         self.assertEqual("Set redirect url of pixel named test to http://test.com.", hist.changes_text)
 
-        self.assertEqual(upsert_audience_mock.call_count, 0)
+        self.assertEqual(upsert_audience_mock.call_count, 4)
         update_pixel_mock.assert_called_once_with(conversion_pixel)
 
     @patch("utils.redirector_helper.upsert_audience")
@@ -823,12 +527,11 @@ class ConversionPixelTestCase(DASHAPITestCase):
         add_permissions(self.user, ["can_redirect_pixels"])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.redirect_url = "http://test.com"
-        conversion_pixel.audience_enabled = False
         conversion_pixel.save()
 
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "test", "audience_enabled": False, "redirect_url": ""}),
+            json.dumps({"name": "test", "redirect_url": ""}),
             content_type="application/json",
             follow=True,
         )
@@ -842,8 +545,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "archived": conversion_pixel.archived,
                 "name": "test",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "",
                 "impressions": 0,
                 "last_triggered": None,
@@ -856,13 +558,13 @@ class ConversionPixelTestCase(DASHAPITestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL, hist.action_type)
         self.assertEqual("Removed redirect url of pixel named test.", hist.changes_text)
 
-        self.assertEqual(upsert_audience_mock.call_count, 0)
+        self.assertEqual(upsert_audience_mock.call_count, 4)
         update_pixel_mock.assert_called_once_with(conversion_pixel)
 
     def test_put_redirect_url_invalid(self):
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "test", "audience_enabled": False, "redirect_url": "invalidurl"}),
+            json.dumps({"name": "test", "redirect_url": "invalidurl"}),
             content_type="application/json",
             follow=True,
         )
@@ -876,11 +578,10 @@ class ConversionPixelTestCase(DASHAPITestCase):
     @patch("utils.redirector_helper.update_pixel")
     def test_put_notes(self, update_pixel_mock, upsert_audience_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        conversion_pixel.audience_enabled = False
         conversion_pixel.save()
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "test", "audience_enabled": False, "notes": "test notes"}),
+            json.dumps({"name": "test", "notes": "test notes"}),
             content_type="application/json",
             follow=True,
         )
@@ -894,8 +595,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
                 "archived": conversion_pixel.archived,
                 "name": "test",
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
-                "audience_enabled": False,
-                "additional_pixel": False,
+                "audience_enabled": True,
                 "notes": "test notes",
                 "impressions": 0,
                 "last_triggered": None,
@@ -903,248 +603,8 @@ class ConversionPixelTestCase(DASHAPITestCase):
             decoded_response["data"],
         )
 
-        self.assertEqual(upsert_audience_mock.call_count, 0)
-        self.assertEqual(update_pixel_mock.call_count, 0)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_set_additional_pixel_no_permissions(self, update_pixel_mock, upsert_audience_mock):
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        self.assertFalse(conversion_pixel.additional_pixel)
-        conversion_pixel.audience_enabled = False
-        conversion_pixel.save()
-        self.assertFalse(conversion_pixel.audience_enabled)
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"additional_pixel": True, "name": conversion_pixel.name}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)["data"]
-        self.assertFalse(data["additional_pixel"])
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
-
-        self.assertEqual(upsert_audience_mock.call_count, 0)
-        self.assertEqual(update_pixel_mock.call_count, 0)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_set_additional_pixel(self, update_pixel_mock, upsert_audience_mock):
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        conversion_pixel.audience_enabled = False
-        conversion_pixel.save()
-        models.ConversionPixel.objects.create(
-            None, conversion_pixel.account, skip_notification=True, name="Audience pixel", audience_enabled=True
-        )
-
-        self.assertFalse(conversion_pixel.audience_enabled)
-        self.assertFalse(conversion_pixel.additional_pixel)
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"additional_pixel": True, "name": conversion_pixel.name}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)["data"]
-        self.assertTrue(data["additional_pixel"])
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        self.assertTrue(conversion_pixel.additional_pixel)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL, hist.action_type)
-        self.assertEqual(
-            "Set pixel {} as an additional audience pixel.".format(conversion_pixel.name), hist.changes_text
-        )
-
         self.assertEqual(upsert_audience_mock.call_count, 4)
-        self.assertEqual(update_pixel_mock.call_count, 1)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_unset_additional_pixel_no_change(self, update_pixel_mock, upsert_audience_mock):
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        conversion_pixel.additional_pixel = True
-        conversion_pixel.save()
-        upsert_audience_mock.reset_mock()
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"additional_pixel": False, "name": conversion_pixel.name}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)["data"]
-        self.assertTrue(data["additional_pixel"])
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        self.assertTrue(conversion_pixel.additional_pixel)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
-
-        self.assertFalse(update_pixel_mock.called)
-        self.assertFalse(upsert_audience_mock.called)
-
-    @patch("utils.k1_helper.update_account")
-    def test_post_additional_pixel_enabled(self, ping_mock):
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)["data"]
-        self.assertTrue(data["additional_pixel"])
-        pixel_created = models.ConversionPixel.objects.filter(name="name", additional_pixel=True).count()
-        self.assertEqual(1, pixel_created)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE_AS_ADDITIONAL, hist.action_type)
-        self.assertEqual("Created a conversion pixel named name as an additional audience pixel.", hist.changes_text)
-
-        ping_mock.assert_called_once_with(models.Account.objects.get(pk=1), msg="conversion_pixel.create")
-
-    @patch("utils.k1_helper.update_account")
-    def test_post_additional_pixel_enabled_without_permissions(self, ping_mock):
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)["data"]
-        self.assertEqual(
-            {
-                "id": data["id"],
-                "name": "name",
-                "url": settings.CONVERSION_PIXEL_PREFIX + "1/{}/".format(data["id"]),
-                "archived": False,
-                "audience_enabled": False,
-                "additional_pixel": False,
-                "notes": "",
-                "impressions": 0,
-                "last_triggered": None,
-            },
-            data,
-        )
-        pixel_created = models.ConversionPixel.objects.filter(name="name", additional_pixel=True).count()
-        self.assertEqual(0, pixel_created)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertTrue(hist)
-
-        self.assertFalse(ping_mock.called)
-
-    @patch("utils.k1_helper.update_account")
-    def test_post_additional_pixel_without_existing_audience_pixel(self, ping_mock):
-        audience_enabled_pixel = models.ConversionPixel.objects.get(id=1)
-        audience_enabled_pixel.audience_enabled = False
-        audience_enabled_pixel.save()
-        audience_disabled = models.ConversionPixel.objects.filter(audience_enabled=True).filter(account_id=1).count()
-        self.assertEqual(0, audience_disabled)
-
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        data = json.loads(response.content)["data"]["errors"]
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(
-            {
-                "additional_pixel": (
-                    [
-                        "The pixel's account has no audience pixel set. Set an audience pixel"
-                        " before setting an additional audience pixel."
-                    ]
-                )
-            },
-            data,
-        )
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
-
-        self.assertFalse(ping_mock.called)
-
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_set_additional_pixel_on_audience_pixel(self, update_pixel_mock, upsert_audience_mock):
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-        conversion_pixel = models.ConversionPixel.objects.get(id=1)
-        self.assertTrue(conversion_pixel.audience_enabled)
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "name", "audience_enabled": True, "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        error = json.loads(response.content)["data"]["errors"]
-        self.assertTrue(response.status_code)
-        self.assertDictEqual(
-            {
-                "additional_pixel": (
-                    ["Custom audience and additional audience can not be enabled at the same time on the same pixel."]
-                )
-            },
-            error,
-        )
-
-        no_pixel_found = models.ConversionPixel.objects.filter(
-            account=1, name="name", audience_enabled=True, additional_pixel=True
-        ).all()
-        self.assertFalse(no_pixel_found)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
-
-        self.assertFalse(upsert_audience_mock.called)
         self.assertEqual(update_pixel_mock.call_count, 0)
-
-    @patch("utils.k1_helper.update_account")
-    def test_post_set_additional_pixel_on_audience_pixel(self, ping_mock):
-        add_permissions(self.user, ["can_promote_additional_pixel"])
-
-        response = self.client.post(
-            reverse("account_conversion_pixels", kwargs={"account_id": 1}),
-            json.dumps({"name": "name", "audience_enabled": True, "additional_pixel": True}),
-            content_type="application/json",
-            follow=True,
-        )
-        error = json.loads(response.content)["data"]["errors"]
-
-        self.assertTrue(response.status_code)
-        self.assertDictEqual(
-            {
-                "additional_pixel": (
-                    ["Custom audience and additional audience can not be enabled at the same time on the same pixel."]
-                )
-            },
-            error,
-        )
-        no_pixel_found = models.ConversionPixel.objects.filter(
-            account=1, name="name", audience_enabled=True, additional_pixel=True
-        ).all()
-        self.assertFalse(no_pixel_found)
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
-
-        self.assertFalse(ping_mock.called)
 
 
 class CampaignContentInsightsTestCase(DASHAPITestCase):

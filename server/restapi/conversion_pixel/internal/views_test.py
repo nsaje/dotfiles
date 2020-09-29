@@ -10,7 +10,7 @@ from zemauth.features.entity_permission import Permission
 class ConversionPixelViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.add_permissions(self.user, ["can_promote_additional_pixel", "can_redirect_pixels"])
+        utils.test_helper.add_permissions(self.user, ["can_redirect_pixels"])
 
     def test_get(self):
         account = self.mix_account(self.user, permissions=[Permission.READ])
@@ -80,25 +80,6 @@ class ConversionPixelViewSetTest(RESTAPITestCase):
         self.assertIn(str(test_pixel_2.id), response_pixel_ids)
         self.assertNotIn(str(new_pixel.id), response_pixel_ids)
 
-    def test_list_audience_enabled_only(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
-        magic_mixer.blend(
-            core.models.ConversionPixel, account=account, slug="test1", audience_enabled=False, additional_pixel=False
-        )
-        magic_mixer.blend(
-            core.models.ConversionPixel, account=account, slug="test2", audience_enabled=True, additional_pixel=False
-        )
-        magic_mixer.blend(
-            core.models.ConversionPixel, account=account, slug="test3", audience_enabled=False, additional_pixel=True
-        )
-
-        r = self.client.get(
-            reverse("restapi.conversion_pixel.internal:pixels_list"),
-            {"accountId": account.id, "audienceEnabledOnly": "true"},
-        )
-        resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(2, len(resp_json["data"]))
-
     def test_list_invalid_query_params(self):
         r = self.client.get(
             reverse("restapi.conversion_pixel.internal:pixels_list"),
@@ -143,41 +124,9 @@ class ConversionPixelViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["id"], str(pixel.id))
         self.assertTrue(resp_json["data"]["archived"])
 
-    def test_put_additional_pixel(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
-        pixel = magic_mixer.blend(
-            core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
-        )
-        r = self.client.put(
-            reverse("restapi.conversion_pixel.internal:pixels_details", kwargs={"pixel_id": pixel.id}),
-            data={"additional_pixel": True},
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.assertEqual(resp_json["data"]["id"], str(pixel.id))
-        self.assertTrue(resp_json["data"]["additionalPixel"])
-
-    def test_put_additional_pixel_no_permission(self):
-        utils.test_helper.remove_permissions(self.user, ["can_promote_additional_pixel"])
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
-        pixel = magic_mixer.blend(
-            core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
-        )
-        self.assertFalse(pixel.additional_pixel)
-        r = self.client.put(
-            reverse("restapi.conversion_pixel.internal:pixels_details", kwargs={"pixel_id": pixel.id}),
-            data={"additional_pixel": True},
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.assertFalse("additionalPixel" in resp_json["data"])
-        self.assertEqual(resp_json["data"]["id"], str(pixel.id))
-
     def test_post(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
+        magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel")
         r = self.client.post(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
             data={},
@@ -187,16 +136,10 @@ class ConversionPixelViewSetTest(RESTAPITestCase):
         self.assertEqual(["Please specify a name."], resp_json["details"]["name"])
         r = self.client.post(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
-            data={
-                "name": "pixel name",
-                "additionalPixel": True,
-                "redirectUrl": "https://test.com",
-                "notes": "pixel name notes",
-            },
+            data={"name": "pixel name", "redirectUrl": "https://test.com", "notes": "pixel name notes"},
             format="json",
         )
         resp_json = self.assertResponseValid(r, status_code=201)
         self.assertEqual("pixel name", resp_json["data"]["name"])
-        self.assertTrue(resp_json["data"]["additionalPixel"])
         self.assertEqual("https://test.com", resp_json["data"]["redirectUrl"])
         self.assertEqual("pixel name notes", resp_json["data"]["notes"])

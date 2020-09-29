@@ -64,8 +64,6 @@ class AccountsTest(K1APIBaseTest):
                         "id": 1,
                         "name": "Pixel 1",
                         "slug": "testslug1",
-                        "audience_enabled": False,
-                        "additional_pixel": False,
                         "source_pixels": [
                             {
                                 "url": "http://www.ob.com/pixelendpoint",
@@ -88,8 +86,6 @@ class AccountsTest(K1APIBaseTest):
                         "id": 2,
                         "name": "Pixel 2",
                         "slug": "testslug2",
-                        "audience_enabled": True,
-                        "additional_pixel": False,
                         "source_pixels": [
                             {
                                 "url": "http://www.xy.com/pixelendpoint",

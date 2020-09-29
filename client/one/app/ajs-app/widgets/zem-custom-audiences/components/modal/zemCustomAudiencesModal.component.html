@@ -73,11 +73,6 @@
                 >
                     {{ pixel.name }}
                     {{
-                        pixel.additionalPixel
-                            ? '(Additional Audience Pixel)'
-                            : '(Audience Pixel)'
-                    }}
-                    {{
                         pixel.id === $ctrl.currentAudiencePixel.id
                             ? ' - current pixel'
                             : ''
@@ -89,12 +84,6 @@
                 ng-repeat="error in $ctrl.getRequest().validationErrors.pixelId"
             >
                 {{ error }}
-            </div>
-            <div
-                class="message message--warning"
-                ng-if="$ctrl.selectedPixel.additionalPixel"
-            >
-                Only the main audience pixel is synced with Outbrain!
             </div>
         </div>
 

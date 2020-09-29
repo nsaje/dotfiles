@@ -1909,13 +1909,11 @@ class HistoryActionType(ConstantBase):
     AUDIENCE_ARCHIVE = 19
     AUDIENCE_RESTORE = 20
     AUDIENCE_UPDATE = 22
-    CONVERSION_PIXEL_AUDIENCE_ENABLED = 21
     CONVERSION_PIXEL_SET_REDIRECT_URL = 23
     CONVERSION_PIXEL_REMOVE_REDIRECT_URL = 24
     PUBLISHER_GROUP_CREATE = 25
     PUBLISHER_GROUP_UPDATE = 26
     CONTENT_AD_EDIT = 26
-    CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL = 27
     CONVERSION_PIXEL_CREATE_AS_ADDITIONAL = 28
     DEAL_CONNECTION_CREATE = 29
     DEAL_CONNECTION_DELETE = 30
@@ -1946,12 +1944,10 @@ class HistoryActionType(ConstantBase):
         AUDIENCE_ARCHIVE: "Archive custom audience",
         AUDIENCE_RESTORE: "Restore custom audience",
         AUDIENCE_UPDATE: "Update custom audience",
-        CONVERSION_PIXEL_AUDIENCE_ENABLED: "Enable pixel for building audiences",
         CONVERSION_PIXEL_SET_REDIRECT_URL: "Set redirect url for pixel",
         CONVERSION_PIXEL_REMOVE_REDIRECT_URL: "Remove redirect url for pixel",
         PUBLISHER_GROUP_CREATE: "Create publisher group",
         PUBLISHER_GROUP_UPDATE: "Update publisher group",
-        CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL: "Pixel set as an additional audience pixel",
         CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: "Create Conversion Pixel as additional audience pixel",
         DEAL_CONNECTION_CREATE: "Create deal connection",
         DEAL_CONNECTION_DELETE: "Delete deal connection",

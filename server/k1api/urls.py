@@ -66,7 +66,6 @@ urlpatterns = [
         name="k1api.r1_ad_group_mapping",
     ),
     url(r"^sources$", sources.SourcesView.as_view(), name="k1api.sources"),
-    url(r"source_pixels$", sources.SourcePixelsView.as_view(), name="k1api.source_pixels"),
     url(r"^ga_accounts$", ga_accounts.GAAccountsView.as_view(), name="k1api.ga_accounts"),
     url(
         r"^outbrain/publishers_blacklist$",

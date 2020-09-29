@@ -53,14 +53,7 @@ class AccountsView(K1APIView):
                     }
                     source_pixels.append(source_pixel_dict)
 
-                pixel_dict = {
-                    "id": pixel.id,
-                    "name": pixel.name,
-                    "slug": pixel.slug,
-                    "audience_enabled": pixel.audience_enabled,
-                    "additional_pixel": pixel.additional_pixel,
-                    "source_pixels": source_pixels,
-                }
+                pixel_dict = {"id": pixel.id, "name": pixel.name, "slug": pixel.slug, "source_pixels": source_pixels}
                 pixels.append(pixel_dict)
 
             account_dict = {

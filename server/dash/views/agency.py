@@ -4,7 +4,6 @@ import re
 
 import newrelic.agent
 from django.conf import settings
-from django.db.models import Q
 
 import core.common
 import core.features.goals
@@ -58,11 +57,7 @@ class ConversionPixel(DASHAPIBaseView):
         account_id = int(account_id)
         account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
-        audience_enabled_only = request.GET.get("audience_enabled_only", "") == "1"
-
         pixels = models.ConversionPixel.objects.filter(account=account)
-        if audience_enabled_only:
-            pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))
 
         yesterday = dates_helper.local_yesterday()
         rows = [self._format_pixel(pixel, request.user, date=yesterday) for pixel in pixels]
@@ -122,28 +117,15 @@ class ConversionPixel(DASHAPIBaseView):
         except core.models.conversion_pixel.exceptions.DuplicatePixelName as err:
             raise utils.exc.ValidationError(errors={"name": [str(err)]})
 
-        except core.models.conversion_pixel.exceptions.AudiencePixelAlreadyExists as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": str(err)})
-
         except core.models.conversion_pixel.exceptions.AudiencePixelCanNotBeArchived as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": str(err)})
-
-        except core.models.conversion_pixel.exceptions.MutuallyExclusivePixelFlagsEnabled as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
-
-        except core.models.conversion_pixel.exceptions.AudiencePixelNotSet as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
-
-        except core.common.entity_limits.EntityLimitExceeded as err:
-            raise utils.exc.ForbiddenError(message=[str(err)])
+            raise utils.exc.ValidationError(errors={"archived": str(err)})
 
     def _format_pixel(self, pixel, user, date=None):
         data = {
             "id": pixel.id,
             "name": pixel.name,
             "url": pixel.get_url(),
-            "audience_enabled": pixel.audience_enabled,
-            "additional_pixel": pixel.additional_pixel,
+            "audience_enabled": True,
             "archived": pixel.archived,
             "last_triggered": pixel.last_triggered,
             "impressions": pixel.get_impressions(date=date),

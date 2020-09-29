@@ -188,7 +188,6 @@ class User(
             ("can_see_mediamond_publishers", "User can see Mediamond publishers in inventory planning"),
             ("can_see_rcs_publishers", "User can see RCS publishers in inventory planning"),
             ("can_see_newscorp_publishers", "User can see News Corp publishers in inventory planning"),
-            ("can_promote_additional_pixel", "User can promote a pixel to an additional audience pixel"),
             ("can_be_ob_representative", "User can be chosen as OB representative"),
             ("can_set_account_ob_representative", "User can set OB representative"),
             ("can_include_credit_refunds_in_report", "User can export credit refunds in all accounts report"),

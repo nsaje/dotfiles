@@ -44,10 +44,6 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         if keyword:
             pixels = pixels.filter(name__icontains=keyword)
 
-        audience_enabled_only = utils.converters.x_to_bool(qpe.validated_data.get("audience_enabled_only"))
-        if audience_enabled_only:
-            pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))
-
         serializer = self.serializer(pixels, many=True, context={"request": request})
         return self.response_ok(serializer.data)
 
@@ -84,14 +80,5 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         except core.models.conversion_pixel.exceptions.DuplicatePixelName as err:
             raise utils.exc.ValidationError(errors={"name": [str(err)]})
 
-        except core.models.conversion_pixel.exceptions.AudiencePixelAlreadyExists as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": [str(err)]})
-
         except core.models.conversion_pixel.exceptions.AudiencePixelCanNotBeArchived as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": [str(err)]})
-
-        except core.models.conversion_pixel.exceptions.MutuallyExclusivePixelFlagsEnabled as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
-
-        except core.models.conversion_pixel.exceptions.AudiencePixelNotSet as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
+            raise utils.exc.ValidationError(errors={"archived": [str(err)]})

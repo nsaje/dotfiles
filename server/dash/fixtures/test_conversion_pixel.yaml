@@ -5,7 +5,6 @@
         slug: 'test2'
         name: 'test2'
         archived: false
-        audience_enabled: false
         created_dt: '2015-08-25T09:58:21'
     model: dash.conversionpixel
     pk: 2

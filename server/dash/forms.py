@@ -184,10 +184,8 @@ class AdGroupSourceSettingsForm(forms.Form):
 
 class ConversionPixelForm(forms.Form):
     archived = forms.BooleanField(required=False)
-    audience_enabled = forms.BooleanField(required=False)
     redirect_url = forms.URLField(max_length=2048, required=False)
     notes = PlainCharField(required=False)
-    additional_pixel = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         super(ConversionPixelForm, self).__init__(*args, **kwargs)

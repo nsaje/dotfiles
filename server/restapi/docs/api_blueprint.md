@@ -427,7 +427,7 @@ id              | string          | ID of the pixel                             
 accountId       | string          | ID of the account                                                                     | read only | read only       
 name            | string          | name of the pixel                                                                     | required  | read only        
 archived        | bool            | Is the pixel archived? Set to `true` to archive a pixel and to `false` to restore it. | optional  | optional        
-audienceEnabled | bool            | Is the pixel used for building custom audiences? Set to `true` to enable it. Can not be disabled once enabled. Only one pixel can be used for building custom audiences.  | optional  | optional        
+audienceEnabled (deprecated) | bool            | Is the pixel used for building custom audiences? Set to `true` to enable it. Can not be disabled once enabled. Only one pixel can be used for building custom audiences.  | read only  | read only       
 url             | string          | URL of the pixel                                                                      | read only | read only
 notes           | string          | a note describing where the pixel is placed on your website and what it tracks        | optional  | optional         
 lastTriggered   | date            | date of when the pixel was last triggered                                             | read only | read only        
@@ -448,7 +448,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "accountId": "186",
                 "name": "audience_pixel",
                 "archived": false,
-                "audienceEnabled": false,
+                "audienceEnabled": true,
                 "url": "https://p1.zemanta.com/p/186/123/",
                 "notes": "pixel used for testing",
                 "lastTriggered": "2019-01-01T12:00:00.000000",
@@ -501,7 +501,7 @@ impressions     | number          | number of times the pixel was triggered yest
                     "accountId": "186",
                     "name": "test_pixel",
                     "archived": false,
-                    "audienceEnabled": false,
+                    "audienceEnabled": true,
                     "url": "https://p1.zemanta.com/p/186/123/",
                     "notes": "pixel used for testing",
                     "lastTriggered": "2019-01-01T12:00:00.000000",
@@ -520,7 +520,7 @@ impressions     | number          | number of times the pixel was triggered yest
         {
             "name": "test_pixel",
             "archived": false,
-            "audienceEnabled": false,
+            "audienceEnabled": true,
             "notes": "pixel used for testing"
         }
 
@@ -532,7 +532,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "accountId": "186",
                 "name": "test_pixel",
                 "archived": false,
-                "audienceEnabled": false,
+                "audienceEnabled": true,
                 "url": "https://p1.zemanta.com/p/186/124/",
                 "notes": "pixel used for testing",
                 "lastTriggered": null,

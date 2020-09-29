@@ -1,7 +1,5 @@
 import functools
 
-from django.db.models import Q
-
 import core.models
 import utils.converters
 import utils.exc
@@ -23,10 +21,7 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
 
     def list(self, request, account_id):
         account = zemauth.access.get_account(request.user, Permission.READ, account_id)
-        audience_enabled_only = utils.converters.x_to_bool(request.GET.get("audienceEnabledOnly"))
         pixels = core.models.ConversionPixel.objects.filter(account=account)
-        if audience_enabled_only:
-            pixels = pixels.filter(Q(audience_enabled=True) | Q(additional_pixel=True))
         serializer = self.serializer(pixels, many=True, context={"request": request})
         return self.response_ok(serializer.data)
 
@@ -65,14 +60,5 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         except core.models.conversion_pixel.exceptions.DuplicatePixelName as err:
             raise utils.exc.ValidationError(errors={"name": [str(err)]})
 
-        except core.models.conversion_pixel.exceptions.AudiencePixelAlreadyExists as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": [str(err)]})
-
         except core.models.conversion_pixel.exceptions.AudiencePixelCanNotBeArchived as err:
-            raise utils.exc.ValidationError(errors={"audience_enabled": [str(err)]})
-
-        except core.models.conversion_pixel.exceptions.MutuallyExclusivePixelFlagsEnabled as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
-
-        except core.models.conversion_pixel.exceptions.AudiencePixelNotSet as err:
-            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
+            raise utils.exc.ValidationError(errors={"archived": [str(err)]})

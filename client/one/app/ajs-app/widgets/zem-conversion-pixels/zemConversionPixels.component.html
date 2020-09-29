@@ -57,12 +57,6 @@
                 >
                     <td>
                         <strong>{{ item.name }}</strong>
-                        <span ng-if="item.audienceEnabled" class="text-gray"
-                            >(Custom audience pixel)</span
-                        >
-                        <span ng-if="item.additionalPixel" class="text-gray"
-                            >(Additional custom audience pixel)</span
-                        >
                     </td>
                     <td>
                         {{
@@ -92,9 +86,9 @@
                         >
                             {{
                                 $ctrl.state.requests.archive[item.id].error
-                                    .audience_enabled ||
+                                    .archived ||
                                     $ctrl.state.requests.restore[item.id].error
-                                        .audience_enabled
+                                        .archived
                             }}
                         </span>
                     </td>

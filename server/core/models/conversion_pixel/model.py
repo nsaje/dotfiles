@@ -18,12 +18,9 @@ class ConversionPixel(validation.ConversionPixelValidatorMixin, instance.Convers
 
     objects = manager.ConversionPixelManager()
 
-    _settings_fields = ["name", "archived", "audience_enabled", "additional_pixel", "redirect_url", "notes"]
+    _settings_fields = ["name", "archived", "redirect_url", "notes"]
 
-    _permissioned_fields = {
-        "additional_pixel": "zemauth.can_promote_additional_pixel",
-        "redirect_url": "zemauth.can_redirect_pixels",
-    }
+    _permissioned_fields = {"redirect_url": "zemauth.can_redirect_pixels"}
 
     _SLUG_PLACEHOLDER = "temp_slug"
 
@@ -32,8 +29,6 @@ class ConversionPixel(validation.ConversionPixelValidatorMixin, instance.Convers
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
-    audience_enabled = models.BooleanField(default=False, null=True)
-    additional_pixel = models.BooleanField(default=False, null=True)
     last_triggered = models.DateTimeField(blank=True, null=True)
     impressions = models.PositiveIntegerField(default=0)
     redirect_url = models.CharField(max_length=2048, blank=True, null=True)

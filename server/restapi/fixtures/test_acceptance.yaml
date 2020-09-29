@@ -799,8 +799,6 @@
         account: 186
         slug: "123"
         archived: False
-        audience_enabled: False
-        additional_pixel: False
         last_triggered: "2019-01-01T09:58:21"
         impressions: 100
         notes: "pixel used for testing"
