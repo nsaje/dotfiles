@@ -1,4 +1,5 @@
 import concurrent.futures
+import random
 
 from django.db import transaction
 
@@ -32,6 +33,7 @@ def _mark_almost_depleted_campaigns(campaigns):
 
 
 def _refresh_realtime_data(campaigns):
+    random.shuffle(campaigns)
     with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
         executor.map(refresh_realtime_data, ([campaign] for campaign in campaigns))
 
