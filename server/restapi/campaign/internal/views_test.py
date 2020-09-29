@@ -97,6 +97,7 @@ class CampaignViewSetTest(RESTAPITestCase):
     @classmethod
     def campaign_budget_repr(
         cls,
+        accountId=None,
         id=None,
         creditId=None,
         amount=None,
@@ -116,6 +117,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         licenseFee=None,
     ):
         representation = {
+            "accountId": str(accountId) if accountId is not None else None,
             "id": str(id) if id is not None else None,
             "creditId": str(creditId) if creditId is not None else None,
             "amount": str(amount) if amount is not None else None,
@@ -478,6 +480,7 @@ class CampaignViewSetTest(RESTAPITestCase):
             resp_json["data"]["budgets"],
             [
                 self.campaign_budget_repr(
+                    accountId=active_budget.campaign.account_id,
                     id=active_budget.id,
                     creditId=active_budget.credit.id,
                     amount=active_budget.amount,
@@ -535,6 +538,7 @@ class CampaignViewSetTest(RESTAPITestCase):
                 },
                 "budgetsDepleted": [
                     self.campaign_budget_repr(
+                        accountId=inactive_budget.campaign.account_id,
                         id=inactive_budget.id,
                         creditId=inactive_budget.credit.id,
                         amount=inactive_budget.amount,
@@ -663,6 +667,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
 
         campaign_budget_repr = self.campaign_budget_repr(
+            accountId=active_budget.campaign.account_id,
             id=active_budget.id,
             creditId=active_budget.credit.id,
             amount=active_budget.amount,
@@ -683,6 +688,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         del campaign_budget_repr["serviceFee"]
 
         depleted_campaign_budget_repr = self.campaign_budget_repr(
+            accountId=inactive_budget.campaign.account_id,
             id=inactive_budget.id,
             creditId=inactive_budget.credit.id,
             amount=inactive_budget.amount,
@@ -818,6 +824,7 @@ class CampaignViewSetTest(RESTAPITestCase):
 
         campaign_budget = self.campaign_budget_repr(
             creditId=credit.id,
+            accountId="123",
             amount="1000",
             margin="0.2500",
             comment="POST Campaign Budget",

@@ -587,6 +587,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             {
                 id: null,
                 creditId: availableCredits[0].id,
+                accountId: this.state.entity.accountId,
                 startDate:
                     availableCredits[0].startDate > todayDate
                         ? availableCredits[0].startDate

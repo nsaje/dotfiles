@@ -1,6 +1,8 @@
 import decimal
+from collections import OrderedDict
 
 import rest_framework.serializers
+from django.contrib.auth.models import Permission
 
 import dash.constants
 import restapi.campaign.v1.serializers
@@ -14,6 +16,7 @@ import restapi.serializers.fields
 import restapi.serializers.hack
 import restapi.serializers.serializers
 import restapi.serializers.user
+import utils
 import zemauth.access
 import zemauth.models
 
@@ -62,6 +65,21 @@ class CampaignBudgetSerializer(restapi.campaignbudget.internal.serializers.Campa
         super(CampaignBudgetSerializer, self).__init__(*args, **kwargs)
         self.fields.pop("allocated_amount")
         self.fields.pop("campaign_name")
+
+    account_id = restapi.serializers.fields.IdField(source="campaign.account.id")
+
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        account_id = data.get("account_id")
+        if account_id is not None:
+            try:
+                zemauth.access.get_account(user, permission, account_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+
+        return super().has_entity_permission(user, permission, config, data)
 
 
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

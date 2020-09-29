@@ -3,6 +3,7 @@ import {CampaignBudgetState} from '../../../../app.constants';
 export interface CampaignBudget {
     id: string;
     creditId: string;
+    accountId: string;
     state?: CampaignBudgetState;
     startDate: Date;
     endDate: Date;
