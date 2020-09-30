@@ -131,6 +131,7 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "10.50.68.240",
         "PORT": 5432,
+        "OPTIONS": {"options": "-c statement_timeout=4320000"},
     },
     "stats-postgres-2": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -143,6 +144,7 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "10.50.66.212",
         "PORT": 5432,
+        "OPTIONS": {"options": "-c statement_timeout=4320000"},
     },
 }
 
