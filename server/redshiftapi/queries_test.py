@@ -26,9 +26,9 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
-            base_table.source_id AS source_id,
-            base_table.dma AS dma,
+            account_id AS account_id,
+            source_id AS source_id,
+            dma AS dma,
             SUM(base_table.clicks) clicks
         FROM mv_account_geo base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
@@ -59,9 +59,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
-    @mock.patch.object(
-        models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks, models.MVMaster.publisher_id]
-    )
+    @mock.patch.object(models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks])
     def test_query_all_base_publishers(self, _):
         sql, params, _ = queries.prepare_query_all_base(
             ["publisher_id", "dma"],
@@ -74,11 +72,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.dma AS dma,
-            SUM(base_table.clicks) clicks,
-            MAX(base_table.publisher_source_id) publisher_id
+            publisher AS publisher,
+            source_id AS source_id,
+            dma AS dma,
+            COALESCE(publisher, '') || '__' || source_id publisher_id,
+            SUM(base_table.clicks) clicks
         FROM mv_master base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
@@ -89,9 +87,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
     @mock.patch.object(
-        models.MVMaster,
-        "get_aggregates",
-        return_value=[models.MVMaster.clicks, models.MVMaster.placement_id, models.MVMaster.placement_type],
+        models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks, models.MVMaster.placement_type]
     )
     def test_query_all_base_placement(self, _):
         sql, params, _ = queries.prepare_query_all_base(
@@ -105,12 +101,12 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.campaign_id AS campaign_id,
-            base_table.source_id AS source_id,
-            base_table.publisher AS publisher,
-            base_table.placement AS placement,
+            campaign_id AS campaign_id,
+            source_id AS source_id,
+            publisher AS publisher,
+            placement AS placement,
+            COALESCE(publisher, '') || '__' || source_id || '__' || COALESCE(placement, '') placement_id,
             SUM(base_table.clicks) clicks,
-            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', COALESCE(base_table.placement, '')))) placement_id,
             MAX(base_table.placement_type) placement_type
         FROM mv_campaign_placement base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
@@ -139,9 +135,9 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
-            base_table.source_id AS source_id,
-            base_table.dma AS dma,
+            account_id AS account_id,
+            source_id AS source_id,
+            dma AS dma,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
             (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
@@ -169,14 +165,14 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.date AS day,
+            publisher AS publisher,
+            source_id AS source_id,
+            date AS day,
+            COALESCE(publisher, '') || '__' || source_id publisher_id,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
             (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-            MAX(base_table.publisher_source_id) publisher_id
+            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost
         FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -200,17 +196,16 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.placement AS placement,
-            base_table.date AS day,
+            publisher AS publisher,
+            source_id AS source_id,
+            placement AS placement,
+            date AS day,
+            coalesce(publisher, '') || '__' || source_id publisher_id,
+            coalesce(publisher, '') || '__' || source_id || '__' || coalesce(placement, '') placement_id,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
             (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-            MAX(base_table.publisher_source_id) publisher_id,
-            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', COALESCE(base_table.placement, '')))) placement_id,
-            MAX(base_table.placement_type) placement_type
+            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost
         FROM mv_account_placement base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -232,9 +227,9 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
-            base_table.source_id AS source_id,
-            base_table.slug AS slug,
+            account_id AS account_id,
+            source_id AS source_id,
+            slug AS slug,
             SUM(base_table.conversion_count) count
         FROM mv_account_conv base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
@@ -257,11 +252,11 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.date AS day,
-            SUM(base_table.conversion_count) count,
-            MAX(base_table.publisher_source_id) publisher_id
+            publisher AS publisher,
+            source_id AS source_id,
+            date AS day,
+            coalesce(publisher, '') || '__' || source_id publisher_id,
+            SUM(base_table.conversion_count) count
         FROM mv_conversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -291,10 +286,10 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
-            base_table.source_id AS source_id,
-            base_table.slug AS slug,
-            base_table.conversion_window AS "window",
+            account_id AS account_id,
+            source_id AS source_id,
+            slug AS slug,
+            conversion_window AS "window",
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
@@ -320,16 +315,16 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.date AS day,
-            base_table.slug AS slug,
-            base_table.conversion_window AS "window",
+            publisher AS publisher,
+            source_id AS source_id,
+            date AS day,
+            slug AS slug,
+            conversion_window AS "window",
+            COALESCE(publisher, '') || '__' || source_id publisher_id,
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
-            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
-            MAX(base_table.publisher_source_id) publisher_id
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view
         FROM mv_touchpointconversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -350,18 +345,18 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.publisher AS publisher,
-            base_table.source_id AS source_id,
-            base_table.placement AS placement,
-            base_table.date AS day,
-            base_table.slug AS slug,
-            base_table.conversion_window AS "window",
+            publisher AS publisher,
+            source_id AS source_id,
+            placement AS placement,
+            date AS day,
+            slug AS slug,
+            conversion_window AS "window",
+            COALESCE(publisher, '') || '__' || source_id publisher_id,
+            COALESCE(publisher, '') || '__' || source_id || '__' || COALESCE(placement, '') placement_id,
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
-            MAX(base_table.publisher_source_id) publisher_id,
-            MAX(concat(base_table.publisher_source_id, concat('__', coalesce(base_table.placement, '')))) placement_id,
             MAX(base_table.placement_type) placement_type
         FROM mv_touchpointconversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
@@ -472,7 +467,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        SELECT temp_base.account_id,
+        SELECT account_id,
                temp_base.clicks,
                temp_base.total_seconds,
                temp_yesterday.local_yesterday_at_cost,
@@ -495,7 +490,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account a
            WHERE (a.date=%s)
-           GROUP BY 1) temp_yesterday ON temp_base.account_id = temp_yesterday.account_id
+           GROUP BY 1) temp_yesterday USING (account_id)
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -507,11 +502,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[
-            models.MVJointMaster.clicks,
-            models.MVJointMaster.total_seconds,
-            models.MVJointMaster.publisher_id,
-        ],
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
     )
     def test_query_joint_base_publishers(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -525,11 +516,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        SELECT temp_base.publisher,
-               temp_base.source_id,
+        SELECT publisher,
+               source_id,
+               COALESCE(publisher, '') || '__' || source_id publisher_id,
                temp_base.clicks,
                temp_base.total_seconds,
-               temp_base.publisher_id,
                temp_yesterday.local_yesterday_at_cost,
                temp_yesterday.local_yesterday_etfm_cost,
                temp_yesterday.yesterday_at_cost,
@@ -538,8 +529,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
           (SELECT a.publisher AS publisher,
                   a.source_id AS source_id,
                   sum(a.clicks) clicks,
-                  sum(a.total_time_on_site) total_seconds,
-                  max(a.publisher_source_id) publisher_id
+                  sum(a.total_time_on_site) total_seconds
            FROM mv_account_pubs a
            WHERE (a.date>=%s
                   AND a.date<=%s)
@@ -555,8 +545,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
            FROM mv_account_pubs a
            WHERE (a.date=%s)
            GROUP BY 1,
-                    2) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-        AND temp_base.source_id = temp_yesterday.source_id
+                    2) temp_yesterday USING (publisher, source_id)
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -571,7 +560,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         return_value=[
             models.MVJointMaster.clicks,
             models.MVJointMaster.total_seconds,
-            models.MVJointMaster.placement_id,
             models.MVJointMaster.placement_type,
         ],
     )
@@ -587,12 +575,12 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        SELECT temp_base.publisher,
-               temp_base.placement,
-               temp_base.source_id,
+        SELECT publisher,
+               placement,
+               source_id,
+               coalesce(publisher, '') || '__' || source_id || '__' || coalesce(placement, '') placement_id,
                temp_base.clicks,
                temp_base.total_seconds,
-               temp_base.placement_id,
                temp_base.placement_type,
                temp_yesterday.local_yesterday_at_cost,
                temp_yesterday.local_yesterday_etfm_cost,
@@ -604,7 +592,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.source_id AS source_id,
                   sum(a.clicks) clicks,
                   sum(a.total_time_on_site) total_seconds,
-                  max(concat(a.publisher_source_id, concat('__', coalesce(a.placement, '')))) placement_id,
                   max(a.placement_type) placement_type
            FROM mv_account_placement a
            WHERE (a.date>=%s
@@ -620,9 +607,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account_placement a
            WHERE (a.date=%s)
-           GROUP BY 1, 2, 3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-        AND (temp_base.placement = temp_yesterday.placement OR temp_base.placement IS NULL AND temp_yesterday.placement IS NULL)
-        AND temp_base.source_id = temp_yesterday.source_id
+           GROUP BY 1, 2, 3) temp_yesterday USING (publisher, placement, source_id)
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -675,8 +660,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   row_number() over (partition BY a.account_id
                                      ORDER BY a.total_seconds ASC nulls LAST, a.account_id ASC nulls LAST, a.campaign_id ASC nulls LAST) AS r
            FROM
-             (SELECT temp_base.account_id,
-                     temp_base.campaign_id,
+             (SELECT account_id,
+                     campaign_id,
                      temp_base.clicks,
                      temp_base.total_seconds,
                      temp_yesterday.local_yesterday_at_cost,
@@ -703,8 +688,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                  FROM mv_campaign a
                  WHERE (a.date=%s)
                  GROUP BY 1,
-                          2) temp_yesterday ON temp_base.account_id = temp_yesterday.account_id
-              AND temp_base.campaign_id = temp_yesterday.campaign_id) a) b
+                          2) temp_yesterday USING (account_id, campaign_id)
+              ) a) b
         WHERE r >= 5 + 1
           AND r <= 10
 
@@ -717,11 +702,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[
-            models.MVJointMaster.clicks,
-            models.MVJointMaster.total_seconds,
-            models.MVJointMaster.publisher_id,
-        ],
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
     )
     def test_query_joint_levels_publishers(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -738,9 +719,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         SELECT b.publisher,
                b.source_id,
                b.dma,
+               b.publisher_id,
                b.clicks,
                b.total_seconds,
-               b.publisher_id,
                b.local_yesterday_at_cost,
                b.local_yesterday_etfm_cost,
                b.yesterday_at_cost,
@@ -749,9 +730,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
           (SELECT a.publisher,
                   a.source_id,
                   a.dma,
+                  a.publisher_id,
                   a.clicks,
                   a.total_seconds,
-                  a.publisher_id,
                   a.local_yesterday_at_cost,
                   a.local_yesterday_etfm_cost,
                   a.yesterday_at_cost,
@@ -759,12 +740,12 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   row_number() over (partition BY a.publisher, a.source_id
                                      ORDER BY a.total_seconds ASC nulls LAST) AS r
            FROM
-             (SELECT temp_base.publisher,
-                     temp_base.source_id,
-                     temp_base.dma,
+             (SELECT publisher,
+                     source_id,
+                     NULLIF(dma, -1) AS dma,
+                     COALESCE(publisher, '') || '__' || source_id publisher_id,
                      temp_base.clicks,
                      temp_base.total_seconds,
-                     temp_base.publisher_id,
                      temp_yesterday.local_yesterday_at_cost,
                      temp_yesterday.local_yesterday_etfm_cost,
                      temp_yesterday.yesterday_at_cost,
@@ -772,10 +753,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
               FROM
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
-                        a.dma AS dma,
+                        COALESCE(a.dma, -1) AS dma,
                         sum(a.clicks) clicks,
-                        sum(a.total_time_on_site) total_seconds,
-                        max(a.publisher_source_id) publisher_id
+                        sum(a.total_time_on_site) total_seconds
                  FROM mv_master a
                  WHERE (a.date>=%s
                         AND a.date<=%s)
@@ -785,7 +765,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
               LEFT OUTER JOIN
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
-                        a.dma AS dma,
+                        COALESCE(a.dma, -1) AS dma,
                         (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
                         (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
@@ -794,11 +774,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                  WHERE (a.date=%s)
                  GROUP BY 1,
                           2,
-                          3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-              AND temp_base.source_id = temp_yesterday.source_id
-              AND (temp_base.dma = temp_yesterday.dma
-                   OR temp_base.dma IS NULL
-                   AND temp_yesterday.dma IS NULL)) a) b
+                          3) temp_yesterday USING (publisher, source_id, dma)
+              ) a) b
         WHERE r >= 5 + 1
           AND r <= 10
         """,
@@ -813,7 +790,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         return_value=[
             models.MVJointMaster.clicks,
             models.MVJointMaster.total_seconds,
-            models.MVJointMaster.placement_id,
             models.MVJointMaster.placement_type,
         ],
     )
@@ -832,9 +808,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         SELECT b.publisher,
                b.source_id,
                b.placement,
+               b.publisher_id,
+               b.placement_id,
                b.clicks,
                b.total_seconds,
-               b.placement_id,
                b.placement_type,
                b.local_yesterday_at_cost,
                b.local_yesterday_etfm_cost,
@@ -844,9 +821,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
           (SELECT a.publisher,
                   a.source_id,
                   a.placement,
+                  a.publisher_id,
+                  a.placement_id,
                   a.clicks,
                   a.total_seconds,
-                  a.placement_id,
                   a.placement_type,
                   a.local_yesterday_at_cost,
                   a.local_yesterday_etfm_cost,
@@ -855,12 +833,13 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   row_number() over (partition BY a.publisher, a.source_id
                                      ORDER BY a.total_seconds ASC nulls LAST) AS r
            FROM
-             (SELECT temp_base.publisher,
-                     temp_base.source_id,
-                     temp_base.placement,
+             (SELECT publisher,
+                     source_id,
+                     placement,
+                     coalesce(publisher, '') || '__' || source_id publisher_id,
+                     coalesce(publisher, '') || '__' || source_id || '__' || coalesce(placement, '') placement_id,
                      temp_base.clicks,
                      temp_base.total_seconds,
-                     temp_base.placement_id,
                      temp_base.placement_type,
                      temp_yesterday.local_yesterday_at_cost,
                      temp_yesterday.local_yesterday_etfm_cost,
@@ -872,7 +851,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         a.placement AS placement,
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
-                        max(concat(a.publisher_source_id, concat('__', coalesce(a.placement, '')))) placement_id,
                         max(a.placement_type) placement_type
                  FROM mv_account_placement a
                  WHERE (a.date>=%s
@@ -892,13 +870,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                  WHERE (a.date=%s)
                  GROUP BY 1,
                           2,
-                          3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-                AND temp_base.source_id = temp_yesterday.source_id
-                AND (
-                    temp_base.placement = temp_yesterday.placement
-                    OR temp_base.placement IS NULL
-                    AND temp_yesterday.placement IS NULL
-                )) a) b
+                          3) temp_yesterday USING (publisher, source_id, placement)
+                ) a) b
         WHERE r >= 5 + 1
           AND r <= 10
         """,

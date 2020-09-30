@@ -4,6 +4,7 @@
 /* breakdown_joint_levels.sql {{ base_view }}: {{ breakdown|only_column }} */
 SELECT
     {{ breakdown|only_alias:"b" }},
+    {% if additional_columns %}{{ additional_columns|only_alias:"b" }}, {% endif %}
     {{ aggregates|only_alias:"b" }},
     {{ yesterday_aggregates|only_alias:"b" }}
 
@@ -23,6 +24,7 @@ FROM (
     -- join and rank top rows, then select top rows
     SELECT
           {{ breakdown|only_alias:"a" }},
+          {% if additional_columns %}{{ additional_columns|only_alias:"a" }}, {% endif %}
           {{ aggregates|only_alias:"a" }},
           {{ yesterday_aggregates|only_alias:"a" }}
 
@@ -43,7 +45,8 @@ FROM (
      FROM
      (
           SELECT
-              {{ breakdown|only_alias:"temp_base" }},
+              {{ breakdown|only_alias_nullif_zero_value }},  -- no table qualifier in order to automatically select non-null columns from full join
+              {% if additional_columns %}{{ additional_columns|column_as_alias }}, {% endif %}
               {{ aggregates|only_alias:"temp_base" }},
               {{ yesterday_aggregates|only_alias:"temp_yesterday" }}
 
@@ -61,7 +64,7 @@ FROM (
           FROM
               (
                   SELECT
-                      {{ breakdown|column_as_alias:"a" }},
+                      {{ breakdown|column_as_alias_coalesce_zero_value:"a" }},
                       {{ aggregates|column_as_alias:"a" }}
                   FROM {{ base_view }} a
                   WHERE
@@ -70,36 +73,36 @@ FROM (
               ) temp_base
               LEFT OUTER JOIN (
                   SELECT
-                      {{ breakdown|column_as_alias:"a" }},
+                      {{ breakdown|column_as_alias_coalesce_zero_value:"a" }},
                       {{ yesterday_aggregates|column_as_alias:"a" }}
                   FROM {{ base_view }} a
                   WHERE
                       {{ yesterday_constraints|generate:"a" }}
                   GROUP BY {{ breakdown|indices }}
-              ) temp_yesterday ON {{ breakdown|columns_equal_or_null:"temp_base,temp_yesterday" }}
+              ) temp_yesterday USING ({{ breakdown|only_alias }})
 
               {% if conversions_aggregates %}
               LEFT OUTER JOIN (
                   SELECT
-                      {{ breakdown|column_as_alias:"a" }},
+                      {{ breakdown|column_as_alias_coalesce_zero_value:"a" }},
                       {{ conversions_aggregates|column_as_alias:"a" }}
                   FROM {{ conversions_view }} a
                   WHERE
                       {{ conversions_constraints|generate:"a" }}
                   GROUP BY {{ breakdown|indices }}
-              ) temp_conversions ON {{ breakdown|columns_equal_or_null:"temp_base,temp_conversions" }}
+              ) temp_conversions USING ({{ breakdown|only_alias }})
               {% endif %}
 
               {% if touchpoints_aggregates %}
-              LEFT OUTER JOIN (
+              FULL OUTER JOIN (
                   SELECT
-                      {{ breakdown|column_as_alias:"a" }},
+                      {{ breakdown|column_as_alias_coalesce_zero_value:"a" }},
                       {{ touchpoints_aggregates|column_as_alias:"a" }}
                   FROM {{ touchpoints_view }} a
                   WHERE
                       {{ touchpoints_constraints|generate:"a" }}
                   GROUP BY {{ breakdown|indices }}
-              ) temp_touchpoints ON {{ breakdown|columns_equal_or_null:"temp_base,temp_touchpoints" }}
+              ) temp_touchpoints USING ({{ breakdown|only_alias }})
               {% endif %}
     ) a
 ) b

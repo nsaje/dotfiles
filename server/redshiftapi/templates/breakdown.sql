@@ -3,7 +3,8 @@
 
 /* breakdown.sql {{ view }}: {{ breakdown|only_column }}*/
 SELECT
-    {% if breakdown %} {{ breakdown|column_as_alias:"base_table" }}, {% endif %}
+    {% if breakdown %} {{ breakdown|column_as_alias }}, {% endif %}
+    {% if additional_columns %}{{ additional_columns|column_as_alias }}, {% endif %}
     {{ aggregates|column_as_alias:"base_table" }}
 FROM
     {{ view }} base_table

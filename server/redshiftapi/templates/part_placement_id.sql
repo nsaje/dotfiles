@@ -1,1 +1,1 @@
-MAX(CONCAT({{ p }}publisher_source_id, CONCAT('__', COALESCE({{ p }}placement, '')))) {{ alias }}
+COALESCE({{ p }}publisher, '') || '__' || {{ p }}source_id || '__' || COALESCE({{ p }}placement, '') {{ alias }}

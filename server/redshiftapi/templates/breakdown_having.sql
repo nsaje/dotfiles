@@ -5,6 +5,7 @@
 SELECT
     {% if breakdown %} {{ breakdown|column_as_alias:"base_table" }}, {% endif %}
     {{ aggregates|column_as_alias:"base_table" }}
+    {% if additional_columns %}{{ additional_columns|column_as_alias }}, {% endif %}
 FROM
     {{ view }} base_table
 WHERE

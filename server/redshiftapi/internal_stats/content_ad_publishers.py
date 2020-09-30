@@ -33,7 +33,7 @@ def query_content_ad_publishers(date_from, date_to, ad_group_ids=None, min_media
     context = {
         "breakdown": mvmaster.select_columns(breakdown),
         "aggregates": [
-            x for x in mvmaster.get_aggregates(breakdown, view) if x.alias in columns
+            x for x in mvmaster.get_aggregates(breakdown) if x.alias in columns
         ],  # this is some special publishers view column
         "constraints": mvmaster.get_constraints(constraints, None),
         "view": view,
