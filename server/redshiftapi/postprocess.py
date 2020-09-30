@@ -362,5 +362,5 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
             goal_key = campaign_goal.get_view_key()
 
             row["etfm_performance_" + goal_key] = dash.campaign_goals.get_goal_performance_status(
-                campaign_goal.type, metric_value_fn(row, "etfm_cost"), planned_value, row["etfm_cost"]
+                campaign_goal.type, metric_value_fn(row, "etfm_cost"), planned_value, row.get("etfm_cost")
             )
