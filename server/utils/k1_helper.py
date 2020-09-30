@@ -62,16 +62,6 @@ def update_content_ad(content_ad, msg="", priority=False):
     )
 
 
-def update_blacklist(ad_group, msg="", priority=False):
-    _send_task(
-        settings.K1_CONSISTENCY_PING_BLACKLIST_QUEUE,
-        "consistency_ping_blacklist",
-        ad_group_id=ad_group.id,
-        msg=msg,
-        priority=priority,
-    )
-
-
 @newrelic.agent.function_trace()
 def _send_task(queue_name, task_name, **kwargs):
     if settings.K1_DEMO_MODE:

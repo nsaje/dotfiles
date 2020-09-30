@@ -75,6 +75,14 @@ class S3Helper(object):
         elif settings.S3_MOCK_DIR:
             os.rename(self._local_file_name(frm), self._local_file_name(to))
 
+    def delete(self, key):
+        if self.use_s3:
+            k = self.bucket.new_key(key)
+            k.delete()
+
+        elif settings.S3_MOCK_DIR:
+            os.remove(self._local_file_name(key))
+
     def _local_file_name(self, key):
         return os.path.join(settings.S3_MOCK_DIR, os.path.basename(key))
 

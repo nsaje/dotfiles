@@ -62,13 +62,3 @@ class K1HelperTest(TestCase):
                 "priority": False,
             },
         )
-
-    def test_update_blacklist(self, mock_app):
-        ad_group = magic_mixer.blend(models.AdGroup, id=123)
-        k1_helper.update_blacklist(ad_group, msg="test")
-        mock_app.send_task.assert_called_once_with(
-            "consistency_ping_blacklist",
-            queue="ping_blacklist_queue",
-            ignore_result=True,
-            kwargs={"msg": "test", "ad_group_id": 123, "initiated_at": 1513594339.172575, "priority": False},
-        )
