@@ -48,6 +48,12 @@ class TemplateColumn(object):
     def as_order(self, direction_hint, nulls=None):
         return OrderColumn(self, direction_hint, nulls)
 
+    def column_as_alias_coalesce_zero_value(self, prefix=None):
+        return self.column_as_alias(prefix)
+
+    def only_alias_nullif_zero_value(self, prefix=None):
+        return self.only_alias(prefix)
+
 
 class Column(TemplateColumn):
     ZERO_VALUE_PLACEHOLDERS = {str: "'~N/A~'", int: -1}
