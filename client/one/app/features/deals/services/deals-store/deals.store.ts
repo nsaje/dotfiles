@@ -365,11 +365,13 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
 
     private loadAccounts(agencyId: string): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
+            const offset = 0;
+            const limit = 500;
             this.accountsService
                 .list(
                     agencyId,
-                    null,
-                    null,
+                    offset,
+                    limit,
                     null,
                     false,
                     this.accountsRequestStateUpdater

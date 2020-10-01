@@ -508,11 +508,13 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         keyword: string | null = null
     ): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
+            const offset = 0;
+            const limit = 500;
             this.accountService
                 .list(
                     agencyId,
-                    null,
-                    null,
+                    offset,
+                    limit,
                     keyword,
                     false,
                     this.accountsRequestStateUpdater

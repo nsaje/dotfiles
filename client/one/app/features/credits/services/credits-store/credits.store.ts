@@ -530,11 +530,13 @@ export class CreditsStore extends Store<CreditsStoreState>
 
     private loadAccounts(agencyId: string): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
+            const offset = 0;
+            const limit = 500;
             this.accountsService
                 .list(
                     agencyId,
-                    null,
-                    null,
+                    offset,
+                    limit,
                     null,
                     false,
                     this.accountsRequestStateUpdater

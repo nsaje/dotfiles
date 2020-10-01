@@ -135,11 +135,13 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
 
     private loadAccounts(agencyId: string | null): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
+            const offset = 0;
+            const limit = 500;
             this.accountService
                 .list(
                     agencyId,
-                    null,
-                    null,
+                    offset,
+                    limit,
                     null,
                     false,
                     this.accountsRequestStateUpdater
