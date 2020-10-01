@@ -341,7 +341,7 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
 
                 def metric_value_fn(row, cost_column):
-                    return (float(row[cost_column] or 0) / row[conversion_key]) if row.get(conversion_key) else None
+                    return (float(row.get(cost_column) or 0) / row[conversion_key]) if row.get(conversion_key) else None
 
             else:
 
