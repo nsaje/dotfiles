@@ -5,7 +5,6 @@ from secretcrypt import Secret
 import core.features
 import core.models
 import dash.models
-from apt.common.db_queries import get_count_estimate
 
 from ..base.test_case import APTTestCase
 from ..common import z1_client
@@ -26,10 +25,10 @@ class APTSmokeTestCase(APTTestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = z1_client.Z1Client("eqWbmcKR7hDbf1ZjLS2ZpKR5oddOv8ZCfiybZ0f7", SECRET)
-        cls.account_count = get_count_estimate("dash_account")
-        cls.audience_count = get_count_estimate("dash_audience")
-        cls.campaign_count = get_count_estimate("dash_campaign")
-        cls.ad_group_count = get_count_estimate("dash_adgroup")
+        cls.account_count = core.models.Account.objects.latest("id").id
+        cls.audience_count = dash.models.Audience.objects.latest("id").id
+        cls.campaign_count = dash.models.Campaign.objects.latest("id").id
+        cls.ad_group_count = dash.models.AdGroup.objects.latest("id").id
 
     def call_and_assert_ok(self, url, params=None):
         r = self.client.make_api_call(url=API_URL + url, method="GET", params=params)
@@ -44,11 +43,11 @@ class APISmokeTestAccountsTestCase(APTSmokeTestCase):
         self.call_and_assert_ok(url="accounts/")
 
     def test_get_account(self):
-        account = core.models.Account.objects.order_by().all()[self.get_random_index(self.account_count)]
+        account = core.models.Account.objects.get(id=self.get_random_index(self.account_count))
         self.call_and_assert_ok(url="accounts/{accountId}", params={"accountId": account.id})
 
     def test_get_account_credit(self):
-        credit_line_item_count = get_count_estimate("dash_creditlineitem")
+        credit_line_item_count = core.features.bcm.credit_line_item.CreditLineItem.objects.latest("id").id
         credit_line_item = core.features.bcm.credit_line_item.CreditLineItem.objects.order_by().all()[
             self.get_random_index(credit_line_item_count)
         ]
@@ -62,7 +61,7 @@ class APISmokeTestAccountsTestCase(APTSmokeTestCase):
         self.call_and_assert_ok(url="accounts/{accountId}/credits/", params={"account_id": account.id})
 
     def test_get_pixel_detail(self):
-        conversion_pixel_count = get_count_estimate("dash_conversionpixel")
+        conversion_pixel_count = core.models.ConversionPixel.objects.latest("id").id
         conversion_pixel = core.models.ConversionPixel.objects.order_by().all()[
             self.get_random_index(conversion_pixel_count)
         ]
@@ -72,7 +71,8 @@ class APISmokeTestAccountsTestCase(APTSmokeTestCase):
         )
 
     def test_get_pixel_list(self):
-        account = core.models.Account.objects.order_by().all()[self.get_random_index(self.account_count)]
+        index = self.get_random_index(self.account_count)
+        account = core.models.Account.objects.order_by().all()[index]
         self.call_and_assert_ok(url="rest/v1/accounts/{accountId}/pixels/", params={"account_id": account.id})
 
     def test_get_audience_details(self):
@@ -118,7 +118,7 @@ class APISmokeTestCampaignsTestCase(APTSmokeTestCase):
         self.call_and_assert_ok("campaigns/{campaignId}/budgets/", params={"campaign_id": campaign.id})
 
     def test_get_campaign_budget(self):
-        budget_count = get_count_estimate("dash_budgetlineitem")
+        budget_count = core.features.bcm.BudgetLineItem.objects.latest("id").id
         budget = core.features.bcm.BudgetLineItem.objects.order_by().all()[self.get_random_index(budget_count)]
         self.call_and_assert_ok(
             "campaigns/{campaignId}/budgets/{budgetId}", params={"campaign_id": budget.campaign, "budget_id": budget.id}
@@ -129,7 +129,7 @@ class APISmokeTestCampaignsTestCase(APTSmokeTestCase):
         self.call_and_assert_ok("campaigns/{campaignId}/goals/", params={"campaign_id": campaign.id})
 
     def test_get_campaign_goals_details(self):
-        goal_count = get_count_estimate("dash_campaigngoal")
+        goal_count = core.features.goals.CampaignGoal.objects.latest("id").id
         goal = core.features.goals.CampaignGoal.objects.order_by().all()[self.get_random_index(goal_count)]
         self.call_and_assert_ok(
             "campaigns/{campaignId}/budgets/{budgetId}", params={"campaign_id": goal.campaign, "goal_id": goal.id}
@@ -158,7 +158,7 @@ class APISmokeTestAdGroupsTestCase(APTSmokeTestCase):
         self.call_and_assert_ok("adgroups/{adGroupId}/bidmodifiers/{?type}", params={"ad_group_id": ad_group.id})
 
     def test_get_bid_modifier_for_ad_group(self):
-        bid_modifier_count = get_count_estimate("dash_bidmodifier")
+        bid_modifier_count = dash.models.BidModifier.objects.latest("id").id
         bid_modifier = dash.models.BidModifier.objects.order_by().all()[self.get_random_index(bid_modifier_count)]
         self.call_and_assert_ok(
             "adgroups/{adGroupId}/bidmodifiers/{bidModifierId}",
@@ -168,7 +168,7 @@ class APISmokeTestAdGroupsTestCase(APTSmokeTestCase):
 
 class APTSmokeTestContentTestCase(APTSmokeTestCase):
     def test_upload_batch_status(self):
-        upload_batch_count = get_count_estimate("dash_uploadbatch")
+        upload_batch_count = dash.models.UploadBatch.objects.latest("id").id
         upload_batch = dash.models.UploadBatch.objects.order_by().all()[self.get_random_index(upload_batch_count)]
         self.call_and_assert_ok("contentads/batch/{batchId}", params={"batch_id": upload_batch.id})
 
@@ -177,7 +177,7 @@ class APTSmokeTestContentTestCase(APTSmokeTestCase):
         self.call_and_assert_ok("contentads/{?adGroupId}", params={"ad_group_id": ad_group.id})
 
     def test_get_contentad_details(self):
-        content_ad_count = get_count_estimate("dash_contentad")
+        content_ad_count = core.models.ContentAd.objects.latest("id").id
         content_ad = core.models.ContentAd.objects.order_by().all()[self.get_random_index(content_ad_count)]
         self.call_and_assert_ok("contentads/{contentAdId}", params={"content_ad_id": content_ad.id})
 
@@ -186,10 +186,11 @@ class APTSmokeTestPublishersTestCase(APTSmokeTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.publisher_group_count = get_count_estimate("dash_publishergroup")
+        cls.publisher_group_count = core.features.publisher_groups.PublisherGroup.objects.latest("id").id
 
     def test_list_publisher_groups(self):
-        account = core.models.Account.objects.order_by().all()[self.get_random_index(self.account_count)]
+        index = self.get_random_index(self.account_count)
+        account = core.models.Account.objects.order_by().all()[index]
         self.call_and_assert_ok(url="accounts/{accountId}/publishergroups/", params={"accountId": account.id})
 
     def test_get_publisher_groups_details(self):
@@ -227,7 +228,7 @@ class APTSmokeTestPublishersTestCase(APTSmokeTestCase):
 
 class APTSmokeTestReportsTestCase(APTSmokeTestCase):
     def test_report_job_status(self):
-        report_job_count = get_count_estimate("restapi_reportjob")
+        report_job_count = dash.features.reports.reportjob.ReportJob.objects.latest("id").id
         report_job = dash.features.reports.reportjob.ReportJob.objects.order_by().all()[
             self.get_random_index(report_job_count)
         ]
