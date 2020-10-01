@@ -406,11 +406,6 @@
                     ></zem-media-sources>
                     <zem-checkbox-input
                         class="zem-checkbox-input zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_set_auto_add_new_sources'
-                            )
-                        "
                         [isChecked]="state.entity.autoAddNewSources"
                         [isDisabled]="isReadOnly"
                         [hasError]="
