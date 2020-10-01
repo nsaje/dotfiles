@@ -1,9 +1,9 @@
 from unittest import mock
 
+import oauth2_provider.models
 from django.test import RequestFactory
 from django.test import TestCase
 
-import utils.rest_common.authentication
 from utils.magic_mixer import magic_mixer
 
 from . import common
@@ -57,7 +57,7 @@ class ExtractRequestParamsTestCase(TestCase):
 
     def test_authenticator_oauth2(self):
         request = self.factory.get("/my/path")
-        request.successful_authenticator = utils.rest_common.authentication.OAuth2Authentication()
+        request.auth = oauth2_provider.models.AccessToken()
         self.assertEqual(common.extract_request_params(request)["authenticator"], "oauth2")
 
     def test_no_user(self):
