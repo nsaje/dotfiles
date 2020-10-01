@@ -14,6 +14,8 @@ def getPreviousBuildResult() {
     return ""
 }
 
+properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
+
 node {
     try {
         stage('Kill previous builds') {
