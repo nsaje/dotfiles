@@ -1,6 +1,6 @@
 import re
 
-import utils.rest_common.authentication
+import oauth2_provider.models
 
 ID_RE = re.compile("/[0-9]+(/|$)")
 UUID_RE = re.compile("/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}(/|$)")
@@ -11,9 +11,7 @@ TOKEN_RE = re.compile("/[0-9a-zA-Z]+(-[0-9a-zA-Z]+)+(/|$)")
 def extract_request_params(request, high_cardinality=False):
     user = getattr(request, "user", None)
     user_email = getattr(user, "email", "unknown")
-    is_oauth2 = isinstance(
-        getattr(request, "successful_authenticator", None), utils.rest_common.authentication.OAuth2Authentication
-    )
+    is_oauth2 = isinstance(getattr(request, "auth", None), oauth2_provider.models.AccessToken)
     authenticator = "oauth2" if is_oauth2 else "session"
     return dict(
         endpoint=getattr(request, "handler_class_name", None),
