@@ -258,15 +258,16 @@ def _join_to_existing_rows(breakdown, rows, pixels, pixel_rows_map):
 
 
 def _add_unjoined_conversions(breakdown, rows, pixels, pixel_rows_map):
+    additional_rows = {}
     for pixel_breakdown_key, pixel_rows in pixel_rows_map.items():
         slug = pixel_breakdown_key[-1]
         breakdown_key = pixel_breakdown_key[:-1]
         pixel = next((p for p in pixels if p.slug == slug), None)
         if not pixel:
             continue
-        row = dict(zip(breakdown, breakdown_key))
+        row = additional_rows.setdefault(breakdown_key, dict(zip(breakdown, breakdown_key)))
         _add_pixel_columns_to_row(row, pixel, pixel_rows)
-        rows.append(row)
+    rows.extend(additional_rows.values())
 
 
 def _add_pixel_columns_to_row(row, pixel, pixel_rows):
