@@ -67,17 +67,22 @@ def _update_account(account):
 def _recalculate_ad_group_amounts(campaign):
     for ad_group in campaign.adgroup_set.iterator(200):
         changes = ad_group.settings.recalculate_multicurrency_values()
-        _sanity_check(changes, ad_group.settings.multicurrency_fields)
+        _sanity_check(changes, ad_group.settings.multicurrency_fields, ad_group_id=ad_group.id)
         _recalculate_ad_group_sources_amounts(ad_group)
 
 
 def _recalculate_ad_group_sources_amounts(ad_group):
     for ad_group_source in ad_group.adgroupsource_set.all():
         changes = ad_group_source.settings.recalculate_multicurrency_values()
-        _sanity_check(changes, ad_group_source.settings.multicurrency_fields)
+        _sanity_check(
+            changes,
+            ad_group_source.settings.multicurrency_fields,
+            ad_group_id=ad_group.id,
+            ad_group_source_id=ad_group_source.id,
+        )
 
 
-def _sanity_check(changes, multicurrency_fields):
+def _sanity_check(changes, multicurrency_fields, ad_group_id=None, ad_group_source_id=None):
     if not changes:
         return
     changes.pop("cpc_cc", None)
@@ -88,5 +93,10 @@ def _sanity_check(changes, multicurrency_fields):
     changes.pop("delivery_type", None)
     if any(field not in multicurrency_fields for field in changes):
         invalid_field_set = set(changes) - set(multicurrency_fields)
-        logger.error("Attempted to change non-multicurrency fields!", fields=invalid_field_set)
+        logger.error(
+            "Attempted to change non-multicurrency fields!",
+            fields=invalid_field_set,
+            ad_group_id=ad_group_id,
+            ad_group_source_id=ad_group_source_id,
+        )
         raise ProgrammingError("Attempted to change non-multicurrency fields: %s" % invalid_field_set)
