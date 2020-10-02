@@ -65,7 +65,9 @@ class AdGroupManager(core.common.BaseManager):
             if initial_settings:
                 settings_updates = copy.copy(initial_settings)
                 self._set_initial_bids_if_necessary(ad_group, settings_updates)
-                ad_group.settings.update(request, **settings_updates, skip_field_change_validation_autopilot=True)
+                ad_group.settings.update(
+                    request, **settings_updates, skip_field_change_validation_autopilot=True, skip_automation=True
+                )  # automation is ran in _post_create
 
             if campaign.account_id != settings.HARDCODED_ACCOUNT_ID_OEN:
                 core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(

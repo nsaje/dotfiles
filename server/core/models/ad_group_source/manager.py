@@ -26,12 +26,6 @@ class AdGroupSourceManager(core.common.BaseManager):
             ad_review_only=ad_review_only,
         )
         ad_group_source.save(None)
-
-        ad_group_source.settings = core.models.settings.AdGroupSourceSettings(ad_group_source=ad_group_source)
-        ad_group_source.settings.update_unsafe(None, write_history=write_history)
-        ad_group_source.settings_id = ad_group_source.settings.id
-        ad_group_source.save(None)
-
         return ad_group_source
 
     @transaction.atomic
@@ -45,6 +39,7 @@ class AdGroupSourceManager(core.common.BaseManager):
         skip_validation=False,
         ad_review_only=False,
         skip_notification=False,
+        is_adgroup_creation=False,
         **updates
     ):
         try:
@@ -89,10 +84,15 @@ class AdGroupSourceManager(core.common.BaseManager):
 
         if not ad_group_source:
             ad_group_source = self._create(
-                ad_group, source, ad_review_only=ad_review_only, write_history=not ad_review_only
+                ad_group, source, ad_review_only=ad_review_only, write_history=write_history and not ad_review_only
             )
             ad_group_source.set_initial_settings(
-                request, ad_group, skip_notification=skip_notification, write_history=not ad_review_only, **updates
+                request,
+                ad_group,
+                skip_notification=skip_notification,
+                write_history=write_history and not ad_review_only,
+                is_adgroup_creation=is_adgroup_creation,
+                **updates
             )
         elif ad_group_source.ad_review_only and not ad_review_only:
             self._handle_ad_review_only(ad_group_source, skip_notification)
@@ -102,7 +102,7 @@ class AdGroupSourceManager(core.common.BaseManager):
         if write_history and not ad_review_only:
             ad_group.write_history_source_added(request, ad_group_source)
 
-        if settings.K1_CONSISTENCY_SYNC:
+        if not is_adgroup_creation:
             # circular dependency
             from dash import api
 
@@ -159,6 +159,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                     k1_sync=False,
                     skip_validation=True,
                     skip_notification=True,
+                    is_adgroup_creation=True,
                     **updates
                 )
                 added_ad_group_sources.append(ad_group_source)

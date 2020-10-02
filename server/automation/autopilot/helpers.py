@@ -133,6 +133,8 @@ def get_autopilot_active_sources_settings(
     ret = []
     for ags in adgroup_sources:
         agss = ags.settings
+        if not agss:
+            continue
         ad_group_settings = ad_groups_and_settings[agss.ad_group_source.ad_group]
         if ad_group_setting_state == dash.constants.AdGroupSettingsState.ACTIVE:
             if (

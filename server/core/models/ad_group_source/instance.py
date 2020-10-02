@@ -9,8 +9,13 @@ import dash.constants
 
 
 class AdGroupSourceInstanceMixin:
-    def set_initial_settings(self, request, ad_group, skip_notification=False, write_history=True, **updates):
+    def set_initial_settings(
+        self, request, ad_group, skip_notification=False, write_history=True, is_adgroup_creation=False, **updates
+    ):
         from dash.views import helpers
+
+        self.settings = core.models.settings.AdGroupSourceSettings(ad_group_source=self)
+        self.settings_id = self.settings.id
 
         if "cpc_cc" not in updates and "local_cpc_cc" not in updates:
             updates["cpc_cc"] = self.source.default_cpc_cc
@@ -44,9 +49,10 @@ class AdGroupSourceInstanceMixin:
         if "daily_budget_cc" not in updates and "local_daily_budget_cc" not in updates:
             updates["daily_budget_cc"] = self.source.default_daily_budget_cc
 
-        enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, [self])
-        if not enabling_autopilot_sources_allowed:
-            updates["state"] = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        if not is_adgroup_creation:
+            enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, [self])
+            if not enabling_autopilot_sources_allowed:
+                updates["state"] = dash.constants.AdGroupSourceSettingsState.INACTIVE
 
         self.settings.update(
             request,
@@ -58,9 +64,11 @@ class AdGroupSourceInstanceMixin:
             is_create=True,
             **updates
         )
+        self.save(None)
 
     def set_cloned_settings(self, request, source_ad_group_source):
-        source_ad_group_source_settings = source_ad_group_source.get_current_settings()
+        source_ad_group_source_settings = source_ad_group_source.settings
+        self.settings = core.models.settings.AdGroupSourceSettings(ad_group_source=self)
         self.settings.update(
             request,
             k1_sync=False,
@@ -72,6 +80,7 @@ class AdGroupSourceInstanceMixin:
             cpm=source_ad_group_source_settings.cpm,
             state=source_ad_group_source_settings.state,
         )
+        self.save(None)
 
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ""
