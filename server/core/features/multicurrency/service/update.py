@@ -91,6 +91,10 @@ def _sanity_check(changes, multicurrency_fields, ad_group_id=None, ad_group_sour
     changes.pop("local_max_cpm", None)
     # TODO temporary fix due to prodops hacks on arhived ad groups
     changes.pop("delivery_type", None)
+    # TODO: RTAP: daily_budget updated because of b1_sources_group_enabled=True
+    # and b1_sources_group_daily_budget != daily_budget
+    # remove after migration to RTA completed
+    changes.pop("local_daily_budget", None)
     if any(field not in multicurrency_fields for field in changes):
         invalid_field_set = set(changes) - set(multicurrency_fields)
         logger.error(

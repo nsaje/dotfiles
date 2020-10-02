@@ -134,7 +134,8 @@ class AdGroupSettings(
         "b1_sources_group_cpc_cc",
         "b1_sources_group_cpm",
     ]
-    history_fields = list(set(_settings_fields) - set(multicurrency_fields))
+    # TODO: RTAP: hack to disable daily_budget history on multicurrency update
+    history_fields = list(set(_settings_fields) - set(multicurrency_fields) - set(["local_daily_budget"]))
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey("dash.AdGroup", on_delete=models.PROTECT)
