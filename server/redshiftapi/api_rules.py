@@ -71,7 +71,11 @@ def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "breakdown": m.select_columns(subset=target_type_columns + breakdown_columns),
             "aggregates": m.select_columns(subset=aggregate_columns),
             "target_type_table": redshiftapi.view_selector.get_best_view_base(
-                [ttc.replace("publisher", "publisher_id") for ttc in target_type_columns] + breakdown_columns,
+                [
+                    ttc.replace("publisher", "publisher_id").replace("placement", "placement_id")
+                    for ttc in target_type_columns
+                ]
+                + breakdown_columns,
                 "publisher" in target_type_columns,
             ),
             "ad_group_ids": "{}".format(", ".join(str(ag.id) for ag in ad_groups)),
@@ -117,7 +121,11 @@ def _get_touchpoints_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "breakdown": m.select_columns(subset=target_type_columns + breakdown_columns),
             "aggregates": m.select_columns(subset=aggregate_columns),
             "target_type_table": redshiftapi.view_selector.get_best_view_touchpoints(
-                [ttc.replace("publisher", "publisher_id") for ttc in target_type_columns] + breakdown_columns
+                [
+                    ttc.replace("publisher", "publisher_id").replace("placement", "placement_id")
+                    for ttc in target_type_columns
+                ]
+                + breakdown_columns
             ),
             "ad_group_ids": "{}".format(", ".join(str(ag.id) for ag in ad_groups)),
             "last_day_key": automation.rules.constants.MetricWindow.LAST_DAY,

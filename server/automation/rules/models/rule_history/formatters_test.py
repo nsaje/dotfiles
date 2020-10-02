@@ -63,10 +63,10 @@ class RuleHistoryFormattersTestCase(TestCase):
         def get_mapping():
             return {}
 
-        formatter = formatters.get_add_to_publisher_formatter(get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT)
+        formatter = formatters.get_add_to_publisher_formatter("publishers", get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT)
         self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0, {}))
         self.assertEqual(
-            "Added publisher to the publisher group: www.cnn.com, www.bbc.com",
+            "Added publishers to the publisher group: www.cnn.com, www.bbc.com",
             formatter(
                 0, {"www.cnn.com": {"old_value": 1, "new_value": 2}, "www.bbc.com": {"old_value": 1, "new_value": 2}}
             ),

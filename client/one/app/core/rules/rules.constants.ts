@@ -2,6 +2,7 @@ export enum RuleTargetType {
     Ad = 'AD',
     AdGroup = 'AD_GROUP',
     AdGroupPublisher = 'PUBLISHER',
+    AdGroupPlacement = 'PLACEMENT',
     AdGroupCountry = 'COUNTRY',
     AdGroupRegion = 'STATE',
     AdGroupDma = 'DMA',

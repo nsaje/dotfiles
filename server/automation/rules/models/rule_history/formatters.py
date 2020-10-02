@@ -73,14 +73,14 @@ def get_blacklist_formatter(target, get_mapping, no_changes_text):
     return format
 
 
-def get_add_to_publisher_formatter(get_mapping, no_changes_text):
+def get_add_to_publisher_formatter(target, get_mapping, no_changes_text):
     def format(changes_step, changes):
         if not changes:
             return no_changes_text
 
         mapping = get_mapping()
-        message = "Added publisher to the publisher group: {}".format(
-            ", ".join(_get_changes_breakdown(changes, mapping))
+        message = "Added {} to the publisher group: {}".format(
+            target, ", ".join(_get_changes_breakdown(changes, mapping))
         )
         return message
 

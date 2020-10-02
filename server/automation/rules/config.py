@@ -61,6 +61,21 @@ VALID_ACTION_TYPES_FOR_TARGET = {
         constants.ActionType.DECREASE_BID_MODIFIER,
         constants.ActionType.TURN_OFF,
     ],
+    constants.TargetType.PLACEMENT: [
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.BLACKLIST,
+        constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+    ],
+}
+
+VALID_TARGET_TYPES_FOR_ACTION = {
+    action_type: [
+        target_type
+        for target_type in constants.TargetType.get_all()
+        if action_type in VALID_ACTION_TYPES_FOR_TARGET[target_type]
+    ]
+    for action_type in constants.ActionType.get_all()
 }
 
 ADJUSTMENT_ACTION_TYPE_PERCENTAGE = "percentage"
@@ -124,19 +139,9 @@ ADJUSTMENT_ACTION_TYPES = {
     ),
 }
 
-VALID_LEFT_OPERAND_TYPES = set(constants.MetricType.get_all()) - constants.CONTENT_AD_SETTINGS
-VALID_LEFT_OPERAND_TYPES_FOR_RULE_TARGET = {
-    constants.TargetType.AD_GROUP: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.AD: VALID_LEFT_OPERAND_TYPES | constants.CONTENT_AD_SETTINGS,
-    constants.TargetType.PUBLISHER: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.DEVICE: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.COUNTRY: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.STATE: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.DMA: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.OS: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.ENVIRONMENT: VALID_LEFT_OPERAND_TYPES,
-    constants.TargetType.SOURCE: VALID_LEFT_OPERAND_TYPES,
-}
+_VALID_LEFT_OPERAND_TYPES = set(constants.MetricType.get_all()) - constants.CONTENT_AD_SETTINGS
+VALID_LEFT_OPERAND_TYPES_FOR_RULE_TARGET = {t: set(_VALID_LEFT_OPERAND_TYPES) for t in constants.TargetType.get_all()}
+VALID_LEFT_OPERAND_TYPES_FOR_RULE_TARGET[constants.TargetType.AD] |= constants.CONTENT_AD_SETTINGS
 
 VALID_RIGHT_OPERAND_TYPES = {constants.ValueType.ABSOLUTE}
 

@@ -21,6 +21,7 @@ class TargetType(ConstantBase):
     OS = 8
     ENVIRONMENT = 9
     SOURCE = 10
+    PLACEMENT = 11
 
     _VALUES = {
         AD_GROUP: "Ad group",
@@ -33,6 +34,7 @@ class TargetType(ConstantBase):
         OS: "Operating system",
         ENVIRONMENT: "Environment",
         SOURCE: "Source",
+        PLACEMENT: "Placement",
     }
 
 
@@ -47,6 +49,7 @@ TARGET_TYPE_STATS_MAPPING = {
     TargetType.OS: ["device_os"],
     TargetType.ENVIRONMENT: ["environment"],
     TargetType.SOURCE: ["source_id"],
+    TargetType.PLACEMENT: ["publisher", "source_id", "placement"],
 }
 
 
@@ -59,6 +62,7 @@ TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING = {
     TargetType.DMA: core.features.bid_modifiers.constants.BidModifierType.DMA,
     TargetType.OS: core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
     TargetType.ENVIRONMENT: core.features.bid_modifiers.constants.BidModifierType.ENVIRONMENT,
+    TargetType.PLACEMENT: core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
     TargetType.SOURCE: core.features.bid_modifiers.constants.BidModifierType.SOURCE,
 }
 

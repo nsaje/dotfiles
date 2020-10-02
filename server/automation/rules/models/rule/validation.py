@@ -232,7 +232,7 @@ class RuleValidationMixin:
                 raise exceptions.InvalidPublisherGroup("Please specify a publisher group.")
 
             target_type = changes.get("target_type", self.target_type)
-            if target_type != constants.TargetType.PUBLISHER:
+            if target_type not in config.VALID_TARGET_TYPES_FOR_ACTION[constants.ActionType.ADD_TO_PUBLISHER_GROUP]:
                 raise exceptions.InvalidPublisherGroup("Invalid target type")
 
             agency = changes.get("agency", self.agency)

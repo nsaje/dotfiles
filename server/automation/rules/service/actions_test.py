@@ -9,6 +9,7 @@ import core.features.publisher_groups
 import core.models
 import dash.constants
 import dash.features.geolocation
+import dash.publisher_helpers
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
@@ -84,6 +85,15 @@ class ActionsTest(TestCase):
                 "target": str(source.id),
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,
                 "bid_modifier_target": str(source.id),
+            },
+            {
+                "target_type": constants.TargetType.PLACEMENT,
+                "target": dash.publisher_helpers.create_placement_id("zemanta.com", source.id, "100001-1001633"),
+                "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
+                "bid_modifier_target": dash.publisher_helpers.create_placement_id(
+                    "zemanta.com", source.id, "100001-1001633"
+                ),
+                "source": source,
             },
         ]
         test_functions = [
@@ -689,6 +699,30 @@ class BlacklistTestCase(TestCase):
             [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
         )
 
+    def test_blacklist_placement(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.BLACKLIST,
+            target_type=constants.TargetType.PLACEMENT,
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+
+        actions.blacklist("publisher1.com__" + str(self.source.id) + "__00000-00000", rule, self.ad_group)
+        self.assertCountEqual(
+            self.ad_group.default_blacklist.entries.all().values(
+                "publisher", "include_subdomains", "source", "placement"
+            ),
+            [
+                {
+                    "publisher": "publisher1.com",
+                    "source": self.source.id,
+                    "include_subdomains": False,
+                    "placement": "00000-00000",
+                }
+            ],
+        )
+
     def test_invalid_action_type(self):
         rule = magic_mixer.blend(
             Rule,
@@ -732,6 +766,28 @@ class AddToPublisherGroupTestCase(TestCase):
         self.assertCountEqual(
             self.publisher_group.entries.all().values("publisher", "include_subdomains", "source"),
             [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
+        )
+
+    def test_add_placement_to_publisher_group(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            publisher_group=self.publisher_group,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            target_type=constants.TargetType.PLACEMENT,
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+        actions.add_to_publisher_group("publisher1.com__" + str(self.source.id) + "__00000-00000", rule, self.ad_group)
+        self.assertCountEqual(
+            self.publisher_group.entries.all().values("publisher", "include_subdomains", "source", "placement"),
+            [
+                {
+                    "publisher": "publisher1.com",
+                    "source": self.source.id,
+                    "include_subdomains": False,
+                    "placement": "00000-00000",
+                }
+            ],
         )
 
     def test_add_to_publisher_group_twice(self):

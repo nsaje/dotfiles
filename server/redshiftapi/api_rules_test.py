@@ -33,6 +33,11 @@ class ApiRulesTest(TestCase):
                 "fields": "publisher AS publisher, source_id AS source_id",
             },
             {
+                "target_type": automation.rules.constants.TargetType.PLACEMENT,
+                "table": "mv_adgroup_placement",
+                "fields": "publisher AS publisher, source_id AS source_id, placement AS placement",
+            },
+            {
                 "target_type": automation.rules.constants.TargetType.DEVICE,
                 "table": "mv_adgroup_device",
                 "fields": "device_type AS device_type",
@@ -583,6 +588,7 @@ local_video_etfm_cpcv
             {"target_type": automation.rules.constants.TargetType.OS, "name": "os"},
             {"target_type": automation.rules.constants.TargetType.ENVIRONMENT, "name": "environment"},
             {"target_type": automation.rules.constants.TargetType.SOURCE, "name": "source"},
+            {"target_type": automation.rules.constants.TargetType.PLACEMENT, "name": "placement"},
         ]
 
         for test_case in test_cases:

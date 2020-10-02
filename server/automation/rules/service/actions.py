@@ -10,8 +10,10 @@ import core.features.publisher_groups
 import core.models
 import dash.constants
 import utils.email_helper
+from dash import publisher_helpers
 
 from .. import Rule
+from .. import config
 from .. import constants
 from ..common import macros
 from . import helpers
@@ -83,14 +85,17 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, 
     if rule.target_type == constants.TargetType.PUBLISHER:
         target, source_id = target.split("__")
 
+    if rule.target_type == constants.TargetType.PLACEMENT:
+        source_id = target.split("__")[1]
+
     bid_modifier_type = constants.TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING[rule.target_type]
     target = core.features.bid_modifiers.StatsConverter.to_target(
         bid_modifier_type, int(target) if target.isdigit() else target
     )
 
-    source = (
-        core.models.Source.objects.get(id=source_id) if rule.target_type == constants.TargetType.PUBLISHER else None
-    )
+    source = None
+    if rule.target_type in [constants.TargetType.PUBLISHER, constants.TargetType.PLACEMENT]:
+        source = core.models.Source.objects.get(id=source_id)
 
     try:
         base_modifier = core.features.bid_modifiers.BidModifier.objects.values_list("modifier", flat=True).get(
@@ -164,14 +169,11 @@ def blacklist(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) 
     if rule.action_type != constants.ActionType.BLACKLIST:
         raise Exception("Invalid action type for blacklisting")
 
-    if rule.target_type != constants.TargetType.PUBLISHER:
+    if rule.target_type not in config.VALID_TARGET_TYPES_FOR_ACTION[constants.ActionType.BLACKLIST]:
         raise Exception("Invalid blacklist target")
 
-    publisher, source_id = target.split("__")
-    source = core.models.Source.objects.get(id=source_id)
-
-    entry_dict = {"publisher": publisher, "source": source, "include_subdomains": False}
-    core.features.publisher_groups.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
+    entries = _prepare_publisher_placement_entries(target, rule)
+    core.features.publisher_groups.blacklist_publishers(None, entries, ad_group, should_write_history=False)
     return ValueChangeData(
         target=target,
         old_value=dash.constants.PublisherStatus.ENABLED,
@@ -183,14 +185,28 @@ def add_to_publisher_group(target: str, rule: Rule, ad_group: core.models.AdGrou
     if rule.action_type != constants.ActionType.ADD_TO_PUBLISHER_GROUP:
         raise Exception("Invalid action type for adding to publisher group")
 
-    if rule.target_type != constants.TargetType.PUBLISHER:
+    if rule.target_type not in config.VALID_TARGET_TYPES_FOR_ACTION[constants.ActionType.ADD_TO_PUBLISHER_GROUP]:
         raise Exception("Invalid add to publisher group target")
 
-    publisher, source_id = target.split("__")
-    source = core.models.Source.objects.get(id=source_id)
-
-    entries = [{"publisher": publisher, "source": source, "include_subdomains": False}]
+    entries = _prepare_publisher_placement_entries(target, rule)
     core.features.publisher_groups.add_publisher_group_entries(
         None, rule.publisher_group, entries, should_write_history=False
     )
     return ValueChangeData(target=target, old_value=None, new_value="Added to publisher group")
+
+
+def _prepare_publisher_placement_entries(target: str, rule: Rule):
+    placement = None
+    if rule.target_type == constants.TargetType.PUBLISHER:
+        publisher, source_id = publisher_helpers.dissect_publisher_id(target)
+    elif rule.target_type == constants.TargetType.PLACEMENT:
+        publisher, source_id, placement = publisher_helpers.dissect_placement_id(target)
+    else:
+        raise Exception("Invalid target type")
+
+    source = core.models.Source.objects.get(id=source_id)
+
+    entry = {"publisher": publisher, "source": source, "include_subdomains": False}
+    if placement:
+        entry["placement"] = placement
+    return [entry]

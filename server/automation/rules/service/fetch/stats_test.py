@@ -845,6 +845,7 @@ class AddMissingTargetsTest(TestCase):
             constants.TargetType.DMA,
             constants.TargetType.OS,
             constants.TargetType.ENVIRONMENT,
+            constants.TargetType.PLACEMENT,
         ]:
             empty_stats = {}
             stats._add_missing_targets(target_type, [self.ad_group], empty_stats)

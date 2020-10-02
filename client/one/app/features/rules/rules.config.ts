@@ -86,6 +86,28 @@ export const RULE_TARGET_TYPES = [
         ],
     },
     {
+        label: 'Ad group / placements',
+        value: RuleTargetType.AdGroupPlacement,
+        availableActions: [
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase placement bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease placement bid modifier',
+            },
+            {
+                type: RuleActionType.Blacklist,
+                label: 'Blacklist placement',
+            },
+            {
+                type: RuleActionType.AddToPublisherGroup,
+                label: 'Add placement to publisher group',
+            },
+        ],
+    },
+    {
         label: 'Ad group / devices',
         value: RuleTargetType.AdGroupDevice,
         availableActions: [

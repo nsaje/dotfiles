@@ -48,7 +48,7 @@ FORMATTED_CHANGES_TEMPLATES = {
             "publishers", mapping.get_empty_map, "Automation rule didn’t match for any publisher."
         ),
         constants.ActionType.ADD_TO_PUBLISHER_GROUP: formatters.get_add_to_publisher_formatter(
-            mapping.get_empty_map, "Automation rule didn’t match for any publisher."
+            "publishers", mapping.get_empty_map, "Automation rule didn’t match for any publisher."
         ),
     },
     constants.TargetType.DEVICE: {
@@ -126,6 +126,20 @@ FORMATTED_CHANGES_TEMPLATES = {
         ),
         constants.ActionType.TURN_OFF: formatters.get_paused_formatter(
             "media sources", mapping.get_sources_map, "Automation rule didn’t match for any media source."
+        ),
+    },
+    constants.TargetType.PLACEMENT: {
+        constants.ActionType.INCREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Increased", "on placements", mapping.get_empty_map, "Automation rule didn’t match for any placement."
+        ),
+        constants.ActionType.DECREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Decreased", "on placements", mapping.get_empty_map, "Automation rule didn’t match for any placement."
+        ),
+        constants.ActionType.BLACKLIST: formatters.get_blacklist_formatter(
+            "placements", mapping.get_empty_map, "Automation rule didn’t match for any placement."
+        ),
+        constants.ActionType.ADD_TO_PUBLISHER_GROUP: formatters.get_add_to_publisher_formatter(
+            "placements", mapping.get_empty_map, "Automation rule didn’t match for any placement."
         ),
     },
 }
