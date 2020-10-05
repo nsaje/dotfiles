@@ -25,6 +25,8 @@ class TargetConverter:
         constants.BidModifierType.AD: "_from_content_ad_target",
         constants.BidModifierType.DAY_HOUR: "_from_day_hour_target",
         constants.BidModifierType.PLACEMENT: "_from_placement_target",
+        constants.BidModifierType.BROWSER: "_from_browser_target",
+        constants.BidModifierType.CONNECTION_TYPE: "_from_connection_type_target",
     }
     _to_target_map = {
         constants.BidModifierType.PUBLISHER: "_to_publisher_target",
@@ -38,6 +40,8 @@ class TargetConverter:
         constants.BidModifierType.AD: "_to_content_ad_target",
         constants.BidModifierType.DAY_HOUR: "_to_day_hour_target",
         constants.BidModifierType.PLACEMENT: "_to_placement_target",
+        constants.BidModifierType.BROWSER: "_to_browser_target",
+        constants.BidModifierType.CONNECTION_TYPE: "_to_connection_type_target",
     }
 
     @classmethod
@@ -205,6 +209,36 @@ class TargetConverter:
     @classmethod
     def _from_content_ad_target(cls, target):
         return target
+
+    @classmethod
+    def _to_browser_target(cls, value):
+        if value == dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.UNKNOWN):
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Browser Target")
+
+        browser = dash_constants.BrowserFamily.get_constant_value(value)
+        if browser is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Browser")
+
+        return browser
+
+    @classmethod
+    def _from_browser_target(cls, target):
+        return dash_constants.BrowserFamily.get_name(target)
+
+    @classmethod
+    def _to_connection_type_target(cls, value):
+        if value == dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.UNKNOWN):
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Connection Type")
+
+        connection_type = dash_constants.ConnectionType.get_constant_value(value)
+        if connection_type is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Connection Type")
+
+        return connection_type
+
+    @classmethod
+    def _from_connection_type_target(cls, target):
+        return dash_constants.ConnectionType.get_name(target)
 
 
 class FileConverter(TargetConverter):

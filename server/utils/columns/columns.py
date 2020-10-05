@@ -73,6 +73,8 @@ _FIELD_MAPPING = {
     "device_type": ("Device",),
     "device_os": ("Operating System",),
     "environment": ("Environment",),
+    "browser": ("Browser",),
+    "connection_type": ("Connection Type",),
     "zem_placement_type": ("Zemanta Placement Type",),
     "placement_id": ("Placement Id",),
     "placement": ("Placement",),

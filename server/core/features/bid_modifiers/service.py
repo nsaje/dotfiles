@@ -560,6 +560,19 @@ def make_csv_example_file(modifier_type):
         constants.BidModifierType.DMA: [{target_column_name: "765"}],
         constants.BidModifierType.AD: [{target_column_name: "1"}],
         constants.BidModifierType.DAY_HOUR: [{target_column_name: "MONDAY_0"}, {target_column_name: "SUNDAY_23"}],
+        constants.BidModifierType.BROWSER: [
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.CHROME)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.FIREFOX)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.SAFARI)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.IE)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.SAMSUNG)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.OPERA)},
+            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.EDGE)},
+        ],
+        constants.BidModifierType.CONNECTION_TYPE: [
+            {target_column_name: dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.WIFI)},
+            {target_column_name: dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.CELLULAR)},
+        ],
     }
 
     entries = modifier_type_map[modifier_type]

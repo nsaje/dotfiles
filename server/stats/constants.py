@@ -22,8 +22,10 @@ class DeliveryDimension:
     DEVICE = "device_type"
     DEVICE_OS = "device_os"
     DEVICE_OS_VERSION = "device_os_version"
-
     ENVIRONMENT = "environment"
+    BROWSER = "browser"
+    CONNECTION_TYPE = "connection_type"
+
     ZEM_PLACEMENT_TYPE = "zem_placement_type"
     VIDEO_PLAYBACK_METHOD = "video_playback_method"
 
@@ -40,6 +42,8 @@ class DeliveryDimension:
         DEVICE_OS,
         DEVICE_OS_VERSION,
         ENVIRONMENT,
+        BROWSER,
+        CONNECTION_TYPE,
         ZEM_PLACEMENT_TYPE,
         VIDEO_PLAYBACK_METHOD,
         COUNTRY,
@@ -73,8 +77,10 @@ PLACEMENT = StructureDimension.PLACEMENT
 DEVICE = DeliveryDimension.DEVICE
 DEVICE_OS = DeliveryDimension.DEVICE_OS
 DEVICE_OS_VERSION = DeliveryDimension.DEVICE_OS_VERSION
-
 ENVIRONMENT = DeliveryDimension.ENVIRONMENT
+BROWSER = DeliveryDimension.BROWSER
+CONNECTION_TYPE = DeliveryDimension.CONNECTION_TYPE
+
 ZEM_PLACEMENT_TYPE = DeliveryDimension.ZEM_PLACEMENT_TYPE
 VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
@@ -122,6 +128,8 @@ DeliveryDimensionConstantClassMap = {
     DeliveryDimension.DEVICE: dash.constants.DeviceType,
     DeliveryDimension.DEVICE_OS: dash.constants.OperatingSystem,
     DeliveryDimension.ENVIRONMENT: dash.constants.Environment,
+    DeliveryDimension.BROWSER: dash.constants.BrowserFamily,
+    DeliveryDimension.CONNECTION_TYPE: dash.constants.ConnectionType,
 }
 
 
@@ -229,4 +237,6 @@ TargetDimensionToBidModifierTypeMap = {
     DeliveryDimension.DMA: bid_modifiers.BidModifierType.DMA,
     StructureDimension.CONTENT_AD: bid_modifiers.BidModifierType.AD,
     StructureDimension.PLACEMENT: bid_modifiers.BidModifierType.PLACEMENT,
+    DeliveryDimension.BROWSER: bid_modifiers.BidModifierType.BROWSER,
+    DeliveryDimension.CONNECTION_TYPE: bid_modifiers.BidModifierType.CONNECTION_TYPE,
 }

@@ -296,7 +296,16 @@ class BreakdownAllowedTest(TestCase):
             permission_filter.validate_breakdown_by_structure(["account_id", "day", "device_type"])
 
     def test_validate_first_level_environment_breakdown_structure(self):
-        delivery_fields = ["device_type", "device_os", "environment", "country", "region", "dma"]
+        delivery_fields = [
+            "device_type",
+            "device_os",
+            "environment",
+            "country",
+            "region",
+            "dma",
+            "browser",
+            "connection_type",
+        ]
         for field in delivery_fields:
             permission_filter.validate_breakdown_by_structure([field])
 

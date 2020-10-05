@@ -167,6 +167,8 @@ formatters[constants.DeliveryDimension.DEVICE_OS_VERSION] = get_dash_constant_fo
     dash.constants.OperatingSystemVersion
 )
 formatters[constants.DeliveryDimension.ENVIRONMENT] = get_dash_constant_formatter(dash.constants.Environment)
+formatters[constants.DeliveryDimension.BROWSER] = get_dash_constant_formatter(dash.constants.BrowserFamily)
+formatters[constants.DeliveryDimension.CONNECTION_TYPE] = get_dash_constant_formatter(dash.constants.ConnectionType)
 formatters[constants.DeliveryDimension.ZEM_PLACEMENT_TYPE] = get_dash_constant_formatter(
     dash.constants.ZemPlacementType
 )

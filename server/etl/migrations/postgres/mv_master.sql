@@ -79,7 +79,11 @@ CREATE TABLE IF NOT EXISTS mv_master (
 
     local_base_effective_cost_nano bigint,
     local_base_effective_data_cost_nano bigint,
-    local_service_fee_nano bigint
+    local_service_fee_nano bigint,
+
+    -- kw::dimensions
+    browser varchar(127),
+    connection_type varchar(127)
     -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_main_idx ON mv_master (source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, date);

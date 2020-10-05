@@ -492,6 +492,24 @@ class ReportsGetReportCSVTestCase(DASHAPITestCase):
         expected = """"Placement Id","Placement","Placement Type","Publisher Id","Publisher","Link","Source ID","Media Source","Source Slug","Ad Group Id","Status","Blacklisted Level","Publisher Status","Clicks"\r\n"pubx.com__2__plac1","plac1","In feed","pubx.com__2","pubx.com","http://pubx.com","2","Gravity","gravity","1","ACTIVE","","ACTIVE","1"\r\n"""
         self.assertEqual(expected, output)
 
+    @mock.patch("stats.api_reports.query")
+    def test_browser(self, mock_query):
+        self.reportJob.query = self.build_query(["Browser"])
+        row = {"browser": "CHROME", "etfm_cost": Decimal("12.3"), "clicks": 5}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Browser","Browser Name"\r\n"CHROME","Chrome"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("stats.api_reports.query")
+    def test_connection_type(self, mock_query):
+        self.reportJob.query = self.build_query(["Connection Type"])
+        row = {"connection_type": "wifi", "etfm_cost": Decimal("12.3"), "clicks": 5}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Connection Type","Connection Type Name"\r\n"WIFI","Wi-Fi"\r\n"""
+        self.assertEqual(expected, output)
+
 
 class IncludeEntityTagsReportTestCase(DASHAPITestCase):
     def setUp(self):

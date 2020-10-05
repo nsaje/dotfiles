@@ -55,6 +55,8 @@ FIELD_PERMISSION_MAPPING = {
     "account_type": ("zemauth.can_see_account_type",),
     "salesforce_url": ("zemauth.can_see_salesforce_url",),
     "sspd_url": ("zemauth.can_see_sspd_url",),
+    "browser": ("zemauth.can_use_browser_targeting",),
+    "connection_type": ("zemauth.can_use_connection_type_targeting",),
     # entity tags
     "agency_tags": ("zemauth.can_include_tags_in_reports",),
     "account_tags": ("zemauth.can_include_tags_in_reports",),

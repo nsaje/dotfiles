@@ -141,7 +141,9 @@ INSERT INTO mv_master (
                     (nvl(a.spend, 0) + nvl(a.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) -- effective spend
                 ) * cf.pct_service_fee::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
-        ) as local_service_fee_nano
+        ) as local_service_fee_nano,
+        a.browser,
+        a.connection_type
     FROM
         (
             SELECT
@@ -190,6 +192,15 @@ INSERT INTO mv_master (
                     WHEN NULLIF(TRIM(device_os_version), '') IS NOT NULL THEN 'Other'
                     ELSE NULL
                 END AS device_os_version,
+
+                CASE WHEN browser = 'ucBrowser' THEN 'UC_BROWSER'
+                    ELSE NULLIF(TRIM(UPPER(browser)), '')
+                END as browser,
+
+                CASE WHEN connection_type IN ('cableDSL', 'corporate', 'dialup') THEN 'wifi'
+                    WHEN connection_type = 'cellular' THEN 'cellular'
+                    ELSE NULL
+                END as connection_type,
 
                 CASE WHEN environment IN (
                         {% for environment in valid_environments %}

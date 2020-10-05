@@ -67,6 +67,8 @@ def get_target_dimension_mapping(target_dimension):
         constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
         constants.DeliveryDimension.DEVICE_OS: dash_constants.OperatingSystem,
         constants.DeliveryDimension.ENVIRONMENT: dash_constants.Environment,
+        constants.DeliveryDimension.BROWSER: dash_constants.BrowserFamily,
+        constants.DeliveryDimension.CONNECTION_TYPE: dash_constants.ConnectionType,
         constants.DeliveryDimension.ZEM_PLACEMENT_TYPE: dash_constants.ZemPlacementType,
         constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD: dash_constants.VideoPlaybackMethod,
         constants.DeliveryDimension.COUNTRY: dash_constants.AdTargetLocation,

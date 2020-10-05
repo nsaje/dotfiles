@@ -74,7 +74,16 @@ INSERT INTO mv_touchpointconversions (
 
         a.type as type,
         CASE WHEN TRIM(a.placement)='' THEN NULL ELSE a.placement END AS placement,
-        NULLIF(a.placement_type, 0) as placement_type
+        NULLIF(a.placement_type, 0) as placement_type,
+
+        CASE WHEN a.browser = 'ucBrowser' THEN 'UC_BROWSER'
+            ELSE NULLIF(TRIM(UPPER(a.browser)), '')
+        END as browser,
+
+        CASE WHEN a.connection_type IN ('cableDSL', 'corporate', 'dialup') THEN 'wifi'
+            WHEN a.connection_type = 'cellular' THEN 'cellular'
+            ELSE NULL
+        END as connection_type,
     FROM (
         SELECT
               c.date as date,
@@ -88,6 +97,8 @@ INSERT INTO mv_touchpointconversions (
               c.device_os as device_os,
               c.device_os_version as device_os_version,
               c.environment as environment,
+              c.browser as browser,
+              c.connection_type as connection_type,
 
               c.country as country,
               c.state as state,

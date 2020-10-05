@@ -80,8 +80,8 @@ MATERIALIZED_VIEWS = [
     ),
     MasterDerivedView.create(
         table_name="mv_contentad_device",
-        breakdown=AD_BREAKDOWN + ["device_type", "device_os"],
-        sortkey=AD_BREAKDOWN + ["device_type", "device_os"],
+        breakdown=AD_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
+        sortkey=AD_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
         distkey="content_ad_id",
     ),
     MasterDerivedView.create(
@@ -111,9 +111,11 @@ MATERIALIZED_VIEWS = [
     TouchpointConversionsDerivedView.create(
         table_name="mv_contentad_touch_device",
         breakdown=AD_BREAKDOWN
-        + ["device_type", "device_os"]
+        + ["device_type", "device_os", "browser", "connection_type"]
         + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=AD_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        sortkey=AD_BREAKDOWN
+        + ["device_type", "device_os", "browser", "connection_type"]
+        + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -137,8 +139,8 @@ MATERIALIZED_VIEWS = [
     ),
     MasterDerivedView.create(
         table_name="mv_adgroup_device",
-        breakdown=AD_GROUP_BREAKDOWN + ["device_type", "device_os"],
-        sortkey=AD_GROUP_BREAKDOWN + ["device_type", "device_os"],
+        breakdown=AD_GROUP_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
+        sortkey=AD_GROUP_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
         distkey="ad_group_id",
     ),
     MasterDerivedView.create(
@@ -168,9 +170,11 @@ MATERIALIZED_VIEWS = [
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_device",
         breakdown=AD_GROUP_BREAKDOWN
-        + ["device_type", "device_os"]
+        + ["device_type", "device_os", "browser", "connection_type"]
         + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=AD_GROUP_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        sortkey=AD_GROUP_BREAKDOWN
+        + ["device_type", "device_os", "browser", "connection_type"]
+        + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -194,8 +198,8 @@ MATERIALIZED_VIEWS = [
     ),
     MasterDerivedView.create(
         table_name="mv_campaign_device",
-        breakdown=CAMPAIGN_BREAKDOWN + ["device_type", "device_os"],
-        sortkey=CAMPAIGN_BREAKDOWN + ["device_type", "device_os"],
+        breakdown=CAMPAIGN_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
+        sortkey=CAMPAIGN_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
         distkey="campaign_id",
     ),
     MasterDerivedView.create(
@@ -225,9 +229,11 @@ MATERIALIZED_VIEWS = [
     TouchpointConversionsDerivedView.create(
         table_name="mv_campaign_touch_device",
         breakdown=CAMPAIGN_BREAKDOWN
-        + ["device_type", "device_os"]
+        + ["device_type", "device_os", "browser", "connection_type"]
         + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=CAMPAIGN_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        sortkey=CAMPAIGN_BREAKDOWN
+        + ["device_type", "device_os", "browser", "connection_type"]
+        + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -252,8 +258,8 @@ MATERIALIZED_VIEWS = [
     ),
     MasterDerivedView.create(
         table_name="mv_account_device",
-        breakdown=ACCOUNT_BREAKDOWN + ["device_type", "device_os"],
-        sortkey=ACCOUNT_BREAKDOWN + ["device_type", "device_os"],
+        breakdown=ACCOUNT_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
+        sortkey=ACCOUNT_BREAKDOWN + ["device_type", "device_os", "browser", "connection_type"],
         distkey="account_id",
     ),
     MasterDerivedView.create(
@@ -283,9 +289,11 @@ MATERIALIZED_VIEWS = [
     TouchpointConversionsDerivedView.create(
         table_name="mv_account_touch_device",
         breakdown=ACCOUNT_BREAKDOWN
-        + ["device_type", "device_os"]
+        + ["device_type", "device_os", "browser", "connection_type"]
         + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=ACCOUNT_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        sortkey=ACCOUNT_BREAKDOWN
+        + ["device_type", "device_os", "browser", "connection_type"]
+        + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(

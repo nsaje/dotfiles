@@ -249,6 +249,8 @@ class MVMaster(BreakdownsBase):
     device_os = backtosql.Column("device_os", BREAKDOWN, null_type=str)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null_type=str)
     environment = backtosql.Column("environment", BREAKDOWN, null_type=str)
+    browser = backtosql.Column("browser", BREAKDOWN, null_type=str)
+    connection_type = backtosql.Column("connection_type", BREAKDOWN, null_type=str)
 
     zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN)
     video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN)
@@ -560,6 +562,8 @@ class MVTouchpointConversions(BreakdownsBase):
     device_os = backtosql.Column("device_os", BREAKDOWN, null_type=str)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null_type=str)
     environment = backtosql.Column("environment", BREAKDOWN, null_type=str)
+    browser = backtosql.Column("browser", BREAKDOWN, null_type=str)
+    connection_type = backtosql.Column("connection_type", BREAKDOWN, null_type=str)
 
     country = backtosql.Column("country", BREAKDOWN, null_type=str)
     region = backtosql.Column("state", BREAKDOWN, null_type=str)

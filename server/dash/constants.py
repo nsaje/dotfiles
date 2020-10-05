@@ -2349,7 +2349,7 @@ class BrowserFamily(ConstantBase):
     EDGE = "EDGE"
 
     _VALUES = {
-        UNKNOWN: "Unknown",
+        UNKNOWN: "Not reported",
         OTHER: "Other",
         CHROME: "Chrome",
         FIREFOX: "Firefox",
@@ -2377,7 +2377,7 @@ class ConnectionType(ConstantBase):
     WIFI = "wifi"
     CELLULAR = "cellular"
 
-    _VALUES = {UNKNOWN: "Unknown", WIFI: "Wi-Fi", CELLULAR: "Cellular"}
+    _VALUES = {UNKNOWN: "Not reported", WIFI: "Wi-Fi", CELLULAR: "Cellular"}
 
 
 class PlacementType(ConstantBase):

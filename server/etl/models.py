@@ -75,6 +75,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     device_os = backtosql.Column("device_os", BREAKDOWN)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN)
     environment = backtosql.Column("environment", BREAKDOWN)
+    browser = backtosql.Column("browser", BREAKDOWN)
+    connection_type = backtosql.Column("connection_type", BREAKDOWN)
 
     zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN)
     video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN)
@@ -251,6 +253,8 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     device_os = backtosql.Column("device_os", BREAKDOWN)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN)
     environment = backtosql.Column("environment", BREAKDOWN)
+    browser = backtosql.Column("browser", BREAKDOWN)
+    connection_type = backtosql.Column("connection_type", BREAKDOWN)
 
     country = backtosql.Column("country", BREAKDOWN)
     state = backtosql.Column("state", BREAKDOWN)

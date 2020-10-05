@@ -264,7 +264,7 @@ class AdGroupClone(TestCase):
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
         self.assertEqual(source_ad_group.bidmodifier_set.count() - 1, ad_group.bidmodifier_set.count())
-        self.assertEqual(10, ad_group.bidmodifier_set.count())
+        self.assertEqual(12, ad_group.bidmodifier_set.count())
         self.assertTrue(
             1,
             source_ad_group.bidmodifier_set.filter(

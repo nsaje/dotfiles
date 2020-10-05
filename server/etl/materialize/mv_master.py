@@ -191,7 +191,9 @@ class MasterView(Materialize):
                         0,  # service_fee_nano
                         0,  # local_base_effective_cost_nano
                         0,  # local_base_effective_data_cost_nano
-                        0,  # local_service_fee_nano
+                        0,  # local_service_fee_nano,
+                        dash.constants.BrowserFamily.UNKNOWN,
+                        dash.constants.ConnectionType.UNKNOWN,
                     ),
                     (row.conversions, row.postclick_source),
                 )

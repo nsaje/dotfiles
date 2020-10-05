@@ -15,6 +15,8 @@ class BidModifierType(ConstantBase):
     AD = 9
     DAY_HOUR = 10
     PLACEMENT = 11
+    BROWSER = 12
+    CONNECTION_TYPE = 13
 
     _VALUES = {
         PUBLISHER: "Publisher",
@@ -28,4 +30,6 @@ class BidModifierType(ConstantBase):
         AD: "Ad",
         DAY_HOUR: "Day - Hour",
         PLACEMENT: "Placement",
+        BROWSER: "Browser",
+        CONNECTION_TYPE: "Connection Type",
     }

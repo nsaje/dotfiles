@@ -28,6 +28,8 @@ _BREAKDOWN_NAME_MAP = {
     stats_constants.DeliveryDimension.DMA: constants.BidModifierType.DMA,
     stats_constants.DimensionIdentifier.CONTENT_AD: constants.BidModifierType.AD,
     stats_constants.DimensionIdentifier.PLACEMENT: constants.BidModifierType.PLACEMENT,
+    stats_constants.DeliveryDimension.BROWSER: constants.BidModifierType.BROWSER,
+    stats_constants.DeliveryDimension.CONNECTION_TYPE: constants.BidModifierType.CONNECTION_TYPE,
 }
 
 

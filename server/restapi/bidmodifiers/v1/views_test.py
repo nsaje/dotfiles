@@ -509,7 +509,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
                 "details": {
                     "modifier": ["Ensure this value is less than or equal to 11.0."],
                     "type": [
-                        "Invalid choice INVALID! Valid choices: PUBLISHER, SOURCE, DEVICE, OPERATING_SYSTEM, ENVIRONMENT, COUNTRY, STATE, DMA, AD, DAY_HOUR, PLACEMENT"
+                        "Invalid choice INVALID! Valid choices: PUBLISHER, SOURCE, DEVICE, OPERATING_SYSTEM, ENVIRONMENT, COUNTRY, STATE, DMA, AD, DAY_HOUR, PLACEMENT, BROWSER, CONNECTION_TYPE"
                     ],
                 },
             },
