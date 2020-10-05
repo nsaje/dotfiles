@@ -27,7 +27,7 @@ class APTSmokeTestCase(APTTestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = z1_client.Z1Client("eqWbmcKR7hDbf1ZjLS2ZpKR5oddOv8ZCfiybZ0f7", SECRET)
-        cls.account_count = get_count_estimate("dash_account")
+        cls.account_count = core.models.Account.objects.count()
         cls.audience_count = get_count_estimate("dash_audience")
         cls.campaign_count = get_count_estimate("dash_campaign")
         cls.ad_group_count = get_count_estimate("dash_adgroup")
