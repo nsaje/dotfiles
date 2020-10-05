@@ -125,7 +125,7 @@ INSERT INTO mv_touchpointconversions (
                   AND c.account_id=%(account_id)s
               {% endif %}
     ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24, 25, 26
 );
 
 {% endautoescape %}

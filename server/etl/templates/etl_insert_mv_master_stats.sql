@@ -257,7 +257,7 @@ INSERT INTO mv_master (
                 {% if account_id %}
                     AND ad_group_id=ANY(%(ad_group_id)s)
                 {% endif %}
-            GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+            GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
         ) a
         left outer join mvh_source b on a.source_slug=b.bidder_slug
         join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id
