@@ -880,7 +880,11 @@ class AutopilotPlusTestCase(test.TestCase):
         with patch("dash.models.AdGroupSettings.update") as mock_settings_update:
             service.adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(campaign)
             mock_settings_update.assert_called_once_with(
-                None, end_date=None, skip_automation=True, system_user=dash.constants.SystemUserType.AUTOPILOT
+                None,
+                end_date=None,
+                skip_automation=True,
+                skip_field_change_validation_autopilot=True,
+                system_user=dash.constants.SystemUserType.AUTOPILOT,
             )
 
     @patch("utils.dates_helper.local_today", return_value=datetime.date(2018, 1, 2))
@@ -898,6 +902,7 @@ class AutopilotPlusTestCase(test.TestCase):
                 start_date=datetime.date(2018, 1, 2),
                 end_date=None,
                 skip_automation=True,
+                skip_field_change_validation_autopilot=True,
                 system_user=dash.constants.SystemUserType.AUTOPILOT,
             )
 

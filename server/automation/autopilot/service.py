@@ -646,4 +646,10 @@ def _set_ad_group_flight_time_to_ongoing(ad_group):
     if ad_group.settings.start_date > today:
         updates["start_date"] = today
 
-    ad_group.settings.update(None, skip_automation=True, system_user=dash.constants.SystemUserType.AUTOPILOT, **updates)
+    ad_group.settings.update(
+        None,
+        skip_automation=True,
+        system_user=dash.constants.SystemUserType.AUTOPILOT,
+        skip_field_change_validation_autopilot=True,
+        **updates
+    )
