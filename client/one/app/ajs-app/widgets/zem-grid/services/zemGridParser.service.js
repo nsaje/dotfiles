@@ -19,25 +19,27 @@ angular
 
         function parse(grid, data) {
             if (data.level > 0) throw 'Inplace parsing not supported yet.';
-
             if (data.breakdown) {
+                grid.body.rows = parseBreakdown(grid, null, data.breakdown);
+                grid.body.pagination = data.breakdown.pagination;
                 grid.footer.row = createRow(
                     zemGridConstants.gridRowType.STATS,
                     data,
                     0
                 );
-                grid.body.rows = parseBreakdown(grid, null, data.breakdown);
             } else {
                 grid.body.rows = [];
                 grid.footer.row = null;
+                grid.body.pagination = null;
             }
         }
 
         function clear(grid) {
             grid.meta.data = null;
             grid.meta.columns = [];
-            grid.footer.row = null;
             grid.body.rows = [];
+            grid.footer.row = null;
+            grid.body.pagination = null;
         }
 
         function parseBreakdown(grid, parent, breakdown) {
@@ -67,8 +69,9 @@ angular
             });
 
             if (
-                !breakdown.pagination.complete ||
-                breakdown.pagination.count === 0
+                !breakdown.replaceRows &&
+                (!breakdown.pagination.complete ||
+                    breakdown.pagination.count === 0)
             ) {
                 // Add breakdown row only if there is more data to be loaded
                 // OR there is no data at all (to show empty msg)

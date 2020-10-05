@@ -11,6 +11,8 @@ import {
     OnDestroy,
     AfterViewInit,
     Inject,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 import {
     DetailGridInfo,
@@ -39,7 +41,8 @@ import {ResizeObserverHelper} from '../../helpers/resize-observer.helper';
     templateUrl: './smart-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SmartGridComponent
+    implements OnInit, OnChanges, AfterViewInit, OnDestroy {
     @Input('gridOptions')
     options: GridOptions;
     @Input()
@@ -89,7 +92,13 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
                 noRowsOverlayComponent: NoRowsOverlayComponent,
             },
         };
-        if (commonHelpers.isDefined(this.paginationOptions)) {
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (
+            changes.paginationOptions &&
+            commonHelpers.isDefined(this.paginationOptions)
+        ) {
             this.paginationPage = commonHelpers.getValueOrDefault(
                 this.paginationOptions.page,
                 1
@@ -149,6 +158,7 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.gridApi.paginationGoToPage(page - 1);
                 break;
             case 'server':
+                this.gridApi.showLoadingOverlay();
                 this.paginationChange.emit({
                     page: page,
                     pageSize: this.paginationPageSize,

@@ -12,6 +12,7 @@ import {takeUntil} from 'rxjs/operators';
 import {Rule} from '../../../../core/rules/types/rule';
 import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
+import {getOffset} from '../../../../shared/helpers/pagination.helper';
 
 @Injectable()
 export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
@@ -201,7 +202,7 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
         showEntriesWithoutChanges: boolean | null
     ): Promise<RuleHistory[]> {
         return new Promise<RuleHistory[]>((resolve, reject) => {
-            const offset = this.getOffset(page, pageSize);
+            const offset = getOffset(page, pageSize);
             this.rulesService
                 .listHistories(
                     agencyId,
@@ -225,9 +226,5 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
                     }
                 );
         });
-    }
-
-    private getOffset(page: number, pageSize: number): number {
-        return (page - 1) * pageSize;
     }
 }

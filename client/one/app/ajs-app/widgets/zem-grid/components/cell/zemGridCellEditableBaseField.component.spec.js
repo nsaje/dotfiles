@@ -39,7 +39,7 @@ describe('zemGridCellEditableBaseField', function() {
                     ext: {},
                 },
                 service: {},
-                dataService: {
+                api: {
                     isSaveRequestInProgress: function() {},
                 },
             },
@@ -198,14 +198,12 @@ describe('zemGridCellEditableBaseField', function() {
     it('should call save method if input is valid', function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function() {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
-            function() {
-                var deferred = $q.defer();
-                deferred.resolve();
-                return deferred.promise;
-            }
-        );
+        scope.ctrl.grid.meta.api.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.api, 'saveData').and.callFake(function() {
+            var deferred = $q.defer();
+            deferred.resolve();
+            return deferred.promise;
+        });
 
         scope.ctrl.data = {
             value: 12.34,
@@ -226,21 +224,19 @@ describe('zemGridCellEditableBaseField', function() {
         element.isolateScope().ctrl.save();
 
         expect(
-            element.isolateScope().ctrl.grid.meta.dataService.saveData
+            element.isolateScope().ctrl.grid.meta.api.saveData
         ).toHaveBeenCalledWith('12.35', scope.ctrl.row, scope.ctrl.col);
     });
 
     it("shouldn't call save method if input is invalid", function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function() {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
-            function() {
-                var deferred = $q.defer();
-                deferred.resolve();
-                return deferred.promise;
-            }
-        );
+        scope.ctrl.grid.meta.api.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.api, 'saveData').and.callFake(function() {
+            var deferred = $q.defer();
+            deferred.resolve();
+            return deferred.promise;
+        });
 
         scope.ctrl.data = {
             value: 12.34,
@@ -261,21 +257,19 @@ describe('zemGridCellEditableBaseField', function() {
         element.isolateScope().ctrl.save();
 
         expect(
-            element.isolateScope().ctrl.grid.meta.dataService.saveData
+            element.isolateScope().ctrl.grid.meta.api.saveData
         ).not.toHaveBeenCalled();
     });
 
     it("shouldn't call save method if input hasn't changed", function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function() {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
-            function() {
-                var deferred = $q.defer();
-                deferred.resolve();
-                return deferred.promise;
-            }
-        );
+        scope.ctrl.grid.meta.api.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.api, 'saveData').and.callFake(function() {
+            var deferred = $q.defer();
+            deferred.resolve();
+            return deferred.promise;
+        });
 
         scope.ctrl.data = {
             value: 12.34,
@@ -295,7 +289,7 @@ describe('zemGridCellEditableBaseField', function() {
         element.isolateScope().ctrl.save();
 
         expect(
-            element.isolateScope().ctrl.grid.meta.dataService.saveData
+            element.isolateScope().ctrl.grid.meta.api.saveData
         ).not.toHaveBeenCalled();
     });
 });

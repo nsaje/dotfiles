@@ -4,6 +4,7 @@ import {SharedModule} from '../../../../shared/shared.module';
 import {CampaignBudgetsListComponent} from './campaign-budgets-list.component';
 import {Currency, CampaignBudgetState} from '../../../../app.constants';
 import {SimpleChange} from '@angular/core';
+import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 
 describe('CampaignBudgetsListComponent', () => {
     let component: CampaignBudgetsListComponent;
@@ -12,6 +13,7 @@ describe('CampaignBudgetsListComponent', () => {
         {
             id: '100',
             creditId: '1',
+            accountId: '123',
             state: CampaignBudgetState.ACTIVE,
             startDate: new Date(1970, 1, 21),
             endDate: new Date(1970, 2, 21),
@@ -28,7 +30,7 @@ describe('CampaignBudgetsListComponent', () => {
             canEditEndDate: true,
             canEditAmount: true,
         },
-    ];
+    ] as CampaignBudget[];
 
     beforeEach(() => {
         TestBed.configureTestingModule({

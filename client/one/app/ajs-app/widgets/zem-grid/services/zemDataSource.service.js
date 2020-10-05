@@ -21,12 +21,12 @@ angular
         //
 
         // Definition of events used internally in DataSource
-        // External listeners are registered through dedicated methods (e.g. onLoad)
         var EVENTS = {
-            ON_LOAD: 'zem-data-source-on-load',
-            ON_STATS_UPDATED: 'zem-data-source-on-stats-updated',
+            ON_METADATA_UPDATED: 'zem-data-source-on-meta-data-updated',
             ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
             ON_ROW_UPDATED: 'zem-data-source-on-row-updated',
+            ON_LOAD: 'zem-data-source-on-load',
+            ON_STATS_UPDATED: 'zem-data-source-on-stats-updated',
         };
 
         var FILTER = {
@@ -38,7 +38,7 @@ angular
             FILTERED_BUSINESSES: 6,
         };
 
-        function DataSource(endpoint, $scope) {
+        function DataSource(endpoint, $scope, replaceRows) {
             // Scope is used for notifying listeners
             // FIXME WORKAROUND: Using rootScope causes consistency problems between the views
             //   ! proper solution is need, but for now use passed $scope (provided by host controller)
@@ -59,8 +59,8 @@ angular
 
             // Define default pagination (limits) for all levels when
             // size is not passed when requesting new data
-            // TODO: default values will be defined by Breakdown selector (TBD)
-            var defaultPagination = [60, 4, 5, 7];
+            var defaultLoadMoreLimitForLevel = [60, 4, 5, 7];
+            var defaultPaginationLimit = 50;
 
             initializeRoot();
 
@@ -79,19 +79,20 @@ angular
             this.isSaveRequestInProgress = isSaveRequestInProgress;
 
             this.setOrder = setOrder;
-            this.setFilter = setFilter;
-            this.setDateRange = setDateRange;
-            this.setBreakdown = setBreakdown;
             this.getOrder = getOrder;
+            this.setFilter = setFilter;
             this.getFilter = getFilter;
+            this.setDateRange = setDateRange;
             this.getDateRange = getDateRange;
+            this.setBreakdown = setBreakdown;
             this.getBreakdown = getBreakdown;
             this.getBreakdownLevel = getBreakdownLevel;
 
-            this.onLoad = onLoad;
-            this.onStatsUpdated = onStatsUpdated;
+            this.onMetaDataUpdated = onMetaDataUpdated;
             this.onDataUpdated = onDataUpdated;
             this.onRowUpdated = onRowUpdated;
+            this.onLoad = onLoad;
+            this.onStatsUpdated = onStatsUpdated;
 
             //
             // Definitions
@@ -104,9 +105,7 @@ angular
                 return metaData;
             }
 
-            function loadMetaData(forceFetch) {
-                if (metaData && !forceFetch) return $q.resolve(metaData);
-
+            function loadMetaData() {
                 var deferred = $q.defer();
                 endpoint.getMetaData().then(function(_metaData) {
                     // Base level always defines only one breakdown and
@@ -117,82 +116,24 @@ angular
                     if (!selectedBreakdown) {
                         selectedBreakdown = [baseLevelBreakdown];
                     }
+                    notifyListeners(EVENTS.ON_METADATA_UPDATED, metaData);
                     deferred.resolve(metaData);
                 });
                 return deferred.promise;
             }
 
-            function loadData(breakdown, size) {
+            function loadData(breakdown, offset, limit) {
                 var level = 1;
-                var offset, limit;
                 var breakdowns = [];
                 if (breakdown) {
                     level = breakdown.level;
-                    offset = breakdown.pagination.limit;
-                    limit = size;
                     breakdowns = [breakdown];
                 } else {
                     abortActiveLoadRequests();
                     initializeRoot();
                 }
 
-                // First make sure that meta-data is initialized and then fetch the requested data
-                return loadMetaData().then(function() {
-                    return getDataByLevel(level, breakdowns, offset, limit);
-                });
-            }
-
-            function getDataByLevel(level, breakdowns, offset, limit) {
-                //
-                // Fetches data for passed breakdowns (pagination - offset and limit) at the same time.
-                // All retrieved data is applied to data tree and if not the last level subsequent data is fetch,
-                // with newly retrieved breakdowns (breakdownIds)
-                //
-                var deferred = $q.defer();
-                var config = prepareConfig(level, breakdowns, offset, limit);
-                var promise = endpoint.getData(config);
-
-                var request = {promise: promise, config: config};
-                activeLoadRequests.push(request);
-
-                breakdowns.forEach(function(breakdown) {
-                    breakdown.meta.loading = true;
-                });
-
-                promise
-                    .then(
-                        function(breakdowns) {
-                            applyBreakdowns(breakdowns);
-                            var childBreakdowns = getChildBreakdowns(
-                                breakdowns
-                            );
-                            if (childBreakdowns.length > 0) {
-                                // Chain request for each successive level
-                                var promise = getDataByLevel(
-                                    level + 1,
-                                    childBreakdowns
-                                );
-                                deferred.resolve(promise);
-                            } else {
-                                deferred.resolve(data);
-                            }
-                        },
-                        function(err) {
-                            breakdowns.forEach(function(breakdown) {
-                                breakdown.meta.error = true;
-                            });
-                            deferred.reject(err);
-                        }
-                    )
-                    .finally(function() {
-                        var idx = activeLoadRequests.indexOf(request);
-                        if (idx > -1) activeLoadRequests.splice(idx, 1);
-                        breakdowns.forEach(function(breakdown) {
-                            breakdown.meta.loading = false;
-                        });
-                    });
-
-                return deferred.promise;
+                return getDataByLevel(level, breakdowns, offset, limit);
             }
 
             function saveData(value, row, column) {
@@ -247,6 +188,194 @@ angular
                 notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
             }
 
+            function isSaveRequestInProgress() {
+                return saveRequestInProgress;
+            }
+
+            function setOrder(order) {
+                config.order = order;
+            }
+
+            function getOrder() {
+                return config.order;
+            }
+
+            function setDateRange(dateRange) {
+                config.startDate = dateRange.startDate;
+                config.endDate = dateRange.endDate;
+            }
+
+            function getDateRange() {
+                return {
+                    startDate: config.startDate,
+                    endDate: config.endDate,
+                };
+            }
+
+            function setFilter(filter, value) {
+                switch (filter) {
+                    case FILTER.FILTERED_AGENCIES:
+                        config.filteredAgencies = value;
+                        break;
+                    case FILTER.FILTERED_ACCOUNT_TYPES:
+                        config.filteredAccountTypes = value;
+                        break;
+                    case FILTER.FILTERED_BUSINESSES:
+                        config.filteredBusinesses = value;
+                        break;
+                    case FILTER.FILTERED_MEDIA_SOURCES:
+                        config.filteredSources = value;
+                        break;
+                    case FILTER.SHOW_ARCHIVED_SOURCES:
+                        config.showArchived = value;
+                        break;
+                    case FILTER.SHOW_BLACKLISTED_PUBLISHERS:
+                        config.showBlacklistedPublishers = value;
+                        break;
+                }
+            }
+
+            function getFilter(filter) {
+                switch (filter) {
+                    case FILTER.FILTERED_AGENCIES:
+                        return config.filteredAgencies;
+                    case FILTER.FILTERED_ACCOUNT_TYPES:
+                        return config.filteredAccountTypes;
+                    case FILTER.FILTERED_BUSINESSES:
+                        return config.filteredBusinesses;
+                    case FILTER.FILTERED_MEDIA_SOURCES:
+                        return config.filteredSources;
+                    case FILTER.SHOW_ARCHIVED_SOURCES:
+                        return config.showArchived;
+                    case FILTER.SHOW_BLACKLISTED_PUBLISHERS:
+                        return config.showBlacklistedPublishers;
+                }
+            }
+
+            function setBreakdown(breakdown, fetch) {
+                // Configures new breakdown for this DataSource and fetch missing data
+                // Compare previous configured breakdown with new one and find out
+                // which level levels can stay the same (re-fetching is not needed)
+                var diff = findDifference(breakdown, selectedBreakdown);
+                if (diff < 0) return fetch ? $q.resolve(data) : undefined;
+
+                // Breakdown levels are 1-based therefor (diff + 1) is level
+                // that is different and needs to be replaced, taking into account
+                // current tree level (depth)
+                var equalLevel = Math.min(getTreeLevel(), diff);
+                var level = equalLevel + 1;
+                var baseNodes = getNodesByLevel(equalLevel);
+                var fetchSuccessiveLevels = breakdown.length > equalLevel;
+                selectedBreakdown = breakdown;
+
+                // Check if there is already an active request to retrieve data (breakdown)
+                // that could be reused with new configuration. In case it is chain that request's
+                // promise to avoid unnecessary re-fetch (abort + request)
+                if (activeLoadRequests.length === 1) {
+                    var request = activeLoadRequests[0];
+                    var nextBreakdownRequest = selectedBreakdown.slice(
+                        0,
+                        level
+                    );
+                    if (
+                        angular.equals(
+                            nextBreakdownRequest,
+                            request.config.breakdown
+                        )
+                    ) {
+                        return fetch ? request.promise : undefined;
+                    }
+                }
+
+                // Abort all active requests that would lead to inconsistencies in data tree.
+                abortActiveLoadRequests();
+
+                // For all levels below remove all nodes and initialize new breakdown object (if needed)
+                var childBreakdowns = [];
+                baseNodes.forEach(function(node) {
+                    if (fetchSuccessiveLevels) {
+                        initializeNodeBreakdown(node, level);
+                        childBreakdowns.push(node.breakdown);
+                    } else {
+                        delete node.breakdown;
+                    }
+                });
+
+                notifyListeners(EVENTS.ON_DATA_UPDATED, data);
+
+                if (fetch) {
+                    if (fetchSuccessiveLevels) {
+                        return getDataByLevel(level, childBreakdowns);
+                    }
+                    return $q.resolve(data);
+                }
+            }
+
+            function getBreakdown() {
+                return selectedBreakdown;
+            }
+
+            function getBreakdownLevel() {
+                return selectedBreakdown.length;
+            }
+
+            //
+            // PRIVATE
+            //
+
+            function getDataByLevel(level, breakdowns, offset, limit) {
+                //
+                // Fetches data for passed breakdowns (pagination - offset and limit) at the same time.
+                // All retrieved data is applied to data tree and if not the last level subsequent data is fetch,
+                // with newly retrieved breakdowns (breakdownIds)
+                //
+                var deferred = $q.defer();
+                var config = prepareConfig(level, breakdowns, offset, limit);
+                var promise = endpoint.getData(config);
+
+                var request = {promise: promise, config: config};
+                activeLoadRequests.push(request);
+
+                breakdowns.forEach(function(breakdown) {
+                    breakdown.meta.loading = true;
+                });
+
+                promise
+                    .then(
+                        function(breakdowns) {
+                            applyBreakdowns(breakdowns);
+                            var childBreakdowns = getChildBreakdowns(
+                                breakdowns
+                            );
+                            if (childBreakdowns.length > 0) {
+                                // Chain request for each successive level
+                                var promise = getDataByLevel(
+                                    level + 1,
+                                    childBreakdowns
+                                );
+                                deferred.resolve(promise);
+                            } else {
+                                deferred.resolve(data);
+                            }
+                        },
+                        function(err) {
+                            breakdowns.forEach(function(breakdown) {
+                                breakdown.meta.error = true;
+                            });
+                            deferred.reject(err);
+                        }
+                    )
+                    .finally(function() {
+                        var idx = activeLoadRequests.indexOf(request);
+                        if (idx > -1) activeLoadRequests.splice(idx, 1);
+                        breakdowns.forEach(function(breakdown) {
+                            breakdown.meta.loading = false;
+                        });
+                    });
+
+                return deferred.promise;
+            }
+
             function updateStats(stats, updatedStats) {
                 Object.keys(updatedStats).forEach(function(field) {
                     var updatedField = updatedStats[field];
@@ -262,7 +391,10 @@ angular
 
             function prepareConfig(level, breakdowns, offset, limit) {
                 if (!offset) offset = 0;
-                if (!limit) limit = defaultPagination[level - 1];
+                if (!limit)
+                    limit = replaceRows
+                        ? defaultPaginationLimit
+                        : defaultLoadMoreLimitForLevel[level - 1];
                 var newConfig = {
                     level: level,
                     offset: offset,
@@ -284,10 +416,6 @@ angular
                     request.promise.abort();
                 });
                 activeLoadRequests = [];
-            }
-
-            function isSaveRequestInProgress() {
-                return saveRequestInProgress;
             }
 
             function getChildBreakdowns(breakdowns) {
@@ -320,20 +448,32 @@ angular
 
             function applyBreakdown(breakdown) {
                 // Add breakdown to current data tree
-                // Notify listeners, to give them chance to modify data,
-                // initialize expected data structures
+                // Notify listeners, to give them chance to modify data
+                // Initialize expected data structures
                 notifyListeners(EVENTS.ON_LOAD, breakdown);
                 if (breakdown.level < selectedBreakdown.length) {
                     breakdown.rows.forEach(function(node) {
                         initializeNodeBreakdown(node, breakdown.level + 1);
                     });
                 }
+
+                if (replaceRows) {
+                    data.breakdown = breakdown;
+                    data.breakdown.replaceRows = replaceRows;
+                    data.stats = breakdown.totals;
+                    delete breakdown.totals;
+                    return;
+                }
+
                 if (
                     breakdown.level === 1 &&
                     breakdown.pagination.offset === 0
                 ) {
                     data.breakdown = breakdown;
+                    data.breakdown.replaceRows = replaceRows;
                     data.breakdown.meta = {};
+                    data.breakdown.pagination.rowsLength =
+                        breakdown.rows.length;
                     data.stats = breakdown.totals;
                     delete breakdown.totals;
                     return;
@@ -341,10 +481,14 @@ angular
 
                 // Find breakdown by id and apply partial breakdown data
                 var current = findBreakdown(breakdown.breakdownId);
+
                 mergeRows(current.rows, breakdown.rows);
-                current.pagination.limit = current.rows.length;
+                current.replaceRows = replaceRows;
+                current.pagination.offset = breakdown.pagination.offset;
+                current.pagination.limit = breakdown.pagination.limit;
                 current.pagination.count = breakdown.pagination.count;
                 current.pagination.complete = breakdown.pagination.complete;
+                current.pagination.rowsLength = current.rows.length;
             }
 
             function mergeRows(rows, newRows) {
@@ -406,7 +550,6 @@ angular
                     level: 0,
                     meta: {},
                 };
-                notifyListeners(EVENTS.ON_DATA_UPDATED, data);
             }
 
             function initializeNodeBreakdown(node, level) {
@@ -429,104 +572,6 @@ angular
                     rows: [],
                     meta: {},
                 };
-            }
-
-            function setOrder(order, fetch) {
-                config.order = order;
-                if (fetch) {
-                    return loadData();
-                }
-            }
-
-            function setDateRange(dateRange) {
-                config.startDate = dateRange.startDate;
-                config.endDate = dateRange.endDate;
-            }
-
-            function setFilter(filter, value, fetch) {
-                switch (filter) {
-                    case FILTER.FILTERED_AGENCIES:
-                        config.filteredAgencies = value;
-                        break;
-                    case FILTER.FILTERED_ACCOUNT_TYPES:
-                        config.filteredAccountTypes = value;
-                        break;
-                    case FILTER.FILTERED_BUSINESSES:
-                        config.filteredBusinesses = value;
-                        break;
-                    case FILTER.FILTERED_MEDIA_SOURCES:
-                        config.filteredSources = value;
-                        break;
-                    case FILTER.SHOW_ARCHIVED_SOURCES:
-                        config.showArchived = value;
-                        break;
-                    case FILTER.SHOW_BLACKLISTED_PUBLISHERS:
-                        config.showBlacklistedPublishers = value;
-                        break;
-                }
-
-                if (fetch) {
-                    return loadData();
-                }
-            }
-
-            function setBreakdown(breakdown, fetch) {
-                // Configures new breakdown for this DataSource and fetch missing data
-                // Compare previous configured breakdown with new one and find out
-                // which level levels can stay the same (re-fetching is not needed)
-                var diff = findDifference(breakdown, selectedBreakdown);
-                if (diff < 0) return fetch ? $q.resolve(data) : undefined;
-
-                // Breakdown levels are 1-based therefor (diff + 1) is level
-                // that is different and needs to be replaced, taking into account
-                // current tree level (depth)
-                var equalLevel = Math.min(getTreeLevel(), diff);
-                var baseNodes = getNodesByLevel(equalLevel);
-                var fetchSuccessiveLevels = breakdown.length > equalLevel;
-                selectedBreakdown = breakdown;
-
-                // Check if there is already an active request to retrieve data (breakdown)
-                // that could be reused with new configuration. In case it is chain that request's
-                // promise to avoid unnecessary re-fetch (abort + request)
-                if (activeLoadRequests.length === 1) {
-                    var request = activeLoadRequests[0];
-                    var nextBreakdownRequest = selectedBreakdown.slice(
-                        0,
-                        equalLevel + 1
-                    );
-                    if (
-                        angular.equals(
-                            nextBreakdownRequest,
-                            request.config.breakdown
-                        )
-                    ) {
-                        return fetch ? request.promise : undefined;
-                    }
-                }
-
-                // Abort all active requests that would lead to inconsistencies in data tree.
-                abortActiveLoadRequests();
-
-                // For all levels below remove all nodes and initialize new breakdown object (if needed)
-                var childBreakdowns = [];
-                baseNodes.forEach(function(node) {
-                    if (fetchSuccessiveLevels) {
-                        initializeNodeBreakdown(node, equalLevel + 1);
-                        childBreakdowns.push(node.breakdown);
-                    } else {
-                        delete node.breakdown;
-                    }
-                });
-
-                notifyListeners(EVENTS.ON_DATA_UPDATED, data);
-
-                if (fetch) {
-                    if (fetchSuccessiveLevels) {
-                        return getDataByLevel(equalLevel + 1, childBreakdowns);
-                    }
-
-                    return $q.resolve(data);
-                }
             }
 
             function getTreeLevel() {
@@ -555,42 +600,6 @@ angular
                 return result;
             }
 
-            function getOrder() {
-                return config.order;
-            }
-
-            function getDateRange() {
-                return {
-                    startDate: config.startDate,
-                    endDate: config.endDate,
-                };
-            }
-
-            function getFilter(filter) {
-                switch (filter) {
-                    case FILTER.FILTERED_AGENCIES:
-                        return config.filteredAgencies;
-                    case FILTER.FILTERED_ACCOUNT_TYPES:
-                        return config.filteredAccountTypes;
-                    case FILTER.FILTERED_BUSINESSES:
-                        return config.filteredBusinesses;
-                    case FILTER.FILTERED_MEDIA_SOURCES:
-                        return config.filteredSources;
-                    case FILTER.SHOW_ARCHIVED_SOURCES:
-                        return config.showArchived;
-                    case FILTER.SHOW_BLACKLISTED_PUBLISHERS:
-                        return config.showBlacklistedPublishers;
-                }
-            }
-
-            function getBreakdown() {
-                return selectedBreakdown;
-            }
-
-            function getBreakdownLevel() {
-                return selectedBreakdown.length;
-            }
-
             function findDifference(arr1, arr2) {
                 var diff = -1;
                 for (var i = 0; i < arr1.length; i++) {
@@ -609,13 +618,9 @@ angular
                 return diff;
             }
 
-            function onLoad(scope, callback) {
-                return registerListener(EVENTS.ON_LOAD, scope, callback);
-            }
-
-            function onStatsUpdated(scope, callback) {
+            function onMetaDataUpdated(scope, callback) {
                 return registerListener(
-                    EVENTS.ON_STATS_UPDATED,
+                    EVENTS.ON_METADATA_UPDATED,
                     scope,
                     callback
                 );
@@ -633,6 +638,18 @@ angular
                 return registerListener(EVENTS.ON_ROW_UPDATED, scope, callback);
             }
 
+            function onLoad(scope, callback) {
+                return registerListener(EVENTS.ON_LOAD, scope, callback);
+            }
+
+            function onStatsUpdated(scope, callback) {
+                return registerListener(
+                    EVENTS.ON_STATS_UPDATED,
+                    scope,
+                    callback
+                );
+            }
+
             function registerListener(event, scope, callback) {
                 var handler = $scope.$on(event, callback);
                 scope.$on('$destroy', handler);
@@ -645,8 +662,8 @@ angular
         }
 
         return {
-            createInstance: function(endpoint, $scope) {
-                return new DataSource(endpoint, $scope);
+            createInstance: function(endpoint, $scope, replaceRows) {
+                return new DataSource(endpoint, $scope, replaceRows);
             },
         };
     });

@@ -830,6 +830,13 @@ export const ENTITY_TYPE_TO_LEVEL_MAP = {
     [EntityType.AD_GROUP]: Level.AD_GROUPS,
 };
 
+export enum CostMode {
+    LEGACY = 'legacy',
+    PUBLIC = 'public',
+    PLATFORM = 'platform',
+    ANY = 'any',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1593,12 +1600,7 @@ export const APP_CONSTANTS = {
         COUPONS: 'coupons',
         SHOPPING: 'shopping',
     },
-    costMode: {
-        LEGACY: 'legacy',
-        PUBLIC: 'public',
-        PLATFORM: 'platform',
-        ANY: 'any',
-    },
+    costMode: CostMode,
     levelParamToLevelMap: {},
     levelToLevelParamMap: {},
     breakdownToBreakdownParamMap: {},

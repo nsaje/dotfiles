@@ -37,6 +37,7 @@ import {
     isAgencyManager,
     isInternalUser,
 } from '../../helpers/users.helpers';
+import {getOffset} from '../../../../shared/helpers/pagination.helper';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -561,7 +562,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         showInternal: boolean | null = null
     ): Promise<User[]> {
         return new Promise<User[]>((resolve, reject) => {
-            const offset = this.getOffset(page, pageSize);
+            const offset = getOffset(page, pageSize);
             this.usersService
                 .list(
                     agencyId,
@@ -607,10 +608,6 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                     }
                 );
         });
-    }
-
-    private getOffset(page: number, pageSize: number): number {
-        return (page - 1) * pageSize;
     }
 
     private getDefaultEntityPermissions(): EntityPermission[] {

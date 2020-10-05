@@ -9,6 +9,7 @@ import {takeUntil} from 'rxjs/operators';
 import {Rule} from '../../../../core/rules/types/rule';
 import * as clone from 'clone';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {getOffset} from '../../../../shared/helpers/pagination.helper';
 
 @Injectable()
 export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
@@ -136,7 +137,7 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         keyword: string | null
     ): Promise<Rule[]> {
         return new Promise<Rule[]>((resolve, reject) => {
-            const offset = this.getOffset(page, pageSize);
+            const offset = getOffset(page, pageSize);
             this.rulesService
                 .list(
                     agencyId,
@@ -157,10 +158,6 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
                     }
                 );
         });
-    }
-
-    private getOffset(page: number, pageSize: number): number {
-        return (page - 1) * pageSize;
     }
 
     private updateRule(savedChangedRule: Rule): void {

@@ -26,49 +26,41 @@ describe('zemDataSource', function() {
         $q = _$q_;
         $timeout = _$timeout_;
         endpoint = zemGridDebugEndpoint.createEndpoint();
-        dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource = zemDataSourceService.createInstance(
+            endpoint,
+            $scope,
+            false
+        );
     }));
-
-    it('should request meta data from endpoint if needed', function() {
-        spyOn(endpoint, 'getMetaData').and.callThrough();
-
-        dataSource.loadMetaData();
-        $scope.$apply();
-        expect(endpoint.getMetaData).toHaveBeenCalled();
-
-        endpoint.getMetaData.calls.reset();
-        dataSource.loadMetaData();
-        $scope.$apply();
-        expect(endpoint.getMetaData).not.toHaveBeenCalled();
-
-        dataSource.loadMetaData(true);
-        $scope.$apply();
-        expect(endpoint.getMetaData).toHaveBeenCalled();
-    });
 
     it('should request data from endpoint', function() {
         spyOn(endpoint, 'getMetaData').and.callThrough();
         spyOn(endpoint, 'getData').and.callThrough();
+
+        dataSource.loadMetaData();
+        $scope.$apply();
+
         dataSource.loadData();
         $scope.$apply();
 
         expect(endpoint.getMetaData).toHaveBeenCalled();
         expect(endpoint.getData).toHaveBeenCalled();
-
-        endpoint.getMetaData.calls.reset();
-        endpoint.getData.calls.reset();
-
-        dataSource.loadData();
-        $scope.$apply();
-        expect(endpoint.getMetaData).not.toHaveBeenCalled();
-        expect(endpoint.getData).toHaveBeenCalled();
     });
 
     it('should notify listeners before and after applying data', function() {
+        var onMetaDataUpdatedListener = jasmine.createSpy();
+        dataSource.onMetaDataUpdated($scope, onMetaDataUpdatedListener);
+
         var onLoadListener = jasmine.createSpy();
-        var onDataUpdatedListener = jasmine.createSpy();
         dataSource.onLoad($scope, onLoadListener);
+
+        var onDataUpdatedListener = jasmine.createSpy();
         dataSource.onDataUpdated($scope, onDataUpdatedListener);
+
+        dataSource.loadMetaData();
+        $scope.$apply();
+
+        expect(onMetaDataUpdatedListener).toHaveBeenCalled();
 
         dataSource.loadData();
         $scope.$apply();
@@ -76,26 +68,6 @@ describe('zemDataSource', function() {
 
         expect(onLoadListener).toHaveBeenCalled();
         expect(onDataUpdatedListener).toHaveBeenCalled();
-    });
-
-    it('should initialize root when requesting base level data', function() {
-        dataSource.loadData();
-        $scope.$apply();
-
-        var onDataUpdatedListener = jasmine.createSpy();
-        dataSource.onDataUpdated($scope, onDataUpdatedListener);
-        dataSource.loadData();
-
-        var emptyBreakdownRoot = {
-            breakdown: null,
-            stats: null,
-            level: 0,
-            meta: {},
-        };
-        expect(onDataUpdatedListener).toHaveBeenCalledWith(
-            jasmine.any(Object),
-            emptyBreakdownRoot
-        );
     });
 
     it('should build breakdown tree through sequential requests', function() {
@@ -139,6 +111,7 @@ describe('zemDataSource', function() {
                 pagination: {
                     offset: 0,
                     limit: 2,
+                    rowsLength: 2,
                 },
                 rows: [
                     {
@@ -151,9 +124,11 @@ describe('zemDataSource', function() {
                                 limit: 1,
                                 count: undefined,
                                 complete: undefined,
+                                rowsLength: 1,
                             },
                             rows: [{}],
                             meta: {loading: false},
+                            replaceRows: false,
                         },
                     },
                     {
@@ -166,13 +141,16 @@ describe('zemDataSource', function() {
                                 limit: 1,
                                 count: undefined,
                                 complete: undefined,
+                                rowsLength: 1,
                             },
                             rows: [{}],
                             meta: {loading: false},
+                            replaceRows: false,
                         },
                     },
                 ],
                 meta: {},
+                replaceRows: false,
             },
             level: 0,
             stats: [1, 2, 3],
@@ -188,6 +166,7 @@ describe('zemDataSource', function() {
         // Initialize data source with metadata
         dataSource.loadMetaData();
         $scope.$apply();
+
         dataSource.setBreakdown([{}, {}]);
 
         // Initialize listeners and request data
@@ -195,6 +174,7 @@ describe('zemDataSource', function() {
         var onDataUpdatedListener = jasmine.createSpy();
         dataSource.onLoad($scope, onLoadListener);
         dataSource.onDataUpdated($scope, onDataUpdatedListener);
+
         dataSource.loadData();
         $scope.$apply();
 
@@ -230,7 +210,10 @@ describe('zemDataSource', function() {
             rows: [{}],
         };
 
-        dataSource.loadData(breakdown, 10);
+        dataSource.loadMetaData();
+        $scope.$apply();
+
+        dataSource.loadData(breakdown, 1, 10);
         $scope.$apply();
 
         expect(endpoint.getData).toHaveBeenCalledWith({
@@ -293,6 +276,7 @@ describe('zemDataSource', function() {
 
         dataSource.loadMetaData();
         $scope.$apply();
+
         dataSource.loadData();
         $scope.$apply();
 
@@ -382,11 +366,15 @@ describe('zemDataSource', function() {
             $q.resolve([])
         );
 
+        dataSource.loadMetaData();
+        $scope.$apply();
+
         dataSource.loadData();
         $scope.$apply();
 
         dataSource.loadData();
         $scope.$apply();
+
         expect(deferred.promise.abort).toHaveBeenCalled();
     });
 
@@ -441,6 +429,7 @@ describe('zemDataSource', function() {
         expect(endpoint.getData).not.toHaveBeenCalled();
         dataSource.loadData();
         $scope.$apply();
+
         expect(endpoint.getData).toHaveBeenCalledWith({
             level: jasmine.any(Number),
             offset: jasmine.any(Number),

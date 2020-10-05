@@ -1,32 +1,34 @@
 angular
     .module('one.widgets')
     .factory('zemGridIntegrationService', function(
-        $timeout,
         zemAuthStore,
         zemGridConstants,
         zemGridEndpointService,
         zemDataSourceService,
         zemDataFilterService,
         zemSelectionService,
-        zemAdGroupService,
         zemGridIntegrationSelectionService,
         zemEntitiesUpdatesService
     ) {
         // eslint-disable-line
 
         function IntegrationService($scope) {
-            var DATA_SOURCE_CACHE = {};
-
-            var breakdown;
             var entity;
+            var level;
+            var breakdown;
             var grid;
 
             this.initialize = initialize;
+            this.configureRenderingEngine = configureRenderingEngine;
             this.configureDataSource = configureDataSource;
             this.getGrid = getGrid;
             this.setGridApi = setGridApi;
 
-            function initialize() {
+            function initialize(_entity, _level, _breakdown) {
+                entity = _entity;
+                level = _level;
+                breakdown = _breakdown;
+
                 initializeGrid();
 
                 var onDateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
@@ -52,10 +54,20 @@ angular
                 });
             }
 
-            function configureDataSource(_entity, _breakdown) {
-                breakdown = _breakdown;
-                entity = _entity;
-                grid.dataSource = createDataSource(entity, breakdown);
+            function configureRenderingEngine() {
+                grid.renderingEngine = getGridRenderingEngine(level, breakdown);
+            }
+
+            function configureDataSource() {
+                var replaceRows =
+                    grid.renderingEngine ===
+                    zemGridConstants.gridRenderingEngineType.SMART_GRID;
+                grid.dataSource = createDataSource(
+                    entity,
+                    level,
+                    breakdown,
+                    replaceRows
+                );
                 setGridDataSourceDateRangeAndFilters();
             }
 
@@ -68,48 +80,33 @@ angular
                 return grid;
             }
 
+            //
+            // PRIVATE
+            //
+
             function initializeGrid() {
                 grid = {
                     api: undefined,
                     options: createDefaultGridOptions(),
                     dataSource: undefined,
+                    renderingEngine: undefined,
                 };
             }
 
-            function createDataSource(entity, breakdown) {
-                function createKey(entity, breakdown) {
-                    if (!entity) {
-                        return 'all_accounts-' + breakdown;
-                    }
-                    return '{type}-{id}-{breakdown}'
-                        .replace('{type}', entity.type)
-                        .replace('{id}', entity.id)
-                        .replace('{breakdown}', breakdown);
-                }
-
-                var key = createKey(entity, breakdown);
-
-                if (!DATA_SOURCE_CACHE[key]) {
-                    var id = entity ? entity.id : null;
-                    var level = entity
-                        ? constants.entityTypeToLevelMap[entity.type]
-                        : constants.level.ALL_ACCOUNTS;
-                    var metadata = zemGridEndpointService.createMetaData(
-                        level,
-                        id,
-                        breakdown
-                    );
-                    var endpoint = zemGridEndpointService.createEndpoint(
-                        metadata
-                    );
-                    var dataSource = zemDataSourceService.createInstance(
-                        endpoint,
-                        $scope
-                    );
-                    DATA_SOURCE_CACHE[key] = dataSource;
-                }
-
-                return DATA_SOURCE_CACHE[key];
+            function createDataSource(entity, level, breakdown, replaceRows) {
+                var id = entity ? entity.id : null;
+                var metadata = zemGridEndpointService.createMetaData(
+                    level,
+                    id,
+                    breakdown
+                );
+                var endpoint = zemGridEndpointService.createEndpoint(metadata);
+                var dataSource = zemDataSourceService.createInstance(
+                    endpoint,
+                    $scope,
+                    replaceRows
+                );
+                return dataSource;
             }
 
             function createDefaultGridOptions() {
@@ -120,40 +117,12 @@ angular
                         levels: [0, 1],
                     },
                 };
-
-                // TODO: Check for cleaner solution
-                if (
-                    !zemAuthStore.hasPermission(
-                        'zemauth.bulk_actions_on_all_levels'
-                    )
-                ) {
-                    options.selection.callbacks = {
-                        isRowSelectable: function(row) {
-                            if (
-                                row.level ===
-                                zemGridConstants.gridRowLevel.FOOTER
-                            )
-                                return true;
-
-                            // Allow at most 4 data rows to be selected
-                            var maxSelectedRows = 4;
-                            if (zemSelectionService.isTotalsSelected()) {
-                                maxSelectedRows = 5;
-                            }
-                            return (
-                                grid.api.getSelection().selected.length <
-                                maxSelectedRows
-                            );
-                        },
-                    };
-                }
-
                 return options;
             }
 
             function reload() {
                 setGridDataSourceDateRangeAndFilters();
-                grid.dataSource.loadData();
+                grid.api.loadData();
             }
 
             function setGridDataSourceDateRangeAndFilters() {
@@ -207,6 +176,7 @@ angular
                 var initialized = false;
                 var canUpdateSelection = true;
 
+                if (onSelectionUpdateHandler) onSelectionUpdateHandler();
                 var onSelectionUpdateHandler = zemSelectionService.onSelectionUpdate(
                     function() {
                         canUpdateSelection = false;
@@ -216,16 +186,27 @@ angular
                 );
                 $scope.$on('$destroy', onSelectionUpdateHandler);
 
-                grid.api.onDataUpdated($scope, function() {
-                    if (initialized) return;
-                    initialized = true;
+                if (onDataUpdatedHandler) onDataUpdatedHandler();
+                var onDataUpdatedHandler = grid.api.onDataUpdated(
+                    $scope,
+                    function() {
+                        if (initialized) return;
+                        initialized = true;
+                        loadSelection();
+                    }
+                );
+                $scope.$on('$destroy', onDataUpdatedHandler);
 
-                    loadSelection();
-
-                    grid.api.onSelectionUpdated($scope, function() {
-                        if (canUpdateSelection) updateSelection();
-                    });
-                });
+                if (onSelectionUpdatedHandler) onSelectionUpdatedHandler();
+                var onSelectionUpdatedHandler = grid.api.onSelectionUpdated(
+                    $scope,
+                    function() {
+                        if (canUpdateSelection) {
+                            updateSelection();
+                        }
+                    }
+                );
+                $scope.$on('$destroy', onSelectionUpdatedHandler);
             }
 
             function loadSelection() {
@@ -244,6 +225,20 @@ angular
                     grid.api
                 );
                 zemSelectionService.setSelection(selection);
+            }
+
+            var smartGridSupportedLevels = [];
+            var smartGridSupportedBreakdowns = [];
+
+            // TODO (msuber): add permission check
+            function getGridRenderingEngine(level, breakdown) {
+                if (
+                    smartGridSupportedLevels.includes(level) &&
+                    smartGridSupportedBreakdowns.includes(breakdown)
+                ) {
+                    return zemGridConstants.gridRenderingEngineType.SMART_GRID;
+                }
+                return zemGridConstants.gridRenderingEngineType.CUSTOM_GRID;
             }
         }
 

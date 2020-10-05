@@ -14,10 +14,19 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         $ctrl.isEnabled = isEnabled;
         $ctrl.execute = execute;
 
+        var onSelectionUpdatedHandler;
+
         $ctrl.$onInit = function() {
             service = zemGridBulkActionsService.createInstance($ctrl.api);
             initializeActions();
-            $ctrl.api.onSelectionUpdated($scope, updateActionStates);
+            onSelectionUpdatedHandler = $ctrl.api.onSelectionUpdated(
+                $scope,
+                updateActionStates
+            );
+        };
+
+        $ctrl.$onDestroy = function() {
+            if (onSelectionUpdatedHandler) onSelectionUpdatedHandler();
         };
 
         function updateActionStates() {

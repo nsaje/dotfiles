@@ -34,7 +34,7 @@ angular
                         }
 
                         breakdowns.forEach(function(breakdown) {
-                            checkPaginationCount(config, breakdown);
+                            extendPagination(breakdown);
                         });
 
                         deferred.resolve(breakdowns);
@@ -78,6 +78,14 @@ angular
                 return api.edit(row.id);
             };
 
+            // PRIVATE FUNCTIONS //
+
+            function extendPagination(breakdown) {
+                breakdown.pagination.complete =
+                    breakdown.pagination.offset + breakdown.pagination.limit ===
+                    breakdown.pagination.count;
+            }
+
             function chainNavigationServiceUpdate(adGroupId, promise) {
                 // In case we are changing AdGroup settings, notify Navigation service to reload this AdGroup
                 var deferred = $q.defer();
@@ -98,23 +106,63 @@ angular
                 return deferred.promise;
             }
 
-            function checkPaginationCount(config, breakdown) {
-                // In case that pagination.count is not provided or is less then 0,
-                // we can check if returned data size is less then
-                // requested one -- in that case set the count to
-                // the current size od data
-                var pagination = breakdown.pagination;
-                if (
-                    pagination.count === undefined ||
-                    pagination.count === null ||
-                    pagination.count < 0
-                ) {
-                    if (config.limit > pagination.limit) {
-                        pagination.count = pagination.offset + pagination.limit;
-                    }
+            /* eslint-disable complexity */
+            function extendMetaData(breakdown, metaData) {
+                if (!breakdown) return;
+
+                if (breakdown.batches) {
+                    metaData.ext.batches = breakdown.batches;
+                    delete breakdown.batches;
                 }
-                pagination.complete =
-                    pagination.offset + pagination.limit === pagination.count;
+
+                if (breakdown.currency) {
+                    metaData.ext.currency = breakdown.currency;
+                    delete breakdown.currency;
+                }
+
+                if (breakdown.biddingType) {
+                    metaData.ext.biddingType = breakdown.biddingType;
+                    delete breakdown.biddingType;
+                }
+
+                if (breakdown.bid) {
+                    metaData.ext.bid = breakdown.bid;
+                    delete breakdown.bid;
+                }
+
+                if (breakdown.typeSummaries) {
+                    metaData.ext.typeSummaries = breakdown.typeSummaries;
+                    delete breakdown.typeSummaries;
+                }
+
+                if (breakdown.autopilotState) {
+                    metaData.ext.autopilotState = breakdown.autopilotState;
+                    delete breakdown.autopilotState;
+                }
+
+                if (breakdown.obBlacklistedCount) {
+                    metaData.ext.obBlacklistedCount =
+                        breakdown.obBlacklistedCount;
+                    delete breakdown.obBlacklistedCount;
+                }
+
+                metaData.ext.enablingAutopilotSourcesAllowed = true;
+                if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
+                    metaData.ext.enablingAutopilotSourcesAllowed =
+                        breakdown.enablingAutopilotSourcesAllowed;
+                    delete breakdown.enablingAutopilotSourcesAllowed;
+                }
+
+                if (breakdown.adGroupAutopilotState !== undefined) {
+                    metaData.adGroupAutopilotState =
+                        breakdown.adGroupAutopilotState;
+                    delete breakdown.adGroupAutopilotState;
+                }
+
+                if (breakdown.campaignAutopilot !== undefined) {
+                    metaData.campaignAutopilot = breakdown.campaignAutopilot;
+                    delete breakdown.campaignAutopilot;
+                }
             }
         }
 
@@ -153,64 +201,6 @@ angular
                 .map(function(breakdown) {
                     return breakdown.query;
                 });
-        }
-
-        /* eslint-disable complexity */
-        function extendMetaData(breakdown, metaData) {
-            if (!breakdown) return;
-
-            if (breakdown.batches) {
-                metaData.ext.batches = breakdown.batches;
-                delete breakdown.batches;
-            }
-
-            if (breakdown.currency) {
-                metaData.ext.currency = breakdown.currency;
-                delete breakdown.currency;
-            }
-
-            if (breakdown.biddingType) {
-                metaData.ext.biddingType = breakdown.biddingType;
-                delete breakdown.biddingType;
-            }
-
-            if (breakdown.bid) {
-                metaData.ext.bid = breakdown.bid;
-                delete breakdown.bid;
-            }
-
-            if (breakdown.typeSummaries) {
-                metaData.ext.typeSummaries = breakdown.typeSummaries;
-                delete breakdown.typeSummaries;
-            }
-
-            if (breakdown.autopilotState) {
-                metaData.ext.autopilotState = breakdown.autopilotState;
-                delete breakdown.autopilotState;
-            }
-
-            if (breakdown.obBlacklistedCount) {
-                metaData.ext.obBlacklistedCount = breakdown.obBlacklistedCount;
-                delete breakdown.obBlacklistedCount;
-            }
-
-            metaData.ext.enablingAutopilotSourcesAllowed = true;
-            if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
-                metaData.ext.enablingAutopilotSourcesAllowed =
-                    breakdown.enablingAutopilotSourcesAllowed;
-                delete breakdown.enablingAutopilotSourcesAllowed;
-            }
-
-            if (breakdown.adGroupAutopilotState !== undefined) {
-                metaData.adGroupAutopilotState =
-                    breakdown.adGroupAutopilotState;
-                delete breakdown.adGroupAutopilotState;
-            }
-
-            if (breakdown.campaignAutopilot !== undefined) {
-                metaData.campaignAutopilot = breakdown.campaignAutopilot;
-                delete breakdown.campaignAutopilot;
-            }
         }
 
         function createEndpoint(metaData) {
