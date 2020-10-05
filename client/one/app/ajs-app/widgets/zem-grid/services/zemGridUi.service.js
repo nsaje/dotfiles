@@ -7,11 +7,6 @@ angular
         zemGridDataFormatter,
         zemGridActionsService
     ) {
-        //
-        // zemGridUIService is responsible for applying UX changes
-        // to zem-grid component (legacy)
-        //
-
         // eslint-disable-line max-len
         var requestAnimationFrame = (function() {
             return (
@@ -33,262 +28,6 @@ angular
         var headerBreadcrumbElement = document.getElementById(
             'zem-header-breadcrumb'
         );
-
-        function resizeGridColumns(grid) {
-            if (
-                grid.meta.renderingEngine !==
-                zemGridConstants.gridRenderingEngineType.CUSTOM_GRID
-            )
-                return;
-            if (!grid.ui.element) return;
-            if (grid.ui.element.is(':hidden')) return;
-
-            clearColumnStyles(grid);
-            calculateColumnWidths(grid);
-            resizeCells(grid);
-            resizeBreakdownRows(grid);
-            initializePivotColumns(grid);
-        }
-
-        function updatePivotColumns(grid, leftOffset, animate) {
-            if (
-                grid.meta.renderingEngine !==
-                zemGridConstants.gridRenderingEngineType.CUSTOM_GRID
-            )
-                return;
-            if (!grid.body.ui.element) return;
-            if (grid.ui.element.is(':hidden')) return;
-
-            grid.header.ui.element
-                .find('.zem-grid-header-cell')
-                .each(updateCell);
-            grid.footer.ui.element
-                .find('.zem-grid-row > .zem-grid-cell')
-                .each(updateCell);
-            grid.body.ui.element
-                .find('.zem-grid-row-breakdown')
-                .each(updateBreakdownRow);
-            grid.body.ui.element.find('.zem-grid-row').each(function(idx, row) {
-                angular
-                    .element(row)
-                    .find('.zem-grid-cell')
-                    .each(updateCell);
-            });
-
-            function updateBreakdownRow(idx, _row) {
-                // Fix entire breakdown row
-                var row = angular.element(_row);
-                var style = getTranslateStyle(leftOffset);
-                style.position = 'absolute';
-                row.css(style);
-                // Add style to primary cell to be consistent with data rows/cells
-                row.find('.breakdown-row-primary-cell').css(
-                    getBreakdownColumnStyle(leftOffset)
-                );
-            }
-
-            function updateCell(idx, _cell) {
-                var cell = angular.element(_cell);
-                var column = grid.header.visibleColumns[idx];
-                if (column) cell.css(getColumnStyle(column));
-            }
-
-            function getColumnStyle(column) {
-                var style = column.style || {};
-                if (!column.pivot) return style;
-
-                style = getTranslateStyle(leftOffset + column.left);
-                angular.extend(style, column.style);
-
-                if (
-                    column.type === zemGridConstants.gridColumnTypes.BREAKDOWN
-                ) {
-                    angular.extend(style, getBreakdownColumnStyle(leftOffset));
-                }
-                return style;
-            }
-
-            function getTranslateStyle(left) {
-                var translateCssProperty = 'translateX(' + left + 'px)';
-                var style = {
-                    '-webkit-transform': translateCssProperty,
-                    '-ms-transform': translateCssProperty,
-                    transform: translateCssProperty,
-                    transition: 'none',
-                };
-
-                if (animate) {
-                    style.transition = 'transform 50ms ease-out';
-                }
-                return style;
-            }
-
-            function getBreakdownColumnStyle(leftOffset) {
-                // TODO: this will probably change in the future - create util functions/styles
-                // fade right border to show pivot column break when h-scrolled
-                var style = {};
-                var borderStyle = 'solid 1px rgba(63, 84, 127, 0.2)';
-                style['border-right'] = leftOffset ? borderStyle : '';
-                return style;
-            }
-        }
-
-        function updateStickyElements(grid) {
-            if (
-                grid.meta.renderingEngine !==
-                zemGridConstants.gridRenderingEngineType.CUSTOM_GRID
-            )
-                return;
-            if (!grid.ui.element) return;
-            if (grid.ui.element.is(':hidden')) return;
-
-            var SCROLL_BAR_WIDTH = 15;
-            var MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER =
-                2 * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
-            var windowHeight = document.documentElement.clientHeight;
-            var gridOffset = grid.ui.element.offset();
-            var viewportBottom = windowHeight + window.pageYOffset;
-            var spaceInViewportAvailableForGrid =
-                viewportBottom - gridOffset.top;
-
-            updateStickyHeaderPosition();
-            updateStickyFooterPosition();
-            updateStickyScroller();
-
-            function updateStickyHeaderPosition() {
-                var stickyHeader = grid.ui.element.find(
-                    '.zem-grid-sticky__header'
-                );
-                stickyHeader.css(getHeaderStyle());
-            }
-
-            function updateStickyFooterPosition() {
-                var stickyFooter = grid.ui.element.find(
-                    '.zem-grid-sticky__footer'
-                );
-                stickyFooter.css(getFooterStyle());
-            }
-
-            function updateStickyScroller() {
-                var isVisible = isFooterSticky();
-                var scrollContainer = grid.ui.element.find(
-                    '.zem-grid-sticky__scroller-container'
-                );
-                if (isVisible === scrollContainer.is(':visible')) return;
-
-                if (isVisible) {
-                    scrollContainer.show();
-                    scrollContainer
-                        .find('.zem-grid-sticky__scroller-content')
-                        .width(grid.ui.width);
-                    scrollContainer.scrollLeft(grid.body.ui.scrollLeft);
-                } else {
-                    scrollContainer.hide();
-                }
-            }
-
-            function getHeaderStyle() {
-                var contentTopOffset = getContentTopOffset();
-                var style = {
-                    position: 'static',
-                    width: grid.ui.element.width() + 'px',
-                };
-                var isSticky =
-                    window.pageYOffset + contentTopOffset > gridOffset.top;
-                if (isSticky) {
-                    style.position = 'fixed';
-                    style.top = contentTopOffset + 'px';
-                }
-                return style;
-            }
-
-            function getFooterStyle() {
-                var style = {
-                    position: 'static',
-                    width: grid.ui.element.width() + 'px',
-                };
-                if (isFooterSticky()) {
-                    var stickyFooterHeight =
-                        zemGridConstants.gridBodyRendering.ROW_HEIGHT +
-                        SCROLL_BAR_WIDTH;
-                    var spaceInViewportAvailableForStickyFooter =
-                        spaceInViewportAvailableForGrid -
-                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER;
-
-                    var bottom =
-                        spaceInViewportAvailableForStickyFooter -
-                        stickyFooterHeight;
-                    bottom = Math.min(0, bottom);
-
-                    style.position = 'fixed';
-                    style.bottom = bottom + 'px';
-                }
-                return style;
-            }
-
-            function getContentTopOffset() {
-                var offset = 0;
-
-                offset += commonHelpers.isDefined(headerElement)
-                    ? headerElement.offsetHeight
-                    : 0;
-                offset += commonHelpers.isDefined(filterSelectorElement)
-                    ? filterSelectorElement.offsetHeight
-                    : 0;
-
-                if (window.matchMedia('(max-width: 1024px)').matches) {
-                    offset += commonHelpers.isDefined(headerBreadcrumbElement)
-                        ? headerBreadcrumbElement.offsetHeight
-                        : 0;
-                }
-
-                return offset;
-            }
-
-            function isFooterSticky() {
-                return (
-                    spaceInViewportAvailableForGrid <
-                        grid.ui.element.height() &&
-                    spaceInViewportAvailableForGrid >=
-                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER
-                );
-            }
-        }
-
-        function getBreakdownColumnStyle(grid, row) {
-            var paddingLeft =
-                (row.level - 1) *
-                zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
-            if (row.inGroup)
-                paddingLeft +=
-                    zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
-
-            // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
-            var breakdownLevel = grid.meta.dataService.getBreakdownLevel();
-            if (breakdownLevel > 1 && breakdownLevel === row.level) {
-                paddingLeft +=
-                    zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
-            }
-
-            return {
-                'padding-left': paddingLeft + 'px',
-            };
-        }
-
-        function getFieldGoalStatusClass(status) {
-            switch (status) {
-                case constants.emoticon.HAPPY:
-                    return 'superperforming-goal';
-                case constants.emoticon.SAD:
-                    return 'underperforming-goal';
-                default:
-                    return '';
-            }
-        }
-
-        //
-        // PRIVATE
-        //
 
         function calculateColumnWidths(grid) {
             // Calculate rendered column widths, based on grid contents,
@@ -582,6 +321,95 @@ angular
             updatePivotColumns(grid, grid.body.ui.scrolleft || 0);
         }
 
+        function updatePivotColumns(grid, leftOffset, animate) {
+            if (!grid.body.ui.element) return;
+            if (grid.ui.element.is(':hidden')) return;
+
+            grid.header.ui.element
+                .find('.zem-grid-header-cell')
+                .each(updateCell);
+            grid.footer.ui.element
+                .find('.zem-grid-row > .zem-grid-cell')
+                .each(updateCell);
+            grid.body.ui.element
+                .find('.zem-grid-row-breakdown')
+                .each(updateBreakdownRow);
+            grid.body.ui.element.find('.zem-grid-row').each(function(idx, row) {
+                angular
+                    .element(row)
+                    .find('.zem-grid-cell')
+                    .each(updateCell);
+            });
+
+            function updateBreakdownRow(idx, _row) {
+                // Fix entire breakdown row
+                var row = angular.element(_row);
+                var style = getTranslateStyle(leftOffset);
+                style.position = 'absolute';
+                row.css(style);
+                // Add style to primary cell to be consistent with data rows/cells
+                row.find('.breakdown-row-primary-cell').css(
+                    getBreakdownColumnStyle(leftOffset)
+                );
+            }
+
+            function updateCell(idx, _cell) {
+                var cell = angular.element(_cell);
+                var column = grid.header.visibleColumns[idx];
+                if (column) cell.css(getColumnStyle(column));
+            }
+
+            function getColumnStyle(column) {
+                var style = column.style || {};
+                if (!column.pivot) return style;
+
+                style = getTranslateStyle(leftOffset + column.left);
+                angular.extend(style, column.style);
+
+                if (
+                    column.type === zemGridConstants.gridColumnTypes.BREAKDOWN
+                ) {
+                    angular.extend(style, getBreakdownColumnStyle(leftOffset));
+                }
+                return style;
+            }
+
+            function getTranslateStyle(left) {
+                var translateCssProperty = 'translateX(' + left + 'px)';
+                var style = {
+                    '-webkit-transform': translateCssProperty,
+                    '-ms-transform': translateCssProperty,
+                    transform: translateCssProperty,
+                    transition: 'none',
+                };
+
+                if (animate) {
+                    style.transition = 'transform 50ms ease-out';
+                }
+                return style;
+            }
+
+            function getBreakdownColumnStyle(leftOffset) {
+                // TODO: this will probably change in the future - create util functions/styles
+                // fade right border to show pivot column break when h-scrolled
+                var style = {};
+                var borderStyle = 'solid 1px rgba(63, 84, 127, 0.2)';
+                style['border-right'] = leftOffset ? borderStyle : '';
+                return style;
+            }
+        }
+
+        function resizeGridColumns(grid) {
+            if (!grid.ui.element) return;
+            if (grid.ui.element.is(':hidden')) return;
+
+            clearColumnStyles(grid);
+            calculateColumnWidths(grid);
+            resizeCells(grid);
+            resizeBreakdownRows(grid);
+            initializePivotColumns(grid);
+        }
+
         function clearColumnStyles(grid) {
             if (!grid.body.ui.element) return;
 
@@ -600,6 +428,153 @@ angular
             function clearStyle(idx, _cell) {
                 var cell = angular.element(_cell);
                 cell.removeAttr('style');
+            }
+        }
+
+        function getBreakdownColumnStyle(grid, row) {
+            var paddingLeft =
+                (row.level - 1) *
+                zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+            if (row.inGroup)
+                paddingLeft +=
+                    zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+
+            // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
+            var breakdownLevel = grid.meta.dataService.getBreakdownLevel();
+            if (breakdownLevel > 1 && breakdownLevel === row.level) {
+                paddingLeft +=
+                    zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+            }
+
+            return {
+                'padding-left': paddingLeft + 'px',
+            };
+        }
+
+        function getFieldGoalStatusClass(status) {
+            switch (status) {
+                case constants.emoticon.HAPPY:
+                    return 'superperforming-goal';
+                case constants.emoticon.SAD:
+                    return 'underperforming-goal';
+                default:
+                    return '';
+            }
+        }
+
+        function updateStickyElements(grid) {
+            if (grid.ui.element.is(':hidden')) return;
+
+            var SCROLL_BAR_WIDTH = 15;
+            var MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER =
+                2 * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
+            var windowHeight = document.documentElement.clientHeight;
+            var gridOffset = grid.ui.element.offset();
+            var viewportBottom = windowHeight + window.pageYOffset;
+            var spaceInViewportAvailableForGrid =
+                viewportBottom - gridOffset.top;
+
+            updateStickyHeaderPosition();
+            updateStickyFooterPosition();
+            updateStickyScroller();
+
+            function updateStickyHeaderPosition() {
+                var stickyHeader = grid.ui.element.find(
+                    '.zem-grid-sticky__header'
+                );
+                stickyHeader.css(getHeaderStyle());
+            }
+
+            function updateStickyFooterPosition() {
+                var stickyFooter = grid.ui.element.find(
+                    '.zem-grid-sticky__footer'
+                );
+                stickyFooter.css(getFooterStyle());
+            }
+
+            function updateStickyScroller() {
+                var isVisible = isFooterSticky();
+                var scrollContainer = grid.ui.element.find(
+                    '.zem-grid-sticky__scroller-container'
+                );
+                if (isVisible === scrollContainer.is(':visible')) return;
+
+                if (isVisible) {
+                    scrollContainer.show();
+                    scrollContainer
+                        .find('.zem-grid-sticky__scroller-content')
+                        .width(grid.ui.width);
+                    scrollContainer.scrollLeft(grid.body.ui.scrollLeft);
+                } else {
+                    scrollContainer.hide();
+                }
+            }
+
+            function getHeaderStyle() {
+                var contentTopOffset = getContentTopOffset();
+                var style = {
+                    position: 'static',
+                    width: grid.ui.element.width() + 'px',
+                };
+                var isSticky =
+                    window.pageYOffset + contentTopOffset > gridOffset.top;
+                if (isSticky) {
+                    style.position = 'fixed';
+                    style.top = contentTopOffset + 'px';
+                }
+                return style;
+            }
+
+            function getFooterStyle() {
+                var style = {
+                    position: 'static',
+                    width: grid.ui.element.width() + 'px',
+                };
+                if (isFooterSticky()) {
+                    var stickyFooterHeight =
+                        zemGridConstants.gridBodyRendering.ROW_HEIGHT +
+                        SCROLL_BAR_WIDTH;
+                    var spaceInViewportAvailableForStickyFooter =
+                        spaceInViewportAvailableForGrid -
+                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER;
+
+                    var bottom =
+                        spaceInViewportAvailableForStickyFooter -
+                        stickyFooterHeight;
+                    bottom = Math.min(0, bottom);
+
+                    style.position = 'fixed';
+                    style.bottom = bottom + 'px';
+                }
+                return style;
+            }
+
+            function getContentTopOffset() {
+                var offset = 0;
+
+                offset += commonHelpers.isDefined(headerElement)
+                    ? headerElement.offsetHeight
+                    : 0;
+                offset += commonHelpers.isDefined(filterSelectorElement)
+                    ? filterSelectorElement.offsetHeight
+                    : 0;
+
+                if (window.matchMedia('(max-width: 1024px)').matches) {
+                    offset += commonHelpers.isDefined(headerBreadcrumbElement)
+                        ? headerBreadcrumbElement.offsetHeight
+                        : 0;
+                }
+
+                return offset;
+            }
+
+            function isFooterSticky() {
+                return (
+                    spaceInViewportAvailableForGrid <
+                        grid.ui.element.height() &&
+                    spaceInViewportAvailableForGrid >=
+                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER
+                );
             }
         }
 

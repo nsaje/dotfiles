@@ -177,7 +177,7 @@ angular
                 }
             }
 
-            grid.meta.api.setOrder(order);
+            grid.meta.dataService.setOrder(order, false);
         }
 
         function getAccountKey(level, activeAccount) {
@@ -189,7 +189,7 @@ angular
         }
 
         function saveOrder(grid) {
-            var order = grid.meta.api.getOrder();
+            var order = grid.meta.dataService.getOrder();
             zemLocalStorageService.set(
                 KEY_ORDER,
                 order,

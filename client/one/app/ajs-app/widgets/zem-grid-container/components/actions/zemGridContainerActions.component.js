@@ -37,8 +37,6 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.areRuleActionsVisible = areRuleActionsVisible;
         $ctrl.hasReadOnlyAccess = hasReadOnlyAccess;
 
-        var onSelectionUpdatedHandler;
-
         $ctrl.$onInit = function() {
             $ctrl.level = $ctrl.gridApi.getMetaData().level;
             $ctrl.entity = zemNavigationNewService.getActiveEntity();
@@ -59,14 +57,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             $ctrl.accountId = account ? account.id : undefined;
             $ctrl.campaignId = campaign ? campaign.id : undefined;
             $ctrl.adGroupId = adGroup ? adGroup.id : undefined;
-            onSelectionUpdatedHandler = $ctrl.gridApi.onSelectionUpdated(
-                $scope,
-                updateSelectedRowsList
-            );
-        };
-
-        $ctrl.$onDestroy = function() {
-            if (onSelectionUpdatedHandler) onSelectionUpdatedHandler();
+            $ctrl.gridApi.onSelectionUpdated($scope, updateSelectedRowsList);
         };
 
         function updateSelectedRowsList() {

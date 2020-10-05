@@ -16,23 +16,16 @@ angular
             //
             // Public API
             //
-            this.destroy = destroy;
             this.getColumnOrder = getColumnOrder;
             this.setColumnOrder = setColumnOrder;
 
-            var onDataUpdatedHandler;
-
             function initialize() {
                 loadOrder();
-                onDataUpdatedHandler = pubsub.register(
+                pubsub.register(
                     pubsub.EVENTS.DATA_UPDATED,
                     grid.meta.scope,
                     initializeOrder
                 );
-            }
-
-            function destroy() {
-                if (onDataUpdatedHandler) onDataUpdatedHandler();
             }
 
             function loadOrder() {
@@ -49,7 +42,7 @@ angular
             }
 
             function initializeOrder() {
-                var order = grid.meta.api.getOrder();
+                var order = grid.meta.dataService.getOrder();
                 if (!order) return;
                 if (order === lastOrder) return;
                 lastOrder = order;
@@ -96,8 +89,7 @@ angular
                 if (order === zemGridConstants.gridColumnOrder.DESC) {
                     orderField = '-' + orderField;
                 }
-                grid.meta.api.setOrder(orderField);
-                grid.meta.api.loadData();
+                grid.meta.dataService.setOrder(orderField, true);
                 zemGridStorageService.saveOrder(grid);
             }
         }

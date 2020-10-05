@@ -11,18 +11,9 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
         $ctrl.onChecked = onChecked;
         $ctrl.applyBreakdown = applyBreakdown;
 
-        var onMetaDataUpdatedHandler;
-
         $ctrl.$onInit = function() {
             initializeSelector();
-            onMetaDataUpdatedHandler = $ctrl.api.onMetaDataUpdated(
-                null,
-                initializeSelector
-            );
-        };
-
-        $ctrl.$onDestroy = function() {
-            if (onMetaDataUpdatedHandler) onMetaDataUpdatedHandler();
+            $ctrl.api.onMetaDataUpdated(null, initializeSelector);
         };
 
         function initializeSelector() {
@@ -35,8 +26,6 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
                 return group.available !== false;
             });
 
-            // TODO (msuber): is it really required that we always load
-            // ad group breakdown when user navigates to campaign tab?
             setDefaultBreakdowns(
                 constants.level.ACCOUNTS,
                 constants.breakdown.CAMPAIGN,

@@ -18,7 +18,7 @@ import {PaginationOptions} from '../../../../shared/components/smart-grid/types/
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {RequestState} from '../../../../shared/types/request-state';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
-import {getOffset} from '../../../../shared/helpers/pagination.helper';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Injectable()
@@ -394,7 +394,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
         pageSize: number
     ): Promise<PublisherGroup[]> {
         return new Promise<PublisherGroup[]>((resolve, reject) => {
-            const offset = getOffset(page, pageSize);
+            const offset = this.getOffset(page, pageSize);
             const serviceMethod: (
                 agencyId: string | null,
                 accountId: string | null,
@@ -453,5 +453,9 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                     }
                 );
         });
+    }
+
+    private getOffset(page: number, pageSize: number): number {
+        return (page - 1) * pageSize;
     }
 }

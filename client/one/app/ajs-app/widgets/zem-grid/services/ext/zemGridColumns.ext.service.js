@@ -4,7 +4,8 @@ angular
         zemGridConstants,
         zemGridStorageService,
         zemUtils,
-        zemCostModeService
+        zemCostModeService,
+        zemNavigationNewService
     ) {
         // eslint-disable-line max-len
 
@@ -16,32 +17,33 @@ angular
             //
             // Public API
             //
-            this.destroy = destroy;
             this.getVisibleColumns = getVisibleColumns;
             this.setVisibleColumns = setVisibleColumns;
             this.getColumnsToToggle = getColumnsToToggle;
             this.findColumnInCategories = findColumnInCategories;
             this.getTogglableColumns = getTogglableColumns;
 
-            var onMetaDataUpdatedHandler;
-            var onDataUpdatedHandler;
-
             function initialize() {
-                onMetaDataUpdatedHandler = pubsub.register(
+                pubsub.register(
                     pubsub.EVENTS.METADATA_UPDATED,
                     null,
                     initializeColumns
                 );
-                onDataUpdatedHandler = pubsub.register(
+                pubsub.register(
                     pubsub.EVENTS.DATA_UPDATED,
                     null,
                     initializeColumnsState
                 );
-            }
-
-            function destroy() {
-                if (onMetaDataUpdatedHandler) onMetaDataUpdatedHandler();
-                if (onDataUpdatedHandler) onDataUpdatedHandler();
+                zemCostModeService.onCostModeUpdate(function() {
+                    pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+                    pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                });
+                zemNavigationNewService.onHierarchyUpdate(function() {
+                    // Changed entity properties (e.g. ad group's bidding type)
+                    // affect columns shown in grid.
+                    pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+                    pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                });
             }
 
             function initializeColumns() {

@@ -93,7 +93,6 @@ describe('CreditsService', () => {
         {
             id: '456',
             creditId: '123',
-            accountId: accountId,
             canEditAmount: false,
             canEditEndDate: false,
             canEditStartDate: false,

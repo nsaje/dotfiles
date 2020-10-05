@@ -18,7 +18,6 @@ import {Account} from '../../../../core/entities/types/account/account';
 import {Source} from '../../../../core/sources/types/source';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
-import {getOffset} from '../../../../shared/helpers/pagination.helper';
 
 @Injectable()
 export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
@@ -325,7 +324,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
         keyword: string | null = null
     ): Promise<Deal[]> {
         return new Promise<Deal[]>((resolve, reject) => {
-            const offset = getOffset(page, pageSize);
+            const offset = this.getOffset(page, pageSize);
             this.dealsService
                 .list(
                     agencyId,
@@ -387,5 +386,9 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                     }
                 );
         });
+    }
+
+    private getOffset(page: number, pageSize: number): number {
+        return (page - 1) * pageSize;
     }
 }

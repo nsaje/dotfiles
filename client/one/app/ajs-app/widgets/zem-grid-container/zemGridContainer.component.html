@@ -28,7 +28,7 @@
                 </div>
                 <div ng-if="tab.activated">
                     <zem-grid-container-actions
-                        ng-if="tab.grid.api.isInitialized()"
+                        ng-if="tab.grid.api.getMetaData()"
                         entity="$ctrl.entity"
                         breakdown="tab.breakdown"
                         level="$ctrl.level"
@@ -39,13 +39,7 @@
                     <zem-grid
                         data-data-source="tab.grid.dataSource"
                         options="tab.grid.options"
-                        rendering-engine="tab.grid.renderingEngine"
-                        page="tab.page"
-                        page-size="tab.pageSize"
                         on-initialized="$ctrl.onGridInitialized(tab, api)"
-                        on-pagination-change="
-                            $ctrl.onPaginationChange(tab, page, pageSize)
-                        "
                     ></zem-grid>
                 </div>
             </div>

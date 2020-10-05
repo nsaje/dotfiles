@@ -46,12 +46,11 @@ describe('zemGridOrderService', function() {
         grid.meta.scope = scope;
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
         grid.meta.data = {};
-        grid.meta.api = {
+        grid.meta.dataService = {
             getOrder: function() {
                 return '-orderField1';
             },
             setOrder: function() {},
-            loadData: function() {},
         };
 
         grid.header.columns.push(
@@ -89,7 +88,7 @@ describe('zemGridOrderService', function() {
             undefined
         );
 
-        spyOn(grid.meta.api, 'getOrder').and.returnValue('orderField1');
+        spyOn(grid.meta.dataService, 'getOrder').and.returnValue('orderField1');
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(
             zemGridConstants.gridColumnOrder.ASC
@@ -101,7 +100,7 @@ describe('zemGridOrderService', function() {
             zemGridConstants.gridColumnOrder.NONE
         );
 
-        grid.meta.api.getOrder.and.returnValue('field2');
+        grid.meta.dataService.getOrder.and.returnValue('field2');
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(
             zemGridConstants.gridColumnOrder.NONE
@@ -225,8 +224,7 @@ describe('zemGridOrderService', function() {
     it('should pass order to data service', function() {
         var grid = createGrid();
         var pubsub = grid.meta.pubsub;
-        spyOn(grid.meta.api, 'setOrder');
-        spyOn(grid.meta.api, 'loadData');
+        spyOn(grid.meta.dataService, 'setOrder');
 
         var orderService = zemGridOrderService.createInstance(grid);
         pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
@@ -235,28 +233,36 @@ describe('zemGridOrderService', function() {
             grid.header.columns[1],
             zemGridConstants.gridColumnOrder.ASC
         );
-        expect(grid.meta.api.setOrder).toHaveBeenCalledWith('field2');
-        expect(grid.meta.api.loadData).toHaveBeenCalled();
+        expect(grid.meta.dataService.setOrder).toHaveBeenCalledWith(
+            'field2',
+            jasmine.any(Boolean)
+        );
 
         orderService.setColumnOrder(
             grid.header.columns[1],
             zemGridConstants.gridColumnOrder.DESC
         );
-        expect(grid.meta.api.setOrder).toHaveBeenCalledWith('-field2');
-        expect(grid.meta.api.loadData).toHaveBeenCalled();
+        expect(grid.meta.dataService.setOrder).toHaveBeenCalledWith(
+            '-field2',
+            jasmine.any(Boolean)
+        );
 
         orderService.setColumnOrder(
             grid.header.columns[2],
             zemGridConstants.gridColumnOrder.ASC
         );
-        expect(grid.meta.api.setOrder).toHaveBeenCalledWith('orderField3');
-        expect(grid.meta.api.loadData).toHaveBeenCalled();
+        expect(grid.meta.dataService.setOrder).toHaveBeenCalledWith(
+            'orderField3',
+            jasmine.any(Boolean)
+        );
 
         orderService.setColumnOrder(
             grid.header.columns[2],
             zemGridConstants.gridColumnOrder.DESC
         );
-        expect(grid.meta.api.setOrder).toHaveBeenCalledWith('-orderField3');
-        expect(grid.meta.api.loadData).toHaveBeenCalled();
+        expect(grid.meta.dataService.setOrder).toHaveBeenCalledWith(
+            '-orderField3',
+            jasmine.any(Boolean)
+        );
     });
 });

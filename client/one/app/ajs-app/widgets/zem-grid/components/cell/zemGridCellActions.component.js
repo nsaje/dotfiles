@@ -185,7 +185,7 @@ angular
                         vm.switchButtonTransitionEnabled = false;
                     }, 250);
 
-                    vm.grid.meta.api.saveDataQueued(state, vm.row, {
+                    vm.grid.meta.dataService.saveDataQueued(state, vm.row, {
                         data: {field: 'state'},
                     });
                 }

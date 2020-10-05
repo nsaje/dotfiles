@@ -32,6 +32,7 @@ describe('component: zemGridIntegrationService', function() {
                 enabled: true,
                 filtersEnabled: true,
                 levels: [0, 1],
+                callbacks: jasmine.any(Object),
             },
         });
     });
@@ -67,15 +68,14 @@ describe('component: zemGridIntegrationService', function() {
         spyOn(zemDataSourceService, 'createInstance').and.callThrough();
         spyOn(zemGridEndpointService, 'createMetaData').and.callThrough();
         var service = zemGridIntegrationService.createInstance($scope);
-        service.initialize(
-            defaultEntity,
-            constants.level.ACCOUNTS,
-            constants.breakdown.CAMPAIGN
-        );
+        service.initialize();
 
         expect(service.getGrid().dataSource).not.toBeDefined();
 
-        service.configureDataSource();
+        service.configureDataSource(
+            defaultEntity,
+            constants.breakdown.CAMPAIGN
+        );
 
         expect(service.getGrid().dataSource).toBeDefined();
         expect(zemDataSourceService.createInstance).toHaveBeenCalled();
@@ -84,5 +84,41 @@ describe('component: zemGridIntegrationService', function() {
             defaultEntity.id,
             constants.breakdown.CAMPAIGN
         );
+    });
+
+    it('should cache datasource based on the breakdown', function() {
+        spyOn(zemDataSourceService, 'createInstance').and.callThrough();
+        var service = zemGridIntegrationService.createInstance($scope);
+        service.initialize();
+        service.configureDataSource(
+            defaultEntity,
+            constants.breakdown.CAMPAIGN
+        );
+        expect(zemDataSourceService.createInstance).toHaveBeenCalled();
+        var campaignDataSource = service.getGrid().dataSource;
+
+        zemDataSourceService.createInstance.calls.reset();
+        service.configureDataSource(
+            defaultEntity,
+            constants.breakdown.MEDIA_SOURCE
+        );
+        expect(zemDataSourceService.createInstance).toHaveBeenCalled();
+        var mediaDataSource = service.getGrid().dataSource;
+
+        zemDataSourceService.createInstance.calls.reset();
+        service.configureDataSource(
+            defaultEntity,
+            constants.breakdown.CAMPAIGN
+        );
+        expect(zemDataSourceService.createInstance).not.toHaveBeenCalled();
+        expect(service.getGrid().dataSource).toBe(campaignDataSource);
+
+        zemDataSourceService.createInstance.calls.reset();
+        service.configureDataSource(
+            defaultEntity,
+            constants.breakdown.MEDIA_SOURCE
+        );
+        expect(zemDataSourceService.createInstance).not.toHaveBeenCalled();
+        expect(service.getGrid().dataSource).toBe(mediaDataSource);
     });
 });

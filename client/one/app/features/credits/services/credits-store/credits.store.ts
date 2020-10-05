@@ -22,7 +22,6 @@ import {CreditsStoreFieldsErrorsState} from './credits.store.fields-errors-state
 import {CreditStatus, Currency} from '../../../../app.constants';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';
-import {getOffset} from '../../../../shared/helpers/pagination.helper';
 
 @Injectable()
 export class CreditsStore extends Store<CreditsStoreState>
@@ -178,7 +177,7 @@ export class CreditsStore extends Store<CreditsStoreState>
         paginationOptions: PaginationOptions
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const offset = getOffset(
+            const offset = this.getOffset(
                 paginationOptions.page,
                 paginationOptions.pageSize
             );
@@ -478,7 +477,7 @@ export class CreditsStore extends Store<CreditsStoreState>
         pageSize: number
     ): Promise<Credit[]> {
         return new Promise<Credit[]>((resolve, reject) => {
-            const offset = getOffset(page, pageSize);
+            const offset = this.getOffset(page, pageSize);
             const serviceMethod: (
                 agencyId: string | null,
                 accountId: string | null,
@@ -572,6 +571,10 @@ export class CreditsStore extends Store<CreditsStoreState>
         } else {
             return false;
         }
+    }
+
+    private getOffset(page: number, pageSize: number): number {
+        return (page - 1) * pageSize;
     }
 
     private calculateFeeVisibility(

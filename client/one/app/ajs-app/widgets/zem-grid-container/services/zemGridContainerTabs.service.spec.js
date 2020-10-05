@@ -33,8 +33,6 @@ describe('component: zemGridContainerTabsService', function() {
             ).toEqual({
                 name: 'Placements',
                 breakdown: 'placement',
-                page: 1,
-                pageSize: 50,
             });
         }
     });

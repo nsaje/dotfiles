@@ -17,9 +17,13 @@ angular.module('one.widgets').directive('zemGridRowBreakdown', function() {
             vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
             vm.getCompleteText = getCompleteText;
 
-            function loadMore(limit) {
-                var offset = vm.row.data.pagination.rowsLength;
-                vm.grid.meta.api.loadData(vm.row, offset, limit);
+            function loadMore(size) {
+                if (!size) {
+                    size =
+                        vm.row.data.pagination.count -
+                        vm.row.data.pagination.limit;
+                }
+                vm.grid.meta.dataService.loadData(vm.row, size);
             }
 
             function getBreakdownColumnStyle() {

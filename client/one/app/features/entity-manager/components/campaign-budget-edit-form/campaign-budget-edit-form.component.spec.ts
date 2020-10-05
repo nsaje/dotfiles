@@ -14,7 +14,6 @@ describe('CampaignBudgetEditFormComponent', () => {
     const mockedBudget: CampaignBudget = {
         id: '123',
         creditId: '100',
-        accountId: '123',
         startDate: new Date(1970, 2, 23),
         endDate: new Date(1970, 3, 10),
         amount: '1000000',

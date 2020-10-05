@@ -1,8 +1,4 @@
-<div
-    ng-if="$ctrl.renderingEngine === $ctrl.gridRenderingEngineType.CUSTOM_GRID"
-    class="zem-grid"
-    zem-grid-copy
->
+<div class="zem-grid" zem-grid-copy>
     <div
         class="loader loader--takeover"
         ng-show="$ctrl.grid.meta.loading"
@@ -13,13 +9,3 @@
         <zem-grid-footer grid="$ctrl.grid"></zem-grid-footer>
     </div>
 </div>
-<zem-grid-bridge
-    ng-if="$ctrl.renderingEngine === $ctrl.gridRenderingEngineType.SMART_GRID"
-    class="zem-grid-bridge"
-    [grid]="$ctrl.grid"
-    [is-meta-data-ready]="$ctrl.grid.meta.initialized"
-    [is-data-loading]="$ctrl.grid.meta.loading"
-    (pagination-change)="
-        $ctrl.onPaginationChange({page: $event.page, pageSize: $event.pageSize})
-    "
-></zem-grid-bridge>

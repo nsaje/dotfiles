@@ -1,5 +1,4 @@
 import {Level, Breakdown, BreakdownParam} from '../../app.constants';
-import {GridColumnTypes} from './analytics.constants';
 
 export const DEFAULT_BREAKDOWN = {
     [Level.ALL_ACCOUNTS]: Breakdown.ACCOUNT,
@@ -20,18 +19,3 @@ export const BREAKDOWN_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownParam.PLACEMENTS]: Breakdown.PLACEMENT,
     [BreakdownParam.INSIGHTS]: Breakdown.INSIGHTS,
 };
-
-export const BASE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
-    GridColumnTypes.TEXT,
-    GridColumnTypes.PERCENT,
-    GridColumnTypes.NUMBER,
-    GridColumnTypes.CURRENCY,
-    GridColumnTypes.SECONDS,
-    GridColumnTypes.DATE_TIME,
-];
-
-export const EXTERNAL_LINK_COLUMN_TYPES: GridColumnTypes[] = [
-    GridColumnTypes.ICON_LINK,
-    GridColumnTypes.VISIBLE_LINK,
-    GridColumnTypes.TEXT_LINK,
-];

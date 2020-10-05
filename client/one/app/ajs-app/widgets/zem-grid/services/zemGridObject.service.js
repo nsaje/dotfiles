@@ -20,7 +20,6 @@ angular
                 // zem-grid body
                 rows: [], // flatten DataSource data (breakdown tree); see createRow() for row fields def.
                 ui: createUiObject(),
-                pagination: null, // pagination data
             };
             this.footer = {
                 // zem-grid footer
@@ -30,17 +29,9 @@ angular
 
             this.meta = {
                 // meta information and functionality
-                initialized: false,
-                loading: false,
-                renderingEngine: null, // DEFAULT or SMART_GRID
-                paginationOptions: createPaginationOptionsObject(), // pagination options data
-                options: null, // Options (enableSelection, maxSelectedRows, etc.)
                 api: null, // zemGridApi - api for exposed/public zem-grid functionality
-                dataService: null, // zemGridDataService - access to data
-                columnsService: null, // zemGridColumnsService
-                orderService: null, // zemGridOrderService
-                collapseService: null, // zemGridCollapseService
-                selectionService: null, // zemGridSelectionService
+                options: null, // Options (enableSelection, maxSelectedRows, etc.)
+                service: null, // zemGridDataService - access to data
                 pubsub: null, // zemGridPubSub - internal message queue
                 data: null, // meta-data retrieved through Endpoint - columns definitions
                 scope: null, // zem-grid scope used for running $digest and $emit internally
@@ -61,14 +52,6 @@ angular
         function createUiObject() {
             return {
                 element: null, // DOM element of corresponded grid component
-            };
-        }
-
-        function createPaginationOptionsObject() {
-            return {
-                type: 'server',
-                page: null,
-                pageSize: null,
             };
         }
 

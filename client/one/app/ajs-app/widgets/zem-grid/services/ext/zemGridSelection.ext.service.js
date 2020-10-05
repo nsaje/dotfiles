@@ -15,7 +15,6 @@ angular
             //
             // Public API
             //
-            this.destroy = destroy;
             this.getConfig = getConfig;
             this.setConfig = setConfig;
             this.getSelection = getSelection;
@@ -34,38 +33,28 @@ angular
             this.isRowSelected = isRowSelected;
             this.setRowSelection = setRowSelection;
 
-            var onDataUpdatedHandler;
-
             function initialize() {
                 var restoreNeeded = false;
-                onDataUpdatedHandler = pubsub.register(
-                    pubsub.EVENTS.DATA_UPDATED,
-                    null,
-                    function() {
-                        if (grid.body.rows.length === 0) {
-                            restoreNeeded = true; // Full update in progress
-                        } else if (restoreNeeded) {
-                            // Restore selection with updated rows
-                            grid.ext.selection.selected = restoreSelectionCollection(
-                                grid.ext.selection.selected
-                            );
-                            grid.ext.selection.unselected = restoreSelectionCollection(
-                                grid.ext.selection.unselected
-                            );
-                            pubsub.notify(
-                                pubsub.EVENTS.EXT_SELECTION_UPDATED,
-                                grid.ext.selection
-                            );
-                        }
+                pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, function() {
+                    if (grid.body.rows.length === 0) {
+                        restoreNeeded = true; // Full update in progress
+                    } else if (restoreNeeded) {
+                        // Restore selection with updated rows
+                        grid.ext.selection.selected = restoreSelectionCollection(
+                            grid.ext.selection.selected
+                        );
+                        grid.ext.selection.unselected = restoreSelectionCollection(
+                            grid.ext.selection.unselected
+                        );
+                        pubsub.notify(
+                            pubsub.EVENTS.EXT_SELECTION_UPDATED,
+                            grid.ext.selection
+                        );
                     }
-                );
+                });
 
                 grid.ext.selection = {};
                 setFilter(zemGridConstants.gridSelectionFilterType.NONE);
-            }
-
-            function destroy() {
-                if (onDataUpdatedHandler) onDataUpdatedHandler();
             }
 
             function restoreSelectionCollection(oldSelectionCollection) {
