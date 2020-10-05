@@ -83,7 +83,7 @@ INSERT INTO mv_touchpointconversions (
         CASE WHEN a.connection_type IN ('cableDSL', 'corporate', 'dialup') THEN 'wifi'
             WHEN a.connection_type = 'cellular' THEN 'cellular'
             ELSE NULL
-        END as connection_type,
+        END as connection_type
     FROM (
         SELECT
               c.date as date,
