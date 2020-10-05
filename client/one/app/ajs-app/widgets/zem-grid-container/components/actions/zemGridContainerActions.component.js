@@ -104,6 +104,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 });
         }
 
+        // eslint-disable-next-line complexity
         function isEntityBreakdown() {
             return (
                 $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE &&
@@ -114,7 +115,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown !== constants.breakdown.DMA &&
                 $ctrl.breakdown !== constants.breakdown.DEVICE &&
                 $ctrl.breakdown !== constants.breakdown.ENVIRONMENT &&
-                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
+                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM &&
+                $ctrl.breakdown !== constants.breakdown.BROWSER &&
+                $ctrl.breakdown !== constants.breakdown.CONNECTION_TYPE
             );
         }
 
@@ -172,7 +175,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown !== constants.breakdown.DMA &&
                 $ctrl.breakdown !== constants.breakdown.DEVICE &&
                 $ctrl.breakdown !== constants.breakdown.ENVIRONMENT &&
-                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
+                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM &&
+                $ctrl.breakdown !== constants.breakdown.BROWSER &&
+                $ctrl.breakdown !== constants.breakdown.CONNECTION_TYPE
             );
         }
 

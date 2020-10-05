@@ -129,6 +129,9 @@ angular
         breakdownUrlMap[constants.breakdown.DEVICE] = 'device_type';
         breakdownUrlMap[constants.breakdown.ENVIRONMENT] = 'environment';
         breakdownUrlMap[constants.breakdown.OPERATING_SYSTEM] = 'device_os';
+        breakdownUrlMap[constants.breakdown.BROWSER] = 'browser';
+        breakdownUrlMap[constants.breakdown.CONNECTION_TYPE] =
+            'connection_type';
 
         function getUrl(level, id, breakdown) {
             // /api/${level}/${id}/${breakdown}/daily_stats

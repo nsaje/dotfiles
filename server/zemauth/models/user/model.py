@@ -224,4 +224,6 @@ class User(
             ("can_enable_push_metrics", "User can enable push metrics through special link"),
             ("can_use_browser_targeting", "User can use browser targeting."),
             ("can_use_connection_type_targeting", "User can use connection type targeting."),
+            ("can_see_browser_reporting", "User can see browser reporting"),
+            ("can_see_connection_type_reporting", "User can see connection type reporting"),
         )

@@ -21,6 +21,19 @@ export class CanActivateBreakdownGuard implements CanActivate {
             this.router.navigate([parentUrl]);
             return false;
         }
+
+        if (route.params.breakdown === BreakdownParam.BROWSER) {
+            return this.authStore.hasPermission(
+                'zemauth.can_see_browser_reporting'
+            );
+        }
+
+        if (route.params.breakdown === BreakdownParam.CONNECTION_TYPE) {
+            return this.authStore.hasPermission(
+                'zemauth.can_see_connection_type_reporting'
+            );
+        }
+
         return true;
     }
 

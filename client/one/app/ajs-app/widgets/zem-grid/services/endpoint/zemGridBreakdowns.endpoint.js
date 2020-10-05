@@ -118,6 +118,22 @@ angular
                 shown: true,
             },
 
+            browser: {
+                name: 'Browser',
+                query: 'browser',
+                report_query: 'Browser',
+                shown: 'zemauth.can_use_browser_targeting',
+                internal: 'zemauth.can_use_browser_targeting',
+            },
+
+            connectionType: {
+                name: 'Connection Type',
+                query: 'connection_type',
+                report_query: 'Connection Type',
+                shown: 'zemauth.can_use_connection_type_targeting',
+                internal: 'zemauth.can_use_connection_type_targeting',
+            },
+
             zemPlacementType: {
                 name: 'Zemanta Placement Type',
                 query: 'zem_placement_type',
@@ -171,6 +187,8 @@ angular
             BREAKDOWNS.device,
             BREAKDOWNS.environment,
             BREAKDOWNS.deviceOs,
+            BREAKDOWNS.browser,
+            BREAKDOWNS.connectionType,
         ]);
 
         var DELIVERY_BREAKDOWNS = [
@@ -186,6 +204,8 @@ angular
             BREAKDOWNS.environment,
             BREAKDOWNS.deviceOs,
             BREAKDOWNS.deviceOsVersion,
+            BREAKDOWNS.browser,
+            BREAKDOWNS.connectionType,
 
             BREAKDOWNS.zemPlacementType,
             BREAKDOWNS.videoPlaybackMethod,
@@ -217,6 +237,7 @@ angular
             }
         }
 
+        // eslint-disable-next-line complexity
         function getStructureBreakdowns(level, breakdown) {
             var entityBreakdown = getEntityLevelBreakdown(level);
             var childEntityBreakdown =
@@ -240,6 +261,8 @@ angular
                 case constants.breakdown.DEVICE:
                 case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
+                case constants.breakdown.BROWSER:
+                case constants.breakdown.CONNECTION_TYPE:
                     break;
                 default:
                     structureBreakdowns = [
@@ -262,6 +285,8 @@ angular
                 case constants.breakdown.DEVICE:
                 case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
+                case constants.breakdown.BROWSER:
+                case constants.breakdown.CONNECTION_TYPE:
                     return [];
                 default:
                     return checkPermissions(DELIVERY_BREAKDOWNS);
@@ -276,6 +301,8 @@ angular
                 case constants.breakdown.DEVICE:
                 case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
+                case constants.breakdown.BROWSER:
+                case constants.breakdown.CONNECTION_TYPE:
                     return [];
                 default:
                     return TIME_BREAKDOWNS;

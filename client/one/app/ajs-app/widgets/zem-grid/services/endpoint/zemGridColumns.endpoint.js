@@ -1626,6 +1626,14 @@ angular
             name: 'Operating System',
             help: '',
         };
+        NAME_COLUMN_BRANDING[constants.breakdown.BROWSER] = {
+            name: 'Browser',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.CONNECTION_TYPE] = {
+            name: 'Connection Type',
+            help: '',
+        };
 
         var STATUS_COLUMN_BRANDING = {};
         STATUS_COLUMN_BRANDING[constants.breakdown.ACCOUNT] = {
@@ -1957,6 +1965,8 @@ angular
             constants.breakdown.DEVICE,
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ];
         COLUMNS.actions.exceptions.custom.push({
             level: constants.level.AD_GROUPS,
@@ -2074,6 +2084,8 @@ angular
             constants.breakdown.DEVICE,
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ]; // eslint-disable-line max-len
         COLUMNS.accountId.exceptions.breakdowns = [
             constants.breakdown.ACCOUNT,
@@ -2086,6 +2098,8 @@ angular
             constants.breakdown.DEVICE,
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ]; // eslint-disable-line max-len
         COLUMNS.campaignId.exceptions.breakdowns = [
             constants.breakdown.CAMPAIGN,
@@ -2097,6 +2111,8 @@ angular
             constants.breakdown.DEVICE,
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ]; // eslint-disable-line max-len
         COLUMNS.adGroupId.exceptions.breakdowns = [
             constants.breakdown.AD_GROUP,
@@ -2107,6 +2123,8 @@ angular
             constants.breakdown.DEVICE,
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ];
         COLUMNS.contentAdId.exceptions.breakdowns = [
             constants.breakdown.CONTENT_AD,

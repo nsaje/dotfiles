@@ -221,6 +221,8 @@ export enum BreakdownParam {
     DEVICE = 'device',
     ENVIRONMENT = 'environment',
     OPERATING_SYSTEM = 'deviceos',
+    BROWSER = 'browser',
+    CONNECTION_TYPE = 'connectiontype',
 }
 
 export enum Breakdown {
@@ -238,6 +240,8 @@ export enum Breakdown {
     DEVICE = 'device_type',
     ENVIRONMENT = 'environment',
     OPERATING_SYSTEM = 'device_os',
+    BROWSER = 'browser',
+    CONNECTION_TYPE = 'connection_type',
 }
 
 export enum PublisherStatus {
@@ -1654,6 +1658,11 @@ APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.PLACEMENT] =
     APP_CONSTANTS.breakdownParam.PLACEMENTS;
 APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.INSIGHTS] =
     APP_CONSTANTS.breakdownParam.INSIGHTS;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.BROWSER] =
+    APP_CONSTANTS.breakdownParam.BROWSER;
+APP_CONSTANTS.breakdownToBreakdownParamMap[
+    APP_CONSTANTS.breakdown.CONNECTION_TYPE
+] = APP_CONSTANTS.breakdownParam.CONNECTION_TYPE;
 
 APP_CONSTANTS.levelToEntityTypeMap[APP_CONSTANTS.level.ALL_ACCOUNTS] = null;
 APP_CONSTANTS.levelToEntityTypeMap[APP_CONSTANTS.level.ACCOUNTS] =

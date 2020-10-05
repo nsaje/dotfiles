@@ -19,6 +19,8 @@ export const BREAKDOWN_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownParam.PUBLISHERS]: Breakdown.PUBLISHER,
     [BreakdownParam.PLACEMENTS]: Breakdown.PLACEMENT,
     [BreakdownParam.INSIGHTS]: Breakdown.INSIGHTS,
+    [BreakdownParam.BROWSER]: Breakdown.BROWSER,
+    [BreakdownParam.CONNECTION_TYPE]: Breakdown.CONNECTION_TYPE,
 };
 
 export const BASE_GRID_COLUMN_TYPES: GridColumnTypes[] = [

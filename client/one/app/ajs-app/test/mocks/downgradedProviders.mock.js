@@ -129,6 +129,8 @@ angular
                 BreakdownParam.DEVICE,
                 BreakdownParam.PLACEMENT,
                 BreakdownParam.OPERATING_SYSTEM,
+                BreakdownParam.BROWSER,
+                BreakdownParam.CONNECTION_TYPE,
             ];
             commands.forEach(function(command) {
                 if (breakdownsParams.includes(command)) {
