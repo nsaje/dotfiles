@@ -1,3 +1,16 @@
+var GridColumnTypes = require('../../../../features/analytics/analytics.constants')
+    .GridColumnTypes;
+var GridRowType = require('../../../../features/analytics/analytics.constants')
+    .GridRowType;
+var GridRowLevel = require('../../../../features/analytics/analytics.constants')
+    .GridRowLevel;
+var GridRenderingEngineType = require('../../../../features/analytics/analytics.constants')
+    .GridRenderingEngineType;
+var BASE_GRID_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
+    .BASE_GRID_COLUMN_TYPES;
+var EXTERNAL_LINK_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
+    .EXTERNAL_LINK_COLUMN_TYPES;
+
 angular.module('one.widgets').factory('zemGridConstants', function() {
     var constants = {
         gridBodyRendering: {
@@ -10,43 +23,9 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
             ASC: 'asc',
             DESC: 'desc',
         },
-        gridRowType: {
-            STATS: 1,
-            BREAKDOWN: 2,
-            GROUP: 3,
-        },
-        gridRowLevel: {
-            FOOTER: 0,
-            BASE: 1,
-            LEVEL_2: 2,
-            LEVEL_3: 3,
-            LEVEL_4: 4,
-        },
-        gridColumnTypes: {
-            CHECKBOX: 'checkbox',
-            BREAKDOWN: 'breakdown',
-            BASE_FIELD: 'baseField',
-            EDITABLE_BASE_FIELD: 'editableBaseField',
-            TEXT: 'text',
-            PERCENT: 'percent',
-            NUMBER: 'number',
-            DATE_TIME: 'dateTime',
-            SECONDS: 'seconds',
-            CURRENCY: 'currency',
-            EXTERNAL_LINK: 'externalLink',
-            ICON_LINK: 'link',
-            VISIBLE_LINK: 'visibleLink',
-            TEXT_LINK: 'linkText',
-            INTERNAL_LINK: 'internalLink',
-            STATUS: 'status',
-            STATE_SELECTOR: 'stateSelector',
-            PERFORMANCE_INDICATOR: 'performanceIndicator',
-            SUBMISSION_STATUS: 'submissionStatus',
-            THUMBNAIL: 'thumbnail',
-            TOTALS_LABEL: 'totalsLabel',
-            ACTIONS: 'actions',
-            BID_MODIFIER_FIELD: 'bid_modifier',
-        },
+        gridRowType: GridRowType,
+        gridRowLevel: GridRowLevel,
+        gridColumnTypes: GridColumnTypes,
         gridStyle: {
             CELL_PADDING: 8,
             BREAKDOWN_CELL_PADDING: 20,
@@ -64,22 +43,11 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
             ITEM: 1,
             LIST: 2,
         },
+        gridRenderingEngineType: GridRenderingEngineType,
     };
 
-    constants.gridColumnTypes.BASE_TYPES = [
-        constants.gridColumnTypes.TEXT,
-        constants.gridColumnTypes.PERCENT,
-        constants.gridColumnTypes.NUMBER,
-        constants.gridColumnTypes.CURRENCY,
-        constants.gridColumnTypes.SECONDS,
-        constants.gridColumnTypes.DATE_TIME,
-    ];
-
-    constants.gridColumnTypes.EXTERNAL_LINK_TYPES = [
-        constants.gridColumnTypes.ICON_LINK,
-        constants.gridColumnTypes.VISIBLE_LINK,
-        constants.gridColumnTypes.TEXT_LINK,
-    ];
+    constants.gridColumnTypes.BASE_TYPES = BASE_GRID_COLUMN_TYPES;
+    constants.gridColumnTypes.EXTERNAL_LINK_TYPES = EXTERNAL_LINK_COLUMN_TYPES;
 
     constants.gridColumnTypes.EXPORT_TYPES = [].concat(
         [constants.gridColumnTypes.BREAKDOWN, constants.gridColumnTypes.STATUS],

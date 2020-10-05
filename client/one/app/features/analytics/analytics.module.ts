@@ -23,6 +23,8 @@ import {AddToPublishersActionComponent} from './components/grid/actions/add-to-p
 import {AddToPublishersFormComponent} from './components/grid/actions/add-to-publishers/add-to-publishers-form/add-to-publishers-form.component';
 import {AlertsComponent} from './components/grid/alerts/alerts.component';
 import {AlertsStore} from './services/alerts-store/alerts.store';
+import {GridBridgeComponent} from './components/grid/grid-bridge/grid-bridge.component';
+import {GridBridgeStore} from './components/grid/grid-bridge/services/grid-bridge.store';
 
 @NgModule({
     declarations: [
@@ -45,6 +47,7 @@ import {AlertsStore} from './services/alerts-store/alerts.store';
         AddToPublishersActionComponent,
         AddToPublishersFormComponent,
         AlertsComponent,
+        GridBridgeComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -59,6 +62,7 @@ import {AlertsStore} from './services/alerts-store/alerts.store';
         AnalyticsView,
         BulkBlacklistActionsComponent,
         AddToPublishersActionComponent,
+        GridBridgeComponent,
     ],
 })
 export class AnalyticsModule {}

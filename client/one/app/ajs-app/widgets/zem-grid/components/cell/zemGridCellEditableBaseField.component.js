@@ -26,7 +26,7 @@ angular
                 var prevValidInputValue;
 
                 vm.isSaveRequestInProgress =
-                    vm.grid.meta.dataService.isSaveRequestInProgress;
+                    vm.grid.meta.api.isSaveRequestInProgress;
                 vm.filterInput = filterInput;
                 vm.onKeyDown = onKeyDown;
                 vm.save = save;
@@ -124,7 +124,7 @@ angular
                         vm.column.data
                     );
 
-                    vm.grid.meta.dataService
+                    vm.grid.meta.api
                         .saveData(value, vm.row, vm.column)
                         .then(function() {
                             // FIXME: Revisit after response is refactored on backend

@@ -162,6 +162,7 @@ describe('CreditsLibraryStore', () => {
             {
                 id: '456',
                 creditId: '123',
+                accountId: mockedAccountId,
                 canEditAmount: false,
                 canEditEndDate: false,
                 canEditStartDate: false,

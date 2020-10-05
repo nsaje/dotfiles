@@ -16,9 +16,18 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         $ctrl.isCostModeToggleAllowed = zemCostModeService.isToggleAllowed;
         $ctrl.toggleCostMode = zemCostModeService.toggleCostMode;
 
+        var onColumnsUpdatedHandler;
+
         $ctrl.$onInit = function() {
             initializeCategories();
-            $ctrl.api.onColumnsUpdated(null, initializeCategories);
+            onColumnsUpdatedHandler = $ctrl.api.onColumnsUpdated(
+                null,
+                initializeCategories
+            );
+        };
+
+        $ctrl.$onDestroy = function() {
+            if (onColumnsUpdatedHandler) onColumnsUpdatedHandler();
         };
 
         function onAllColumnsToggled(newColumnsState) {

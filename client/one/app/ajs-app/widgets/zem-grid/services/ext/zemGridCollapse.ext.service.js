@@ -11,15 +11,26 @@ angular
             //
             // Public API
             //
+            this.destroy = destroy;
             this.isRowCollapsable = isRowCollapsable;
             this.isRowCollapsed = isRowCollapsed;
             this.setLevelCollapsed = setLevelCollapsed;
             this.setRowCollapsed = setRowCollapsed;
 
+            var onDataUpdatedHandler;
+
             function initialize() {
-                pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, function() {
-                    pubsub.notify(pubsub.EVENTS.EXT_COLLAPSE_UPDATED);
-                });
+                onDataUpdatedHandler = pubsub.register(
+                    pubsub.EVENTS.DATA_UPDATED,
+                    null,
+                    function() {
+                        pubsub.notify(pubsub.EVENTS.EXT_COLLAPSE_UPDATED);
+                    }
+                );
+            }
+
+            function destroy() {
+                if (onDataUpdatedHandler) onDataUpdatedHandler();
             }
 
             function isRowCollapsable(row) {

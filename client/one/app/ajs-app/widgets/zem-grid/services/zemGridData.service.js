@@ -6,7 +6,8 @@ angular
         $q,
         $timeout,
         zemGridParser,
-        zemAlertsStore
+        zemAlertsStore,
+        zemGridConstants
     ) {
         // eslint-disable-line max-len
 
@@ -18,9 +19,10 @@ angular
             // Last notification cached to close it when new arrives (e.g. saving data)
             var lastNotification = null;
 
-            var onStatsUpdatedHandler;
+            var onMetaDataUpdatedHandler;
             var onDataUpdatedHandler;
             var onRowUpdatedHandler;
+            var onStatsUpdatedHandler;
 
             var promiseQueue = null;
 
@@ -28,13 +30,12 @@ angular
             // Public API
             //
             this.initialize = initialize;
-            this.reload = initializeData;
-            this.loadData = loadData;
+            this.destroy = destroy;
             this.loadMetaData = loadMetaData;
+            this.loadData = loadData;
+            this.replaceDataSource = replaceDataSource;
             this.saveData = saveData;
             this.saveDataQueued = saveDataQueued;
-            this.editRow = editRow;
-            this.replaceDataSource = replaceDataSource;
 
             //
             // Rewire calls to dataSource
@@ -76,95 +77,59 @@ angular
                     arguments
                 );
             };
+            this.editRow = function() {
+                return dataSource.editRow.apply(dataSource, arguments);
+            };
 
             function initialize() {
-                initializeData();
                 promiseQueue = new Queue(1, Infinity);
-                onStatsUpdatedHandler = dataSource.onStatsUpdated(
+
+                if (onMetaDataUpdatedHandler) onMetaDataUpdatedHandler();
+                onMetaDataUpdatedHandler = dataSource.onMetaDataUpdated(
                     grid.meta.scope,
-                    handleSourceStatsUpdate
+                    handleSourceMetaDataUpdate
                 );
+                if (onDataUpdatedHandler) onDataUpdatedHandler();
                 onDataUpdatedHandler = dataSource.onDataUpdated(
                     grid.meta.scope,
                     handleSourceDataUpdate
                 );
+                if (onRowUpdatedHandler) onRowUpdatedHandler();
                 onRowUpdatedHandler = dataSource.onRowUpdated(
                     grid.meta.scope,
                     handleSourceRowUpdate
                 );
-            }
-
-            function initializeData() {
-                return loadMetaData().then(function() {
-                    grid.meta.initialized = true;
-                    loadData().then(function() {
-                        // Workaround - goals are defined after initial data is loaded; therefor reload metadata
-                        loadMetaData();
-                    });
-                });
-            }
-
-            function replaceDataSource(_dataSource) {
-                dataSource = _dataSource;
-
-                // Rewire DataSource listeners
-                onStatsUpdatedHandler();
-                onDataUpdatedHandler();
-                onRowUpdatedHandler();
+                if (onStatsUpdatedHandler) onStatsUpdatedHandler();
                 onStatsUpdatedHandler = dataSource.onStatsUpdated(
                     grid.meta.scope,
                     handleSourceStatsUpdate
                 );
-                onDataUpdatedHandler = dataSource.onDataUpdated(
-                    grid.meta.scope,
-                    handleSourceDataUpdate
-                );
-                onRowUpdatedHandler = dataSource.onRowUpdated(
-                    grid.meta.scope,
-                    handleSourceRowUpdate
-                );
+            }
 
-                zemGridParser.clear(grid);
-                if (dataSource.getData().stats) {
-                    // If data already initialized use it
-                    zemGridParser.parseMetaData(grid, dataSource.getMetaData());
-                    zemGridParser.parse(grid, dataSource.getData());
-
-                    // [OPTIMIZATION] Speed up first render (e.g. tab switch)
-                    // Only prepare/render first 10 rows an after that show all data
-                    grid.body.rows = grid.body.rows.slice(0, 10);
-                    $timeout(function() {
-                        // Render All Data
-                        zemGridParser.parse(grid, dataSource.getData());
-                        grid.meta.pubsub.notify(
-                            grid.meta.pubsub.EVENTS.DATA_UPDATED
-                        );
-                    });
-
-                    grid.meta.pubsub.notify(
-                        grid.meta.pubsub.EVENTS.METADATA_UPDATED
-                    );
-                    grid.meta.pubsub.notify(
-                        grid.meta.pubsub.EVENTS.DATA_UPDATED
-                    );
-                } else {
-                    initializeData();
-                }
+            function destroy() {
+                if (onMetaDataUpdatedHandler) onMetaDataUpdatedHandler();
+                if (onDataUpdatedHandler) onDataUpdatedHandler();
+                if (onRowUpdatedHandler) onRowUpdatedHandler();
+                if (onStatsUpdatedHandler) onStatsUpdatedHandler();
             }
 
             function loadMetaData() {
                 var deferred = $q.defer();
-                dataSource.loadMetaData(true).then(function(data) {
-                    zemGridParser.parseMetaData(grid, data);
-                    grid.meta.pubsub.notify(
-                        grid.meta.pubsub.EVENTS.METADATA_UPDATED
-                    );
-                    deferred.resolve();
-                });
+                dataSource.loadMetaData().then(
+                    function() {
+                        // MetaData is already been processed
+                        // on source metaData update event
+                        deferred.resolve();
+                    },
+                    function(err) {
+                        grid.meta.initialized = false;
+                        deferred.reject(err);
+                    }
+                );
                 return deferred.promise;
             }
 
-            function loadData(row, size) {
+            function loadData(row, offset, limit) {
                 var breakdown;
                 if (row) {
                     // When additional data (load more...) is requested
@@ -172,8 +137,11 @@ angular
                     breakdown = row.data;
                 }
                 var deferred = $q.defer();
-                dataSource.loadData(breakdown, size).then(
+                grid.meta.loading = true;
+                dataSource.loadData(breakdown, offset, limit).then(
                     function() {
+                        // Workaround - goals/pixels are defined after initial data is loaded; therefor reload metadata
+                        loadMetaData();
                         // Data is already been processed
                         // on source data update event
                         deferred.resolve();
@@ -184,11 +152,41 @@ angular
                             // Workaround - err is in this case null (see zem_grid_endpoint_api.js abortable promise)
                             grid.meta.loading = false;
                         }
-                        // TODO: Handle errors
                         deferred.reject(err);
                     }
                 );
                 return deferred.promise;
+            }
+
+            function replaceDataSource(_dataSource) {
+                dataSource = _dataSource;
+
+                initialize();
+
+                zemGridParser.clear(grid);
+                zemGridParser.parseMetaData(grid, dataSource.getMetaData());
+                zemGridParser.parse(grid, dataSource.getData());
+
+                if (
+                    grid.meta.renderingEngine ===
+                    zemGridConstants.gridRenderingEngineType.CUSTOM_GRID
+                ) {
+                    // [OPTIMIZATION] Speed up first render (e.g. tab switch)
+                    // Only prepare/render first 10 rows an after that show all data
+                    grid.body.rows = grid.body.rows.slice(0, 10);
+                    $timeout(function() {
+                        // Render All Data
+                        zemGridParser.parse(grid, dataSource.getData());
+                        grid.meta.pubsub.notify(
+                            grid.meta.pubsub.EVENTS.DATA_UPDATED
+                        );
+                    });
+                }
+
+                grid.meta.pubsub.notify(
+                    grid.meta.pubsub.EVENTS.METADATA_UPDATED
+                );
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
 
             function saveData(value, row, column) {
@@ -215,8 +213,9 @@ angular
                         );
                     })
                     .then(function(data) {
-                        if (data.notification)
+                        if (data.notification) {
                             showNotification(data.notification);
+                        }
                     })
                     .catch(function(error) {
                         grid.meta.pubsub.notify(
@@ -241,18 +240,18 @@ angular
                 zemAlertsStore.registerAlert(lastNotification);
             }
 
-            function editRow(row) {
-                return dataSource.editRow(row);
-            }
-
-            function handleSourceStatsUpdate() {
-                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+            function handleSourceMetaDataUpdate(event, metaData) {
+                zemGridParser.parseMetaData(grid, metaData);
+                grid.meta.initialized = true;
+                grid.meta.pubsub.notify(
+                    grid.meta.pubsub.EVENTS.METADATA_UPDATED
+                );
             }
 
             function handleSourceDataUpdate(event, data) {
-                if (!delayInitialDataUpdate(data)) {
-                    doHandleSourceDataUpdate(data);
-                }
+                zemGridParser.parse(grid, data);
+                grid.meta.loading = !data.breakdown;
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
 
             function handleSourceRowUpdate(event, data) {
@@ -262,32 +261,8 @@ angular
                 );
             }
 
-            function doHandleSourceDataUpdate(data) {
-                zemGridParser.parse(grid, data);
-                grid.meta.loading = !data.breakdown;
+            function handleSourceStatsUpdate() {
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-            }
-
-            // Delay initial load (data update) to allow faster switching between pages
-            // Data rows add significant JS work at initialization therefor we
-            // are deferring this for 1s
-            var metaDataLoadTime;
-            var dataLoadTime;
-
-            function delayInitialDataUpdate(data) {
-                if (!metaDataLoadTime) {
-                    metaDataLoadTime = new Date().getTime();
-                } else if (!dataLoadTime) {
-                    dataLoadTime = new Date().getTime();
-                    var diff = dataLoadTime - metaDataLoadTime;
-                    if (diff < 1000) {
-                        $timeout(function() {
-                            doHandleSourceDataUpdate(data);
-                        }, 1000 - diff);
-                        return true;
-                    }
-                }
-                return false;
             }
         }
 

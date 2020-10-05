@@ -44,7 +44,7 @@ describe('zemGridColumnsService', function() {
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
         grid.meta.options = {};
         grid.meta.data = {level: 'level1'};
-        grid.meta.dataService = {
+        grid.meta.api = {
             getBreakdown: function() {
                 return ['base_level', 'age'];
             },
@@ -149,7 +149,7 @@ describe('zemGridColumnsService', function() {
 
     it('should disable columns that cannot be viewed using current breakdown configuration', function() {
         var grid = createGrid();
-        spyOn(grid.meta.dataService, 'getBreakdown');
+        spyOn(grid.meta.api, 'getBreakdown');
 
         var pubsub = grid.meta.pubsub;
         zemGridColumnsService.createInstance(grid);
@@ -159,7 +159,7 @@ describe('zemGridColumnsService', function() {
         columns[1].data.exceptions.breakdowns = ['breakdown4'];
         columns[2].data.exceptions.breakdowns = undefined;
 
-        grid.meta.dataService.getBreakdown.and.returnValue([
+        grid.meta.api.getBreakdown.and.returnValue([
             {query: 'breakdown1'},
             {query: 'breakdown2'},
             {query: 'breakdown5'},
@@ -171,9 +171,7 @@ describe('zemGridColumnsService', function() {
         expect(columns[1].disabled).toBe(true);
         expect(columns[2].disabled).toBe(false);
 
-        grid.meta.dataService.getBreakdown.and.returnValue([
-            {query: 'breakdown4'},
-        ]);
+        grid.meta.api.getBreakdown.and.returnValue([{query: 'breakdown4'}]);
 
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
 
@@ -184,16 +182,14 @@ describe('zemGridColumnsService', function() {
 
     it('should disable columns based on custom exceptions that overwrites other ones', function() {
         var grid = createGrid();
-        spyOn(grid.meta.dataService, 'getBreakdown');
+        spyOn(grid.meta.api, 'getBreakdown');
 
         var pubsub = grid.meta.pubsub;
         zemGridColumnsService.createInstance(grid);
 
         var columns = grid.header.columns;
         columns[0].data.exceptions.breakdowns = ['breakdown1', 'breakdown2'];
-        grid.meta.dataService.getBreakdown.and.returnValue([
-            {query: 'breakdown3'},
-        ]);
+        grid.meta.api.getBreakdown.and.returnValue([{query: 'breakdown3'}]);
 
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(columns[0].disabled).toBe(true);
