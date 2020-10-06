@@ -24,6 +24,7 @@ import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
 import {DOCUMENT} from '@angular/common';
 import * as commonHelpers from '../../helpers/common.helpers';
+import {PopoverPlacement} from './types/popover-placement';
 
 @Directive({
     selector: '[zemPopover]',
@@ -37,6 +38,8 @@ export class PopoverDirective extends NgbPopover
     stayOpenOnHover: boolean = false;
     @Input()
     popoverOpenDelay: number;
+    @Input()
+    placement: PopoverPlacement;
 
     private canClosePopover: boolean = true;
 

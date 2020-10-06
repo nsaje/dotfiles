@@ -1,12 +1,12 @@
 import {ColDef} from 'ag-grid-community';
 import {dateTimeFormatter} from '../../../../shared/helpers/grid.helpers';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
 import {RuleHistory} from '../../../../core/rules/types/rule-history';
-import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cell/link-cell/link-cell.component';
+import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
 import {RoutePathName, LevelParam} from '../../../../app.constants';
-import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cell/link-cell/types/link.renderer-params';
+import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 
 export const COLUMN_DATE_CREATE: ColDef = {
     headerName: 'Run Date',

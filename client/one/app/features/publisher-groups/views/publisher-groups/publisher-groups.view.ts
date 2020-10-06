@@ -29,8 +29,8 @@ import {
     booleanFormatter,
     dateTimeFormatter,
 } from '../../../../shared/helpers/grid.helpers';
-import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
-import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PageSizeConfig} from '../../../../shared/components/smart-grid/types/page-size-config';

@@ -10,16 +10,16 @@ import {
 } from '@angular/core';
 import {ColDef, DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
-import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
 import {CreditRefund} from '../../../../core/credits/types/credit-refund';
 import {dateTimeFormatter} from '../../../../shared/helpers/grid.helpers';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {Credit} from '../../../../core/credits/types/credit';
-import {NoteCellComponent} from '../../../../shared/components/smart-grid/components/cell/note-cell/note-cell.component';
-import {NoteRendererParams} from '../../../../shared/components/smart-grid/components/cell/note-cell/types/note.renderer-params';
+import {NoteCellComponent} from '../../../../shared/components/smart-grid/components/cells/note-cell/note-cell.component';
+import {NoteRendererParams} from '../../../../shared/components/smart-grid/components/cells/note-cell/types/note.renderer-params';
 
 @Component({
     selector: 'zem-refunds-grid',

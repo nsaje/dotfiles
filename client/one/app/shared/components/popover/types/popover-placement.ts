@@ -1,4 +1,4 @@
-export type IconTooltipCellPlacement =
+export type PopoverPlacement =
     | 'top'
     | 'top-left'
     | 'top-right'

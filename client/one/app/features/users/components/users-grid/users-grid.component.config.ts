@@ -15,13 +15,13 @@ import {
     getPermissionsText,
 } from './helpers/users-grid.helpers';
 import {UserStatus} from '../../../../app.constants';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
 import {
     IconTooltipCellIcon,
     IconTooltipCellTextStyleClass,
-} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
-import {IconTooltipDisplayOptions} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip-display-options';
+} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipDisplayOptions} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip-display-options';
 import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permission-value';
 import {
     isAccountManager,

@@ -50,8 +50,8 @@ import {FileSelectorComponent} from './components/file-selector/file-selector.co
 import {CommentPopoverComponent} from './components/comment-popover/comment-popover.component';
 import {PaginationComponent} from './components/pagination/pagination.component';
 import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
-import {GridLoadingOverlayComponent} from './components/smart-grid/components/grid-loading-overlay/grid-loading-overlay.component';
-import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
+import {GridLoadingOverlayComponent} from './components/smart-grid/components/overlays/grid-loading-overlay/grid-loading-overlay.component';
+import {NoRowsOverlayComponent} from './components/smart-grid/components/overlays/no-rows-overlay/no-rows-overlay.component';
 import {HelpPopoverHeaderComponent} from './components/smart-grid/components/header/help-popover/help-popover-header.component';
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
 import {SelectListComponent} from './components/select-list/select-list.component';
@@ -66,20 +66,21 @@ import {ImageCheckboxInputGroupComponent} from './components/image-checkbox-inpu
 import {ExpandableSectionComponent} from './components/expandable-section/expandable-section.component';
 import {NewFeatureDirective} from './directives/new-feature/new-feature.directive';
 import {LoadingOverlayDirective} from './directives/loading-overlay/loading-overlay.directive';
-import {ItemScopeCellComponent} from './components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
+import {ItemScopeCellComponent} from './components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
 import {PublisherGroupEditFormComponent} from './components/publisher-group-edit-form/publisher-group-edit-form.component';
 import {ConnectionActionsCellComponent} from './components/connection-actions-cell/connection-actions-cell.component';
-import {IconTooltipCellComponent} from './components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {NoteCellComponent} from './components/smart-grid/components/cell/note-cell/note-cell.component';
-import {LinkCellComponent} from './components/smart-grid/components/cell/link-cell/link-cell.component';
+import {IconTooltipCellComponent} from './components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {NoteCellComponent} from './components/smart-grid/components/cells/note-cell/note-cell.component';
+import {LinkCellComponent} from './components/smart-grid/components/cells/link-cell/link-cell.component';
 import {PortalComponent} from './components/portal/portal.component';
 import {AlertComponent} from './components/alert/alert.component';
 import {ListGroupItemComponent} from './components/list-group/components/list-group-item/list-group-item.component';
 import {CheckboxSliderComponent} from './components/checkbox-slider/checkbox-slider.component';
 import {ItemListComponent} from './components/item-list/item-list.component';
-import {SwitchButtonCellComponent} from './components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
+import {SwitchButtonCellComponent} from './components/smart-grid/components/cells/switch-button-cell/switch-button-cell.component';
 import {EntitySelectorComponent} from './components/entity-selector/entity-selector.component';
 import {ArchivedTagDirective} from './directives/archived-tag/archived-tag.directive';
+import {PinnedRowCellComponent} from './components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -153,6 +154,7 @@ const EXPORTED_DECLARATIONS = [
     ItemListComponent,
     SwitchButtonCellComponent,
     EntitySelectorComponent,
+    PinnedRowCellComponent,
 ];
 
 @NgModule({
@@ -176,6 +178,7 @@ const EXPORTED_DECLARATIONS = [
             NoteCellComponent,
             LinkCellComponent,
             SwitchButtonCellComponent,
+            PinnedRowCellComponent,
         ]),
         NgbPaginationModule,
     ],

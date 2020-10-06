@@ -1,0 +1,11 @@
+<div class="zem-pinned-row-cell">
+    <span class="zem-pinned-row-cell__value {{ params.valueStyleClass }}">{{
+        value
+    }}</span>
+    <zem-help-popover
+        *ngIf="params.popoverTooltip"
+        class="zem-pinned-row-cell__help-popover"
+        content="{{ params.popoverTooltip }}"
+        placement="{{ params.popoverPlacement || 'top' }}"
+    ></zem-help-popover>
+</div>

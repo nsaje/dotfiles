@@ -1,12 +1,12 @@
 import {TemplateRef} from '@angular/core';
-import {IconTooltipCellPlacement} from './icon-tooltip-cell-placement';
 import {
     IconTooltipCellIcon,
     IconTooltipCellTextStyleClass,
 } from '../icon-tooltip-cell.component.constants';
+import {PopoverPlacement} from '../../../../../popover/types/popover-placement';
 
 export interface IconTooltipDisplayOptions<T> {
-    placement?: IconTooltipCellPlacement;
+    placement?: PopoverPlacement;
     text?: string;
     textStyleClass?: IconTooltipCellTextStyleClass;
     textTooltip?: T;

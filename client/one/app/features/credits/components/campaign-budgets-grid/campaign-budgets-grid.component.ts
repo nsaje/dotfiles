@@ -4,9 +4,9 @@ import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {Currency} from '../../../../app.constants';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
-import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
 import * as moment from '../../../../../../lib/components/moment/moment';
 
 @Component({

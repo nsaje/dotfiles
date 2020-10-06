@@ -1,21 +1,21 @@
 import {ColDef, ValueFormatterParams, CellClassParams} from 'ag-grid-community';
-import {NoteCellComponent} from '../../../../shared/components/smart-grid/components/cell/note-cell/note-cell.component';
+import {NoteCellComponent} from '../../../../shared/components/smart-grid/components/cells/note-cell/note-cell.component';
 import {dateTimeFormatter} from '../../../../shared/helpers/grid.helpers';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
-import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
-import {NoteRendererParams} from '../../../../shared/components/smart-grid/components/cell/note-cell/types/note.renderer-params';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {NoteRendererParams} from '../../../../shared/components/smart-grid/components/cells/note-cell/types/note.renderer-params';
 import {Credit} from '../../../../core/credits/types/credit';
-import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
 import {RefundActionsCellComponent} from './components/refund-actions-cell/refund-actions-cell.component';
 import {CreditActionsCellComponent} from './components/credit-actions-cell/credit-actions-cell.component';
 import {CreditGridType} from '../../credits.constants';
 import {CreditStatus} from '../../../../app.constants';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
-import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cell/link-cell/link-cell.component';
-import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cell/link-cell/types/link.renderer-params';
+import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
+import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 
 const statusCellContent = {
     [CreditStatus.PENDING]: {

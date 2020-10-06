@@ -34,8 +34,8 @@ import {DealActionsCellComponent} from '../../components/deal-actions-cell/deal-
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
-import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';

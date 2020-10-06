@@ -3,8 +3,8 @@ import {ConnectionActionsCellComponent} from '../../../../shared/components/conn
 import {PublisherGroupConnectionLocation} from '../../../../core/publisher-groups/types/publisher-group-connection-location';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
-import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cell/link-cell/link-cell.component';
-import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cell/link-cell/types/link.renderer-params';
+import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
+import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {LevelParam} from '../../../../app.constants';
 

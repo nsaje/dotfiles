@@ -9,6 +9,10 @@
     margin-bottom: @spacing--default;
 }
 
+//
+// ag-header
+//
+
 .zem-smart-grid__table .ag-header {
     border-bottom: 1px solid tint(@color--secondary, 80%);
     background-color: tint(@color--secondary, 90%);
@@ -27,26 +31,50 @@
     background-color: tint(@color--secondary, 95%);
 }
 
-.zem-smart-grid__table .ag-header-cell-resize {
-    cursor: col-resize;
+//
+// ag-body-viewport rows
+//
+
+.zem-smart-grid__table .ag-body-viewport {
+    border-bottom: 1px solid tint(@color--secondary, 80%);
+    background-color: white;
 }
 
 .zem-smart-grid .ag-center-cols-clipper {
     min-height: 35px;
 }
 
-.zem-smart-grid__table .ag-center-cols-viewport {
-    background-color: white;
-}
-
-.zem-smart-grid__table .ag-row {
-    background-color: white;
+.zem-smart-grid__table .ag-body-viewport .ag-row {
     border-bottom: 1px solid tint(@color--secondary, 90%) !important;
 }
 
-.zem-smart-grid__table .ag-row:hover {
+.zem-smart-grid__table .ag-body-viewport .ag-row:last-child {
+    border-bottom: 0px !important;
+}
+
+.zem-smart-grid__table .ag-body-viewport .ag-row:hover {
     background-color: tint(@color--secondary, 96%);
 }
+
+//
+// ag-floating-bottom pinned bottom rows
+//
+
+.zem-smart-grid__table .ag-floating-bottom {
+    background-color: tint(@color--secondary, 90%);
+}
+
+.zem-smart-grid__table .ag-floating-bottom .ag-row {
+    border-bottom: 1px solid tint(@color--secondary, 90%) !important;
+}
+
+.zem-smart-grid__table .ag-floating-bottom .ag-row:last-child {
+    border-bottom: 0px !important;
+}
+
+//
+// ag-row common styles
+//
 
 .zem-smart-grid__table .ag-row .ag-cell {
     padding: @spacing--small;
@@ -61,6 +89,10 @@
 .zem-smart-grid__table .ag-cell-value {
     width: 100%;
 }
+
+//
+// ag-grid checkbox
+//
 
 .zem-smart-grid__table .ag-header-select-all,
 .zem-smart-grid__table .ag-selection-checkbox {
@@ -114,9 +146,17 @@
     }
 }
 
+//
+// ag-overlay
+//
+
 .zem-smart-grid .ag-overlay-no-rows-wrapper {
     padding-top: 35px;
 }
+
+//
+// pagination
+//
 
 .zem-smart-grid__pagination-container {
     display: flex;

@@ -1,6 +1,6 @@
 import {ColDef} from 'ag-grid-community';
-import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
-import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {Rule} from '../../../../core/rules/types/rule';
 import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import {
@@ -16,13 +16,13 @@ import {
     RuleActionFrequency,
 } from '../../../../core/rules/rules.constants';
 import {RuleActionsCellComponent} from '../rule-actions-cell/rule-actions-cell.component';
-import {SwitchButtonCellComponent} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
-import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/types/switch-button.renderer-params';
+import {SwitchButtonCellComponent} from '../../../../shared/components/smart-grid/components/cells/switch-button-cell/switch-button-cell.component';
+import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cells/switch-button-cell/types/switch-button.renderer-params';
 import {RulesView} from '../../views/rules/rules.view';
 import {RuleRunsOnCellComponent} from '../rule-runs-on-cell/rule-runs-on-cell.component';
-import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
-import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
-import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
 import {RuleEntity} from '../../../../core/rules/types/rule-entity';
 import {RuleEntities} from '../../../../core/rules/types/rule-entities';
 import {MappedRuleEntity} from '../../types/mapped-rule-entity';

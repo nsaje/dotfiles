@@ -26,8 +26,8 @@ import {
     DEFAULT_GRID_OPTIONS,
     DEFAULT_PAGE_SIZE_OPTIONS,
 } from './smart-grid.component.config';
-import {GridLoadingOverlayComponent} from './components/grid-loading-overlay/grid-loading-overlay.component';
-import {NoRowsOverlayComponent} from './components/no-rows-overlay/no-rows-overlay.component';
+import {GridLoadingOverlayComponent} from './components/overlays/grid-loading-overlay/grid-loading-overlay.component';
+import {NoRowsOverlayComponent} from './components/overlays/no-rows-overlay/no-rows-overlay.component';
 import * as commonHelpers from '../../helpers/common.helpers';
 import * as arrayHelpers from '../../helpers/array.helpers';
 import {PaginationOptions} from './types/pagination-options';
@@ -49,6 +49,8 @@ export class SmartGridComponent
     columnDefs: ColDef[];
     @Input()
     rowData: any[];
+    @Input()
+    pinnedBottomRowData: any[];
     @Input()
     paginationOptions: PaginationOptions;
     @Input()
