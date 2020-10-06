@@ -36,7 +36,7 @@ class BidModifierSerializer(serializers.Serializer):
 
         try:
             data["target"] = converters.ApiConverter.to_target(data["type"], data["target"])
-        except (exceptions.BidModifierTargetInvalid, exceptions.BidModifierUnsupportedTarget) as e:
+        except exceptions.BidModifierTargetInvalid as e:
             raise serializers.ValidationError(str(e))
 
         return data

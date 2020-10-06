@@ -473,10 +473,7 @@ def remap_delivery_stats_keys(stats_rows, target_dimension):
             row[target_dimension] = core.features.bid_modifiers.DashboardConverter.to_target(
                 bid_modifier_type, row[target_dimension]
             )
-        except (
-            core.features.bid_modifiers.exceptions.BidModifierTargetInvalid,
-            core.features.bid_modifiers.exceptions.BidModifierUnsupportedTarget,
-        ):
+        except core.features.bid_modifiers.exceptions.BidModifierTargetInvalid:
             pass
 
 

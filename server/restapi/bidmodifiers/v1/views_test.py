@@ -556,7 +556,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
             },
         )
 
-    def test_create_unsupported_operating_system(self):
+    def test_create_invalid_operating_system(self):
         bm = {
             "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.OPERATING_SYSTEM),
             "sourceSlug": "",
@@ -571,11 +571,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         result = self.assertResponseError(response, "ValidationError")
         self.assertEqual(
-            result,
-            {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Unsupported Operating System Target"]}},
+            result, {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Invalid Operating System"]}}
         )
 
-    def test_create_invalid_operating_system(self):
         bm = {
             "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.OPERATING_SYSTEM),
             "sourceSlug": "",

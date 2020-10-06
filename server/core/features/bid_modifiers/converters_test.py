@@ -90,17 +90,11 @@ class TestTargetConverter(TestCase):
         target_value = self.converter.to_target(constants.BidModifierType.DEVICE, output_value)
         self.assertEqual(target_value, str(dash_constants.DeviceType.MOBILE))
 
-        # unsupported target test
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.DEVICE, dash_constants.DeviceType.get_text(dash_constants.DeviceType.UNKNOWN)
-            )
-
         # illegal target value tests
         with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.DEVICE, 1234)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.DEVICE, "invalid")
 
         # illegal input target value tests
@@ -121,13 +115,6 @@ class TestTargetConverter(TestCase):
 
         target_value = self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, output_value)
         self.assertEqual(target_value, dash_constants.OperatingSystem.MACOSX)
-
-        # unsupported target test
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.OPERATING_SYSTEM,
-                dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN),
-            )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
@@ -152,13 +139,6 @@ class TestTargetConverter(TestCase):
 
         target_value = self.converter.to_target(constants.BidModifierType.ENVIRONMENT, output_value)
         self.assertEqual(target_value, dash_constants.Environment.APP)
-
-        # unsupported target test
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.ENVIRONMENT,
-                dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN),
-            )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
@@ -242,6 +222,58 @@ class TestTargetConverter(TestCase):
             self.converter.to_target(constants.BidModifierType.AD, "invalid")
         self.assertEqual(str(ctx.exception), "Invalid Content Ad")
 
+    def test_browser(self):
+        # full circle test
+        output_value = self.converter.from_target(
+            constants.BidModifierType.BROWSER, dash_constants.BrowserFamily.CHROME
+        )
+        self.assertEqual(output_value, dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.CHROME))
+
+        target_value = self.converter.to_target(constants.BidModifierType.BROWSER, output_value)
+        self.assertEqual(target_value, dash_constants.BrowserFamily.CHROME)
+
+        # illegal target value tests
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.BROWSER, 1234)
+
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.BROWSER, "invalid")
+
+        # illegal input target value tests
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.BROWSER, "invalid")
+        self.assertEqual(str(ctx.exception), "Invalid Browser Family")
+
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.BROWSER, 1234)
+        self.assertEqual(str(ctx.exception), "Invalid Browser Family")
+
+    def test_connection_type(self):
+        # full circle test
+        output_value = self.converter.from_target(
+            constants.BidModifierType.CONNECTION_TYPE, dash_constants.ConnectionType.WIFI
+        )
+        self.assertEqual(output_value, dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.WIFI))
+
+        target_value = self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, output_value)
+        self.assertEqual(target_value, dash_constants.ConnectionType.WIFI)
+
+        # illegal target value tests
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.CONNECTION_TYPE, 1234)
+
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.CONNECTION_TYPE, "invalid")
+
+        # illegal input target value tests
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, "invalid")
+        self.assertEqual(str(ctx.exception), "Invalid Connection Type")
+
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, 1234)
+        self.assertEqual(str(ctx.exception), "Invalid Connection Type")
+
 
 class TestFileConverter(TestCase):
     def setUp(self):
@@ -278,13 +310,6 @@ class TestFileConverter(TestCase):
 
         target_value = self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, output_value)
         self.assertEqual(target_value, dash_constants.OperatingSystem.MACOSX)
-
-        # unsupported target test
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.OPERATING_SYSTEM,
-                dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN),
-            )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
@@ -324,17 +349,11 @@ class TestDashboardConverter(TestCase):
         target_value = self.converter.to_target(constants.BidModifierType.DEVICE, output_value)
         self.assertEqual(target_value, str(dash_constants.DeviceType.MOBILE))
 
-        # unsupported target tests
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.DEVICE, dash_constants.DeviceType.get_text(dash_constants.DeviceType.UNKNOWN)
-            )
-
         # illegal target value tests
         with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.DEVICE, 1234)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.DEVICE, "invalid")
 
         # illegal input target value tests
@@ -355,21 +374,6 @@ class TestDashboardConverter(TestCase):
 
         target_value = self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, output_value)
         self.assertEqual(target_value, dash_constants.OperatingSystem.MACOSX)
-
-        # unsupported target tests
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.OPERATING_SYSTEM,
-                dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.UNKNOWN),
-            )
-
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget) as ctx:
-            self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, None)
-        self.assertEqual(str(ctx.exception), "Unsupported Operating System Target")
-
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget) as ctx:
-            self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, "Other")
-        self.assertEqual(str(ctx.exception), "Unsupported Operating System Target")
 
         # special case full circle test
         output_value = self.converter.from_target(
@@ -403,13 +407,6 @@ class TestDashboardConverter(TestCase):
 
         target_value = self.converter.to_target(constants.BidModifierType.ENVIRONMENT, output_value)
         self.assertEqual(target_value, dash_constants.Environment.APP)
-
-        # unsupported target tests
-        with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
-            self.converter.to_target(
-                constants.BidModifierType.ENVIRONMENT,
-                dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN),
-            )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
@@ -463,6 +460,58 @@ class TestDashboardConverter(TestCase):
             self.converter.to_target(constants.BidModifierType.SOURCE, test_source_name)
         self.assertEqual(str(ctx.exception), "Invalid Source")
 
+    def test_browser(self):
+        # full circle test
+        output_value = self.converter.from_target(
+            constants.BidModifierType.BROWSER, dash_constants.BrowserFamily.CHROME
+        )
+        self.assertEqual(output_value, dash_constants.BrowserFamily.CHROME)
+
+        target_value = self.converter.to_target(constants.BidModifierType.BROWSER, output_value)
+        self.assertEqual(target_value, dash_constants.BrowserFamily.CHROME)
+
+        # illegal target value tests
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.BROWSER, 1234)
+
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.BROWSER, "invalid")
+
+        # illegal input target value tests
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.BROWSER, "invalid")
+            self.assertEqual(str(ctx.exception), "Invalid Browser Family")
+
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.BROWSER, 1234)
+            self.assertEqual(str(ctx.exception), "Invalid Browser Family")
+
+    def test_connection_type(self):
+        # full circle test
+        output_value = self.converter.from_target(
+            constants.BidModifierType.CONNECTION_TYPE, dash_constants.ConnectionType.WIFI
+        )
+        self.assertEqual(output_value, dash_constants.ConnectionType.WIFI)
+
+        target_value = self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, output_value)
+        self.assertEqual(target_value, dash_constants.ConnectionType.WIFI)
+
+        # illegal target value tests
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.CONNECTION_TYPE, 1234)
+
+        with self.assertRaises(KeyError):
+            self.converter.from_target(constants.BidModifierType.CONNECTION_TYPE, "invalid")
+
+        # illegal input target value tests
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, "invalid")
+            self.assertEqual(str(ctx.exception), "Invalid Connection Type")
+
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, 1234)
+            self.assertEqual(str(ctx.exception), "Invalid Connection Type")
+
 
 class TestStatsConverter(TestCase):
     def setUp(self):
@@ -484,35 +533,51 @@ class TestStatsConverter(TestCase):
         for test_case in test_cases:
             with mock.patch.object(target_converter, test_case["to"]) as mock_to_target:
                 self.converter.to_target(test_case["type"], 1)
-                mock_to_target.assert_called_once_with(1)
+                mock_to_target.assert_called_once_with(1, test_case["type"])
 
             with mock.patch.object(target_converter, test_case["from"]) as mock_from_target:
                 self.converter.from_target(test_case["type"], 1)
-                mock_from_target.assert_called_once_with(1)
+                mock_from_target.assert_called_once_with(1, test_case["type"])
 
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_device_type_target")
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_device_type_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_constant_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_constant_target")
     def test_device(self, mock_to_target, mock_from_target):
         self.converter.to_target(constants.BidModifierType.DEVICE, 1)
         self.converter.from_target(constants.BidModifierType.DEVICE, 1)
-        mock_to_target.assert_called_once_with(1)
-        mock_from_target.assert_called_once_with(1)
+        mock_to_target.assert_called_once_with(1, constants.BidModifierType.DEVICE)
+        mock_from_target.assert_called_once_with(1, constants.BidModifierType.DEVICE)
 
     @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_operating_system_target")
     @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_operating_system_target")
     def test_operating_system(self, mock_to_target, mock_from_target):
         self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, 1)
         self.converter.from_target(constants.BidModifierType.OPERATING_SYSTEM, 1)
-        mock_to_target.assert_called_once_with(1)
-        mock_from_target.assert_called_once_with(1)
+        mock_to_target.assert_called_once_with(1, constants.BidModifierType.OPERATING_SYSTEM)
+        mock_from_target.assert_called_once_with(1, constants.BidModifierType.OPERATING_SYSTEM)
 
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_environment_target")
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_environment_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_constant_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_constant_target")
     def test_environment(self, mock_to_target, mock_from_target):
         self.converter.to_target(constants.BidModifierType.ENVIRONMENT, 1)
         self.converter.from_target(constants.BidModifierType.ENVIRONMENT, 1)
-        mock_to_target.assert_called_once_with(1)
-        mock_from_target.assert_called_once_with(1)
+        mock_to_target.assert_called_once_with(1, constants.BidModifierType.ENVIRONMENT)
+        mock_from_target.assert_called_once_with(1, constants.BidModifierType.ENVIRONMENT)
+
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_constant_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_constant_target")
+    def test_browser(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.BROWSER, 1)
+        self.converter.from_target(constants.BidModifierType.BROWSER, 1)
+        mock_to_target.assert_called_once_with(1, constants.BidModifierType.BROWSER)
+        mock_from_target.assert_called_once_with(1, constants.BidModifierType.BROWSER)
+
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_constant_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_constant_target")
+    def test_connection_type(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.CONNECTION_TYPE, 1)
+        self.converter.from_target(constants.BidModifierType.CONNECTION_TYPE, 1)
+        mock_to_target.assert_called_once_with(1, constants.BidModifierType.CONNECTION_TYPE)
+        mock_from_target.assert_called_once_with(1, constants.BidModifierType.CONNECTION_TYPE)
 
     def test_source(self):
         source = magic_mixer.blend(core.models.Source)

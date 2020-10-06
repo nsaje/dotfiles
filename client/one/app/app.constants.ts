@@ -268,6 +268,8 @@ export enum BidModifierType {
     AD = 'AD',
     DAY_HOUR = 'DAY_HOUR',
     PLACEMENT = 'PLACEMENT',
+    BROWSER = 'BROWSER',
+    CONNECTION_TYPE = 'CONNECTION_TYPE',
 }
 
 export enum HackLevel {

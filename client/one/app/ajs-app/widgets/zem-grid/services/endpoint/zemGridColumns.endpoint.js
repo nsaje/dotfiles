@@ -507,6 +507,8 @@ angular
                             constants.breakdown.PUBLISHER,
                             constants.breakdown.MEDIA_SOURCE,
                             constants.breakdown.PLACEMENT,
+                            constants.breakdown.BROWSER,
+                            constants.breakdown.CONNECTION_TYPE,
                         ],
                     },
                 ],
@@ -2068,6 +2070,8 @@ angular
             constants.breakdown.PUBLISHER,
             constants.breakdown.PLACEMENT,
             constants.breakdown.MEDIA_SOURCE,
+            constants.breakdown.BROWSER,
+            constants.breakdown.CONNECTION_TYPE,
         ];
         COLUMNS.bidModifier.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.bidModifier.exceptions.breakdownBaseLevelOnly = true;

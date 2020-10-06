@@ -19,6 +19,7 @@ import core.models
 import dash.constants
 
 from . import constants
+from . import helpers
 from . import models
 
 
@@ -132,20 +133,18 @@ def _calculate_min_max(
         # for these dimensions we can not easily deduce exact min and max, thus we are expanding the range with 1 if applicable
         min_value, max_value = _min_max_with_ones(min_value, max_value)
 
-    elif modifier_type == constants.BidModifierType.DEVICE:
-        if count != len(dash.constants.DeviceType.get_all()) - 1:  # account for UNKNOWN
-            min_value, max_value = _min_max_with_ones(min_value, max_value)
-
-    elif modifier_type == constants.BidModifierType.OPERATING_SYSTEM:
-        if count != len(dash.constants.OperatingSystem.get_all()) - 1:  # account for UNKNOWN
-            min_value, max_value = _min_max_with_ones(min_value, max_value)
-
-    elif modifier_type == constants.BidModifierType.ENVIRONMENT:
-        if count != len(dash.constants.Environment.get_all()) - 1:  # account for UNKNOWN
+    elif modifier_type in (
+        constants.BidModifierType.DEVICE,
+        constants.BidModifierType.OPERATING_SYSTEM,
+        constants.BidModifierType.ENVIRONMENT,
+        constants.BidModifierType.BROWSER,
+        constants.BidModifierType.CONNECTION_TYPE,
+    ):
+        if count != _get_dimension_constant_count(modifier_type) - 1:  # account for UNKNOWN
             min_value, max_value = _min_max_with_ones(min_value, max_value)
 
     elif modifier_type == constants.BidModifierType.DAY_HOUR:
-        if count != len(dash.constants.DayHour.get_all()):
+        if count != _get_dimension_constant_count(modifier_type):
             min_value, max_value = _min_max_with_ones(min_value, max_value)
 
     elif modifier_type == constants.BidModifierType.SOURCE:
@@ -193,3 +192,8 @@ def _calculate_min_max(
 
 def _min_max_with_ones(min_value, max_value):
     return min(min_value, 1), max(max_value, 1)
+
+
+def _get_dimension_constant_count(bid_modifier_type):
+    constant, _ = helpers.modifier_type_to_constant_dimension(bid_modifier_type)
+    return len(constant.get_all())

@@ -26,10 +26,6 @@ class BidModifierTypeInvalid(BidModifierInvalid):
     pass
 
 
-class BidModifierUnsupportedTarget(BidModifierInvalid):
-    pass
-
-
 class InvalidBidModifierFile(Exception):
     pass
 

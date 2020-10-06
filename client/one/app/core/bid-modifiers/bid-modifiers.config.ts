@@ -33,4 +33,6 @@ export const BID_MODIFIER_TYPE_NAME_MAP = {
     [BidModifierType.AD]: 'Content Ad',
     [BidModifierType.DAY_HOUR]: 'Day - Hour',
     [BidModifierType.PLACEMENT]: 'Placement',
+    [BidModifierType.BROWSER]: 'Browser',
+    [BidModifierType.CONNECTION_TYPE]: 'Connection Type',
 };

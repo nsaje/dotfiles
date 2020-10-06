@@ -7,6 +7,7 @@ import random
 import string
 from collections import Counter
 
+from dash import constants as dash_constants
 from stats import constants as stats_constants
 
 from . import constants
@@ -30,6 +31,18 @@ _BREAKDOWN_NAME_MAP = {
     stats_constants.DimensionIdentifier.PLACEMENT: constants.BidModifierType.PLACEMENT,
     stats_constants.DeliveryDimension.BROWSER: constants.BidModifierType.BROWSER,
     stats_constants.DeliveryDimension.CONNECTION_TYPE: constants.BidModifierType.CONNECTION_TYPE,
+}
+
+_BID_MODIFIER_CONSTANT_MAP = {
+    constants.BidModifierType.DEVICE: {"constant": dash_constants.DeviceType, "name": "Device Type"},
+    constants.BidModifierType.OPERATING_SYSTEM: {
+        "constant": dash_constants.OperatingSystem,
+        "name": "Operating System",
+    },
+    constants.BidModifierType.ENVIRONMENT: {"constant": dash_constants.Environment, "name": "Environment"},
+    constants.BidModifierType.DAY_HOUR: {"constant": dash_constants.DayHour, "name": "Day-Hour"},
+    constants.BidModifierType.BROWSER: {"constant": dash_constants.BrowserFamily, "name": "Browser Family"},
+    constants.BidModifierType.CONNECTION_TYPE: {"constant": dash_constants.ConnectionType, "name": "Connection Type"},
 }
 
 
@@ -257,3 +270,8 @@ def create_bid_modifier_dict(bid_modifier_or_none, modifier_type=None, target=No
         bid_modifier_dict["modifier"] = bid_modifier_or_none.modifier
         bid_modifier_dict["source_slug"] = bid_modifier_or_none.source_slug
     return bid_modifier_dict
+
+
+def modifier_type_to_constant_dimension(bid_modifier_type):
+    dimension = _BID_MODIFIER_CONSTANT_MAP.get(bid_modifier_type)
+    return (dimension.get("constant"), dimension.get("name"))

@@ -536,43 +536,30 @@ def make_csv_example_file(modifier_type):
             {target_column_name: "example.com__1__someplacement", "Source Slug": "some_slug"}
         ],
         constants.BidModifierType.SOURCE: [{target_column_name: "b1_outbrain"}],
-        constants.BidModifierType.DEVICE: [
-            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.DESKTOP)},
-            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE)},
-            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.TABLET)},
-        ],
-        constants.BidModifierType.OPERATING_SYSTEM: [
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.ANDROID)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.IOS)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINPHONE)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINRT)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINDOWS)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.MACOSX)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.LINUX)},
-            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.CHROMEOS)},
-        ],
-        constants.BidModifierType.ENVIRONMENT: [
-            {target_column_name: dash_constants.Environment.get_name(dash_constants.Environment.APP)},
-            {target_column_name: dash_constants.Environment.get_name(dash_constants.Environment.SITE)},
-        ],
+        constants.BidModifierType.DEVICE: _get_constant_examples(
+            target_column_name,
+            dash_constants.DeviceType,
+            [dash_constants.DeviceType.UNKNOWN, dash_constants.DeviceType.TV],
+        ),
+        constants.BidModifierType.OPERATING_SYSTEM: _get_constant_examples(
+            target_column_name, dash_constants.OperatingSystem, [dash_constants.OperatingSystem.UNKNOWN]
+        ),
+        constants.BidModifierType.ENVIRONMENT: _get_constant_examples(
+            target_column_name, dash_constants.Environment, [dash_constants.Environment.UNKNOWN]
+        ),
         constants.BidModifierType.COUNTRY: [{target_column_name: "US"}],
         constants.BidModifierType.STATE: [{target_column_name: "US-TX"}],
         constants.BidModifierType.DMA: [{target_column_name: "765"}],
         constants.BidModifierType.AD: [{target_column_name: "1"}],
         constants.BidModifierType.DAY_HOUR: [{target_column_name: "MONDAY_0"}, {target_column_name: "SUNDAY_23"}],
-        constants.BidModifierType.BROWSER: [
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.CHROME)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.FIREFOX)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.SAFARI)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.IE)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.SAMSUNG)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.OPERA)},
-            {target_column_name: dash_constants.BrowserFamily.get_name(dash_constants.BrowserFamily.EDGE)},
-        ],
-        constants.BidModifierType.CONNECTION_TYPE: [
-            {target_column_name: dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.WIFI)},
-            {target_column_name: dash_constants.ConnectionType.get_name(dash_constants.ConnectionType.CELLULAR)},
-        ],
+        constants.BidModifierType.BROWSER: _get_constant_examples(
+            target_column_name,
+            dash_constants.BrowserFamily,
+            [dash_constants.BrowserFamily.UNKNOWN, dash_constants.BrowserFamily.IN_APP],
+        ),
+        constants.BidModifierType.CONNECTION_TYPE: _get_constant_examples(
+            target_column_name, dash_constants.ConnectionType, [dash_constants.ConnectionType.UNKNOWN]
+        ),
     }
 
     entries = modifier_type_map[modifier_type]
@@ -610,3 +597,11 @@ def _write_upload_history(ad_group, number_of_deleted, number_of_created, user=N
 
 def _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, permission):
     return bid_modifiers_qs.filter_by_entity_permission(user, permission)
+
+
+def _get_constant_examples(target_column_name, constant, excluded=[]):
+    return [
+        {target_column_name: constant.get_name(constant_value)}
+        for constant_value in sorted(constant.get_all(), key=lambda x: (x is None, x))
+        if constant_value not in excluded
+    ]

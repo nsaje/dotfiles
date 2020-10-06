@@ -44,7 +44,9 @@ class SourceBidValidationMixin(object):
                 ad_group=self.ad_group,
                 type=bid_modifiers.BidModifierType.SOURCE,
                 modifier=modifier,
-                target=bid_modifiers.TargetConverter._to_source_target(ad_group_source.source.bidder_slug),
+                target=bid_modifiers.TargetConverter._to_source_target(
+                    ad_group_source.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+                ),
             )
             ad_group_source.settings.update(None, **{source_bid_value_attr: decimal.Decimal(modifier) * bid_value})
 
@@ -52,7 +54,9 @@ class SourceBidValidationMixin(object):
         return models.BidModifier.objects.get(
             ad_group=self.ad_group,
             type=bid_modifiers.BidModifierType.SOURCE,
-            target=bid_modifiers.TargetConverter._to_source_target(ad_group_source.source.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                ad_group_source.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
 
     def _assert_bid_modifiers(self, expected_bid_modifiers_list):
@@ -582,7 +586,9 @@ class SwitchBiddingTypeTestCase(SourceBidValidationMixin, TestCase):
                 ad_group=self.ad_group,
                 type=bid_modifiers.BidModifierType.SOURCE,
                 modifier=modifier,
-                target=bid_modifiers.TargetConverter._to_source_target(ad_group_source.source.bidder_slug),
+                target=bid_modifiers.TargetConverter._to_source_target(
+                    ad_group_source.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+                ),
             )
             ad_group_source.settings.update_unsafe(None, cpc_cc=source_cpc, cpm=source_cpm)
 
@@ -741,7 +747,9 @@ class ValidationTestCase(TestCase):
             ad_group=self.ad_group_1,
             type=bid_modifiers.BidModifierType.SOURCE,
             modifier=1.0,
-            target=bid_modifiers.TargetConverter._to_source_target(self.source_1.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                self.source_1.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
 
         self.bm_1_2 = magic_mixer.blend(
@@ -749,7 +757,9 @@ class ValidationTestCase(TestCase):
             ad_group=self.ad_group_1,
             type=bid_modifiers.BidModifierType.SOURCE,
             modifier=1.0,
-            target=bid_modifiers.TargetConverter._to_source_target(self.source_2.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                self.source_2.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
 
         self.ad_group_1.settings.update(None, cpc=decimal.Decimal("1.0"))
@@ -811,7 +821,9 @@ class ValidationTestCase(TestCase):
             bid_modifiers.service.set(
                 self.ad_group_1,
                 bid_modifiers.BidModifierType.SOURCE,
-                bid_modifiers.TargetConverter._to_source_target(self.source_1.bidder_slug),
+                bid_modifiers.TargetConverter._to_source_target(
+                    self.source_1.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+                ),
                 None,
                 10.5,
             )
@@ -821,7 +833,9 @@ class ValidationTestCase(TestCase):
             bid_modifiers.service.set(
                 self.ad_group_1,
                 bid_modifiers.BidModifierType.SOURCE,
-                bid_modifiers.TargetConverter._to_source_target(self.source_1.bidder_slug),
+                bid_modifiers.TargetConverter._to_source_target(
+                    self.source_1.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+                ),
                 None,
                 0.02,
             )
@@ -2044,7 +2058,9 @@ class MaxAutopilotBidTestCase(TestCase):
             ad_group=self.ad_group,
             type=bid_modifiers.BidModifierType.SOURCE,
             modifier=0.3,
-            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                self.ad_group_source_1.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
         self.ad_group.settings.update(
             None,
@@ -2078,7 +2094,9 @@ class MaxAutopilotBidTestCase(TestCase):
             ad_group=self.ad_group,
             type=bid_modifiers.BidModifierType.SOURCE,
             modifier=0.3,
-            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                self.ad_group_source_1.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
         self.ad_group.settings.update(
             None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC, max_autopilot_bid=None
@@ -2155,7 +2173,9 @@ class MaxAutopilotBidTestCase(TestCase):
             ad_group=self.ad_group,
             type=bid_modifiers.BidModifierType.SOURCE,
             modifier=0.3,
-            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+            target=bid_modifiers.TargetConverter._to_source_target(
+                self.ad_group_source_1.source.bidder_slug, bid_modifiers.BidModifierType.SOURCE
+            ),
         )
         self.ad_group.settings.update(None, max_autopilot_bid=decimal.Decimal("15.0"))
 
