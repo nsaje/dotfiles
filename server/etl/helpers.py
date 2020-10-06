@@ -2,6 +2,7 @@ import datetime
 
 from dateutil import rrule
 
+import backtosql
 import dash.features.performance_tracking.constants
 from utils import dates_helper
 
@@ -144,3 +145,13 @@ def get_ad_group_ids_or_none(account_id):
         return None
 
     return list(dash.models.AdGroup.objects.filter(campaign__account_id=account_id).values_list("pk", flat=True))
+
+
+def prepare_create_timescale_hypertable(table_name: str):
+    return backtosql.generate_sql("etl_create_timescale_hypertable.sql", dict(table_name=table_name))
+
+
+def prepare_drop_timescale_hypertable_chunks(table_name: str, keep_days: int):
+    return backtosql.generate_sql(
+        "etl_drop_timescale_hypertable_chunks.sql", dict(table_name=table_name, keep_days=keep_days)
+    )

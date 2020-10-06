@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connections
 
+from etl import helpers
 from etl import maintenance
 from etl import materialize
 from etl.materialize import MATERIALIZED_VIEWS
@@ -59,5 +60,8 @@ class Command(BaseCommand):
             )
             with open(migration_file) as f:
                 sql = f.read()
+
+        sql += helpers.prepare_create_timescale_hypertable(mv_class.TABLE_NAME)
+
         with connections[db_name].cursor() as cursor:
             cursor.execute(sql)

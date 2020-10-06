@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from etl import helpers
 from etl import redshift
 from etl import refresh
 from etl.materialize import MATERIALIZED_VIEWS
@@ -88,6 +89,7 @@ def _create_mv_postgres(job_id, mv_class, db_name):
     with db.get_write_stats_cursor(db_name) as cursor:
         _log_create(job_id, mv_class, db_name)
         sql = mv_class.prepare_create_table_postgres()
+        sql += helpers.prepare_create_timescale_hypertable(mv_class.TABLE_NAME)
         cursor.execute(sql)
 
 

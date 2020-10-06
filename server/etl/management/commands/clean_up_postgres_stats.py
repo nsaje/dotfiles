@@ -1,10 +1,7 @@
-import datetime
-
 from django.conf import settings
 
-import utils.dates_helper
+from etl import helpers
 from etl import maintenance
-from etl import redshift
 from etl import refresh
 from redshiftapi import db
 from utils import metrics_compat
@@ -22,18 +19,15 @@ class Command(Z1Command):
     @metrics_compat.timer("etl.clean_up_postgres_stats")
     def handle(self, *args, **options):
         for db_name in settings.STATS_DB_POSTGRES:
-            for table in refresh.get_all_views_table_names():
-                if table in SKIP_TABLES:
+            for table_name in refresh.get_all_views_table_names():
+                if table_name in SKIP_TABLES:
                     continue
-                self._delete_old_data(table, db_name)
-                maintenance.vacuum(table, db_name=db_name)
-                maintenance.analyze(table, db_name=db_name)
+                self._drop_old_timescale_hypertable_chunks(table_name, db_name)
+                maintenance.analyze(table_name, db_name=db_name)
 
     @staticmethod
-    def _delete_old_data(table, db_name):
-        date_from = datetime.date(1970, 1, 1)
-        date_to = utils.dates_helper.days_before(utils.dates_helper.local_today(), POSTGRES_KEEP_DAYS)
+    def _drop_old_timescale_hypertable_chunks(table_name: str, db_name: str):
         with db.get_write_stats_cursor(db_name) as c:
-            logger.info("Deleting old data from table", table=table)
-            sql, params = redshift.prepare_date_range_delete_query(table, date_from, date_to, None)
-            c.execute(sql, params)
+            logger.info("Dropping old timescale hypertable chunks from table", table_name=table_name)
+            sql = helpers.prepare_drop_timescale_hypertable_chunks(table_name, POSTGRES_KEEP_DAYS)
+            c.execute(sql)

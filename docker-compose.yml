@@ -10,7 +10,7 @@ services:
         command: "-c fsync=off -c full_page_writes=off -c synchronous_commit=off"
 
     statspostgres:
-        image: postgres:10.0
+        image: timescale/timescaledb:latest-pg11
         extends: postgres
 
     # this is fake telegraf that only prints stats on stdout

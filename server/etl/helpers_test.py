@@ -124,3 +124,15 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(helpers.get_highest_priority_postclick_source({"ga_mail": 2, "omniture": 3, "other": 4}), 2)
         self.assertEqual(helpers.get_highest_priority_postclick_source({"omniture": 3, "other": 4}), 3)
         self.assertEqual(helpers.get_highest_priority_postclick_source({"other": 4}), 4)
+
+    def test_prepare_create_timescale_hypertable(self):
+        query = helpers.prepare_create_timescale_hypertable("test_table")
+
+        self.assertSQLEquals(
+            query, "SELECT create_hypertable('test_table', 'date', chunk_time_interval => INTERVAL '1 day');"
+        )
+
+    def prepare_drop_timescale_hypertable_chunks(self):
+        query = helpers.prepare_drop_timescale_hypertable_chunks("test_table", 17)
+
+        self.assertSQLEquals(query, "SELECT drop_chunks(INTERVAL '17 days', 'test_table');")
