@@ -16,6 +16,7 @@ import {APP_CONFIG} from '../../../../../../../app.config';
 import {Subject, Observable, merge} from 'rxjs';
 import {distinctUntilChanged, takeUntil, map, tap} from 'rxjs/operators';
 import {BidModifierImportFormApi} from './types/bid-modifier-import-form-api';
+import {IMPORT_INSTRUCTIONS} from './bid-modifier-import-form.config';
 
 @Component({
     selector: 'zem-bid-modifier-import-form',
@@ -36,6 +37,8 @@ export class BidModifierImportFormComponent
 
     Breakdown = Breakdown;
 
+    importInstructionsText: string[];
+
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(public store: BidModifierImportFormStore) {}
@@ -43,6 +46,7 @@ export class BidModifierImportFormComponent
     ngOnInit(): void {
         this.store.init(this.adGroupId, this.breakdown);
         this.subscribeToStateUpdates();
+        this.importInstructionsText = IMPORT_INSTRUCTIONS[this.breakdown] || [];
     }
 
     ngAfterViewInit(): void {
