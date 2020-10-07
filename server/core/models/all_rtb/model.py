@@ -12,7 +12,7 @@ AllRTBSourceType = SourceType(
     min_daily_budget=Decimal("1.00"),
     max_cpc=Decimal("20.0"),
     max_cpm=Decimal("25.0"),
-    max_daily_budget=Decimal("20000.00"),
+    max_daily_budget=Decimal("50000.00"),
     cpc_decimal_places=4,
 )
 
