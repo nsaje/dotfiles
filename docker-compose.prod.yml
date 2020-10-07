@@ -105,6 +105,7 @@ services:
         environment:
           VIRTUAL_HOST: "oneapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
+          GUNICORN_TIMEOUT: "120"  # remove increased timeout after adgroup POST improved (after RTA is deployed)
           GUNICORN_WORKERS: "1"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
