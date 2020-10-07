@@ -111,15 +111,6 @@ class BudgetDepletionTestCase(test.TestCase):
         actives = simple._get_active_ad_groups(campaign)
         self.assertEqual([], actives)
 
-    def test_get_active_ad_group_sources_settings(self):
-        adg1 = models.AdGroup.objects.get(id=1)
-        actives = simple._get_active_ad_group_sources_settings(adg1)
-        self.assertEqual(len(actives), 1)
-
-        adg2 = models.AdGroup.objects.get(id=2)
-        actives2 = simple._get_active_ad_group_sources_settings(adg2)
-        self.assertEqual(len(actives2), 1)
-
     def test_get_total_daily_budget_amount(self):
         camp1 = models.Campaign.objects.get(id=1)
         self.assertEqual(simple._get_total_daily_budget_amount(camp1), decimal.Decimal("60"))
