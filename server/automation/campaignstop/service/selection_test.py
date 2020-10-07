@@ -44,7 +44,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_no_mark(self):
         RealTimeDataHistory.objects.create(
-            ad_group=self.ad_group, source=self.source, date=dates_helper.local_today(), etfm_spend=50.0
+            ad_group=self.ad_group, source=self.source, date=dates_helper.local_today(), etfm_spend=50
         )
         selection.mark_almost_depleted_campaigns()
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
@@ -53,7 +53,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
     def test_mark_if_budget_over_end_date(self):
         now = dates_helper.utc_now()
         RealTimeDataHistory.objects.create(
-            ad_group=self.ad_group, source=self.source, date=dates_helper.local_today(), etfm_spend=50.0
+            ad_group=self.ad_group, source=self.source, date=dates_helper.local_today(), etfm_spend=50
         )
         with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
             mock_utc_now.return_value = dates_helper.day_after(now.replace(hour=8))
@@ -242,10 +242,6 @@ class UpdateAlmostDepletedTestCase(TestCase):
         returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 900.000)
 
-        adg_spends = {(self.ad_group.id, today): 900.000}
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-        self.assertEqual(returned_spend, 900.000)
-
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_get_spend_method_one_entry_with_settings_budget(self, _):
@@ -272,10 +268,6 @@ class UpdateAlmostDepletedTestCase(TestCase):
             (ad_group2.id, source2.id, today): 100.000,
         }
         returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
-        self.assertEqual(returned_spend, 1000.000)
-
-        adg_source_spends = {(self.ad_group.id, today): 900.000, (ad_group2.id, today): 100.000}
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_source_spends)
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
@@ -314,37 +306,6 @@ class UpdateAlmostDepletedTestCase(TestCase):
         returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1500.000)
 
-        adg_source_spends = {
-            (self.ad_group.id, today): 900.000,
-            (self.ad_group.id, yesterday): 500.000,
-            (ad_group2.id, today): 100.000,
-        }
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_source_spends)
-        self.assertEqual(returned_spend, 1500.000)
-
-    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_morning_est_now)
-    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    def test_in_critical_hours_and_budget_over(self, _):
-        today = dates_helper.local_today()
-        yesterday = dates_helper.local_yesterday()
-        source2 = magic_mixer.blend(core.models.Source)
-        ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-
-        adg_source_spends = {
-            (self.ad_group.id, today): 900.000,
-            (self.ad_group.id, yesterday): 500.000,
-            (ad_group2.id, today): 100.000,
-        }
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_source_spends)
-        self.assertEqual(returned_spend, 1500.000)
-
-        self.ad_group.settings.update_unsafe(None, daily_budget=2000.000)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_source_spends)
-        self.assertEqual(returned_spend, 2600.000)
-
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_when_user_disables_adgroup_we_should_get_realtime_data_from_all_sources(self, _):
@@ -369,54 +330,6 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
         selection.mark_almost_depleted_campaigns()
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-
-    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    def test_get_ad_groups_map_has_inactive_source(self, _):
-        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
-        second_ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
-        second_ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        self.assertFalse(ad_groups_map[self.ad_group.id]["has_active_source"])
-
-        second_ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        self.assertTrue(ad_groups_map[self.ad_group.id]["has_active_source"])
-
-        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        self.assertTrue(ad_groups_map[self.ad_group.id]["has_active_source"])
-
-    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    def test_get_spend_inactive_adgroup(self, _):
-        today = dates_helper.local_today()
-        self.ad_group.settings.update_unsafe(None, daily_budget=1000.000)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        adg_spends = {(self.ad_group.id, today): 900.000}
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-        self.assertEqual(returned_spend, 1000.000)
-
-        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-        self.assertEqual(returned_spend, 900.000)
-
-    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    def test_get_spend_inactive_all_sources(self, _):
-        today = dates_helper.local_today()
-        self.ad_group.settings.update_unsafe(None, daily_budget=1000.000)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        adg_spends = {(self.ad_group.id, today): 900.000}
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-        self.assertEqual(returned_spend, 1000.000)
-
-        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
-        ad_groups_map = selection._get_ad_groups_map(self.campaign)
-        returned_spend = selection._get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-        self.assertEqual(returned_spend, 900.000)
 
     def _setup_initial_state(self):
         self.today = dates_helper.local_today()
