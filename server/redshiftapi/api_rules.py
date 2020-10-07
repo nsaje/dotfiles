@@ -12,6 +12,13 @@ import utils.converters
 import utils.dates_helper
 import utils.dict_helper
 
+QUERY_LIMITATION_TARGET_TYPES = [
+    automation.rules.constants.TargetType.PUBLISHER,
+    automation.rules.constants.TargetType.PLACEMENT,
+]
+QUERY_LIMITATION_COLUMN = "impressions"
+QUERY_LIMITATION_THRESHOLD = 1000
+
 
 def query(target_type: int, ad_groups: Sequence[core.models.AdGroup]) -> Sequence[Any]:
     if not ad_groups:
@@ -91,6 +98,7 @@ def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "last_60_days_date_from": local_today - datetime.timedelta(days=60),
             "date_to": local_today - datetime.timedelta(days=1),
             "target_type_group_columns": "{}".format(", ".join(ttc for ttc in target_type_columns)),
+            "limitations": _get_query_limitations(target_type),
         },
     )
 
@@ -142,6 +150,7 @@ def _get_touchpoints_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "target_type_group_columns": "{}".format(
                 ", ".join(ttc for ttc in ["slug", "window"] + target_type_columns)
             ),
+            "limitations": _get_query_limitations(target_type),
         },
     )
 
@@ -150,3 +159,24 @@ def _get_touchpoints_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
 
 def _get_target_type_query_name(target_type: int) -> str:
     return "rule_stats__" + automation.rules.constants.TargetType.get_name(target_type).lower()
+
+
+def _get_query_limitations(target_type: int):
+    if target_type not in QUERY_LIMITATION_TARGET_TYPES:
+        return {}
+    m = redshiftapi.models.MVMaster()
+    target_type_columns = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
+    query_limitations = {
+        "breakdown": m.select_columns(subset=target_type_columns + ["ad_group_id"]),
+        "column": m.select_columns([QUERY_LIMITATION_COLUMN])[0],
+        "threshold": QUERY_LIMITATION_THRESHOLD,
+        "table": redshiftapi.view_selector.get_best_view_base(
+            [
+                ttc.replace("publisher", "publisher_id").replace("placement", "placement_id")
+                for ttc in target_type_columns + ["ad_group_id"]
+            ],
+            "publisher" in target_type_columns,
+        ),
+        "target_type_group_columns": "{}".format(", ".join(ttc for ttc in target_type_columns)),
+    }
+    return query_limitations

@@ -77,8 +77,37 @@ class ApiRulesTest(TestCase):
         self.maxDiff = None
         for test_case in test_cases:
             target_type_sql = api_rules._get_target_type_sql(test_case["target_type"], ad_groups)
-            self.assertEqual(
-                """(
+
+            expected_sql = ""
+            if test_case["target_type"] in api_rules.QUERY_LIMITATION_TARGET_TYPES:
+                expected_sql = """\
+WITH limited_entities AS (
+    SELECT
+        {fields}, ad_group_id AS ad_group_id,
+        SUM(impressions) / NULLIF(SUM(CASE WHEN impressions > 0 THEN 1 ELSE 0 END), 0) per_day
+        FROM (
+            SELECT
+                {fields}, ad_group_id AS ad_group_id,
+                date,
+                SUM(impressions) impressions
+            FROM
+                {table}
+            WHERE
+                ad_group_id IN {ad_group_ids}
+                AND date >= '2017-05-08'
+            GROUP BY
+                ad_group_id,
+                {group_by},
+                date)
+        GROUP BY
+            ad_group_id,
+            {group_by}
+        HAVING
+            per_day > {limit_min_threshold})
+"""
+
+            expected_sql += """\
+(
     SELECT
         1 as window_key,
         {fields}, ad_group_id AS ad_group_id,
@@ -166,7 +195,7 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        {table}
+        {table}{limit_join}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-06'
@@ -262,7 +291,7 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        {table}
+        {table}{limit_join}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-04'
@@ -358,7 +387,7 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        {table}
+        {table}{limit_join}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-30'
@@ -454,7 +483,7 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        {table}
+        {table}{limit_join}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-07'
@@ -550,7 +579,7 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        {table}
+        {table}{limit_join}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-05-08'
@@ -558,10 +587,17 @@ local_video_etfm_cpcv
     GROUP BY
         ad_group_id,
         {group_by}
-)""".format(
+)"""
+            self.assertEqual(
+                expected_sql.format(
                     table=test_case["table"],
+                    limit_join="""
+    NATURAL JOIN limited_entities"""
+                    if test_case["target_type"] in api_rules.QUERY_LIMITATION_TARGET_TYPES
+                    else "",
                     fields=test_case["fields"],
                     ad_group_ids=tuple(ad_group_ids),
+                    limit_min_threshold=api_rules.QUERY_LIMITATION_THRESHOLD,
                     group_by=", ".join(
                         [
                             field

@@ -13,7 +13,6 @@ import core.features.goals
 import core.models
 import dash.constants
 import dash.features.geolocation
-import redshiftapi.api_rules
 from utils import sort_helper
 
 from ... import config
@@ -24,6 +23,8 @@ from ... import models
 def query_stats(
     target_type: int, rules_map: Dict[core.models.AdGroup, List[models.Rule]]
 ) -> Dict[int, Dict[str, Dict[str, Dict[int, Any]]]]:
+    import redshiftapi.api_rules
+
     ad_groups = list(rules_map.keys())
     stats = redshiftapi.api_rules.query(target_type, ad_groups)
     cpa_ad_groups = _get_cpa_ad_groups(rules_map)

@@ -1,13 +1,37 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
-(
+{% if limitations %}WITH limited_entities AS (
+    SELECT
+        {{ limitations.breakdown|column_as_alias }},
+        SUM({{ limitations.column|only_alias }}) / NULLIF(SUM(CASE WHEN {{ limitations.column|only_alias }} > 0 THEN 1 ELSE 0 END), 0) per_day
+        FROM (
+            SELECT
+                {{ limitations.breakdown|column_as_alias }},
+                date,
+                {{ limitations.column|column_as_alias }}
+            FROM
+                {{ limitations.table }}
+            WHERE
+                ad_group_id IN ({{ ad_group_ids }})
+                AND date >= '{{ last_60_days_date_from|date:"Y-m-d" }}'
+            GROUP BY
+                ad_group_id,
+                {{ limitations.target_type_group_columns }},
+                date)
+        GROUP BY
+            ad_group_id,
+            {{ limitations.target_type_group_columns }}
+        HAVING
+            per_day > {{ limitations.threshold }})
+{% endif %}(
     SELECT
         {{ last_day_key }} as window_key,
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
-        {{ target_type_table }}
+        {{ target_type_table }}{% if limitations %}
+    NATURAL JOIN limited_entities{% endif %}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_day_date_from|date:"Y-m-d" }}'
@@ -21,7 +45,8 @@
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
-        {{ target_type_table }}
+        {{ target_type_table }}{% if limitations %}
+    NATURAL JOIN limited_entities{% endif %}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_3_days_date_from|date:"Y-m-d" }}'
@@ -35,7 +60,8 @@
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
-        {{ target_type_table }}
+        {{ target_type_table }}{% if limitations %}
+    NATURAL JOIN limited_entities{% endif %}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_7_days_date_from|date:"Y-m-d" }}'
@@ -49,7 +75,8 @@
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
-        {{ target_type_table }}
+        {{ target_type_table }}{% if limitations %}
+    NATURAL JOIN limited_entities{% endif %}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_30_days_date_from|date:"Y-m-d" }}'
@@ -63,7 +90,8 @@
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
-        {{ target_type_table }}
+        {{ target_type_table }}{% if limitations %}
+    NATURAL JOIN limited_entities{% endif %}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_60_days_date_from|date:"Y-m-d" }}'
