@@ -1,7 +1,6 @@
 from rest_framework import permissions
 from rest_framework import status
 
-import core.common.entity_limits
 import core.features.bid_modifiers
 import restapi.common.views_base
 import zemauth.access
@@ -62,11 +61,6 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
         except core.features.bid_modifiers.BidModifierTargetAdGroupMismatch as e:
             raise exc.ValidationError(errors={"target": [str(e)]})
-
-        except core.common.entity_limits.EntityLimitExceeded as e:
-            raise exc.ValidationError(
-                f"You have reached the limit of {e.limit} bid modifiers per ad group. Please delete some to be able to create more."
-            )
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data, status=status.HTTP_201_CREATED)
 
@@ -141,11 +135,6 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             core.features.bid_modifiers.BidModifierTargetAdGroupMismatch,
         ) as e:
             raise exc.ValidationError(str(e))
-
-        except core.common.entity_limits.EntityLimitExceeded as e:
-            raise exc.ValidationError(
-                f"You have reached the limit of {e.limit} bid modifiers per ad group. Please delete some to be able to create more."
-            )
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifiers, many=True).data)
 

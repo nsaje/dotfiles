@@ -16,11 +16,11 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
         super(BidModifierViewSetTest, self).setUp()
         self.request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
-        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
-        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.foreign_ad_group = magic_mixer.blend(core.models.AdGroup)
 
         self.us = magic_mixer.blend(
@@ -337,29 +337,6 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
                     "target": bm.target,
                     "modifier": 2.5,
                 }
-            },
-        )
-
-    def test_create_limit_exceeded(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
-        magic_mixer.cycle(5000).blend(bid_modifiers.BidModifier, ad_group=ad_group)
-        bm = {
-            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
-            "sourceSlug": self.source.bidder_slug,
-            "target": "whatever.com",
-            "modifier": 2.5,
-        }
-
-        response = self.client.post(
-            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}), data=bm, format="json"
-        )
-
-        result = self.assertResponseError(response, "ValidationError")
-        self.assertEqual(
-            result,
-            {
-                "errorCode": "ValidationError",
-                "details": "You have reached the limit of 5000 bid modifiers per ad group. Please delete some to be able to create more.",
             },
         )
 
@@ -824,32 +801,6 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
                         "modifier": 1.7,
                     },
                 ]
-            },
-        )
-
-    def test_update_bulk_limit_exceeded(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
-
-        response = self.client.put(
-            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}),
-            data=[
-                {
-                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
-                    "sourceSlug": self.source.bidder_slug,
-                    "target": "whatever.com",
-                    "modifier": 2.5,
-                }
-            ]
-            * 5001,
-            format="json",
-        )
-
-        result = self.assertResponseError(response, "ValidationError")
-        self.assertEqual(
-            result,
-            {
-                "errorCode": "ValidationError",
-                "details": "You have reached the limit of 5000 bid modifiers per ad group. Please delete some to be able to create more.",
             },
         )
 

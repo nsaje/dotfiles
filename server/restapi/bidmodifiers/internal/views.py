@@ -5,7 +5,6 @@ from rest_framework import permissions
 from rest_framework import serializers
 from rest_framework.parsers import MultiPartParser
 
-import core.common.entity_limits
 import restapi.serializers.bid_modifiers
 import zemauth.access
 from core.features import bid_modifiers
@@ -90,6 +89,7 @@ class BidModifiersUpload(RESTAPIBaseViewSet):
         try:
             if breakdown_name:
                 modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
+
                 number_of_deleted, instances, csv_error_key = bid_modifiers.service.process_csv_file_upload(
                     ad_group, csv_file, modifier_type=modifier_type, user=request.user
                 )
@@ -111,13 +111,6 @@ class BidModifiersUpload(RESTAPIBaseViewSet):
             bid_modifiers.exceptions.BidModifierTargetAdGroupMismatch,
         ) as exc:
             raise serializers.ValidationError({"file": str(exc)})
-
-        except core.common.entity_limits.EntityLimitExceeded as e:
-            raise serializers.ValidationError(
-                {
-                    "file": f"You have reached the limit of {e.limit} bid modifiers per ad group. Please delete some to be able to create more."
-                }
-            )
 
         return self.response_ok(bid_modifiers.helpers.create_upload_summary_response(delete_type_counts, instances))
 
