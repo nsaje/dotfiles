@@ -15,6 +15,7 @@ DEFAULT_LIMITS = {
     "ConversionPixel": 20,
     "DirectDeal": 100000,
     "Rule": 500,
+    "BidModifier": 5000,
 }
 
 ACCOUNT_EXCEPTIONS = defaultdict(
@@ -43,7 +44,9 @@ ACCOUNT_EXCEPTIONS = defaultdict(
 
 
 class EntityLimitExceeded(PermissionDenied):
-    pass
+    def __init__(self, message=None, limit=None):
+        super().__init__(message)
+        self.limit = limit
 
 
 def enforce(queryset, account_id=None, create_count=1):
@@ -51,7 +54,8 @@ def enforce(queryset, account_id=None, create_count=1):
     limit = ACCOUNT_EXCEPTIONS[entity].get(account_id, DEFAULT_LIMITS[entity])
     if queryset.count() + create_count > limit:
         raise EntityLimitExceeded(
-            "You have reached the limit of {limit} of active entities of type {entity}. Please archive some to be able to create more.".format(
+            "You have reached the limit of {limit} active entities of type {entity}. Please archive some to be able to create more.".format(
                 limit=limit, entity=entity
-            )
+            ),
+            limit=limit,
         )

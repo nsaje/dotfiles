@@ -17,8 +17,8 @@ from zemauth.features.entity_permission import Permission
 class BidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(BidModifierCSVTest, self).setUp()
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="source_slug")
 
         self.outbrain = magic_mixer.blend(core.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
@@ -484,6 +484,54 @@ class BidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCase):
                     "Errors": bid_modifiers.helpers._get_modifier_bounds_error_message(20.0),
                 }
             ],
+        )
+
+    @mock.patch("utils.s3helpers.S3Helper.put")
+    @mock.patch("core.features.bid_modifiers.helpers.create_csv_error_key")
+    def test_upload_validation_error_limit_exceeded(self, mock_create_csv_error_key, mock_s3_helper_put):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        magic_mixer.cycle(5000).blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.constants.BidModifierType.COUNTRY,
+            modifier=2.0,
+        )
+
+        csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")
+        target_column_name = bid_modifiers.helpers.output_modifier_type(
+            bid_modifiers.constants.BidModifierType.PUBLISHER
+        )
+        csv_columns = [target_column_name, "Source Slug", "Bid Modifier"]
+        entries = [{target_column_name: "whatever.com", "Source Slug": self.source.bidder_slug, "Bid Modifier": "2.5"}]
+        csv_writer = csv.DictWriter(csv_file, csv_columns)
+        csv_writer.writeheader()
+        csv_writer.writerows(entries)
+        csv_file.seek(0)
+
+        response = self.client.post(
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
+            {"file": csv_file},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {
+                "errorCode": "ValidationError",
+                "details": {
+                    "file": "You have reached the limit of 5000 bid modifiers per ad group. Please delete some to be able to create more."
+                },
+            },
         )
 
     @mock.patch("utils.s3helpers.S3Helper.put")

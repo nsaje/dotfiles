@@ -3,6 +3,7 @@ from io import StringIO
 
 import mock
 
+import core.common.entity_limits
 import dash.constants
 import dash.models
 from dash import history_helpers
@@ -206,6 +207,11 @@ class BidModifierServiceTestCase(BaseTestCase):
             ],
         )
 
+    def test_set_entity_limit(self):
+        magic_mixer.cycle(5000).blend(dash.models.BidModifier, ad_group=self.ad_group)
+        with self.assertRaises(core.common.entity_limits.EntityLimitExceeded):
+            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.2)
+
     def test_set_existing(self):
         service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
 
@@ -310,6 +316,15 @@ class BidModifierServiceTestCase(BaseTestCase):
                 },
             ],
         )
+
+    def test_set_bulk_entity_limit(self):
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
+        ]
+        service.set_bulk(self.ad_group, bms_to_set * 5000)
+
+        with self.assertRaises(core.common.entity_limits.EntityLimitExceeded):
+            service.set_bulk(self.ad_group, bms_to_set * 5001)
 
     def test_set_bulk_invalid_ad(self):
         valid_content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
