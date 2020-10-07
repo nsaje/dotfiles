@@ -2,9 +2,10 @@ import {Injectable} from '@angular/core';
 import {BidModifierTypesGridStoreState} from './bid-modifier-types-grid.store.state';
 import {Store} from 'rxjs-observable-store';
 import {ColDef, GridOptions} from 'ag-grid-community';
-import {HelpPopoverHeaderComponent} from '../../smart-grid/components/header/help-popover/help-popover-header.component';
 import {TypeSummaryGridRow} from './type-summary-grid-row';
 import * as numericHelpers from '../../../helpers/numeric.helpers';
+import {HeaderCellComponent} from '../../smart-grid/components/cells/header-cell/header-cell.component';
+import {HeaderParams} from '../../smart-grid/components/cells/header-cell/types/header-params';
 
 @Injectable()
 export class BidModifierTypesGridStore extends Store<
@@ -31,11 +32,11 @@ export class BidModifierTypesGridStore extends Store<
                 headerName: 'Min / Max',
                 field: 'limits',
                 headerComponentParams: {
-                    tooltip:
+                    popoverTooltip:
                         'Highest (Max) and lowest (Min) bid modifiers configured per dimension.',
                     popoverPlacement: 'bottom',
-                },
-                headerComponentFramework: HelpPopoverHeaderComponent,
+                } as HeaderParams,
+                headerComponentFramework: HeaderCellComponent,
                 valueFormatter: data => this.formatMinMaxLimits(data.value),
             },
         ];
@@ -45,11 +46,11 @@ export class BidModifierTypesGridStore extends Store<
                 headerName: '#',
                 field: 'count',
                 headerComponentParams: {
-                    tooltip:
+                    popoverTooltip:
                         'Number of configured bid modifiers per dimension.',
                     popoverPlacement: 'bottom',
-                },
-                headerComponentFramework: HelpPopoverHeaderComponent,
+                } as HeaderParams,
+                headerComponentFramework: HeaderCellComponent,
             });
         }
 
@@ -61,10 +62,10 @@ export class BidModifierTypesGridStore extends Store<
                     headerName: '',
                     checkboxSelection: true,
                     headerComponentParams: {
-                        tooltip: selectionTooltip,
+                        popoverTooltip: selectionTooltip,
                         popoverPlacement: 'bottom',
-                    },
-                    headerComponentFramework: HelpPopoverHeaderComponent,
+                    } as HeaderParams,
+                    headerComponentFramework: HeaderCellComponent,
                     minWidth: 40,
                     maxWidth: 40,
                 };

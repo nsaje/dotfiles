@@ -1,0 +1,27 @@
+<div class="zem-header-cell">
+    <div class="zem-header-cell__data">
+        <span
+            class="zem-header-cell__value"
+            [class.zem-header-cell__value--sortable]="params.enableSorting"
+            (click)="setSort()"
+            >{{ params.displayName || 'N/A' }}</span
+        >
+        <zem-help-popover
+            *ngIf="params.popoverTooltip"
+            class="zem-header-cell__help-popover"
+            content="{{ params.popoverTooltip }}"
+            placement="{{ params.popoverPlacement || 'top' }}"
+        ></zem-help-popover>
+    </div>
+    <div *ngIf="params.enableSorting" class="zem-header-cell__sort">
+        <span
+            class=" zem-header-cell__sort-arrow"
+            [class.zem-header-cell__sort-arrow--up]="
+                sort === HeaderCellSort.ASC
+            "
+            [class.zem-header-cell__sort-arrow--down]="
+                sort === HeaderCellSort.DESC
+            "
+        ></span>
+    </div>
+</div>

@@ -52,7 +52,6 @@ import {PaginationComponent} from './components/pagination/pagination.component'
 import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
 import {GridLoadingOverlayComponent} from './components/smart-grid/components/overlays/grid-loading-overlay/grid-loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/smart-grid/components/overlays/no-rows-overlay/no-rows-overlay.component';
-import {HelpPopoverHeaderComponent} from './components/smart-grid/components/header/help-popover/help-popover-header.component';
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
 import {SelectListComponent} from './components/select-list/select-list.component';
 import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
@@ -81,6 +80,7 @@ import {SwitchButtonCellComponent} from './components/smart-grid/components/cell
 import {EntitySelectorComponent} from './components/entity-selector/entity-selector.component';
 import {ArchivedTagDirective} from './directives/archived-tag/archived-tag.directive';
 import {PinnedRowCellComponent} from './components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
+import {HeaderCellComponent} from './components/smart-grid/components/cells/header-cell/header-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -131,7 +131,6 @@ const EXPORTED_DECLARATIONS = [
     SmartGridComponent,
     GridLoadingOverlayComponent,
     NoRowsOverlayComponent,
-    HelpPopoverHeaderComponent,
     DealEditFormComponent,
     SelectListComponent,
     ScopeSelectorCardComponent,
@@ -155,6 +154,7 @@ const EXPORTED_DECLARATIONS = [
     SwitchButtonCellComponent,
     EntitySelectorComponent,
     PinnedRowCellComponent,
+    HeaderCellComponent,
 ];
 
 @NgModule({
@@ -172,13 +172,13 @@ const EXPORTED_DECLARATIONS = [
         AgGridModule.withComponents([
             GridLoadingOverlayComponent,
             NoRowsOverlayComponent,
-            HelpPopoverHeaderComponent,
             ItemScopeCellComponent,
             IconTooltipCellComponent,
             NoteCellComponent,
             LinkCellComponent,
             SwitchButtonCellComponent,
             PinnedRowCellComponent,
+            HeaderCellComponent,
         ]),
         NgbPaginationModule,
     ],

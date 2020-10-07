@@ -54,9 +54,9 @@ describe('BidModifierTypesGridStore', () => {
         );
 
         expect(columnHeaders).toEqual(['', 'Dimension', 'Min / Max']);
-        expect(store.state.columnDefs[0].headerComponentParams.tooltip).toEqual(
-            'Tooltip message'
-        );
+        expect(
+            store.state.columnDefs[0].headerComponentParams.popoverTooltip
+        ).toEqual('Tooltip message');
     });
 
     it('should update type summary grid rows if they changed', () => {

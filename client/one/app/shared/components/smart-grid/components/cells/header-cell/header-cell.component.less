@@ -1,0 +1,52 @@
+@import 'variables';
+
+.zem-header-cell {
+    display: flex;
+}
+
+.zem-header-cell__data {
+    flex: 1 1 auto;
+}
+
+.zem-header-cell__sort {
+    flex: 0 0 5%;
+}
+
+.zem-header-cell__value {
+    color: @color--secondary;
+    font-weight: 500;
+    font-size: (@font-size--default)-1;
+    line-height: (@font-size--default)+3;
+    white-space: nowrap;
+}
+
+.zem-header-cell__value--sortable:hover {
+    text-decoration: underline;
+}
+
+.zem-header-cell__help-popover {
+    margin-left: 5px;
+}
+
+.zem-header-cell__sort {
+    display: block;
+}
+
+.zem-header-cell__sort-arrow {
+    content: '';
+    position: relative;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-size: 10px 10px;
+    background: url('images/arrow-up.svg');
+}
+
+.zem-header-cell__sort-arrow--up {
+    margin-left: 5px;
+}
+
+.zem-header-cell__sort-arrow--down {
+    transform: rotate(180deg);
+    margin-left: 10px;
+}
