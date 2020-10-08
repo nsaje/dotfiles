@@ -16,6 +16,7 @@ import core.features.goals
 import core.models
 import utils.dates_helper
 import utils.exc
+import utils.metrics_compat
 
 from .. import config
 from .. import constants
@@ -48,6 +49,7 @@ class ConditionValues:
         return {"left_operand_value": self.left_operand_value, "right_operand_value": self.right_operand_value}
 
 
+@utils.metrics_compat.timer("automation.rules.apply_rule")
 @transaction.atomic
 def apply_rule(
     rule: models.Rule,
@@ -67,6 +69,7 @@ def apply_rule(
     changes = []
     per_target_condition_values = {}
     targets_on_cooldown = _prefetch_targets_on_cooldown(rule, ad_group)
+    updates_count = 0
     for target, target_stats in ad_group_stats.items():
         if target in targets_on_cooldown:
             continue
@@ -77,6 +80,7 @@ def apply_rule(
         try:
             values_by_condition = _compute_values_by_condition(rule, target_stats, settings_dict, cpa_goal)
             if _meets_all_conditions(values_by_condition):
+                updates_count += 1
                 update = _apply_action(target, rule, ad_group, target_stats)
                 if update.has_changes():
                     _write_trigger_history(target, rule, ad_group)
@@ -88,6 +92,8 @@ def apply_rule(
         except utils.exc.EntityArchivedError:
             continue
 
+    utils.metrics_compat.gauge("automation.rules.apply_rule.targets_count", len(ad_group_stats))
+    utils.metrics_compat.gauge("automation.rules.apply_rule.updates_count", updates_count)
     return changes, per_target_condition_values
 
 

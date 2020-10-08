@@ -16,7 +16,7 @@ from .. import RuleCondition
 from .. import RuleHistory
 from .. import constants
 from . import exceptions
-from . import service
+from . import execute
 from .actions import ValueChangeData
 from .apply import ConditionValues
 
@@ -98,7 +98,7 @@ class ExecuteRulesDailyRunTest(TestCase):
 
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         # daily job
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
@@ -143,7 +143,7 @@ class ExecuteRulesDailyRunTest(TestCase):
             Rule, agency=self.agency, target_type=constants.TargetType.PUBLISHER, ad_groups_included=[ad_group]
         )
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         latest_ad_group_history = ad_group.history.latest("created_dt")
         latest_rule_history = RuleHistory.objects.get(rule=publisher_rule, status=constants.ApplyStatus.SUCCESS)
@@ -206,7 +206,7 @@ class ExecuteRulesDailyRunTest(TestCase):
             },
         )
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         self.assertEqual(1, rule.history.count())
         history = rule.history.get()
@@ -269,7 +269,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         magic_mixer.blend(RuleHistory, rule=publisher_rule)
         self.assertEqual(1, RuleHistory.objects.count())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         self.assertFalse(mock_apply.called)
         self.assertEqual(1, RuleHistory.objects.count())
@@ -294,7 +294,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         history = RuleHistory.objects.get()
@@ -322,7 +322,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         history = RuleHistory.objects.get()
@@ -347,7 +347,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         self.assertEqual(11, mock_stats.call_count)
@@ -361,7 +361,7 @@ class ExecuteRulesDailyRunTest(TestCase):
     def test_execute_rules_daily_run_completed(self, mock_stats, mock_time):
         magic_mixer.blend(automation.models.RulesDailyJobLog)
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
 
         mock_stats.assert_not_called()
 
@@ -374,18 +374,18 @@ class ExecuteRulesDailyRunTest(TestCase):
         materialization_data = magic_mixer.blend(
             etl.models.EtlBooksClosed, date=dates_helper.local_yesterday(), etl_books_closed=False
         )
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
         materialization_data.etl_books_closed = True
         materialization_data.save()
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(11, mock_stats.call_count)
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
@@ -426,7 +426,7 @@ class FetchSettingsTest(TestCase):
     def test_fetch_ad_group_settings(self, mock_apply):
         self._prepare_ad_group_rule()
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         self.assertEqual(
             self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
@@ -441,7 +441,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {
             constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
@@ -461,7 +461,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {
             constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
@@ -481,7 +481,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {constants.MetricType.AD_GROUP_DAILY_CAP}
         self.assertEqual(
@@ -492,7 +492,7 @@ class FetchSettingsTest(TestCase):
     def test_fetch_content_ad_settings(self, mock_apply):
         self._prepare_content_ad_rule()
 
-        service.execute_rules_daily_run()
+        execute.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         self.assertEqual(
             self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
