@@ -49,7 +49,7 @@ google-api-python-client==1.7.4
 pyOpenSSL==18.0.0
 
 # for secrets encryption
-secretcrypt==1.0.3
+secretcrypt==1.0.4
 
 django-ipware==2.1.0
 
