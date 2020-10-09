@@ -740,7 +740,7 @@ class AdGroupTestCase(TestCase):
         agencies = models.Agency.objects.filter(pk=1)
 
         qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(1, qs.count())
+        self.assertEqual(5, qs.count())
 
         agency = models.Agency.objects.get(pk=1)
         acc2 = models.Account.objects.get(pk=2)
@@ -748,7 +748,7 @@ class AdGroupTestCase(TestCase):
         acc2.save(test_helper.fake_request(self.user))
 
         qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(3, qs.count())
+        self.assertEqual(7, qs.count())
 
     def test_filter_by_account_type(self):
         all_adgroups = models.AdGroup.objects.all()
@@ -802,7 +802,7 @@ class CampaignTestCase(TestCase):
         agencies = models.Agency.objects.filter(pk=1)
 
         qs = models.Campaign.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(1, qs.count())
+        self.assertEqual(3, qs.count())
 
         agency = models.Agency.objects.get(pk=1)
         acc2 = models.Account.objects.get(pk=2)
@@ -810,7 +810,7 @@ class CampaignTestCase(TestCase):
         acc2.save(test_helper.fake_request(self.user))
 
         qs = models.Campaign.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(2, qs.count())
+        self.assertEqual(4, qs.count())
 
     def test_filter_by_account_type(self):
         all_campaigns = models.Campaign.objects.all()
@@ -835,7 +835,7 @@ class AccountTestCase(TestCase):
         agencies = models.Agency.objects.filter(pk=1)
 
         qs = models.Account.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(1, qs.count())
+        self.assertEqual(2, qs.count())
 
         agency = models.Agency.objects.get(pk=1)
         acc2 = models.Account.objects.get(pk=2)
@@ -843,7 +843,7 @@ class AccountTestCase(TestCase):
         acc2.save(test_helper.fake_request(self.user))
 
         qs = models.Account.objects.all().filter_by_agencies(agencies)
-        self.assertEqual(2, qs.count())
+        self.assertEqual(3, qs.count())
 
     def test_filter_by_account_type(self):
         all_accounts = models.Account.objects.all()

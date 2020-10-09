@@ -689,7 +689,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         # campaign is on autopilot
         ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
         )
         ad_group.campaign.settings.update_unsafe(None, autopilot=False)
@@ -707,7 +707,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         )
 
         self.assertEqual(
-            dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
+            dash.constants.InfoboxStatus.OPTIMAL_BID,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
         )
 
@@ -724,7 +724,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         )
 
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.constants.InfoboxStatus.OPTIMAL_BID,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
         )
 
@@ -745,7 +745,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             )
             mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID,
                 dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
             )
 
@@ -763,7 +763,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
 
             mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID,
                 dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
             )
 
@@ -775,7 +775,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             agss.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.constants.InfoboxStatus.OPTIMAL_BID,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
         )
 
@@ -817,7 +817,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
 
         campaign.settings.update_unsafe(None, autopilot=True)
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT, dash.infobox_helpers.get_campaign_running_status(campaign)
+            dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION, dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
         campaign.settings.update_unsafe(None, autopilot=True)
@@ -828,7 +828,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
 
             mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
             self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION,
                 dash.infobox_helpers.get_campaign_running_status(campaign),
             )
 
