@@ -96,15 +96,16 @@ def format_flight_time(start_date, end_date, no_ad_groups_or_budgets):
 
 
 def create_bid_value_overview_settings(ad_group):
+    if not ad_group.campaign.account.agency.uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
+        return create_bid_value_overview_settings_legacy(ad_group)
+
     overview_settings = []
 
     bidding_type = "CPC" if ad_group.bidding_type == dash.constants.BiddingType.CPC else "CPM"
 
     if ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
         tooltip_text = (
-            "<p>Bid {bidding_type} is set in the ad group settings.</p>"
-            + "<p>Bidder will try to optimize traffic buying towards this {bidding_type}.</p>"
-            + "<p>You can use bid modifiers to change the bid {bidding_type} for subset of traffic based on traffic characteristics like publisher, device and others.</p>"
+            "<p>Bid {bidding_type} displays the autopilot’s target bid set in ad group settings</p>"
         ).format(bidding_type=bidding_type)
 
         formatted_bid_value = _format_ad_group_bid_value(
@@ -118,8 +119,11 @@ def create_bid_value_overview_settings(ad_group):
         )
     else:
         tooltip_text = (
-            "<p>You can set the maximum autopilot bid {bidding_type} in the ad group settings.</p>"
+            "<p>Maximum bid {bidding_type} displays autopilot’s maximum allowed bid {bidding_type} set in ad group settings.</p>"
             + "<p>Autopilot will never buy with {bidding_type} higher than <strong>maximum {bidding_type}</strong>.</p>"
+            if ad_group.settings.local_max_autopilot_bid is not None
+            else "<p>Autopilot bids are not restricted.</p>"
+            + "<p>Autopilot will find the optimal {bidding_type} to fill the ad group's daily budget.</p>"
         ).format(bidding_type=bidding_type)
 
         formatted_bid_value = (
@@ -131,12 +135,23 @@ def create_bid_value_overview_settings(ad_group):
             OverviewSetting(name="Max bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
         )
 
-    tooltip_text = (
-        "<p>When you are using bid modifiers your bid {bidding_type} is no longer a fixed value. Instead, it depends on the type of the traffic and varies from auction to auction."
-        + "<p>Final bid {bidding_type} displays the minimal and maximal possible {bidding_type} when bid modifiers are applied.</p>"
-    ).format(bidding_type=bidding_type)
+    if ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
+        tooltip_text = (
+            "<p>Final bid {bidding_type} range displays minimum and maximum possible bid {bidding_type} based on autopilot’s target bid and on bid modifiers applied by you on all dimensions.</p>"
+        ).format(bidding_type=bidding_type)
+    else:
+        tooltip_text = (
+            "<p>Final bid {bidding_type} range displays minimum and maximum possible bid {bidding_type} based on autopilot’s maximum bid {bidding_type} and bid modifiers applied by you on all dimensions.</p>"
+        ).format(bidding_type=bidding_type)
 
     min_bid, max_bid = core.features.bid_modifiers.get_min_max_local_bids(ad_group)
+
+    if ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
+        if max_bid is None:
+            return overview_settings
+        else:
+            min_bid = 0.0001
+
     formatted_min_bid_value = _format_ad_group_bid_value(min_bid, ad_group.campaign.account.currency, places=4)
     formatted_max_bid_value = _format_ad_group_bid_value(max_bid, ad_group.campaign.account.currency, places=4)
 
@@ -454,6 +469,17 @@ def get_adgroup_running_status(user, ad_group, filtered_sources=None):
         return dash.constants.InfoboxStatus.DISABLED
     running_status = dash.models.AdGroup.get_running_status(ad_group.settings)
 
+    if not ad_group.campaign.account.agency.uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
+        return get_adgroup_running_status_class_legacy(
+            user,
+            ad_group.settings.autopilot_state,
+            running_status,
+            ad_group.settings.state,
+            ad_group.settings.ad_group.campaign.real_time_campaign_stop,
+            automation.campaignstop.get_campaignstop_state(ad_group.campaign),
+            ad_group.campaign.settings.autopilot,
+        )
+
     return get_adgroup_running_status_class(
         user,
         ad_group.settings.autopilot_state,
@@ -466,7 +492,13 @@ def get_adgroup_running_status(user, ad_group, filtered_sources=None):
 
 
 def get_adgroup_running_status_class(
-    user, autopilot_state, running_status, state, real_time_campaign_stop, campaignstop_state, is_campaign_autopilot
+    user,
+    autopilot_state,
+    running_status,
+    state,
+    real_time_campaign_stop,
+    campaignstop_state,
+    campaign_budget_optimization_enabled,
 ):
     if (
         state == dash.constants.AdGroupSettingsState.INACTIVE
@@ -483,33 +515,37 @@ def get_adgroup_running_status_class(
     ):
         return dash.constants.InfoboxStatus.INACTIVE
 
-    autopilot = (
-        autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or is_campaign_autopilot
-    )
-    price_discovery = autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+    optimal_bid_strategy_enabled = autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
 
     if real_time_campaign_stop and campaignstop_state:
         campaignstop_state_status = _get_campaignstop_state_status(
-            campaignstop_state, autopilot=autopilot, price_discovery=price_discovery
+            campaignstop_state,
+            campaign_budget_optimization_enabled=campaign_budget_optimization_enabled,
+            optimal_bid_strategy_enabled=optimal_bid_strategy_enabled,
         )
         if campaignstop_state_status:
             return campaignstop_state_status
 
-    if autopilot:
-        return dash.constants.InfoboxStatus.AUTOPILOT
-    elif price_discovery:
-        return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
+    if campaign_budget_optimization_enabled and optimal_bid_strategy_enabled:
+        return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID
+    elif campaign_budget_optimization_enabled:
+        return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION
+    elif optimal_bid_strategy_enabled:
+        return dash.constants.InfoboxStatus.OPTIMAL_BID
 
     return dash.constants.InfoboxStatus.ACTIVE
 
 
 def get_campaign_running_status(campaign):
+    if not campaign.account.agency.uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
+        return get_campaign_running_status_legacy(campaign)
+
     if not campaign.account.is_enabled():
         return dash.constants.InfoboxStatus.DISABLED
     if campaign.real_time_campaign_stop:
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
         campaignstop_state_status = _get_campaignstop_state_status(
-            campaignstop_state, autopilot=campaign.settings.autopilot
+            campaignstop_state, campaign_budget_optimization_enabled=campaign.settings.autopilot
         )
         if campaignstop_state_status:
             return campaignstop_state_status
@@ -517,20 +553,24 @@ def get_campaign_running_status(campaign):
     running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().exists()
     if running_exists:
         if campaign.settings.autopilot:
-            return dash.constants.InfoboxStatus.AUTOPILOT
+            return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION
         return dash.constants.InfoboxStatus.ACTIVE
 
     active_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_active().exists()
     return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
-def _get_campaignstop_state_status(campaignstop_state, autopilot=False, price_discovery=False):
+def _get_campaignstop_state_status(
+    campaignstop_state, campaign_budget_optimization_enabled=False, optimal_bid_strategy_enabled=False
+):
     if not campaignstop_state["allowed_to_run"]:
         if campaignstop_state["pending_budget_updates"]:
-            if autopilot:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT
-            if price_discovery:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY
+            if campaign_budget_optimization_enabled and optimal_bid_strategy_enabled:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID
+            elif campaign_budget_optimization_enabled:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION
+            elif optimal_bid_strategy_enabled:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID
             return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE
         return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
     if campaignstop_state["almost_depleted"]:
@@ -549,21 +589,29 @@ def get_account_running_status(account):
     return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
-def get_entity_delivery_text(status):
+def get_entity_delivery_text(status, agency_uses_realtime_autopilot):
+    if not agency_uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
+        return get_entity_delivery_text_legacy(status)
+
     if status == dash.constants.InfoboxStatus.DISABLED:
         return "Disabled - Contact Zemanta CSM"
     if status in (dash.constants.InfoboxStatus.ACTIVE, dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
         return "Active"
     if status in (
-        dash.constants.InfoboxStatus.AUTOPILOT,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+        dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION,
+        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION,
     ):
-        return "Active - Autopilot mode"
+        return "Active - Budget optimization"
     if status in (
-        dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+        dash.constants.InfoboxStatus.OPTIMAL_BID,
+        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID,
     ):
-        return "Active - Price Discovery"
+        return "Active - Optimal bid optimization"
+    if status in (
+        dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID,
+        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID,
+    ):
+        return "Active - Budget optimization, Optimal bid optimization"
     if status == dash.constants.InfoboxStatus.STOPPED:
         return "Paused"
     if status == dash.constants.InfoboxStatus.INACTIVE:
@@ -681,3 +729,158 @@ def calculate_budgets_flight_dates_for_date_range(campaign, start_date, end_date
             budgets_end_date = budget.end_date
 
     return budgets_start_date, budgets_end_date
+
+
+# LEGACY - TODO: RTAP: remove everything below this line after Phase 1
+def create_bid_value_overview_settings_legacy(ad_group):
+    overview_settings = []
+
+    bidding_type = "CPC" if ad_group.bidding_type == dash.constants.BiddingType.CPC else "CPM"
+
+    if ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
+        tooltip_text = (
+            "<p>Bid {bidding_type} is set in the ad group settings.</p>"
+            + "<p>Bidder will try to optimize traffic buying towards this {bidding_type}.</p>"
+            + "<p>You can use bid modifiers to change the bid {bidding_type} for subset of traffic based on traffic characteristics like publisher, device and others.</p>"
+        ).format(bidding_type=bidding_type)
+
+        formatted_bid_value = _format_ad_group_bid_value(
+            ad_group.settings.local_cpc
+            if ad_group.bidding_type == dash.constants.BiddingType.CPC
+            else ad_group.settings.local_cpm,
+            ad_group.campaign.account.currency,
+        )
+        overview_settings.append(
+            OverviewSetting(name="Bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
+        )
+    else:
+        tooltip_text = (
+            "<p>You can set the maximum autopilot bid {bidding_type} in the ad group settings.</p>"
+            + "<p>Autopilot will never buy with {bidding_type} higher than <strong>maximum {bidding_type}</strong>.</p>"
+        ).format(bidding_type=bidding_type)
+
+        formatted_bid_value = (
+            _format_ad_group_bid_value(ad_group.settings.local_max_autopilot_bid, ad_group.campaign.account.currency)
+            if ad_group.settings.local_max_autopilot_bid is not None
+            else "No limit"
+        )
+        overview_settings.append(
+            OverviewSetting(name="Max bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
+        )
+
+    tooltip_text = (
+        "<p>When you are using bid modifiers your bid {bidding_type} is no longer a fixed value. Instead, it depends on the type of the traffic and varies from auction to auction."
+        + "<p>Final bid {bidding_type} displays the minimal and maximal possible {bidding_type} when bid modifiers are applied.</p>"
+    ).format(bidding_type=bidding_type)
+
+    min_bid, max_bid = core.features.bid_modifiers.get_min_max_local_bids(ad_group)
+    formatted_min_bid_value = _format_ad_group_bid_value(min_bid, ad_group.campaign.account.currency, places=4)
+    formatted_max_bid_value = _format_ad_group_bid_value(max_bid, ad_group.campaign.account.currency, places=4)
+
+    overview_settings.append(
+        OverviewSetting(
+            name="Final bid {} range:".format(bidding_type),
+            value="{} - {}".format(formatted_min_bid_value, formatted_max_bid_value),
+            tooltip=tooltip_text,
+        )
+    )
+
+    return overview_settings
+
+
+def get_adgroup_running_status_class_legacy(
+    user, autopilot_state, running_status, state, real_time_campaign_stop, campaignstop_state, is_campaign_autopilot
+):
+    if (
+        state == dash.constants.AdGroupSettingsState.INACTIVE
+        and running_status == dash.constants.AdGroupRunningStatus.INACTIVE
+    ):
+        return dash.constants.InfoboxStatus.STOPPED
+
+    if (
+        running_status == dash.constants.AdGroupRunningStatus.INACTIVE
+        and state == dash.constants.AdGroupSettingsState.ACTIVE
+    ) or (
+        running_status == dash.constants.AdGroupRunningStatus.ACTIVE
+        and state == dash.constants.AdGroupSettingsState.INACTIVE
+    ):
+        return dash.constants.InfoboxStatus.INACTIVE
+
+    autopilot = (
+        autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or is_campaign_autopilot
+    )
+    price_discovery = autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+
+    if real_time_campaign_stop and campaignstop_state:
+        campaignstop_state_status = _get_campaignstop_state_status_legacy(
+            campaignstop_state, autopilot=autopilot, price_discovery=price_discovery
+        )
+        if campaignstop_state_status:
+            return campaignstop_state_status
+
+    if autopilot:
+        return dash.constants.InfoboxStatus.AUTOPILOT
+    elif price_discovery:
+        return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
+
+    return dash.constants.InfoboxStatus.ACTIVE
+
+
+def get_campaign_running_status_legacy(campaign):
+    if not campaign.account.is_enabled():
+        return dash.constants.InfoboxStatus.DISABLED
+    if campaign.real_time_campaign_stop:
+        campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
+        campaignstop_state_status = _get_campaignstop_state_status_legacy(
+            campaignstop_state, autopilot=campaign.settings.autopilot
+        )
+        if campaignstop_state_status:
+            return campaignstop_state_status
+
+    running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().exists()
+    if running_exists:
+        if campaign.settings.autopilot:
+            return dash.constants.InfoboxStatus.AUTOPILOT
+        return dash.constants.InfoboxStatus.ACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
+
+
+def get_entity_delivery_text_legacy(status):
+    if status == dash.constants.InfoboxStatus.DISABLED:
+        return "Disabled - Contact Zemanta CSM"
+    if status in (dash.constants.InfoboxStatus.ACTIVE, dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
+        return "Active"
+    if status in (
+        dash.constants.InfoboxStatus.AUTOPILOT,
+        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+    ):
+        return "Active - Autopilot mode"
+    if status in (
+        dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
+        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+    ):
+        return "Active - Price Discovery"
+    if status == dash.constants.InfoboxStatus.STOPPED:
+        return "Paused"
+    if status == dash.constants.InfoboxStatus.INACTIVE:
+        return "Inactive"
+    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
+        return "Stopped - Out of budget"
+    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
+        return "Active - Running out of budget"
+
+
+def _get_campaignstop_state_status_legacy(campaignstop_state, autopilot=False, price_discovery=False):
+    if not campaignstop_state["allowed_to_run"]:
+        if campaignstop_state["pending_budget_updates"]:
+            if autopilot:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT
+            if price_discovery:
+                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY
+            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE
+        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
+    if campaignstop_state["almost_depleted"]:
+        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+    return None
