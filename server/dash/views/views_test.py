@@ -484,7 +484,7 @@ class AdGroupOverviewTestCase(DASHAPITestCase):
         self.assertTrue(response["success"])
         header = response["data"]["header"]
         self.assertEqual(header["title"], "test adgroup 1 Čžš")
-        self.assertEqual(constants.InfoboxStatus.OPTIMAL_BID, header["active"])
+        self.assertEqual(constants.InfoboxStatus.AUTOPILOT, header["active"])
 
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 

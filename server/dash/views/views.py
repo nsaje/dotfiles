@@ -151,10 +151,6 @@ class AdGroupOverview(DASHAPIBaseView):
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
 
-        agency_uses_realtime_autopilot = (
-            ad_group.campaign.account.agency.uses_realtime_autopilot if ad_group.campaign.account.agency else False
-        )
-
         header = {
             "title": ad_group.name,
             "active": ad_group_running_status,
@@ -164,7 +160,7 @@ class AdGroupOverview(DASHAPIBaseView):
 
         delivery = {
             "status": ad_group_running_status,
-            "text": infobox_helpers.get_entity_delivery_text(ad_group_running_status, agency_uses_realtime_autopilot),
+            "text": infobox_helpers.get_entity_delivery_text(ad_group_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, ad_group)
@@ -250,10 +246,6 @@ class CampaignOverview(DASHAPIBaseView):
 
         campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
-        agency_uses_realtime_autopilot = (
-            campaign.account.agency.uses_realtime_autopilot if campaign.account.agency else False
-        )
-
         header = {
             "title": campaign.name,
             "active": campaign_running_status,
@@ -263,7 +255,7 @@ class CampaignOverview(DASHAPIBaseView):
 
         delivery = {
             "status": campaign_running_status,
-            "text": infobox_helpers.get_entity_delivery_text(campaign_running_status, agency_uses_realtime_autopilot),
+            "text": infobox_helpers.get_entity_delivery_text(campaign_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, campaign, campaign_settings)
@@ -411,8 +403,6 @@ class AccountOverview(DASHAPIBaseView):
 
         account_running_status = infobox_helpers.get_account_running_status(account)
 
-        agency_uses_realtime_autopilot = account.agency.uses_realtime_autopilot if account.agency else False
-
         header = {
             "title": account.name,
             "active": account_running_status,
@@ -422,7 +412,7 @@ class AccountOverview(DASHAPIBaseView):
 
         delivery = {
             "status": account_running_status,
-            "text": infobox_helpers.get_entity_delivery_text(account_running_status, agency_uses_realtime_autopilot),
+            "text": infobox_helpers.get_entity_delivery_text(account_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, account)
