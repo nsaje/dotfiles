@@ -75,10 +75,8 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
     stats, ad_group_settings_map, campaign_budgets_map, cpa_goals_map, content_ad_settings_map = _prefetch(
         target_type, rules_map
     )
-    rules_count = 0
     with utils.metrics_compat.block_timer("automation.rules.execute.apply_rules"):
         for ad_group, relevant_rules in rules_map.items():
-            rules_count += len(relevant_rules)
             for rule in relevant_rules:
                 try:
                     changes, per_target_condition_values = apply.apply_rule(
@@ -93,18 +91,19 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[mod
                 except exceptions.RuleArchived:
                     continue
                 except exceptions.ApplyFailedBase as e:
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="failed")
                     history = _write_fail_history(rule, ad_group, exception=e)
                 except Exception as e:
                     logger.exception("Unhandled exception in rule application")
-                    utils.metrics_compat.incr("automation.rules.execute.apply_failed", 1)
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="exception")
                     history = _write_fail_history(rule, ad_group, exception=e)
                     _write_history_details(rule, history, stack_trace=traceback.format_exc())
                 else:
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="success")
                     history = _write_history(rule, ad_group, changes)
                     _write_history_details(rule, history, per_target_condition_values=per_target_condition_values)
 
                 notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
-    utils.metrics_compat.gauge("automation.rules.execute.rules_count", rules_count)
 
 
 @utils.metrics_compat.timer("automation.rules.execute.prefetch")
