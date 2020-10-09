@@ -25,6 +25,7 @@ import {
     RULE_ACTIONS_OPTIONS,
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_CURRENCY_HELP_TEXT,
+    RULE_ACTION_DISABLED_HELP_TEXT,
 } from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {Unit} from '../../../../app.constants';
@@ -35,6 +36,8 @@ import {Unit} from '../../../../app.constants';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RuleEditFormActionComponent implements OnChanges, OnInit {
+    @Input()
+    ruleId: string;
     @Input()
     actionType: RuleActionType;
     @Input()
@@ -116,6 +119,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     formattedChangeLimit: number;
     inputUnitSymbol: string;
     inputHelpText: string;
+    actionHelpText: string;
 
     RuleActionType = RuleActionType;
 
@@ -155,6 +159,9 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
             this.selectedActionConfig.unit === Unit.CurrencySign
                 ? '¤'
                 : unitsHelpers.getUnitText(this.selectedActionConfig.unit);
+        this.actionHelpText = this.ruleId
+            ? RULE_ACTION_DISABLED_HELP_TEXT
+            : null;
         this.inputHelpText =
             this.selectedActionConfig.unit === Unit.CurrencySign
                 ? RULE_CURRENCY_HELP_TEXT

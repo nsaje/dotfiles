@@ -8,10 +8,11 @@
     groupByValue="group"
     [isSearchable]="false"
     [isClearable]="false"
-    [isDisabled]="isDisabled"
+    [isDisabled]="ruleId || isDisabled"
     [errors]="actionTypeErrors"
     (valueChange)="selectTargetAndActionType($event)"
     [appendTo]="'body'"
+    [zemPopover]="actionHelpText"
 ></zem-select-form-group>
 
 <zem-content-form-group

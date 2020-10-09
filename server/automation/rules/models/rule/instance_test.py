@@ -14,12 +14,15 @@ class RuleInstanceTest(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
 
-        rule = magic_mixer.blend(model.Rule, agency=agency)
+        rule = magic_mixer.blend(
+            model.Rule,
+            agency=agency,
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+        )
         rule.update(
             request,
             name="Test rule",
-            target_type=constants.TargetType.PUBLISHER,
-            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
             change_step=0.01,
             change_limit=2.50,
             cooldown=24,
