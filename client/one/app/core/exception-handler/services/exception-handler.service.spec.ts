@@ -16,7 +16,7 @@ describe('ExceptionHandlerService', () => {
         APP_CONFIG.httpErrorPopupExcludeUrlRegexes = [/.*(\/breakdown\/).*/];
 
         testException = {
-            message: 'An error occured',
+            message: 'An error occurred',
             errorCode: 'TestError',
             headers: (key: string) => 'a-dummy-trace-id',
             status: 504,
@@ -50,7 +50,7 @@ describe('ExceptionHandlerService', () => {
         service.handleHttpException(testException);
 
         expect(notificationServiceStub.error).toHaveBeenCalledWith(
-            'Trace ID: a-dummy-trace-id<br>Error code: TestError<br>Message: An error occured'
+            'Trace ID: a-dummy-trace-id<br>Error code: TestError<br>Message: An error occurred'
         );
     });
 
