@@ -611,7 +611,7 @@ def get_entity_delivery_text(status, agency_uses_realtime_autopilot):
         dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID,
         dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID,
     ):
-        return "Active - Budget optimization, Optimal bid optimization"
+        return "Active - Budget and optimal bid optimization"
     if status == dash.constants.InfoboxStatus.STOPPED:
         return "Paused"
     if status == dash.constants.InfoboxStatus.INACTIVE:

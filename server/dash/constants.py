@@ -352,7 +352,7 @@ class InfoboxStatus(ConstantBase):
         AUTOPILOT: "Autopilot",  # TODO: RTAP: remove this after Phase 1
         BUDGET_OPTIMIZATION: "Budget optimization",
         OPTIMAL_BID: "Optimal bid optimization",
-        BUDGET_OPTIMIZATION_OPTIMAL_BID: "Budget optimization, Optimal bid optimization",
+        BUDGET_OPTIMIZATION_OPTIMAL_BID: "Budget and optimal bid optimization",
         CAMPAIGNSTOP_STOPPED: "Stopped - Out of budget",
         CAMPAIGNSTOP_LOW_BUDGET: "Active - Running out of budget",  # TODO: RTAP: remove this after Phase 1
         CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: "Active - Pending budget allocations",
