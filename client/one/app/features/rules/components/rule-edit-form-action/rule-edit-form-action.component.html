@@ -1,19 +1,33 @@
-<zem-select-form-group
+<zem-content-form-group
     class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
     label="Action"
-    [value]="selectedTargetAndActionType"
-    bindLabel="label"
-    bindValue="value"
-    [items]="availableTargetAndActionTypes"
-    groupByValue="group"
-    [isSearchable]="false"
-    [isClearable]="false"
-    [isDisabled]="ruleId || isDisabled"
-    [errors]="actionTypeErrors"
-    (valueChange)="selectTargetAndActionType($event)"
-    [appendTo]="'body'"
-    [zemPopover]="actionHelpText"
-></zem-select-form-group>
+>
+    <zem-select-input
+        class="zem-form-group__content-item zem-form-group__input"
+        label="Action"
+        [value]="selectedTargetAndActionType"
+        bindLabel="label"
+        bindValue="value"
+        [items]="availableTargetAndActionTypes"
+        groupByValue="group"
+        [isSearchable]="false"
+        [isClearable]="false"
+        [isDisabled]="ruleId || isDisabled"
+        (valueChange)="selectTargetAndActionType($event)"
+        [appendTo]="'body'"
+        [zemPopover]="actionHoverText"
+    >
+    </zem-select-input>
+    <div *ngIf="actionHelpText" class="zem-rule-edit-form__section-description">
+        {{ actionHelpText }}
+    </div>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of actionTypeErrors"
+    >
+        {{ error }}
+    </div>
+</zem-content-form-group>
 
 <zem-content-form-group
     class="zem-rule-edit-form__section-item zem-content-form-group zem-rule-edit-form__currency-setting"

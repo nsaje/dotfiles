@@ -1,5 +1,3 @@
-import './rule-edit-form-action.component.less';
-
 import {
     Component,
     ChangeDetectionStrategy,
@@ -26,6 +24,7 @@ import {
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_CURRENCY_HELP_TEXT,
     RULE_ACTION_DISABLED_HELP_TEXT,
+    RULE_PUBLISHER_PLACEMENT_TARGET_TEXT,
 } from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {Unit} from '../../../../app.constants';
@@ -119,6 +118,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     formattedChangeLimit: number;
     inputUnitSymbol: string;
     inputHelpText: string;
+    actionHoverText: string;
     actionHelpText: string;
 
     RuleActionType = RuleActionType;
@@ -159,13 +159,19 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
             this.selectedActionConfig.unit === Unit.CurrencySign
                 ? '¤'
                 : unitsHelpers.getUnitText(this.selectedActionConfig.unit);
-        this.actionHelpText = this.ruleId
+        this.actionHoverText = this.ruleId
             ? RULE_ACTION_DISABLED_HELP_TEXT
             : null;
         this.inputHelpText =
             this.selectedActionConfig.unit === Unit.CurrencySign
                 ? RULE_CURRENCY_HELP_TEXT
                 : null;
+        this.actionHelpText = [
+            RuleTargetType.AdGroupPublisher,
+            RuleTargetType.AdGroupPlacement,
+        ].includes(this.targetType)
+            ? RULE_PUBLISHER_PLACEMENT_TARGET_TEXT
+            : null;
     }
 
     selectTargetAndActionType(targetActionType: string) {
