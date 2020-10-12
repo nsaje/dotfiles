@@ -1,5 +1,7 @@
+import celery.exceptions
 import rest_framework.permissions
 import rest_framework.serializers
+from django.conf import settings
 from django.db import transaction
 from rest_framework import permissions
 
@@ -208,30 +210,49 @@ class CloneAdGroupViewSet(RESTAPIBaseViewSet):
         serializer = serializers.CloneAdGroupSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
+        source_ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, validated_data["ad_group_id"])
+        destination_campaign = zemauth.access.get_campaign(
+            request.user, Permission.WRITE, validated_data["destination_campaign_id"]
+        )
 
-        try:
-            ad_group = dash.features.cloneadgroup.service.clone(
-                request,
-                zemauth.access.get_ad_group(request.user, Permission.WRITE, validated_data["ad_group_id"]),
-                zemauth.access.get_campaign(request.user, Permission.WRITE, validated_data["destination_campaign_id"]),
-                validated_data["destination_ad_group_name"],
-                validated_data["clone_ads"],
+        if settings.USE_CELERY_FOR_AD_GROUP_CLONING:
+            result = dash.features.cloneadgroup.service.clone_async.delay(
+                request.user,
+                source_ad_group_name=source_ad_group.name,
+                source_ad_group_id=source_ad_group.id,
+                send_email=True,
+                destination_campaign_id=destination_campaign.id,
+                destination_ad_group_name=validated_data["destination_ad_group_name"],
+                clone_ads=validated_data["clone_ads"],
             )
-
-        except (
-            core.models.ad_group.exceptions.CampaignTypesDoNotMatch,
-            core.models.content_ad.exceptions.CampaignAdTypeMismatch,
-        ) as err:
-            raise utils.exc.ValidationError(errors={"destination_campaign_id": [str(err)]})
+            try:
+                cloned_ad_group_id = result.get(timeout=10)
+                cloned_ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, cloned_ad_group_id)
+            except celery.exceptions.TimeoutError:
+                return self.response_ok(None)
+        else:
+            try:
+                cloned_ad_group = dash.features.cloneadgroup.service.clone(
+                    request,
+                    source_ad_group,
+                    destination_campaign,
+                    validated_data["destination_ad_group_name"],
+                    validated_data["clone_ads"],
+                )
+            except (
+                core.models.ad_group.exceptions.CampaignTypesDoNotMatch,
+                core.models.content_ad.exceptions.CampaignAdTypeMismatch,
+            ) as err:
+                raise utils.exc.ValidationError(errors={"destination_campaign_id": [str(err)]})
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
             request.user,
-            ad_group.__dict__,
-            ad_group.get_current_settings(),
-            ad_group.campaign.get_current_settings(),
-            automation.campaignstop.get_campaignstop_state(ad_group.campaign),
-            real_time_campaign_stop=ad_group.campaign.real_time_campaign_stop,
+            cloned_ad_group.__dict__,
+            cloned_ad_group.get_current_settings(),
+            cloned_ad_group.campaign.get_current_settings(),
+            automation.campaignstop.get_campaignstop_state(cloned_ad_group.campaign),
+            real_time_campaign_stop=cloned_ad_group.campaign.real_time_campaign_stop,
         )
 
-        response["campaign_id"] = ad_group.campaign_id
+        response["campaign_id"] = cloned_ad_group.campaign_id
         return self.response_ok(serializers.CloneAdGroupResponseSerializer(response).data)

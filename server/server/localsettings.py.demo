@@ -242,6 +242,7 @@ CELERY_ROUTES = {
     "upload_lambda_execute": {"queue": "upload-lambda"},
     "redshift_background_cache": {"queue": "redshift-background-cache"},
     "campaign_cloning": {"queue": "campaign-cloning"},
+    "ad_group_cloning": {"queue": "z1-ad-group-cloning"},
 }
 
 QUEUE_NAME_PREFIX = "demo"
@@ -259,6 +260,7 @@ BROKER_TRANSPORT_OPTIONS = {
 USE_CELERY_FOR_REPORTS = False
 USE_CELERY_FOR_UPLOAD_LAMBDAS = False
 USE_CELERY_FOR_CAMPAIGN_CLONING = False
+USE_CELERY_FOR_AD_GROUP_CLONING = False
 
 R1_DEMO_MODE = True
 R1_API_SIGN_KEY = Secret("").get()

@@ -87,7 +87,7 @@ class Clone(TestCase):
             self.dest_campaign,
             "Something",
             clone_ads=True,
-            state_override=dash.constants.AdGroupSettingsState.ACTIVE,
+            ad_group_state_override=dash.constants.AdGroupSettingsState.ACTIVE,
         )
 
         self.assertEqual(self.ad_group.settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
@@ -102,7 +102,7 @@ class Clone(TestCase):
             self.dest_campaign,
             "Something",
             clone_ads=True,
-            state_override=None,
+            ad_group_state_override=None,
             ad_state_override=dash.constants.AdGroupSettingsState.INACTIVE,
         )
 
