@@ -80,6 +80,9 @@ OUTPUT_COLUMN_NAMES = [
     "adgroup_tags",
     "rules",
     "rules_count",
+    "target_browsers",
+    "exclusion_target_browsers",
+    "target_connection_types",
 ]
 
 WORLD_REGIONS = {

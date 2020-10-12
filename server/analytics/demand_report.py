@@ -398,6 +398,9 @@ def _normalize_row(row):
     _normalize_iterable(row, "target_environments")
     _normalize_iterable(row, "target_devices")
     _normalize_iterable(row, "rules")
+    _normalize_field(row, "target_browsers")
+    _normalize_field(row, "exclusion_target_browsers")
+    _normalize_field(row, "target_connection_types")
 
     row["agency_tags"] = tag_helpers.entity_tag_names_to_string(row["agency_tags"])
     row["account_tags"] = tag_helpers.entity_tag_names_to_string(row["account_tags"])
@@ -799,6 +802,9 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "exclusion_target_regions": F("settings__exclusion_target_regions"),
         "target_os": F("settings__target_os"),
         "target_environments": F("settings__target_environments"),
+        "target_browsers": F("settings__target_browsers"),
+        "exclusion_target_browsers": F("settings__exclusion_target_browsers"),
+        "target_connection_types": F("settings__target_connection_types"),
         "delivery_type": F("settings__delivery_type"),
         "click_capping_daily_ad_group_max_clicks": F("settings__click_capping_daily_ad_group_max_clicks"),
         "b1_sources_group_cpm": F("settings__b1_sources_group_cpm"),

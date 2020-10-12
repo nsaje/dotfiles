@@ -61,6 +61,9 @@ class DemandReportTestCase(test.TestCase):
         world_region="N/A",
         geo_targeting_type=None,
         rules=None,
+        target_browsers=[],
+        exclusion_target_browsers=[],
+        target_connection_types=[],
     ):
 
         ad_group.refresh_from_db()
@@ -189,6 +192,9 @@ class DemandReportTestCase(test.TestCase):
             "adgroup_tags": tag_helpers.entity_tag_names_to_string(ad_group.entity_tags.values_list("name", flat=True)),
             "rules": ",".join(str(rule_id) for rule_id in sorted(rule.id for rule in rules)),
             "rules_count": len(rules),
+            "target_browsers": _repr_bool_normalized_value(target_browsers),
+            "exclusion_target_browsers": _repr_bool_normalized_value(exclusion_target_browsers),
+            "target_connection_types": _repr_bool_normalized_value(target_connection_types),
         }
 
         for column, value in checks.items():
@@ -201,7 +207,6 @@ class DemandReportTestCase(test.TestCase):
             else:
                 actual = row[column]
                 expected = str(value) if value is not None else ""
-
             self.assertEqual(actual, expected, msg=column)
 
     def setUp(self):
@@ -317,6 +322,9 @@ class DemandReportTestCase(test.TestCase):
             b1_sources_group_daily_budget=Decimal("1000.0"),
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
             autopilot_daily_budget=Decimal("1000.0"),
+            target_browsers=[{"family": "CHROME"}, {"family": "FIREFOX"}, {"family": "EDGE"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["wifi"],
         )
 
         self.ad_group_source_1_1_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_1_1)
@@ -340,6 +348,9 @@ class DemandReportTestCase(test.TestCase):
             b1_sources_group_daily_budget=Decimal("5000.0"),
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
             autopilot_daily_budget=Decimal("5000.0"),
+            target_browsers=[{"family": "CHROME"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["cellular"],
         )
 
         self.ad_group_source_1_2_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_1_2)
@@ -379,6 +390,9 @@ class DemandReportTestCase(test.TestCase):
             end_date=self.end_date,
             daily_budget=Decimal("100.0"),
             autopilot_daily_budget=Decimal("100.0"),
+            target_browsers=[],
+            exclusion_target_browsers=[{"family": "FIREFOX"}],
+            target_connection_types=[],
         )
 
         self.ad_group_source_2_1_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_1)
@@ -400,6 +414,9 @@ class DemandReportTestCase(test.TestCase):
             end_date=self.end_date,
             daily_budget=Decimal("50.0"),
             autopilot_daily_budget=Decimal("50.0"),
+            target_browsers=[],
+            exclusion_target_browsers=[],
+            target_connection_types=[],
         )
 
         self.ad_group_source_2_2_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_2)
@@ -471,6 +488,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_ad_group_1, self.rule_account_1],
+            target_browsers=[{"family": "CHROME"}, {"family": "FIREFOX"}, {"family": "EDGE"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["wifi"],
         )
 
         self._assert_row_data(
@@ -486,6 +506,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_account_1],
+            target_browsers=[{"family": "CHROME"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["cellular"],
         )
 
         self._assert_row_data(
@@ -501,6 +524,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_campaign_2, self.rule_account_1],
+            target_browsers=[],
+            exclusion_target_browsers=[{"family": "FIREFOX"}],
+            target_connection_types=[],
         )
 
         self._assert_row_data(
@@ -516,6 +542,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_campaign_2, self.rule_account_1],
+            target_browsers=[],
+            exclusion_target_browsers=[],
+            target_connection_types=[],
         )
 
     @mock.patch("analytics.demand_report._get_ad_group_spend")
@@ -585,6 +614,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_ad_group_1, self.rule_account_1],
+            target_browsers=[{"family": "CHROME"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["wifi"],
         )
 
         self._assert_row_data(
@@ -600,6 +632,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_account_1],
+            target_browsers=[{"family": "CHROME"}],
+            exclusion_target_browsers=[],
+            target_connection_types=["cellular"],
         )
 
         self._assert_row_data(
@@ -615,6 +650,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_campaign_2, self.rule_account_1],
+            target_browsers=[],
+            exclusion_target_browsers=[{"family": "FIREFOX"}],
+            target_connection_types=[],
         )
 
         self._assert_row_data(
@@ -630,6 +668,9 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_campaign_2, self.rule_account_1],
+            target_browsers=[],
+            exclusion_target_browsers=[],
+            target_connection_types=[],
         )
 
         self._assert_row_data(
