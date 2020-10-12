@@ -92,8 +92,8 @@ def apply_rule(
         except utils.exc.EntityArchivedError:
             continue
 
-    utils.metrics_compat.gauge("automation.rules.apply_rule.targets_count", len(ad_group_stats))
-    utils.metrics_compat.gauge("automation.rules.apply_rule.updates_count", updates_count)
+    utils.metrics_compat.incr("automation.rules.apply_rule.target_count", len(ad_group_stats), rule_id=rule.id)
+    utils.metrics_compat.incr("automation.rules.apply_rule.update_count", updates_count, rule_id=rule.id)
     return changes, per_target_condition_values
 
 
