@@ -675,6 +675,8 @@ class FormatTest(TestCase):
                 constants.TargetType.OS,
                 constants.TargetType.ENVIRONMENT,
                 constants.TargetType.SOURCE,
+                constants.TargetType.BROWSER,
+                constants.TargetType.CONNECTION_TYPE,
             ]
         }
 
@@ -846,6 +848,8 @@ class AddMissingTargetsTest(TestCase):
             constants.TargetType.OS,
             constants.TargetType.ENVIRONMENT,
             constants.TargetType.PLACEMENT,
+            constants.TargetType.BROWSER,
+            constants.TargetType.CONNECTION_TYPE,
         ]:
             empty_stats = {}
             stats._add_missing_targets(target_type, [self.ad_group], empty_stats)

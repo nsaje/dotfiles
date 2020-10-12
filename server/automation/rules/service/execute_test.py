@@ -48,37 +48,43 @@ class ExecuteRulesDailyRunTest(TestCase):
         mock_from_target.return_value = "readable target"
 
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:11]
+            Rule, agency=self.agency, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:13]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:10]
+            Rule, agency=self.agency, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:12]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:9]
+            Rule, agency=self.agency, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:11]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:8]
+            Rule, agency=self.agency, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:10]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:7]
+            Rule, agency=self.agency, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:9]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:6]
+            Rule, agency=self.agency, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:8]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:5]
+            Rule, agency=self.agency, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:7]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:4]
+            Rule, agency=self.agency, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:6]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.ENVIRONMENT, ad_groups_included=ad_groups[:3]
+            Rule, agency=self.agency, target_type=constants.TargetType.ENVIRONMENT, ad_groups_included=ad_groups[:5]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:2]
+            Rule, agency=self.agency, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:4]
         )
         magic_mixer.blend(
-            Rule, agency=self.agency, target_type=constants.TargetType.PLACEMENT, ad_groups_included=ad_groups[:1]
+            Rule, agency=self.agency, target_type=constants.TargetType.PLACEMENT, ad_groups_included=ad_groups[:3]
+        )
+        magic_mixer.blend(
+            Rule, agency=self.agency, target_type=constants.TargetType.BROWSER, ad_groups_included=ad_groups[:2]
+        )
+        magic_mixer.blend(
+            Rule, agency=self.agency, target_type=constants.TargetType.CONNECTION_TYPE, ad_groups_included=ad_groups[:1]
         )
 
         magic_mixer.blend(
@@ -350,9 +356,9 @@ class ExecuteRulesDailyRunTest(TestCase):
         execute.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
-        self.assertEqual(11, mock_stats.call_count)
-        self.assertEqual(11, mock_format.call_count)
-        self.assertEqual(11, mock_apply.call_count)
+        self.assertEqual(13, mock_stats.call_count)
+        self.assertEqual(13, mock_format.call_count)
+        self.assertEqual(13, mock_apply.call_count)
         self.assertTrue(RuleHistory.objects.exists())
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
@@ -386,7 +392,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         materialization_data.save()
 
         execute.execute_rules_daily_run()
-        self.assertEqual(11, mock_stats.call_count)
+        self.assertEqual(13, mock_stats.call_count)
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
 

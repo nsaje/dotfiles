@@ -173,6 +173,8 @@ def _get_all_possible_targets_per_ad_group(target_type: int, ad_groups: List[cor
         constants.TargetType.OS,
         constants.TargetType.ENVIRONMENT,
         constants.TargetType.PLACEMENT,
+        constants.TargetType.BROWSER,
+        constants.TargetType.CONNECTION_TYPE,
     ]:
         # NOTE:  not known in advance
         return defaultdict(list)

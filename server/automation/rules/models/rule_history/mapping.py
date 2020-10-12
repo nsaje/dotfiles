@@ -41,5 +41,13 @@ def get_environments_map():
     return dict(dash.constants.Environment.get_choices())
 
 
+def get_browsers_map():
+    return dict(dash.constants.BrowserFamily.get_choices())
+
+
+def get_connection_types_map():
+    return dict(dash.constants.ConnectionType.get_choices())
+
+
 def get_empty_map():
     return {}

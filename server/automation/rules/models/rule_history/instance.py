@@ -142,6 +142,28 @@ FORMATTED_CHANGES_TEMPLATES = {
             "placements", mapping.get_empty_map, "Automation rule didn’t match for any placement."
         ),
     },
+    constants.TargetType.BROWSER: {
+        constants.ActionType.INCREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Increased", "on browsers", mapping.get_browsers_map, "Automation rule didn’t match for any browser."
+        ),
+        constants.ActionType.DECREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Decreased", "on browsers", mapping.get_browsers_map, "Automation rule didn’t match for any browser."
+        ),
+    },
+    constants.TargetType.CONNECTION_TYPE: {
+        constants.ActionType.INCREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Increased",
+            "on connection types",
+            mapping.get_connection_types_map,
+            "Automation rule didn’t match for any connection type.",
+        ),
+        constants.ActionType.DECREASE_BID_MODIFIER: formatters.get_bid_modifier_formatter(
+            "Decreased",
+            "on connection types",
+            mapping.get_connection_types_map,
+            "Automation rule didn’t match for any connection type.",
+        ),
+    },
 }
 
 

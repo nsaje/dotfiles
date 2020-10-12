@@ -22,6 +22,8 @@ class TargetType(ConstantBase):
     ENVIRONMENT = 9
     SOURCE = 10
     PLACEMENT = 11
+    BROWSER = 12
+    CONNECTION_TYPE = 13
 
     _VALUES = {
         AD_GROUP: "Ad group",
@@ -35,6 +37,8 @@ class TargetType(ConstantBase):
         ENVIRONMENT: "Environment",
         SOURCE: "Source",
         PLACEMENT: "Placement",
+        BROWSER: "Browser",
+        CONNECTION_TYPE: "Connection type",
     }
 
 
@@ -50,6 +54,8 @@ TARGET_TYPE_STATS_MAPPING = {
     TargetType.ENVIRONMENT: ["environment"],
     TargetType.SOURCE: ["source_id"],
     TargetType.PLACEMENT: ["publisher", "source_id", "placement"],
+    TargetType.BROWSER: ["browser"],
+    TargetType.CONNECTION_TYPE: ["connection_type"],
 }
 
 
@@ -64,6 +70,8 @@ TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING = {
     TargetType.ENVIRONMENT: core.features.bid_modifiers.constants.BidModifierType.ENVIRONMENT,
     TargetType.PLACEMENT: core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
     TargetType.SOURCE: core.features.bid_modifiers.constants.BidModifierType.SOURCE,
+    TargetType.BROWSER: core.features.bid_modifiers.constants.BidModifierType.BROWSER,
+    TargetType.CONNECTION_TYPE: core.features.bid_modifiers.constants.BidModifierType.CONNECTION_TYPE,
 }
 
 

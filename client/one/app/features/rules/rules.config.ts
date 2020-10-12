@@ -209,6 +209,34 @@ export const RULE_TARGET_TYPES = [
             },
         ],
     },
+    {
+        label: 'Ad group / browsers',
+        value: RuleTargetType.AdGroupBrowser,
+        availableActions: [
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase browser bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease browser bid modifier',
+            },
+        ],
+    },
+    {
+        label: 'Ad group / connection types',
+        value: RuleTargetType.AdGroupConnectionType,
+        availableActions: [
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase connection type bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease connection type bid modifier',
+            },
+        ],
+    },
 ];
 
 export const RULE_ACTIONS_OPTIONS = {

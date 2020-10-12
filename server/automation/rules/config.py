@@ -67,6 +67,14 @@ VALID_ACTION_TYPES_FOR_TARGET = {
         constants.ActionType.BLACKLIST,
         constants.ActionType.ADD_TO_PUBLISHER_GROUP,
     ],
+    constants.TargetType.BROWSER: [
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+    ],
+    constants.TargetType.CONNECTION_TYPE: [
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+    ],
 }
 
 VALID_TARGET_TYPES_FOR_ACTION = {

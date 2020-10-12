@@ -10,6 +10,8 @@ export enum RuleTargetType {
     AdGroupOs = 'OS',
     AdGroupEnvironment = 'ENVIRONMENT',
     AdGroupSource = 'SOURCE',
+    AdGroupBrowser = 'BROWSER',
+    AdGroupConnectionType = 'CONNECTION_TYPE',
 }
 
 export enum RuleActionType {

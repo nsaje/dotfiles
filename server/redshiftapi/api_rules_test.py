@@ -72,6 +72,16 @@ class ApiRulesTest(TestCase):
                 "table": "mv_adgroup",
                 "fields": "source_id AS source_id",
             },
+            {
+                "target_type": automation.rules.constants.TargetType.BROWSER,
+                "table": "mv_adgroup_device",
+                "fields": "browser AS browser",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.CONNECTION_TYPE,
+                "table": "mv_adgroup_device",
+                "fields": "connection_type AS connection_type",
+            },
         ]
 
         self.maxDiff = None
@@ -625,6 +635,8 @@ local_video_etfm_cpcv
             {"target_type": automation.rules.constants.TargetType.ENVIRONMENT, "name": "environment"},
             {"target_type": automation.rules.constants.TargetType.SOURCE, "name": "source"},
             {"target_type": automation.rules.constants.TargetType.PLACEMENT, "name": "placement"},
+            {"target_type": automation.rules.constants.TargetType.BROWSER, "name": "browser"},
+            {"target_type": automation.rules.constants.TargetType.CONNECTION_TYPE, "name": "connection_type"},
         ]
 
         for test_case in test_cases:

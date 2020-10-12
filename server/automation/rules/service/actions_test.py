@@ -95,6 +95,18 @@ class ActionsTest(TestCase):
                 ),
                 "source": source,
             },
+            {
+                "target_type": constants.TargetType.BROWSER,
+                "target": "CHROME",
+                "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.BROWSER,
+                "bid_modifier_target": "CHROME",
+            },
+            {
+                "target_type": constants.TargetType.CONNECTION_TYPE,
+                "target": "cellular",
+                "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.CONNECTION_TYPE,
+                "bid_modifier_target": "cellular",
+            },
         ]
         test_functions = [
             self._test_adjust_bid_modifier_increase_new,
