@@ -9,7 +9,7 @@ import {
     EventEmitter,
 } from '@angular/core';
 import {Browser} from '../../../../core/entities/types/common/browser';
-import {IncludeExcludeType} from '../../../../app.constants';
+import {BrowserFamily, IncludeExcludeType} from '../../../../app.constants';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {BrowserTargeting} from '../../types/browser-targeting';
 import {
@@ -119,12 +119,19 @@ export class BrowserTargetingComponent implements OnChanges {
         browsers: FormattedBrowser[],
         selectedDeviceTypes: DeviceType[]
     ) {
-        return browsers.filter(browser => {
-            return arrayHelpers.includesAny(
-                BROWSER_DEVICE_MAPPING[browser.family],
-                selectedDeviceTypes
-            );
-        });
+        return browsers
+            .filter(browser => {
+                return arrayHelpers.includesAny(
+                    BROWSER_DEVICE_MAPPING[browser.family],
+                    selectedDeviceTypes
+                );
+            })
+            .sort((browserA, browserB) => {
+                if (browserA.family === BrowserFamily.OTHER) {
+                    return 1;
+                }
+                return browserA.name > browserB.name ? 1 : -1;
+            });
     }
 
     private getErrorMessage(targetingErrors: BrowserTargetingErrors[]) {

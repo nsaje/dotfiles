@@ -27,11 +27,17 @@
         <div class="zem-browser-targeting__list-item">
             <div
                 class="zem-browser-targeting__list-item-name"
-                [ngClass]="{
-                    'zem-browser-targeting__list-item-name--error':
-                        targetingErrors[index]?.family?.length
-                }"
+                [class.zem-browser-targeting__list-item-name--error]="
+                    targetingErrors[index]?.family?.length
+                "
             >
+                <div
+                    class="zem-browser-targeting__list-item-icon zem-browser-targeting__list-item-icon--{{
+                        includeExcludeType === includeExcludeEnum.INCLUDE
+                            ? 'include'
+                            : 'exclude'
+                    }}"
+                ></div>
                 {{ item.name }}
                 <div
                     *ngIf="targetingErrors[index]?.family?.length"

@@ -85,10 +85,6 @@ describe('BrowserTargetingComponent', () => {
                 name: BROWSER_NAMES[BrowserFamily.CHROME],
             },
             {
-                family: BrowserFamily.SAFARI,
-                name: BROWSER_NAMES[BrowserFamily.SAFARI],
-            },
-            {
                 family: BrowserFamily.FIREFOX,
                 name: BROWSER_NAMES[BrowserFamily.FIREFOX],
             },
@@ -97,12 +93,16 @@ describe('BrowserTargetingComponent', () => {
                 name: BROWSER_NAMES[BrowserFamily.IE],
             },
             {
+                family: BrowserFamily.EDGE,
+                name: BROWSER_NAMES[BrowserFamily.EDGE],
+            },
+            {
                 family: BrowserFamily.OPERA,
                 name: BROWSER_NAMES[BrowserFamily.OPERA],
             },
             {
-                family: BrowserFamily.EDGE,
-                name: BROWSER_NAMES[BrowserFamily.EDGE],
+                family: BrowserFamily.SAFARI,
+                name: BROWSER_NAMES[BrowserFamily.SAFARI],
             },
             {
                 family: BrowserFamily.UC_BROWSER,
