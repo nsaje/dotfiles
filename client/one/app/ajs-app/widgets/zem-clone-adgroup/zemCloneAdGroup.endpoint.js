@@ -1,4 +1,5 @@
 var constantsHelpers = require('../../../shared/helpers/constants.helpers');
+var commonHelpers = require('../../../shared/helpers/common.helpers');
 
 angular
     .module('one.widgets')
@@ -48,17 +49,25 @@ angular
         }
 
         function convertErrorsFromApi(data) {
-            var errors = data.data.details;
+            var errors;
+            if (commonHelpers.isDefined(data.data.details)) {
+                errors = data.data.details;
+            }
 
             return {
-                destinationCampaignId: errors.destinationCampaignId
-                    ? errors.destinationCampaignId[0]
-                    : null,
-                destinationAdGroupName: errors.destinationAdGroupName
-                    ? errors.destinationAdGroupName[0]
-                    : null,
-                cloneAds: errors.cloneAds ? errors.cloneAds[0] : null,
-                message: data.status === 500 ? 'Something went wrong' : null,
+                destinationCampaignId:
+                    errors && errors.destinationCampaignId
+                        ? errors.destinationCampaignId[0]
+                        : null,
+                destinationAdGroupName:
+                    errors && errors.destinationAdGroupName
+                        ? errors.destinationAdGroupName[0]
+                        : null,
+                cloneAds: errors && errors.cloneAds ? errors.cloneAds[0] : null,
+                message:
+                    data.status === 500 || data.status === 504
+                        ? 'Something went wrong'
+                        : null,
             };
         }
     });

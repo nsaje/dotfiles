@@ -37,40 +37,31 @@ angular
                 (response.config.previousRetries || 0) + 1;
         }
 
-        function retryRequestIfNecessary(response) {
-            var retrying = false;
-
-            if (
-                zemExceptionHandlerService.shouldRetryRequest(
-                    formatException(response),
-                    response.config.previousRetries
-                )
-            ) {
-                incrementRetryCounter(response);
-
-                // Trigger a repeated request after a set timeout
-                setTimeout(function() {
-                    var $http = $injector.get('$http');
-                    $http(response.config);
-                }, zemExceptionHandlerService.getRequestRetryTimeout());
-                retrying = true;
-            }
-
-            return retrying;
-        }
-
         return {
             responseError: function(response) {
-                var retrying = retryRequestIfNecessary(response);
+                if (
+                    zemExceptionHandlerService.shouldRetryRequest(
+                        formatException(response),
+                        response.config.previousRetries
+                    )
+                ) {
+                    var $http = $injector.get('$http');
+                    var deferred = $q.defer();
+                    incrementRetryCounter(response);
 
-                if (!retrying) {
-                    // We did not retry => handle exception and cancel request
-                    zemExceptionHandlerService.handleHttpException(
-                        formatException(response)
-                    );
+                    setTimeout(function() {
+                        deferred.resolve(true);
+                    }, zemExceptionHandlerService.getRequestRetryTimeout());
 
-                    return $q.reject(response);
+                    return deferred.promise.then(function() {
+                        return $http(response.config);
+                    });
                 }
+
+                zemExceptionHandlerService.handleHttpException(
+                    formatException(response)
+                );
+                return $q.reject(response);
             },
         };
     });
