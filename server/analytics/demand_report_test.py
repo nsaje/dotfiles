@@ -55,6 +55,15 @@ class DemandReportTestCase(test.TestCase):
         impressions="0",
         clicks="0",
         spend="0",
+        visits="0",
+        video_midpoint="0",
+        video_complete="0",
+        mrc50_measurable="0",
+        mrc50_viewable="0",
+        mrc100_measurable="0",
+        mrc100_viewable="0",
+        vast4_measurable="0",
+        vast4_viewable="0",
         calculated_daily_budget="0",
         calculated_cpc="0",
         target_regions=None,
@@ -125,6 +134,15 @@ class DemandReportTestCase(test.TestCase):
             "impressions": impressions,
             "clicks": clicks,
             "spend": spend,
+            "visits": visits,
+            "video_midpoint": video_midpoint,
+            "video_complete": video_complete,
+            "mrc50_measurable": mrc50_measurable,
+            "mrc50_viewable": mrc50_viewable,
+            "mrc100_measurable": mrc100_measurable,
+            "mrc100_viewable": mrc100_viewable,
+            "vast4_measurable": vast4_measurable,
+            "vast4_viewable": vast4_viewable,
             "calculated_daily_budget": calculated_daily_budget,
             "calculated_cpc": calculated_cpc,
             "start_date": ad_group.settings.start_date,
@@ -443,20 +461,34 @@ class DemandReportTestCase(test.TestCase):
         self.rule_campaign_2 = magic_mixer.blend(automation.models.Rule, campaigns_included=[self.campaign_2])
         self.rule_account_1 = magic_mixer.blend(automation.models.Rule, accounts_included=[self.account_1])
 
-    @mock.patch("analytics.demand_report._get_ad_group_spend")
+    @mock.patch("analytics.demand_report._get_ad_group_stats")
     @mock.patch("utils.bigquery_helper.query")
     @mock.patch("utils.bigquery_helper.upload_csv_file")
     @mock.patch("redshiftapi.db.get_stats_cursor")
-    def test_create_report(self, mock_db, mock_upload, mock_query, mock_spend):
-        spend_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 143754891637],
-            [self.ad_group_1_2.id, 405265, 407, 152348436441],
-            [self.ad_group_2_1.id, 308172, 75, 143785991637],
-            # no spend for ad_group_2_2
+    def test_create_report(self, mock_db, mock_upload, mock_query, mock_stats):
+        stats_rows = [
+            [self.ad_group_1_1.id, 318199, 75, 143754891637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441, 308, 0, 0, 250, 188, 144, 132, 100, 80],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            # no stats for ad_group_2_2
         ]
-        columns = ["ad_group_id", "impressions", "clicks", "spend_nano"]
+        columns = [
+            "ad_group_id",
+            "impressions",
+            "clicks",
+            "spend_nano",
+            "visits",
+            "video_midpoint",
+            "video_complete",
+            "mrc50_measurable",
+            "mrc50_viewable",
+            "mrc100_measurable",
+            "mrc100_viewable",
+            "vast4_measurable",
+            "vast4_viewable",
+        ]
 
-        mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
+        mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
         with self.assertNumQueries(9):
             demand_report.create_report()
@@ -482,6 +514,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="318199",
             clicks="75",
             spend="143.754891637",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
             calculated_daily_budget="161.2548916369999858488881728",
             calculated_cpc="",
             target_regions=[""],
@@ -500,6 +541,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="405265",
             clicks="407",
             spend="152.348436441",
+            visits="308",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="250",
+            mrc50_viewable="188",
+            mrc100_measurable="144",
+            mrc100_viewable="132",
+            vast4_measurable="100",
+            vast4_viewable="80",
             calculated_daily_budget="239.8484364409999898271053098",
             calculated_cpc="0.4500",
             target_regions=[""],
@@ -518,6 +568,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="308172",
             clicks="75",
             spend="143.785991637",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
             calculated_daily_budget="100.0000",
             calculated_cpc="",
             target_regions=[""],
@@ -536,6 +595,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="0",
             clicks="0",
             spend="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
             calculated_daily_budget="50.0000",
             calculated_cpc="",
             target_regions=[""],
@@ -547,11 +615,11 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=[],
         )
 
-    @mock.patch("analytics.demand_report._get_ad_group_spend")
+    @mock.patch("analytics.demand_report._get_ad_group_stats")
     @mock.patch("utils.bigquery_helper.query")
     @mock.patch("utils.bigquery_helper.upload_csv_file")
     @mock.patch("redshiftapi.db.get_stats_cursor")
-    def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_spend):
+    def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_stats):
 
         with mock.patch("automation.autopilot.recalculate_budgets_ad_group"):
             self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
@@ -573,16 +641,30 @@ class DemandReportTestCase(test.TestCase):
                 daily_budget_cc=Decimal("10.0"),
             )
 
-        spend_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 143754891637],
-            [self.ad_group_1_2.id, 405265, 407, 152348436441],
-            [self.ad_group_2_1.id, 308172, 75, 143785991637],
-            # no spend for ad_group_2_2
-            [self.ad_group_2_3.id, 3, 1, 0],
+        stats_rows = [
+            [self.ad_group_1_1.id, 318199, 75, 143754891637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441, 308, 0, 0, 250, 188, 144, 132, 100, 80],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            # no stats for ad_group_2_2
+            [self.ad_group_2_3.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        columns = ["ad_group_id", "impressions", "clicks", "spend_nano"]
+        columns = [
+            "ad_group_id",
+            "impressions",
+            "clicks",
+            "spend_nano",
+            "visits",
+            "video_midpoint",
+            "video_complete",
+            "mrc50_measurable",
+            "mrc50_viewable",
+            "mrc100_measurable",
+            "mrc100_viewable",
+            "vast4_measurable",
+            "vast4_viewable",
+        ]
 
-        mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
+        mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
         with self.assertNumQueries(16):
             demand_report.create_report()
@@ -608,6 +690,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="318199",
             clicks="75",
             spend="143.754891637",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
             calculated_daily_budget="161.2548916369999858488881728",
             calculated_cpc="",
             target_regions=[""],
@@ -626,6 +717,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="405265",
             clicks="407",
             spend="152.348436441",
+            visits="308",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="250",
+            mrc50_viewable="188",
+            mrc100_measurable="144",
+            mrc100_viewable="132",
+            vast4_measurable="100",
+            vast4_viewable="80",
             calculated_daily_budget="239.8484364409999898271053098",
             calculated_cpc="0.4500",
             target_regions=[""],
@@ -644,6 +744,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="308172",
             clicks="75",
             spend="143.785991637",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
             calculated_daily_budget="100.0000",
             calculated_cpc="",
             target_regions=[""],
@@ -662,6 +771,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="0",
             clicks="0",
             spend="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
             calculated_daily_budget="50.0000",
             calculated_cpc="",
             target_regions=[""],
@@ -680,6 +798,15 @@ class DemandReportTestCase(test.TestCase):
             impressions="3",
             clicks="1",
             spend="0.0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
             calculated_daily_budget="10.0000",
             calculated_cpc="",
             target_regions=[""],

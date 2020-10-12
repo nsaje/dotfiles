@@ -90,27 +90,27 @@ def _generate_bq_csv_file(rows):
 
 
 def _rows_generator(date):
-    ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
+    ad_group_stats_dict = {e["ad_group_id"]: e for e in _get_ad_group_stats()}
     account_data_dict = _get_account_data_dict()
 
     date_string = date.strftime("%Y-%m-%d")
     source_id_map = _source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO)
 
-    missing_ad_group_ids = set(ad_group_spend_dict.keys())
+    missing_ad_group_ids = set(ad_group_stats_dict.keys())
 
-    for row in _ad_group_rows_generator(_get_ad_group_data(), account_data_dict, ad_group_spend_dict, source_id_map):
+    for row in _ad_group_rows_generator(_get_ad_group_data(), account_data_dict, ad_group_stats_dict, source_id_map):
         row["date"] = date_string
         missing_ad_group_ids.discard(row["adgroup_id"])
         yield row
 
     for row in _ad_group_rows_generator(
-        _get_ad_group_data(ad_group_ids=missing_ad_group_ids), account_data_dict, ad_group_spend_dict, source_id_map
+        _get_ad_group_data(ad_group_ids=missing_ad_group_ids), account_data_dict, ad_group_stats_dict, source_id_map
     ):
         row["date"] = date_string
         yield row
 
 
-def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_spend_dict, source_id_map):
+def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_stats_dict, source_id_map):
     chunk_id = 0
 
     for ad_group_data_chunk in queryset_helper.chunk_iterator(ad_group_query_set, chunk_size=AD_GROUP_CHUNK_SIZE):
@@ -136,7 +136,7 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_spe
         logger.info("Fetched %s ad group source data rows for chunk #%s", len(ad_group_source_data_dict), chunk_id)
 
         ad_group_stats_dict = _calculate_ad_group_stats(
-            ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
+            ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_stats_dict, source_id_map
         )
 
         rules_by_ad_group_id = _compute_active_rules_by_ad_group(ad_group_data_chunk, campaign_data_dict)
@@ -177,20 +177,8 @@ def _get_budget_data_dict(campaign_ids):
     return budget_dict
 
 
-def _aggregate_stats(ad_group_spend_dict, ad_group_id):
-    impressions, clicks, spend = 0, 0, 0
-
-    if ad_group_id in ad_group_spend_dict:
-        ad_group_spend = ad_group_spend_dict[ad_group_id]
-        impressions = ad_group_spend["impressions"]
-        clicks = ad_group_spend["clicks"]
-        spend = float(ad_group_spend["spend_nano"]) / 1000000000
-
-    return impressions, clicks, spend
-
-
 def _calculate_ad_group_stats(
-    ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
+    ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_stats_dict, source_id_map
 ):
     budget_data_dict = _get_budget_data_dict(set(e["campaign_id"] for e in ad_group_data_chunk))
 
@@ -206,22 +194,31 @@ def _calculate_ad_group_stats(
         else:
             active_ssps = []
 
-        impressions, clicks, spend = _aggregate_stats(ad_group_spend_dict, ad_group_id)
         budget, cpc = _calculate_budget_and_cpc(
             campaign_data_dict[ad_group_data_row["campaign_id"]],
             ad_group_data_row,
             ad_group_source_data_dict[ad_group_id],
             source_id_map,
         )
+        ad_group_stats = ad_group_stats_dict.get(ad_group_id, {})
         ad_group_dict[ad_group_id] = {
-            "impressions": impressions,
-            "clicks": clicks,
-            "spend": spend,
+            "impressions": ad_group_stats.get("impressions", 0),
+            "clicks": ad_group_stats.get("clicks", 0),
+            "spend": float(ad_group_stats["spend_nano"]) / 10 ** 9 if "spend_nano" in ad_group_stats else 0,
             "calculated_daily_budget": budget,
             "calculated_cpc": cpc,
             "active_ssps": ", ".join(sorted(active_ssps)),
             "active_ssps_count": len(active_ssps),
             "bidding_type": ad_group_data_row["adgroup_bidding_type"],
+            "visits": ad_group_stats.get("visits", 0),
+            "video_midpoint": ad_group_stats.get("video_midpoint", 0),
+            "video_complete": ad_group_stats.get("video_complete", 0),
+            "mrc50_measurable": ad_group_stats.get("mrc50_measurable", 0),
+            "mrc50_viewable": ad_group_stats.get("mrc50_viewable", 0),
+            "mrc100_measurable": ad_group_stats.get("mrc100_measurable", 0),
+            "mrc100_viewable": ad_group_stats.get("mrc100_viewable", 0),
+            "vast4_measurable": ad_group_stats.get("vast4_measurable", 0),
+            "vast4_viewable": ad_group_stats.get("vast4_viewable", 0),
         }
 
     for campaign_id, ad_group_id_set in campaign_adgroup_map.items():
@@ -846,7 +843,7 @@ def _get_ad_group_source_data(ad_group_ids=None, date=None):
     return qs.select_related("settings").annotate(**field_mapping).values(*field_mapping.keys())
 
 
-def _get_ad_group_spend():
+def _get_ad_group_stats():
     logger.info("Querying AdGroup spend.")
 
     sql = """
@@ -859,7 +856,16 @@ SELECT
       + COALESCE(service_fee_nano, 0)
       + COALESCE(license_fee_nano, 0)
       + COALESCE(margin_nano, 0)
-    ) AS spend_nano
+    ) AS spend_nano,
+    SUM(visits) AS visits,
+    SUM(video_midpoint) AS video_midpoint,
+    SUM(video_complete) AS video_complete,
+    SUM(mrc50_measurable) AS mrc50_measurable,
+    SUM(mrc50_viewable) AS mrc50_viewable
+    SUM(mrc100_measurable) AS mrc100_measurable,
+    SUM(mrc100_viewable) AS mrc100_viewable,
+    SUM(vast4_measurable) AS vast4_measurable,
+    SUM(vast4_viewable) AS vast4_viewable,
 FROM mv_adgroup
 WHERE
     date = DATE(CURRENT_DATE - interval '1 day')

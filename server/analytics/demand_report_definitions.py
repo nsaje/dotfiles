@@ -83,6 +83,15 @@ OUTPUT_COLUMN_NAMES = [
     "target_browsers",
     "exclusion_target_browsers",
     "target_connection_types",
+    "visits",
+    "video_midpoint",
+    "video_complete",
+    "mrc50_measurable",
+    "mrc50_viewable",
+    "mrc100_measurable",
+    "mrc100_viewable",
+    "vast4_measurable",
+    "vast4_viewable",
 ]
 
 WORLD_REGIONS = {
