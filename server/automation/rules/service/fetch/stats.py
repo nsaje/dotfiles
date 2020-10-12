@@ -71,26 +71,28 @@ def _aggregate_conversions(stats_row, pixel_rows):
         conversions.setdefault(slug, {})
         for window in all_conversion_windows:
             if window >= row_window:
-                conversions[slug].setdefault(window, {"count_click": 0, "count_view": 0, "count_total": 0})
-                conversions[slug][window]["count_click"] += pixel_row["count"]
-                conversions[slug][window]["count_view"] += pixel_row["count_view"]
-                conversions[slug][window]["count_total"] += pixel_row["count"] + pixel_row["count_view"]
+                conversions[slug].setdefault(
+                    window, {"conversion_count_click": 0, "conversion_count_view": 0, "conversion_count_total": 0}
+                )
+                conversions[slug][window]["conversion_count_click"] += pixel_row["count"]
+                conversions[slug][window]["conversion_count_view"] += pixel_row["count_view"]
+                conversions[slug][window]["conversion_count_total"] += pixel_row["count"] + pixel_row["count_view"]
 
     for slug in conversions:
         for window in conversions[slug]:
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_click"] = (
-                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_click"])
-                if conversions[slug][window]["count_click"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["conversion_count_click"])
+                if conversions[slug][window]["conversion_count_click"]
                 else None
             )
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_view"] = (
-                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_view"])
-                if conversions[slug][window]["count_view"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["conversion_count_view"])
+                if conversions[slug][window]["conversion_count_view"]
                 else None
             )
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_total"] = (
-                (stats_row["local_etfm_cost"] / conversions[slug][window]["count_total"])
-                if conversions[slug][window]["count_total"]
+                (stats_row["local_etfm_cost"] / conversions[slug][window]["conversion_count_total"])
+                if conversions[slug][window]["conversion_count_total"]
                 else None
             )
 

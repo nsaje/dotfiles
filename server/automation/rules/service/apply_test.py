@@ -474,15 +474,95 @@ class ApplyTest(TestCase):
             "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
             "conversions": {
                 constants.MetricWindow.LAST_3_DAYS: {
-                    "testslug": {24: {"count_click": 5}, 168: {"count_click": 5}, 720: {"count_click": 5}}
+                    "testslug": {
+                        24: {"conversion_count_click": 5},
+                        168: {"conversion_count_click": 5},
+                        720: {"conversion_count_click": 5},
+                    }
                 },
                 constants.MetricWindow.LAST_7_DAYS: {
-                    "testslug": {24: {"count_click": 15}, 168: {"count_click": 15}, 720: {"count_click": 15}}
+                    "testslug": {
+                        24: {"conversion_count_click": 15},
+                        168: {"conversion_count_click": 15},
+                        720: {"conversion_count_click": 15},
+                    }
                 },
             },
         }
         computed = apply._compute_values_by_condition(rule, stats, {}, None)
         self.assertTrue(apply._meets_all_conditions(computed))
+
+    def test_stats_condition_conversions_pixel_specified_missing_pixel_stats(self):
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_3_DAYS
+        )
+        conversion_pixel = magic_mixer.blend(core.models.ConversionPixel, slug="testslug")
+        rule_condition = magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LAST_7_DAYS,
+            left_operand_type=constants.MetricType.CONVERSIONS,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.TOTAL_SPEND,
+            right_operand_value="11.0",
+            conversion_pixel=conversion_pixel,
+            conversion_pixel_window=dash.constants.ConversionWindows.LEQ_7_DAYS,
+            conversion_pixel_attribution=constants.ConversionAttributionType.CLICK,
+        )
+
+        stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
+            "conversions": {
+                constants.MetricWindow.LAST_3_DAYS: {
+                    "testslug": {
+                        24: {"conversion_count_click": 5},
+                        168: {"conversion_count_click": 5},
+                        720: {"conversion_count_click": 5},
+                    }
+                },
+                constants.MetricWindow.LAST_7_DAYS: {},
+            },
+        }
+        computed = apply._compute_values_by_condition(rule, stats, {}, None)
+        self.assertEqual(computed, {rule_condition: (0, 11.0)})
+        self.assertTrue(apply._meets_all_conditions(computed))
+
+    def test_stats_condition_conversions_pixel_specified_missing_cpa_stats(self):
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_3_DAYS
+        )
+        conversion_pixel = magic_mixer.blend(core.models.ConversionPixel, slug="testslug")
+        rule_condition = magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LAST_7_DAYS,
+            left_operand_type=constants.MetricType.AVG_COST_PER_CONVERSION,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.TOTAL_SPEND,
+            right_operand_value="11.0",
+            conversion_pixel=conversion_pixel,
+            conversion_pixel_window=dash.constants.ConversionWindows.LEQ_7_DAYS,
+            conversion_pixel_attribution=constants.ConversionAttributionType.CLICK,
+        )
+
+        stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
+            "conversions": {
+                constants.MetricWindow.LAST_3_DAYS: {
+                    "testslug": {
+                        24: {"conversion_count_click": 5},
+                        168: {"conversion_count_click": 5},
+                        720: {"conversion_count_click": 5},
+                    }
+                },
+                constants.MetricWindow.LAST_7_DAYS: {},
+            },
+        }
+        computed = apply._compute_values_by_condition(rule, stats, {}, None)
+        self.assertEqual(computed, {rule_condition: (None, 11.0)})
+        self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_stats_condition_conversions_default_campaign_goal(self):
         campaign = magic_mixer.blend(core.models.Campaign)
@@ -521,10 +601,18 @@ class ApplyTest(TestCase):
             "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
             "conversions": {
                 constants.MetricWindow.LAST_3_DAYS: {
-                    "testslug": {24: {"count_click": 5}, 168: {"count_click": 5}, 720: {"count_click": 5}}
+                    "testslug": {
+                        24: {"conversion_count_click": 5},
+                        168: {"conversion_count_click": 5},
+                        720: {"conversion_count_click": 5},
+                    }
                 },
                 constants.MetricWindow.LAST_7_DAYS: {
-                    "testslug": {24: {"count_click": 15}, 168: {"count_click": 15}, 720: {"count_click": 15}}
+                    "testslug": {
+                        24: {"conversion_count_click": 15},
+                        168: {"conversion_count_click": 15},
+                        720: {"conversion_count_click": 15},
+                    }
                 },
             },
         }

@@ -236,13 +236,15 @@ def _prepare_left_stat_operand_conversions(
             attribution = constants.ConversionAttributionType.CLICK
     else:
         slug = condition.conversion_pixel.slug
-    metric_key = (
-        constants.METRIC_CONVERSIONS_MAPPING[condition.left_operand_type]
-        + constants.METRIC_CONVERSIONS_SUFFIX[attribution]
-    )
+    metric_key_prefix = constants.METRIC_CONVERSIONS_MAPPING[condition.left_operand_type]
+    metric_key_suffix = constants.METRIC_CONVERSIONS_SUFFIX[attribution]
+    metric_key = metric_key_prefix + metric_key_suffix
     conversion_stats = target_stats["conversions"]
     condition_window = condition.left_operand_window or rule.window
-    return conversion_stats[condition_window][slug][conversion_window][metric_key]
+    value = conversion_stats.get(condition_window, {}).get(slug, {}).get(conversion_window, {}).get(metric_key)
+    if value is None:
+        value = config.CONVERSION_FIELDS_DEFAULTS[metric_key_prefix]
+    return value
 
 
 def _prepare_right_stat_operand(

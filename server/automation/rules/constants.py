@@ -347,7 +347,7 @@ METRIC_SETTINGS_MAPPING = {
 }
 
 METRIC_CONVERSIONS_MAPPING = {
-    MetricType.CONVERSIONS: "count",
+    MetricType.CONVERSIONS: "conversion_count",
     MetricType.AVG_COST_PER_CONVERSION: "local_avg_etfm_cost_per_conversion",
 }
 

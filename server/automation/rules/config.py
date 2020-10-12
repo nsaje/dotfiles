@@ -418,3 +418,5 @@ STATS_FIELDS_DEFAULTS = {
     "local_video_etfm_cpv": None,
     "local_video_etfm_cpcv": None,
 }
+
+CONVERSION_FIELDS_DEFAULTS = {"conversion_count": 0, "local_avg_etfm_cost_per_conversion": None}
