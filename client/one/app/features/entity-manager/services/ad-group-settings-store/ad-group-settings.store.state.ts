@@ -123,6 +123,7 @@ export class AdGroupSettingsStoreState {
             cpc: null,
             cpm: null,
         },
+        agencyUsesRealtimeAutopilot: false,
     };
     sources: Source[] = [];
     availableDeals: Deal[] = [];

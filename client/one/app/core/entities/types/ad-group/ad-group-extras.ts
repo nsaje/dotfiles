@@ -23,4 +23,5 @@ export interface AdGroupExtras {
     deals: Deal[];
     bidModifierTypeSummaries?: BidModifierTypeSummary[];
     currentBids: AdGroupExtrasCurrentBids;
+    agencyUsesRealtimeAutopilot: boolean;
 }

@@ -34,4 +34,5 @@ export class BidRangeInfoStoreState {
     formattedBidValueRange: string = null;
     finalBidRangeMessage: string = null;
     finalBidRangeValue: string = null;
+    agencyUsesRealtimeAutopilot: boolean = false;
 }

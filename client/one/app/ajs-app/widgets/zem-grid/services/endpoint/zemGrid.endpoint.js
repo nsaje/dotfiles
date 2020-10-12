@@ -163,6 +163,12 @@ angular
                     metaData.campaignAutopilot = breakdown.campaignAutopilot;
                     delete breakdown.campaignAutopilot;
                 }
+
+                if (breakdown.agencyUsesRealtimeAutopilot !== undefined) {
+                    metaData.ext.agencyUsesRealtimeAutopilot =
+                        breakdown.agencyUsesRealtimeAutopilot;
+                    delete breakdown.agencyUsesRealtimeAutopilot;
+                }
             }
         }
 

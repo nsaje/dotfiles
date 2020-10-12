@@ -18,6 +18,7 @@ describe('BidRangeInfoStore', () => {
     let fractionSize: number;
     let adGroupAutopilotState: AdGroupAutopilotState;
     let modifierPercent: string;
+    let agencyUsesRealtimeAutopilot: boolean;
 
     beforeEach(() => {
         store = new BidRangeInfoStore();
@@ -46,6 +47,7 @@ describe('BidRangeInfoStore', () => {
         fractionSize = 4;
         adGroupAutopilotState = AdGroupAutopilotState.INACTIVE;
         modifierPercent = null;
+        agencyUsesRealtimeAutopilot = true;
     });
 
     it('should correctly store inputs into state', () => {
@@ -59,7 +61,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
 
         expect(store.state.bidModifier).toEqual(bidModifier);
@@ -73,6 +76,9 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.adGroupAutopilotState).toEqual(
             adGroupAutopilotState
         );
+        expect(store.state.agencyUsesRealtimeAutopilot).toEqual(
+            agencyUsesRealtimeAutopilot
+        );
     });
 
     it('should correctly present bid range info for CPC / device / inactive autopilot / no selected dimensions', () => {
@@ -84,7 +90,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
 
         expect(store.state.bidModifierTypeSummaries).toEqual([
@@ -126,7 +133,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
 
         expect(store.state.bidModifierTypeSummaries).toEqual([
@@ -172,7 +180,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
 
         expect(store.state.bidModifierTypeSummaries).toEqual([
@@ -212,7 +221,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
 
@@ -253,7 +263,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
         expect(store.state.finalBidRangeValue).toEqual('$0.8800 - $1.3200');
@@ -266,7 +277,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            '-10.00'
+            '-10.00',
+            agencyUsesRealtimeAutopilot
         );
         expect(store.state.finalBidRangeValue).toEqual('$0.7200 - $1.0800');
     });
@@ -282,7 +294,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
 
@@ -330,7 +343,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
 
@@ -386,7 +400,8 @@ describe('BidRangeInfoStore', () => {
             currency,
             fractionSize,
             adGroupAutopilotState,
-            modifierPercent
+            modifierPercent,
+            agencyUsesRealtimeAutopilot
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
 

@@ -39,6 +39,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "agency_id": 12345,
+            "agency_uses_realtime_autopilot": False,
             "currency": dash.constants.Currency.USD,
             "optimization_objective": None,
             "default_settings": {
@@ -78,6 +79,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
                 "isCampaignAutopilotEnabled": False,
                 "accountId": "12345",
                 "agencyId": "12345",
+                "agencyUsesRealtimeAutopilot": False,
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": "",
                 "defaultSettings": {
@@ -119,6 +121,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "agency_id": 12345,
+            "agency_uses_realtime_autopilot": False,
             "currency": dash.constants.Currency.USD,
             "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
             "default_settings": {
@@ -171,6 +174,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
                 "isCampaignAutopilotEnabled": False,
                 "accountId": "12345",
                 "agencyId": "12345",
+                "agencyUsesRealtimeAutopilot": False,
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
                 "defaultSettings": {

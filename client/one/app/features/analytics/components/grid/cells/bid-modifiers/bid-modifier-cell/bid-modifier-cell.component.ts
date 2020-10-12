@@ -58,6 +58,8 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     adGroupAutopilotState: AdGroupAutopilotState;
     @Input()
     containerElement: HTMLElement;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean = false;
     @Output()
     valueChange = new EventEmitter<BidModifier>();
 

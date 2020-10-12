@@ -38,6 +38,8 @@ export class BidRangeInfoComponent implements OnChanges {
     adGroupAutopilotState: AdGroupAutopilotState;
     @Input()
     modifierPercent: string = null;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean = false;
 
     constructor(public store: BidRangeInfoStore) {}
 
@@ -50,7 +52,8 @@ export class BidRangeInfoComponent implements OnChanges {
             this.currency,
             this.fractionSize,
             this.adGroupAutopilotState,
-            this.modifierPercent
+            this.modifierPercent,
+            this.agencyUsesRealtimeAutopilot
         );
     }
 }

@@ -88,6 +88,9 @@
         [bidding-type]="ctrl.grid.meta.data.ext.biddingType"
         [bid]="ctrl.grid.meta.data.ext.bid"
         [bid-modifier-type-summaries]="ctrl.grid.meta.data.ext.typeSummaries"
+        [agency-uses-realtime-autopilot]="
+            ctrl.grid.meta.data.ext.agencyUsesRealtimeAutopilot
+        "
         (value-change)="ctrl.updateBidModifier($event)"
     ></zem-bid-modifier-cell>
 </div>

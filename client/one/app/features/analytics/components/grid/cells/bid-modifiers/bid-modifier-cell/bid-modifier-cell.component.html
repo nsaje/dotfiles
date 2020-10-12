@@ -9,6 +9,7 @@
             [currency]="state.currency"
             [fractionSize]="state.calculatorFractionSize"
             [adGroupAutopilotState]="adGroupAutopilotState"
+            [agencyUsesRealtimeAutopilot]="agencyUsesRealtimeAutopilot"
         ></zem-bid-range-info>
     </ng-template>
     <zem-editable-cell
@@ -72,6 +73,9 @@
                                         adGroupAutopilotState
                                     "
                                     [modifierPercent]="state.modifierPercent"
+                                    [agencyUsesRealtimeAutopilot]="
+                                        agencyUsesRealtimeAutopilot
+                                    "
                                 >
                                 </zem-bid-range-info>
                             </div>

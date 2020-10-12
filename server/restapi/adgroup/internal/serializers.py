@@ -118,6 +118,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=restapi.serializers.bid_modifiers.BidModifierTypeSummary(), required=False
     )
     current_bids = ExtraDataCurrentBidsSerializer(read_only=True)
+    agency_uses_realtime_autopilot = rest_framework.serializers.BooleanField(read_only=True, default=False)
 
 
 class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilotSerializer):

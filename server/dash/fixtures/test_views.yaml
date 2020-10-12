@@ -71,6 +71,16 @@
     model: dash.accountsettings
     pk: 2
 
+# test agency
+- fields:
+      name: 'Test agency 1'
+      created_dt: '2015-09-23T09:57:22'
+      modified_dt: '2015-09-23T09:57:22'
+      modified_by: 1
+      uses_realtime_autopilot: false
+  model: dash.agency
+  pk: 1
+
 # test account
 
 -   fields:
@@ -81,6 +91,7 @@
         outbrain_marketer_id: 'omid_1'
         users: [1, 2, 3]
         currency: 'USD'
+        agency: 1
         settings: 1
     model: dash.account
     pk: 1

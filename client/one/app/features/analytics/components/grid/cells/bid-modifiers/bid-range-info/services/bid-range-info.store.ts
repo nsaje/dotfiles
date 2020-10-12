@@ -29,7 +29,8 @@ export class BidRangeInfoStore extends Store<BidRangeInfoStoreState> {
         currency: Currency,
         fractionSize: number,
         adGroupAutopilotState: AdGroupAutopilotState,
-        modifierPercent: string
+        modifierPercent: string,
+        agencyUsesRealtimeAutopilot: boolean
     ): void {
         const autopilot =
             adGroupAutopilotState === AdGroupAutopilotState.ACTIVE_CPC ||
@@ -73,6 +74,7 @@ export class BidRangeInfoStore extends Store<BidRangeInfoStoreState> {
             autopilot: autopilot,
             minFactor: minFactor,
             maxFactor: maxFactor,
+            agencyUsesRealtimeAutopilot,
         });
 
         this.updateInfo();
