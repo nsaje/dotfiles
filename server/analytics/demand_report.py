@@ -890,11 +890,11 @@ SELECT
     SUM(video_midpoint) AS video_midpoint,
     SUM(video_complete) AS video_complete,
     SUM(mrc50_measurable) AS mrc50_measurable,
-    SUM(mrc50_viewable) AS mrc50_viewable
+    SUM(mrc50_viewable) AS mrc50_viewable,
     SUM(mrc100_measurable) AS mrc100_measurable,
     SUM(mrc100_viewable) AS mrc100_viewable,
     SUM(vast4_measurable) AS vast4_measurable,
-    SUM(vast4_viewable) AS vast4_viewable,
+    SUM(vast4_viewable) AS vast4_viewable
 FROM mv_adgroup
 WHERE
     date = DATE(CURRENT_DATE - interval '1 day')
