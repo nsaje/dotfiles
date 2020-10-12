@@ -62,7 +62,7 @@ class RuleValidationMixin:
             raise exceptions.InvalidWindow("Invalid time range")
 
     def _validate_target_type(self, changes, target_type):
-        if self.target_type:
+        if self.target_type and self.target_type != target_type:
             raise exceptions.InvalidTargetType("Action/target cannot be changed on an existing rule")
 
         if len(config.VALID_ACTION_TYPES_FOR_TARGET.get(target_type, [])) == 0:
@@ -71,7 +71,7 @@ class RuleValidationMixin:
             raise exceptions.InvalidTargetType("Invalid target type")
 
     def _validate_action_type(self, changes, action_type):
-        if self.action_type:
+        if self.action_type and self.action_type != action_type:
             raise exceptions.InvalidActionType("Action/target cannot be changed on an existing rule")
 
         target_type = changes.get("target_type", self.target_type)
