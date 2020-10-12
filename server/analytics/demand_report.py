@@ -6,6 +6,7 @@ from decimal import Decimal
 
 import unicodecsv as csv
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Count
 from django.db.models import DateField
 from django.db.models import ExpressionWrapper
 from django.db.models import F
@@ -22,6 +23,7 @@ import automation.models
 from analytics import demand_report_definitions
 from core import models
 from core.features import bcm
+from core.features import bid_modifiers
 from core.features.goals import campaign_goal
 from core.features.goals import campaign_goal_value
 from core.models.tags import helpers as tag_helpers
@@ -140,12 +142,14 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
         )
 
         rules_by_ad_group_id = _compute_active_rules_by_ad_group(ad_group_data_chunk, campaign_data_dict)
+        bid_modifiers_by_ad_group_id = _get_bid_modifier_count_by_ad_group(ad_group_ids)
         for ad_group_data_row in ad_group_data_chunk:
             row = ad_group_data_row.copy()
             row.update(campaign_data_dict[row["campaign_id"]])
             row.update(account_data_dict[campaign_data_dict[row["campaign_id"]]["account_id"]])
             row.update(remaining_budget_dict.get(row["campaign_id"], {"remaining_budget": Decimal(0.0)}))
             row.update(ad_group_stats_dict[row["adgroup_id"]])
+            row.update(bid_modifiers_by_ad_group_id[row["adgroup_id"]])
 
             target_regions, geo_targeting_types = _resolve_geo_targeting(row)
             row["target_regions"] = target_regions
@@ -764,6 +768,27 @@ def _get_enabled_rules_qs(ad_group_ids):
         )
         .values("id", "included_ad_group", "included_campaign", "included_account")
     )
+
+
+def _get_bid_modifier_count_by_ad_group(ad_group_ids):
+    qs = (
+        bid_modifiers.BidModifier.objects.filter(ad_group_id__in=ad_group_ids)
+        .values("ad_group_id", "type")
+        .annotate(count=Count("*"))
+        .values_list("ad_group_id", "type", "count")
+        .order_by()
+    )
+
+    result = {}
+    for ad_group_id, type_, count in qs:
+        result.setdefault(
+            ad_group_id,
+            {name.lower() + "_bid_modifiers_count": 0 for name in bid_modifiers.BidModifierType.get_all_names()},
+        )
+
+        field_name = bid_modifiers.BidModifierType.get_name(type_).lower() + "_bid_modifiers_count"
+        result[ad_group_id][field_name] = count
+    return result
 
 
 def _get_ad_group_data(ad_group_ids=None, date=None):

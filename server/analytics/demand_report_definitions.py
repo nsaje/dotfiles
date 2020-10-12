@@ -92,6 +92,17 @@ OUTPUT_COLUMN_NAMES = [
     "mrc100_viewable",
     "vast4_measurable",
     "vast4_viewable",
+    "publisher_bid_modifiers_count",
+    "source_bid_modifiers_count",
+    "device_bid_modifiers_count",
+    "operating_system_bid_modifiers_count",
+    "environment_bid_modifiers_count",
+    "country_bid_modifiers_count",
+    "state_bid_modifiers_count",
+    "dma_bid_modifiers_count",
+    "ad_bid_modifiers_count",
+    "day_hour_bid_modifiers_count",
+    "placement_bid_modifiers_count",
 ]
 
 WORLD_REGIONS = {

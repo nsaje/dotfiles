@@ -8,6 +8,7 @@ from django import test
 
 import automation.models
 import core.features.bcm
+import core.features.bid_modifiers
 import core.features.goals.campaign_goal
 import core.models
 import core.models.settings
@@ -213,6 +214,39 @@ class DemandReportTestCase(test.TestCase):
             "target_browsers": _repr_bool_normalized_value(target_browsers),
             "exclusion_target_browsers": _repr_bool_normalized_value(exclusion_target_browsers),
             "target_connection_types": _repr_bool_normalized_value(target_connection_types),
+            "publisher_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.PUBLISHER
+            ).count(),
+            "source_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.SOURCE
+            ).count(),
+            "device_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.DEVICE
+            ).count(),
+            "operating_system_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.OPERATING_SYSTEM
+            ).count(),
+            "environment_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.ENVIRONMENT
+            ).count(),
+            "country_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.COUNTRY
+            ).count(),
+            "state_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.STATE
+            ).count(),
+            "dma_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.DMA
+            ).count(),
+            "ad_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.AD
+            ).count(),
+            "day_hour_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.DAY_HOUR
+            ).count(),
+            "placement_bid_modifiers_count": ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.BidModifierType.PLACEMENT
+            ).count(),
         }
 
         for column, value in checks.items():
@@ -461,6 +495,10 @@ class DemandReportTestCase(test.TestCase):
         self.rule_campaign_2 = magic_mixer.blend(automation.models.Rule, campaigns_included=[self.campaign_2])
         self.rule_account_1 = magic_mixer.blend(automation.models.Rule, accounts_included=[self.account_1])
 
+        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_1)
+        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_2)
+        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_2_2)
+
     @mock.patch("analytics.demand_report._get_ad_group_stats")
     @mock.patch("utils.bigquery_helper.query")
     @mock.patch("utils.bigquery_helper.upload_csv_file")
@@ -490,7 +528,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
@@ -666,7 +704,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(18):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
