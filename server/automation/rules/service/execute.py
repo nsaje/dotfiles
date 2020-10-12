@@ -97,7 +97,7 @@ def _apply_rules(
     content_ad_settings_map,
 ):
     logger.info(
-        f"Starting to apply rules for target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
+        f"Starting to apply rules of target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
     )
     for ad_group, relevant_rules in rules_map.items():
         for rule in relevant_rules:
@@ -128,7 +128,7 @@ def _apply_rules(
 
             notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
     logger.info(
-        f"Finished applying rules for target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
+        f"Finished applying rules of target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
     )
 
 
