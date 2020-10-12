@@ -3,7 +3,6 @@ angular
     .service('zemChartDataService', function(
         $q,
         zemDataFilterService,
-        zemChartEndpoint,
         zemChartParser
     ) {
         // eslint-disable-line max-len

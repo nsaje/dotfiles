@@ -1,4 +1,5 @@
 require('./zemColumnSelector.component.less');
+var CategoryName = require('../../../../app.constants').CategoryName;
 
 angular.module('one.widgets').component('zemColumnSelector', {
     bindings: {
@@ -14,6 +15,7 @@ angular.module('one.widgets').component('zemColumnSelector', {
 
         var $ctrl = this;
 
+        $ctrl.categoryName = CategoryName;
         $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.searchQuery = '';
         $ctrl.getTooltip = getTooltip;

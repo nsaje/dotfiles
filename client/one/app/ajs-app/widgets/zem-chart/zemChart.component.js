@@ -17,7 +17,6 @@ angular.module('one.widgets').component('zemChart', {
         zemChartObject,
         zemChartStorageService,
         zemChartMetricsService,
-        zemNavigationNewService,
         zemSelectionService,
         zemCostModeService
     ) {

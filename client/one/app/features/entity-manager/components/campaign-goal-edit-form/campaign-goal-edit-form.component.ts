@@ -10,7 +10,6 @@ import {
     ChangeDetectionStrategy,
 } from '@angular/core';
 import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
-import {CONVERSION_WINDOWS} from '../../../../app.config';
 import {
     CAMPAIGN_CONVERSION_GOAL_TYPES,
     CAMPAIGN_GOAL_KPIS,
@@ -31,6 +30,7 @@ import {CampaignGoalErrors} from '../../types/campaign-goal-errors';
 import {DataType} from '../../../../app.constants';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {ConversionPixelErrors} from '../../types/conversion-pixel-errors';
+import {CONVERSION_PIXEL_CLICK_WINDOWS} from '../../../../core/conversion-pixels/conversion-pixels.config';
 
 @Component({
     selector: 'zem-campaign-goal-edit-form',
@@ -220,7 +220,7 @@ export class CampaignGoalEditFormComponent implements OnChanges {
                 availableWindows = campaignGoalsHelpers.extendAvailableConversionWindowsWithEditedConversionWindow(
                     campaignGoal.conversionGoal.conversionWindow,
                     conversionPixel.conversionWindows,
-                    CONVERSION_WINDOWS
+                    CONVERSION_PIXEL_CLICK_WINDOWS
                 );
             }
         }

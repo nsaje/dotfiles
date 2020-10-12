@@ -1,4 +1,5 @@
 var arrayHelpers = require('../../../../shared/helpers/array.helpers');
+var CategoryName = require('../../../../app.constants').CategoryName;
 
 angular.module('one.widgets').component('zemChartMetricSelector', {
     bindings: {
@@ -11,6 +12,8 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
     controller: function(zemCostModeService, zemAuthStore) {
         var $ctrl = this;
 
+        $ctrl.categoryName = CategoryName;
+        $ctrl.isDropdownOpen = false;
         $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.$onInit = function() {
             zemCostModeService.onCostModeUpdate(function() {

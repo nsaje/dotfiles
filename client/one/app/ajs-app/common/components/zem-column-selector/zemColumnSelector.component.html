@@ -78,7 +78,7 @@
             </li>
         </ul>
         <zem-attribution-column-picker
-            ng-if="category.subcategories.length > 0"
+            ng-if="category.name === $ctrl.categoryName.PIXELS"
             [pixel-columns]="category.subcategories"
             (toggle-column)="$ctrl.onColumnToggled($event)"
             (toggle-columns)="$ctrl.onColumnsToggled($event)"

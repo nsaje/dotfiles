@@ -8,7 +8,6 @@ import {
     DataType,
     APP_CONSTANTS,
 } from '../../../app.constants';
-import {CONVERSION_WINDOWS} from '../../../app.config';
 import {
     ENTITY_MANAGER_CONFIG,
     CAMPAIGN_GOAL_VALUE_TEXT,
@@ -21,6 +20,7 @@ import * as numericHelpers from '../../../shared/helpers/numeric.helpers';
 import * as currencyHelpers from '../../../shared/helpers/currency.helpers';
 import {CampaignGoalKPIConfig} from '../types/campaign-goal-kpi-config';
 import {ConversionWindowConfig} from '../../../core/conversion-pixels/types/conversion-windows-config';
+import {CONVERSION_PIXEL_CLICK_WINDOWS} from '../../../core/conversion-pixels/conversion-pixels.config';
 
 export function findCampaignGoalConfig(
     campaignGoal: CampaignGoal,
@@ -153,7 +153,7 @@ export function getConversionPixelsWithAvailableConversionWindows(
                     campaignGoal.conversionGoal.conversionWindow;
             }
         });
-        CONVERSION_WINDOWS.forEach(conversionWindow => {
+        CONVERSION_PIXEL_CLICK_WINDOWS.forEach(conversionWindow => {
             if (!counts[conversionWindow.value]) {
                 conversionPixel.conversionWindows.push(conversionWindow);
             }

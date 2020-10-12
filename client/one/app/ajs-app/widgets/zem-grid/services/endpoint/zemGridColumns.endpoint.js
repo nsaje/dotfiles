@@ -1,5 +1,6 @@
 var EntityPermissionValue = require('../../../../../core/users/users.constants')
     .EntityPermissionValue;
+var CategoryName = require('../../../../../app.constants').CategoryName;
 
 angular
     .module('one.widgets')
@@ -796,7 +797,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
 
-            // Optimisation metrics
+            // Optimization metrics
             totalSeconds: {
                 name: 'Total Seconds',
                 field: 'total_seconds',
@@ -2159,7 +2160,6 @@ angular
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
         //  COLUMN CATEGORIES
         //
-        var CONVERSIONS_CATEGORY = 'Conversions & CPAs';
         var CATEGORIES = [
             {
                 name: 'Management',
@@ -2199,7 +2199,7 @@ angular
                 columns: AUDIENCE_METRICS_GROUP,
             },
             {
-                name: CONVERSIONS_CATEGORY,
+                name: CategoryName.PIXELS,
                 description: 'Choose conversion window in days.',
                 columns: PIXELS_GROUP,
             },
@@ -2428,7 +2428,7 @@ angular
         }
 
         function setPixelColumns(columns, categories, pixels) {
-            var category = findCategoryByName(categories, CONVERSIONS_CATEGORY);
+            var category = findCategoryByName(categories, CategoryName.PIXELS);
             if (!category) return;
 
             var newColumns = [];

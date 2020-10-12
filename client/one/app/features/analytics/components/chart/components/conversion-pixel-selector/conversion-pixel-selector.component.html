@@ -1,0 +1,48 @@
+<div class="zem-conversion-pixel-selector--section">
+    <div class="zem-conversion-pixel-selector--label">Conversion pixel</div>
+    <zem-select-input
+        class="zem-select-input"
+        [items]="pixelCategories"
+        [value]="selectedPixel?.name"
+        [placeholder]="'Select conversion pixel'"
+        [bindLabel]="'name'"
+        [bindValue]="'name'"
+        (valueChange)="onPixelChange($event)"
+    >
+    </zem-select-input>
+</div>
+<div class="zem-conversion-pixel-selector--section">
+    <div
+        *ngFor="let kpi of CONVERSION_PIXEL_KPIS"
+        class="zem-conversion-pixel-selector__selector"
+        [ngClass]="{
+            'zem-conversion-pixel-selector__selector--selected':
+                kpi.value === selectedKPI
+        }"
+        (click)="selectedKPI = kpi.value"
+    >
+        {{ kpi.name }}
+    </div>
+</div>
+<div class="zem-conversion-pixel-selector--section">
+    <div class="zem-conversion-pixel-selector--label">Attribution window</div>
+    <zem-select-input
+        class="zem-select-input"
+        [items]="CONVERSION_PIXEL_OPTIONS"
+        [value]="selectedOption?.name"
+        [placeholder]="'Select conversion pixel'"
+        [bindLabel]="'name'"
+        [bindValue]="'name'"
+        (valueChange)="onPixelOptionChange($event)"
+    >
+    </zem-select-input>
+</div>
+<div class="zem-conversion-pixel-selector--section">
+    <button
+        [disabled]="!selectedPixel || !selectedKPI || !selectedOption"
+        class="zem-button zem-button--outline zem-button--highlight zem-conversion-pixel-selector--button"
+        (click)="selectConversionPixelMetrics()"
+    >
+        Apply
+    </button>
+</div>

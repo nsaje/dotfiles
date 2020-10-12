@@ -1,4 +1,9 @@
-<span class="dropdown" uib-dropdown>
+<span
+    class="dropdown"
+    uib-dropdown
+    auto-close="disabled"
+    is-open="$ctrl.isDropdownOpen"
+>
     <a
         href
         class="button button--dropdown-toggle-icon"
@@ -18,58 +23,69 @@
                 >
                     {{ category.name }}
                 </div>
-                <div
-                    class="dropdown-menu__category-description"
-                    ng-if="category.description"
+                <zem-conversion-pixel-selector
+                    ng-if="category.name === $ctrl.categoryName.PIXELS"
+                    [selected-metric]="$ctrl.metric"
+                    [pixel-categories]="category.subcategories"
+                    (value-change)="
+                        $ctrl.onChanged($event); $ctrl.isDropdownOpen = false
+                    "
                 >
-                    {{ category.description }}
-                </div>
-                <ul
-                    class="dropdown-menu__list dropdown-menu__list--two-columns"
-                    ng-if="category.metrics.length > 0"
-                >
-                    <li
-                        class="dropdown-menu__list-item dropdown-menu__list-item--option"
-                        ng-repeat="metric in category.metrics"
-                    >
-                        <div
-                            class="dropdown-menu__option"
-                            ng-click="$ctrl.onChanged(metric)"
-                            is-internal="{{ metric.internal }}"
-                            ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
-                        >
-                            {{ metric.shortName || metric.name }}
-                        </div>
-                    </li>
-                </ul>
-                <div
-                    class="dropdown-menu__subcategory"
-                    ng-repeat="subcategory in category.subcategories"
-                >
-                    <div class="dropdown-menu__subcategory-name">
-                        {{ subcategory.name }}
-                    </div>
+                </zem-conversion-pixel-selector>
+                <div ng-if="category.name !== $ctrl.categoryName.PIXELS">
                     <div
-                        class="dropdown-menu__subsubcategory"
-                        ng-repeat="subsubcategory in subcategory.subcategories"
+                        class="dropdown-menu__category-description"
+                        ng-if="category.description"
                     >
-                        <div class="dropdown-menu__subsubcategory-name">
-                            {{ subsubcategory.name }}
-                        </div>
-                        <ul class="dropdown-menu__subsubcategory-items">
-                            <li
-                                class="dropdown-menu__subsubcategory-item"
-                                ng-repeat="metric in subsubcategory.metrics"
+                        {{ category.description }}
+                    </div>
+                    <ul
+                        class="dropdown-menu__list dropdown-menu__list--two-columns"
+                        ng-if="category.metrics.length > 0"
+                    >
+                        <li
+                            class="dropdown-menu__list-item dropdown-menu__list-item--option"
+                            ng-repeat="metric in category.metrics"
+                        >
+                            <div
+                                class="dropdown-menu__option"
+                                ng-click="$ctrl.onChanged(metric); $ctrl.isDropdownOpen = false"
+                                is-internal="{{ metric.internal }}"
+                                ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
                             >
-                                <div
-                                    class="dropdown-menu__option"
-                                    ng-click="$ctrl.onChanged(metric)"
-                                    ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                                {{ metric.shortName || metric.name }}
+                            </div>
+                        </li>
+                    </ul>
+                    <div
+                        class="dropdown-menu__subcategory"
+                        ng-repeat="subcategory in category.subcategories"
+                    >
+                        <div class="dropdown-menu__subcategory-name">
+                            {{ subcategory.name }}
+                        </div>
+                        <div
+                            class="dropdown-menu__subsubcategory"
+                            ng-repeat="subsubcategory in subcategory.subcategories"
+                        >
+                            <div class="dropdown-menu__subsubcategory-name">
+                                {{ subsubcategory.name }}
+                            </div>
+                            <ul class="dropdown-menu__subsubcategory-items">
+                                <li
+                                    class="dropdown-menu__subsubcategory-item"
+                                    ng-repeat="metric in subsubcategory.metrics"
                                 >
-                                    {{ metric.shortName }}
-                                </div>
-                            </li>
-                        </ul>
+                                    <div
+                                        class="dropdown-menu__option"
+                                        ng-click="$ctrl.onChanged(metric); $ctrl.isDropdownOpen = false"
+                                        ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                                    >
+                                        {{ metric.shortName }}
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

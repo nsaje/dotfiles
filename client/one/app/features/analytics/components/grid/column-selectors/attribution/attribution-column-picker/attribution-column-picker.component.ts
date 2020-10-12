@@ -9,10 +9,6 @@ import {
     OnInit,
     OnDestroy,
 } from '@angular/core';
-import {
-    CLICK_CONVERSION_WINDOWS,
-    VIEW_CONVERSION_WINDOWS,
-} from './attribution-column-picker.config';
 import {ConversionWindowConfig} from '../../../../../../../core/conversion-pixels/types/conversion-windows-config';
 import {PixelColumn} from '../../../../../types/pixel-column';
 import * as pixelHelpers from './helpers/attribution-column-picker.helpers';
@@ -23,6 +19,10 @@ import PixelMetric from './types/pixel-metric';
 import {merge, Observable, Subject} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {AuthStore} from '../../../../../../../core/auth/services/auth.store';
+import {
+    CONVERSION_PIXEL_CLICK_WINDOWS,
+    CONVERSION_PIXEL_VIEW_WINDOWS,
+} from '../../../../../../../core/conversion-pixels/conversion-pixels.config';
 
 @Component({
     selector: 'zem-attribution-column-picker',
@@ -40,8 +40,8 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
-    CLICK_CONVERSION_WINDOWS: ConversionWindowConfig[] = CLICK_CONVERSION_WINDOWS;
-    VIEW_CONVERSION_WINDOWS: ConversionWindowConfig[] = VIEW_CONVERSION_WINDOWS;
+    CLICK_CONVERSION_WINDOWS: ConversionWindowConfig[] = CONVERSION_PIXEL_CLICK_WINDOWS;
+    VIEW_CONVERSION_WINDOWS: ConversionWindowConfig[] = CONVERSION_PIXEL_VIEW_WINDOWS;
 
     METRICS_OPTIONS_CLICK: PixelMetric[] = [
         {attribution: 'Click attribution', performance: 'Conversions'},

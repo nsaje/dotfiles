@@ -1,0 +1,30 @@
+@import 'variables';
+
+.zem-conversion-pixel-selector {
+    display: block;
+}
+
+.zem-conversion-pixel-selector--section {
+    margin-top: @spacing--small;
+}
+
+.zem-conversion-pixel-selector--label {
+    margin-bottom: 4px;
+    color: @color--secondary;
+}
+
+.zem-conversion-pixel-selector__selector {
+    cursor: pointer;
+    padding: 3px 5px 2px 5px;
+    margin-left: -5px;
+    border-radius: @border-radius--default;
+
+    &:hover {
+        background-color: @color--secondary;
+        color: white;
+    }
+}
+
+.zem-conversion-pixel-selector__selector--selected {
+    background-color: fade(@color--secondary, 10%);
+}

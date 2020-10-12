@@ -1,5 +1,10 @@
 var EntityPermissionValue = require('../../../../core/users/users.constants')
     .EntityPermissionValue;
+var CategoryName = require('../../../../app.constants').CategoryName;
+var ConversionPixelAttribution = require('../../../../core/conversion-pixels/conversion-pixel.constants')
+    .ConversionPixelAttribution;
+var ConversionPixelKPI = require('../../../../core/conversion-pixels/conversion-pixel.constants')
+    .ConversionPixelKPI;
 
 angular
     .module('one.widgets')
@@ -15,16 +20,6 @@ angular
         var TYPE_NUMBER = 'number';
         var TYPE_CURRENCY = 'currency';
         var TYPE_TIME = 'time';
-
-        var COSTS_CATEGORY_NAME = 'Costs';
-        var TRAFFIC_CATEGORY_NAME = 'Traffic Acquisition';
-        var MRC50_CATEGORY_NAME = 'Viewability';
-        var MRC100_CATEGORY_NAME = 'MRC100 Viewability';
-        var VAST4_CATEGORY_NAME = 'Video Viewability';
-        var AUDIENCE_CATEGORY_NAME = 'Audience Metrics';
-        var VIDEO_CATEGORY_NAME = 'Video Metrics';
-        var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
-        var PIXELS_CATEGORY_NAME = 'Conversions & CPAs';
 
         var METRICS = {
             /* eslint-disable max-len */
@@ -711,33 +706,33 @@ angular
         function getChartMetrics() {
             var categories = [];
             categories.push({
-                name: COSTS_CATEGORY_NAME,
+                name: CategoryName.COST,
                 metrics: createMetrics(COST_METRICS),
             });
             categories.push({
-                name: TRAFFIC_CATEGORY_NAME,
+                name: CategoryName.TRAFFIC,
                 metrics: createMetrics(TRAFFIC_ACQUISITION),
             });
             categories.push({
-                name: MRC50_CATEGORY_NAME,
+                name: CategoryName.MRC50,
                 metrics: createMetrics(MRC50_VIEWABILITY_METRICS),
                 isNewFeature: true,
             });
             categories.push({
-                name: MRC100_CATEGORY_NAME,
+                name: CategoryName.MRC100,
                 metrics: createMetrics(MRC100_VIEWABILITY_METRICS),
                 isNewFeature: true,
             });
             categories.push({
-                name: AUDIENCE_CATEGORY_NAME,
+                name: CategoryName.AUDIENCE,
                 metrics: createMetrics(AUDIENCE_METRICS),
             });
             categories.push({
-                name: VIDEO_CATEGORY_NAME,
+                name: CategoryName.VIDEO,
                 metrics: createMetrics(VIDEO_METRICS),
             });
             categories.push({
-                name: VAST4_CATEGORY_NAME,
+                name: CategoryName.VAST4,
                 metrics: createMetrics(VAST4_VIEWABILITY_METRICS),
                 isNewFeature: true,
             });
@@ -784,11 +779,11 @@ angular
         }
 
         function insertDynamicMetrics(categories, pixels, conversionGoals) {
-            if (!findCategoryByName(categories, PIXELS_CATEGORY_NAME)) {
+            if (!findCategoryByName(categories, CategoryName.PIXELS)) {
                 insertPixelCategory(categories, pixels);
             }
 
-            if (!findCategoryByName(categories, CONVERSIONS_CATEGORY_NAME)) {
+            if (!findCategoryByName(categories, CategoryName.CONVERSIONS)) {
                 insertConversionCategory(categories, conversionGoals);
             }
         }
@@ -803,53 +798,44 @@ angular
                     metrics: [],
                     subcategories: [],
                 };
-                var pixelGoalSubCategory = {
-                    name: 'CPA (' + pixel.name + ')',
-                    metrics: [],
-                    subcategories: [],
-                };
 
-                generatePixelCategories(
+                generatePixelMetrics(
                     pixelSubCategory,
-                    pixelGoalSubCategory,
                     pixel,
                     options.conversionWindows,
                     '',
                     ' - Click attr.',
-                    'Click attr.:'
+                    ConversionPixelAttribution.CLICK
                 );
-                generatePixelCategories(
+                generatePixelMetrics(
                     pixelSubCategory,
-                    pixelGoalSubCategory,
                     pixel,
                     options.conversionWindowsViewthrough,
                     '_view',
                     ' - View attr.',
-                    'View attr.:'
+                    ConversionPixelAttribution.VIEW
                 );
 
-                pixelSubcategories.push(pixelSubCategory, pixelGoalSubCategory);
+                pixelSubcategories.push(pixelSubCategory);
             });
 
             categories.push({
-                name: PIXELS_CATEGORY_NAME,
+                name: CategoryName.PIXELS,
                 description: 'Choose conversion window in days.',
                 metrics: [],
                 subcategories: pixelSubcategories,
             });
         }
 
-        function generatePixelCategories(
+        function generatePixelMetrics(
             pixelSubCategory,
-            pixelGoalSubCategory,
             pixel,
             conversionWindows,
             fieldSuffix,
             columnSuffix,
-            subRowName
+            attribution
         ) {
             var pixelMetrics = [];
-            var pixelGoalMetrics = [];
 
             angular.forEach(conversionWindows, function(conversionWindow) {
                 var metricValue =
@@ -857,15 +843,17 @@ angular
 
                 pixelMetrics.push({
                     value: metricValue,
-                    shortName: conversionWindow.value / 24,
                     name:
                         pixel.name + ' ' + conversionWindow.name + columnSuffix,
                     shown: true,
+                    window: conversionWindow.value,
+                    attribution: attribution,
+                    performance: ConversionPixelKPI.CONVERSIONS,
+                    pixel: pixel.name,
                 });
 
-                pixelGoalMetrics.push({
+                pixelMetrics.push({
                     value: 'avg_etfm_cost_per_' + metricValue,
-                    shortName: conversionWindow.value / 24,
                     name:
                         'CPA (' +
                         pixel.name +
@@ -877,27 +865,37 @@ angular
                     fractionSize: 2,
                     costMode: constants.costMode.PUBLIC,
                     shown: true,
+                    window: conversionWindow.value,
+                    attribution: attribution,
+                    performance: ConversionPixelKPI.CPA,
+                    pixel: pixel.name,
+                });
+
+                pixelMetrics.push({
+                    value: 'conversion_rate_per_' + metricValue,
+                    name:
+                        'Conversion rate (' +
+                        pixel.name +
+                        ' ' +
+                        conversionWindow.name +
+                        columnSuffix +
+                        ')',
+                    type: TYPE_CURRENCY,
+                    fractionSize: 2,
+                    costMode: constants.costMode.PUBLIC,
+                    shown: true,
+                    window: conversionWindow.value,
+                    attribution: attribution,
+                    performance: ConversionPixelKPI.CONVERSION_RATE,
+                    pixel: pixel.name,
                 });
             });
 
             checkPermissions(pixelMetrics);
-            checkPermissions(pixelGoalMetrics);
 
-            pixelSubCategory.subcategories.push({
-                name: subRowName,
-                metrics: pixelMetrics.filter(function(metric) {
-                    return metric.shown;
-                }),
-                subcategories: [],
-            });
-
-            pixelGoalSubCategory.subcategories.push({
-                name: subRowName,
-                metrics: pixelGoalMetrics.filter(function(metric) {
-                    return metric.shown;
-                }),
-                subcategories: [],
-            });
+            pixelSubCategory.metrics = pixelSubCategory.metrics.concat(
+                pixelMetrics
+            );
         }
 
         function insertConversionCategory(categories, conversionGoals) {
@@ -925,7 +923,7 @@ angular
             checkPermissions(conversionGoalMetrics);
 
             categories.push({
-                name: CONVERSIONS_CATEGORY_NAME,
+                name: CategoryName.CONVERSIONS,
                 metrics: []
                     .concat(conversionMetrics, conversionGoalMetrics)
                     .filter(function(metric) {

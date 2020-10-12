@@ -25,6 +25,7 @@ import {AlertsComponent} from './components/grid/alerts/alerts.component';
 import {AlertsStore} from './services/alerts-store/alerts.store';
 import {GridBridgeComponent} from './components/grid/grid-bridge/grid-bridge.component';
 import {GridBridgeStore} from './components/grid/grid-bridge/services/grid-bridge.store';
+import {ConversionPixelSelectorComponent} from './components/chart/components/conversion-pixel-selector/conversion-pixel-selector.component';
 
 @NgModule({
     declarations: [
@@ -48,6 +49,7 @@ import {GridBridgeStore} from './components/grid/grid-bridge/services/grid-bridg
         AddToPublishersFormComponent,
         AlertsComponent,
         GridBridgeComponent,
+        ConversionPixelSelectorComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -63,6 +65,7 @@ import {GridBridgeStore} from './components/grid/grid-bridge/services/grid-bridg
         BulkBlacklistActionsComponent,
         AddToPublishersActionComponent,
         GridBridgeComponent,
+        ConversionPixelSelectorComponent,
     ],
 })
 export class AnalyticsModule {}

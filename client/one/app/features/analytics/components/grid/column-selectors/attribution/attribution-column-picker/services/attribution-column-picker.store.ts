@@ -3,14 +3,14 @@ import {Store} from 'rxjs-observable-store';
 import {AttributionColumnPickerStoreState} from './attribution-column-picker.store.state';
 import {PixelColumn} from '../../../../../../types/pixel-column';
 import {ConversionWindowConfig} from '../../../../../../../../core/conversion-pixels/types/conversion-windows-config';
-import {
-    VIEW_CONVERSION_WINDOWS,
-    CLICK_CONVERSION_WINDOWS,
-} from '../attribution-column-picker.config';
 import * as pixelHelpers from '../helpers/attribution-column-picker.helpers';
 import * as arrayHelpers from '../../../../../../../../shared/helpers/array.helpers';
 import {PixelOptionsColumn} from '../../../../../../types/pixel-options-column';
 import PixelMetric from '../types/pixel-metric';
+import {
+    CONVERSION_PIXEL_CLICK_WINDOWS,
+    CONVERSION_PIXEL_VIEW_WINDOWS,
+} from '../../../../../../../../core/conversion-pixels/conversion-pixels.config';
 
 @Injectable()
 export class AttributionColumnPickerStore extends Store<
@@ -90,7 +90,7 @@ export class AttributionColumnPickerStore extends Store<
                     column.visible &&
                     column.data.attribution === 'Click attribution'
                 ) {
-                    return CLICK_CONVERSION_WINDOWS.find(
+                    return CONVERSION_PIXEL_CLICK_WINDOWS.find(
                         (window: ConversionWindowConfig) => {
                             return (
                                 column.data.window ===
@@ -103,7 +103,7 @@ export class AttributionColumnPickerStore extends Store<
                 }
             }
         }
-        return CLICK_CONVERSION_WINDOWS[0];
+        return CONVERSION_PIXEL_CLICK_WINDOWS[0];
     }
 
     private getPreselectedViewConversionWindow(
@@ -115,7 +115,7 @@ export class AttributionColumnPickerStore extends Store<
                     column.visible &&
                     column.data.attribution === 'View attribution'
                 ) {
-                    return VIEW_CONVERSION_WINDOWS.find(
+                    return CONVERSION_PIXEL_VIEW_WINDOWS.find(
                         (window: ConversionWindowConfig) => {
                             return (
                                 column.data.window ===
@@ -128,7 +128,7 @@ export class AttributionColumnPickerStore extends Store<
                 }
             }
         }
-        return VIEW_CONVERSION_WINDOWS[0];
+        return CONVERSION_PIXEL_VIEW_WINDOWS[0];
     }
 
     private getPreselectedMetrics(pixels: PixelColumn[]): PixelMetric[] {

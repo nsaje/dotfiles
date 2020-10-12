@@ -810,6 +810,18 @@ export enum ConnectionType {
     CELLULAR = 'CELLULAR',
 }
 
+export enum CategoryName {
+    COSTS = 'Costs',
+    TRAFFIC = 'Traffic Acquisition',
+    MRC50 = 'Viewability',
+    MRC100 = 'MRC100 Viewability',
+    VAST4 = 'Video Viewability',
+    AUDIENCE = 'Audience Metrics',
+    VIDEO = 'Video Metrics',
+    CONVERSIONS = 'Google & Adobe Analytics Goals',
+    PIXELS = 'Conversions & CPAs',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,
