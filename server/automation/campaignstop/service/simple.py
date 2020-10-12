@@ -197,9 +197,7 @@ def _get_total_campaign_spend(campaign, date=None):
 def _get_total_daily_budget_amount(campaign):
     total_daily_budget = decimal.Decimal(0.0)
     for adg in _get_active_ad_groups(campaign):
-        for adg_src_set in _get_active_ad_group_sources_settings(adg):
-            if adg_src_set.daily_budget_cc is not None:
-                total_daily_budget += adg_src_set.daily_budget_cc
+        total_daily_budget += adg.settings.daily_budget
     return total_daily_budget
 
 
@@ -222,15 +220,6 @@ def _get_active_campaigns_subset(campaigns):
 
 def _filter_active_ad_groups(ad_groups_qs):
     return ad_groups_qs.filter_current_and_active().filter_allowed_to_run().distinct()
-
-
-def _get_active_ad_group_sources_settings(adgroup):
-    active_sources_settings = []
-    all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
-    for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
-        if current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            active_sources_settings.append(current_source_settings)
-    return active_sources_settings
 
 
 def _stop_campaign(campaign):

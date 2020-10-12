@@ -2,11 +2,17 @@ import concurrent.futures
 import random
 
 from django.db import transaction
+from django.db.models import BooleanField
+from django.db.models import Case
+from django.db.models import Count
+from django.db.models import F
+from django.db.models import When
 
 import core.features.bcm
 import core.models
 import dash.constants
 from utils import dates_helper
+from utils import zlogging
 
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
@@ -14,6 +20,11 @@ from .. import RealTimeDataHistory
 from .. import constants
 from . import config
 from . import refresh_realtime_data
+
+logger = zlogging.getLogger(__name__)
+
+LOG_MESSAGE = "Detected difference between max campaign calculations in campaignstop"
+USE_AD_GROUP_DAILY_BUDGET = False
 
 
 def mark_almost_depleted_campaigns(campaigns=None):
@@ -76,23 +87,48 @@ def _get_max_campaign_spends(campaigns):
 
 def _calculate_max_campaign_spend(campaign):
     rt_data = _get_latest_real_time_data(campaign)
-    adg_source_spends = _get_rt_etfm_spends(rt_data)
+    adg_source_spends, adg_spends = _get_rt_etfm_spends(rt_data)  # Change when aggregated adgroup datahistory exists
     ad_groups_map = _get_ad_groups_map(campaign)
     adg_sources_qs = _get_adgroup_sources_qs(campaign)
-    return _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends)
+    spend_calculated_by_adg_source = _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends)
+    spend_calculated_by_adg = _get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
+    if spend_calculated_by_adg_source != spend_calculated_by_adg:
+        _log_differences(
+            campaign.id,
+            ad_groups_map,
+            adg_sources_qs,
+            adg_source_spends,
+            adg_spends,
+            spend_calculated_by_adg_source,
+            spend_calculated_by_adg,
+        )
+    if USE_AD_GROUP_DAILY_BUDGET:  # I'll check the audience flag here to see which one to return
+        return spend_calculated_by_adg
+    return spend_calculated_by_adg_source
 
 
 def _get_rt_etfm_spends(rt_data):
     adg_source_spends = {}
+    adg_spends = {}
     for rtd in rt_data:
         adg_source_spends[(rtd.ad_group_id, rtd.source_id, rtd.date)] = rtd.etfm_spend
-    return adg_source_spends
+        adg_spends.setdefault((rtd.ad_group_id, rtd.date), 0)
+        adg_spends[(rtd.ad_group_id, rtd.date)] += rtd.etfm_spend
+    return adg_source_spends, adg_spends
 
 
 def _get_ad_groups_map(campaign):
     return {
         ad_group["id"]: ad_group
-        for ad_group in campaign.adgroup_set.values(
+        for ad_group in campaign.adgroup_set.annotate(
+            inactive_count=Count(
+                Case(When(adgroupsource__settings__state=dash.constants.AdGroupSourceSettingsState.INACTIVE, then=1))
+            ),
+            all_count=Count("adgroupsource__id"),
+            has_active_source=Case(
+                When(inactive_count=F("all_count"), then=False), default=True, output_field=BooleanField()
+            ),
+        ).values(
             "id",
             "settings__state",
             "settings__start_date",
@@ -100,6 +136,8 @@ def _get_ad_groups_map(campaign):
             "settings__b1_sources_group_enabled",
             "settings__b1_sources_group_state",
             "settings__b1_sources_group_daily_budget",
+            "settings__daily_budget",
+            "has_active_source",
         )
     }
 
@@ -181,6 +219,26 @@ def _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends):
     return spend
 
 
+def _get_max_spend_grouped_by_adg(ad_groups_map, adg_spends):
+    spend = 0
+    today = dates_helper.local_today()
+    for adg_id, adg_data in ad_groups_map.items():
+        todays_realtime_spend = float(adg_spends.get((adg_id, today), 0))
+
+        if _in_critical_hours():
+            yesterday = dates_helper.local_yesterday()
+            yesterdays_realtime_spend = float(adg_spends.get((adg_id, yesterday), 0))
+            spend += yesterdays_realtime_spend
+
+        if not _is_active_setting(adg_data) or not adg_data["has_active_source"]:
+            spend += todays_realtime_spend
+            continue
+
+        settings_budget = adg_data["settings__daily_budget"] or 0
+        spend += max(float(settings_budget), todays_realtime_spend)
+    return spend
+
+
 def _b1_spends(ad_groups_map, b1_sources_group_spends):
     spend = 0
     for ad_group_id, b1_group_spend in b1_sources_group_spends.items():
@@ -206,3 +264,18 @@ def _is_active_setting(ad_group):
         else:
             return start_date <= today <= end_date
     return False
+
+
+def _log_differences(
+    campaign_id, ad_groups_map, adg_sources_qs, adg_source_spends, adg_spends, adg_source_calculation, adg_calculation
+):
+    logger.warning(
+        LOG_MESSAGE,
+        campaign=campaign_id,
+        ad_groups_map=str(ad_groups_map),
+        adg_sources_qs=str(adg_sources_qs),
+        adg_source_spends=str(adg_source_spends),
+        adg_spends=str(adg_spends),
+        adg_source_calculation=adg_source_calculation,
+        adg_calculation=adg_calculation,
+    )
