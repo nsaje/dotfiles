@@ -103,6 +103,7 @@ OUTPUT_COLUMN_NAMES = [
     "ad_bid_modifiers_count",
     "day_hour_bid_modifiers_count",
     "placement_bid_modifiers_count",
+    "license_fee",
 ]
 
 WORLD_REGIONS = {

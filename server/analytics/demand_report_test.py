@@ -56,6 +56,7 @@ class DemandReportTestCase(test.TestCase):
         impressions="0",
         clicks="0",
         spend="0",
+        license_fee="0",
         visits="0",
         video_midpoint="0",
         video_complete="0",
@@ -135,6 +136,7 @@ class DemandReportTestCase(test.TestCase):
             "impressions": impressions,
             "clicks": clicks,
             "spend": spend,
+            "license_fee": license_fee,
             "visits": visits,
             "video_midpoint": video_midpoint,
             "video_complete": video_complete,
@@ -505,9 +507,9 @@ class DemandReportTestCase(test.TestCase):
     @mock.patch("redshiftapi.db.get_stats_cursor")
     def test_create_report(self, mock_db, mock_upload, mock_query, mock_stats):
         stats_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 143754891637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
-            [self.ad_group_1_2.id, 405265, 407, 152348436441, 308, 0, 0, 250, 188, 144, 132, 100, 80],
-            [self.ad_group_2_1.id, 308172, 75, 143785991637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_1.id, 318199, 75, 143754891637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441, 13252900000, 308, 0, 0, 250, 188, 144, 132, 100, 80],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
             # no stats for ad_group_2_2
         ]
         columns = [
@@ -515,6 +517,7 @@ class DemandReportTestCase(test.TestCase):
             "impressions",
             "clicks",
             "spend_nano",
+            "license_fee_nano",
             "visits",
             "video_midpoint",
             "video_complete",
@@ -552,6 +555,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="318199",
             clicks="75",
             spend="143.754891637",
+            license_fee="24.61",
             visits="57",
             video_midpoint="12",
             video_complete="3",
@@ -579,6 +583,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="405265",
             clicks="407",
             spend="152.348436441",
+            license_fee="13.2529",
             visits="308",
             video_midpoint="0",
             video_complete="0",
@@ -606,6 +611,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="308172",
             clicks="75",
             spend="143.785991637",
+            license_fee="24.61",
             visits="57",
             video_midpoint="12",
             video_complete="3",
@@ -633,6 +639,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="0",
             clicks="0",
             spend="0",
+            license_fee=0,
             visits="0",
             video_midpoint="0",
             video_complete="0",
@@ -680,17 +687,18 @@ class DemandReportTestCase(test.TestCase):
             )
 
         stats_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 143754891637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
-            [self.ad_group_1_2.id, 405265, 407, 152348436441, 308, 0, 0, 250, 188, 144, 132, 100, 80],
-            [self.ad_group_2_1.id, 308172, 75, 143785991637, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_1.id, 318199, 75, 143754891637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441, 13252900000, 308, 0, 0, 250, 188, 144, 132, 100, 80],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
             # no stats for ad_group_2_2
-            [self.ad_group_2_3.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [self.ad_group_2_3.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
         columns = [
             "ad_group_id",
             "impressions",
             "clicks",
             "spend_nano",
+            "license_fee_nano",
             "visits",
             "video_midpoint",
             "video_complete",
@@ -728,6 +736,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="318199",
             clicks="75",
             spend="143.754891637",
+            license_fee="24.61",
             visits="57",
             video_midpoint="12",
             video_complete="3",
@@ -755,6 +764,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="405265",
             clicks="407",
             spend="152.348436441",
+            license_fee="13.2529",
             visits="308",
             video_midpoint="0",
             video_complete="0",
@@ -782,6 +792,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="308172",
             clicks="75",
             spend="143.785991637",
+            license_fee="24.61",
             visits="57",
             video_midpoint="12",
             video_complete="3",
@@ -809,6 +820,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="0",
             clicks="0",
             spend="0",
+            license_fee="0",
             visits="0",
             video_midpoint="0",
             video_complete="0",
@@ -836,6 +848,7 @@ class DemandReportTestCase(test.TestCase):
             impressions="3",
             clicks="1",
             spend="0.0",
+            license_fee="0.0",
             visits="0",
             video_midpoint="0",
             video_complete="0",

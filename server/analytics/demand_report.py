@@ -209,6 +209,9 @@ def _calculate_ad_group_stats(
             "impressions": ad_group_stats.get("impressions", 0),
             "clicks": ad_group_stats.get("clicks", 0),
             "spend": float(ad_group_stats["spend_nano"]) / 10 ** 9 if "spend_nano" in ad_group_stats else 0,
+            "license_fee": float(ad_group_stats["license_fee_nano"]) / 10 ** 9
+            if "license_fee_nano" in ad_group_stats
+            else 0,
             "calculated_daily_budget": budget,
             "calculated_cpc": cpc,
             "active_ssps": ", ".join(sorted(active_ssps)),
@@ -882,6 +885,7 @@ SELECT
       + COALESCE(license_fee_nano, 0)
       + COALESCE(margin_nano, 0)
     ) AS spend_nano,
+    SUM(license_fee_nano) AS license_fee_nano,
     SUM(visits) AS visits,
     SUM(video_midpoint) AS video_midpoint,
     SUM(video_complete) AS video_complete,
