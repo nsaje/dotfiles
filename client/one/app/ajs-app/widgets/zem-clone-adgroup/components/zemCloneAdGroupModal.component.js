@@ -1,4 +1,5 @@
 require('./zemCloneAdGroupModal.component.less');
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
 
 angular.module('one.widgets').component('zemCloneAdGroupModal', {
     bindings: {
@@ -80,7 +81,9 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                 )
                 .then(
                     function(data) {
-                        reloadCache(data);
+                        if (commonHelpers.isDefined(data)) {
+                            reloadCache(data);
+                        }
 
                         zemNavigationNewService
                             .getEntityById(

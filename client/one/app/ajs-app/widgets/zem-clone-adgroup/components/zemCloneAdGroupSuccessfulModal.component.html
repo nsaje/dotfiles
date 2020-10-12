@@ -1,7 +1,7 @@
 <div class="modal__header">
     <div class="modal__title">Cloning successful</div>
 </div>
-<div class="modal__body">
+<div ng-if="!!$ctrl.resolve.data.id" class="modal__body">
     <div ng-if="!!$ctrl.resolve.cloneAds">
         Ad group <strong>{{ $ctrl.resolve.adGroup.name }}</strong
         >, its settings and ads, was successfully cloned to campaign
@@ -31,6 +31,13 @@
             href
             >Visit newly created Ad Group</a
         >
+    </div>
+</div>
+<div ng-if="!$ctrl.resolve.data.id" class="modal__body">
+    <div>
+        Ad group clone is under way and will take a bit more time to process
+        than usual. We’ll send you an email once it’s done. You can safely close
+        this dialog.
     </div>
 </div>
 <div class="modal__footer buttons-panel">

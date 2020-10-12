@@ -756,7 +756,7 @@ def send_ad_group_cloned_success_email(request, source_ad_group_name, cloned_ad_
     send_official_email(
         agency_or_user=request.user,
         recipient_list=[request.user.email],
-        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CLONED_SUCCESS, **args),
+        **params_from_template(dash.constants.EmailTemplateType.AD_GROUP_CLONED_SUCCESS, **args),
     )
 
 
@@ -767,5 +767,5 @@ def send_ad_group_cloned_error_email(request, source_ad_group_name, cloned_ad_gr
     send_official_email(
         agency_or_user=request.user,
         recipient_list=[request.user.email],
-        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CLONED_ERROR, **args),
+        **params_from_template(dash.constants.EmailTemplateType.AD_GROUP_CLONED_ERROR, **args),
     )

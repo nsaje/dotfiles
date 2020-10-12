@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.services')
     .service('zemEntityInstanceService', function(
@@ -54,11 +56,13 @@ angular
                 return zemCloneAdGroupService
                     .clone(id, data)
                     .then(function(data) {
-                        pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
-                            entityType: entityType,
-                            parentId: data.parentId,
-                            data: data,
-                        });
+                        if (commonHelpers.isDefined(data)) {
+                            pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
+                                entityType: entityType,
+                                parentId: data.parentId,
+                                data: data,
+                            });
+                        }
                         return data;
                     });
             }
