@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import connections
 from django.db import transaction
 from django.db.models import Max
+from django.db.models import Q
 from django.db.models import Sum
 
 import backtosql
@@ -150,7 +151,9 @@ def _handle_overspend(date, campaign, base_media_nano, base_data_nano):
         ).latest("created_dt")
     except dash.models.BudgetLineItem.DoesNotExist:
         credit = dash.models.CreditLineItem.objects.filter(
-            account_id=campaign.account_id, start_date__lte=date, end_date__gte=date
+            (Q(account_id=campaign.account_id) | Q(agency_id=campaign.account.agency_id))
+            & Q(start_date__lte=date)
+            & Q(end_date__gte=date)
         ).latest("created_dt")
 
         budget = dash.models.BudgetLineItem.objects.create_unsafe(
