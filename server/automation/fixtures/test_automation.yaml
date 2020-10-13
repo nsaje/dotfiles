@@ -174,7 +174,6 @@
     cpm: 0.16
     autopilot_daily_budget: 10
     max_autopilot_bid: 0.18
-    daily_budget: 60
   model: dash.adgroupsettings
   pk: 1
 
