@@ -783,12 +783,11 @@ def _get_bid_modifier_count_by_ad_group(ad_group_ids):
     )
 
     result = {}
+    for ad_group_id in ad_group_ids:
+        result[ad_group_id] = {
+            name.lower() + "_bid_modifiers_count": 0 for name in bid_modifiers.BidModifierType.get_all_names()
+        }
     for ad_group_id, type_, count in qs:
-        result.setdefault(
-            ad_group_id,
-            {name.lower() + "_bid_modifiers_count": 0 for name in bid_modifiers.BidModifierType.get_all_names()},
-        )
-
         field_name = bid_modifiers.BidModifierType.get_name(type_).lower() + "_bid_modifiers_count"
         result[ad_group_id][field_name] = count
     return result
