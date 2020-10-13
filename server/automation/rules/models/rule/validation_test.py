@@ -33,7 +33,9 @@ class RuleValidationTest(BaseTestCase):
             rule.clean({"target_type": 999, "accounts_included": [self.account]})
 
     def test_prevent_changing_target_type(self):
-        self._prepare_rule(target_type=constants.TargetType.PUBLISHER)
+        self._prepare_rule(
+            target_type=constants.TargetType.PUBLISHER, action_type=constants.ActionType.INCREASE_BID_MODIFIER
+        )
         self.rule.clean({"target_type": self.rule.target_type})  # allow setting to the same value
         with self.assert_multiple_validation_error([exceptions.InvalidTargetType]):
             self.rule.clean({"target_type": constants.TargetType.PLACEMENT})
@@ -46,7 +48,9 @@ class RuleValidationTest(BaseTestCase):
             rule.clean({"action_type": 999, "accounts_included": [self.account]})
 
     def test_prevent_changing_action_type(self):
-        self._prepare_rule(action_type=constants.ActionType.INCREASE_BID_MODIFIER)
+        self._prepare_rule(
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER, target_type=constants.TargetType.PUBLISHER
+        )
         self.rule.clean({"action_type": self.rule.action_type})  # allow setting to the same value
         with self.assert_multiple_validation_error([exceptions.InvalidActionType]):
             self.rule.clean({"action_type": constants.ActionType.DECREASE_BID_MODIFIER})
