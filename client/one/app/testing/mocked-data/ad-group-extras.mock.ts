@@ -40,4 +40,5 @@ export const adGroupExtrasMock: AdGroupExtras = {
         cpc: null,
         cpm: null,
     },
+    agencyUsesRealtimeAutopilot: null,
 };
