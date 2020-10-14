@@ -189,7 +189,7 @@ class RuleHistoryInstance(RuleHistoryInstanceMixin):
         elif self.failure_reason == constants.RuleFailureReason.BUDGET_AUTOPILOT_INACTIVE:
             return "Automation rule can't change the daily cap when budget autopilot is turned off."
         elif self.failure_reason == constants.RuleFailureReason.NO_CPA_GOAL:
-            return "Automation rule failed to apply because the conversion pixel could not be determined from campaign goals - no CPA goal is set on the ad group’s campaign"
+            return "Automation rule failed to apply the action because no CPA goal is set in campaign settings."
         elif self.failure_reason == constants.RuleFailureReason.UNEXPECTED_ERROR:
             return "Automation rule failed to be applied because of an unforeseen error."
         else:
