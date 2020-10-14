@@ -7,6 +7,7 @@ import * as commonHelpers from '../../../../../helpers/common.helpers';
 import {
     DEFAULT_HEADER_CELL_SORT_OPTIONS,
     DEFAULT_HEADER_CELL_SORT_ORDER,
+    DEFAULT_HEADER_PARAMS,
 } from './header-cell.component.config';
 import {SortModel} from './types/sort-models';
 import {HeaderCellSort} from './header-cell.component.constants';
@@ -28,16 +29,13 @@ export class HeaderCellComponent implements IHeaderAngularComp {
 
     agInit(params: HeaderParams): void {
         this.params = {
+            ...DEFAULT_HEADER_PARAMS,
             ...params,
-            sortOptions: {
-                ...DEFAULT_HEADER_CELL_SORT_OPTIONS,
-                ...params.sortOptions,
-            },
         };
         this.colDef = this.params.column.getColDef();
         this.colId = this.params.column.getColId();
         this.field = this.colDef.field;
-        this.sort = this.params.column.getSort();
+        this.sort = this.colDef.sort;
         this.sortingOrder = commonHelpers.getValueOrDefault(
             this.colDef.sortingOrder,
             DEFAULT_HEADER_CELL_SORT_ORDER
@@ -80,7 +78,11 @@ export class HeaderCellComponent implements IHeaderAngularComp {
     }
 
     private setServerSort(sort: string): void {
-        const sortModel: SortModel[] = [{colId: this.field, sort: sort}];
+        const sortField: string = commonHelpers.getValueOrDefault(
+            this.params.sortOptions.orderField,
+            this.field
+        );
+        const sortModel: SortModel[] = [{colId: sortField, sort: sort}];
         this.params.sortOptions.setSortModel(sortModel);
     }
 }

@@ -13,4 +13,6 @@ export class HelpPopoverComponent {
     content: string;
     @Input()
     placement: PopoverPlacement = 'top';
+    @Input()
+    helpPopoverClass: string;
 }

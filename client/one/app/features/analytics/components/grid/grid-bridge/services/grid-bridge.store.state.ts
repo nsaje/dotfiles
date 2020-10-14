@@ -8,7 +8,7 @@ export class GridBridgeStoreState {
     columns: ColDef[] = [];
     data = {
         rows: [] as any[],
-        totals: null as any,
+        totals: [] as any[],
         paginationOptions: {
             type: null,
             page: null,

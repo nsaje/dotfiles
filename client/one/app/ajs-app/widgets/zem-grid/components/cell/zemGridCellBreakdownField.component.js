@@ -1,3 +1,6 @@
+var TOTALS_LABEL_HELP_TEXT = require('../../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.constants')
+    .TOTALS_LABEL_HELP_TEXT;
+
 angular
     .module('one.widgets')
     .directive('zemGridCellBreakdownField', function() {
@@ -37,8 +40,7 @@ angular
                 vm.collapsed = false;
                 vm.toggleCollapse = toggleCollapse;
                 vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
-                vm.TOTALS_LABEL_HELP_TEXT =
-                    'Totals displays the sum of all metrics and costs including those that incurred on archived ads, ad groups, campaigns or accounts.';
+                vm.TOTALS_LABEL_HELP_TEXT = TOTALS_LABEL_HELP_TEXT;
 
                 initialize();
 

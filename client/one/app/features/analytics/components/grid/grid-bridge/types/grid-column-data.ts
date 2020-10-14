@@ -1,16 +1,19 @@
 import {GridColumnTypes} from '../../../../analytics.constants';
+import {GridColumnOrder} from './grid-column-order';
 
 export interface GridColumnData {
     default?: boolean;
+    defaultValue?: string;
     field?: string;
     help?: string;
-    initialOrder?: 'none' | 'asc' | 'desc';
-    internal: boolean;
-    name: string;
+    internal?: boolean;
+    name?: string;
     order?: boolean;
     orderField?: string;
+    initialOrder?: GridColumnOrder;
     shown: boolean;
-    totalRow: boolean;
+    totalRow?: boolean;
     type: GridColumnTypes;
     editable?: boolean;
+    fractionSize?: number;
 }

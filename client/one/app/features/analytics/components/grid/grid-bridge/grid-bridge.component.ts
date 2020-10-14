@@ -10,12 +10,13 @@ import {
     SimpleChanges,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
-import {DetailGridInfo, GridApi} from 'ag-grid-community';
+import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {merge, Observable, Subject} from 'rxjs';
 import {distinctUntilChanged, map, takeUntil, tap} from 'rxjs/operators';
 import {PaginationState} from '../../../../../shared/components/smart-grid/types/pagination-state';
 import {GridBridgeStore} from './services/grid-bridge.store';
 import {Grid} from './types/grid';
+import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-grid-bridge',
@@ -68,7 +69,7 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(this.createGridUpdater$())
+        merge(this.createGridUpdater$(), this.createColumnsUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -79,6 +80,21 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
             distinctUntilChanged(),
             tap(() => {
                 this.store.connect();
+            })
+        );
+    }
+
+    private createColumnsUpdater$(): Observable<ColDef[]> {
+        return this.store.state$.pipe(
+            map(state => state.columns),
+            distinctUntilChanged(),
+            tap(() => {
+                setTimeout(() => {
+                    if (commonHelpers.isDefined(this.gridApi)) {
+                        this.gridApi.sizeColumnsToFit();
+                        this.gridApi.redrawRows();
+                    }
+                });
             })
         );
     }

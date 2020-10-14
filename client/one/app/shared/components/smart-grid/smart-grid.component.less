@@ -18,17 +18,22 @@
     background-color: tint(@color--secondary, 90%);
 }
 
-.zem-smart-grid__table .ag-header-cell {
-    padding: @spacing--small;
-    color: @color--secondary;
-    font-weight: 500;
-    font-size: (@font-size--default)-1;
-    line-height: (@font-size--default)+3;
-    white-space: nowrap;
-}
-
 .zem-smart-grid__table .ag-header-cell:hover {
     background-color: tint(@color--secondary, 95%);
+}
+
+.zem-smart-grid__table .ag-pinned-left-header {
+    border-right: 1px solid tint(@color--secondary, 80%);
+}
+
+.zem-smart-grid__table .ag-pinned-right-header {
+    border-left: 1px solid tint(@color--secondary, 80%);
+}
+
+.zem-smart-grid__ag-header-component {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 //
@@ -88,6 +93,20 @@
 
 .zem-smart-grid__table .ag-cell-value {
     width: 100%;
+}
+
+//
+// ag-cell common styles
+//
+
+.zem-smart-grid__table
+    .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-range-right):not(.ag-cell-range-single-cell) {
+    border-right: 1px solid tint(@color--secondary, 80%);
+}
+
+.zem-smart-grid__table
+    .ag-cell.ag-cell-first-right-pinned:not(.ag-cell-range-left):not(.ag-cell-range-single-cell) {
+    border-left: 1px solid tint(@color--secondary, 80%);
 }
 
 //

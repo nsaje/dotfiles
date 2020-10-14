@@ -6,5 +6,13 @@ export interface GridRowData {
     breakdown?: any;
     entity?: GridRowEntity;
     group?: boolean;
-    stats: any;
+    stats: GridRowDataStats;
+}
+
+export interface GridRowDataStats {
+    [key: string]: GridRowDataStatsValue;
+}
+
+export interface GridRowDataStatsValue {
+    value: string | number;
 }

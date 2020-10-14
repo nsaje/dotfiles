@@ -1,4 +1,5 @@
 import {HeaderCellSort} from './header-cell.component.constants';
+import {HeaderParams} from './types/header-params';
 import {HeaderSortOptions} from './types/header-sort-options';
 
 export const DEFAULT_HEADER_CELL_SORT_ORDER: HeaderCellSort[] = [
@@ -9,4 +10,9 @@ export const DEFAULT_HEADER_CELL_SORT_ORDER: HeaderCellSort[] = [
 export const DEFAULT_HEADER_CELL_SORT_OPTIONS: HeaderSortOptions = {
     sortType: 'client',
     initialSort: HeaderCellSort.DESC,
+};
+
+export const DEFAULT_HEADER_PARAMS: Partial<HeaderParams> = {
+    internalFeature: false,
+    sortOptions: DEFAULT_HEADER_CELL_SORT_OPTIONS,
 };

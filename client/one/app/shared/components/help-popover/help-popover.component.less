@@ -1,4 +1,5 @@
 @import 'variables';
+@import './_help-popover.component.variables.less';
 
 .zem-help-popover {
     display: inline-block;
@@ -15,4 +16,9 @@
     background-color: fade(@color--secondary, 50%);
     border-radius: 50%;
     cursor: help;
+}
+
+.zem-help-popover__content {
+    display: block;
+    max-width: @zem-help-popover__content-max-width;
 }

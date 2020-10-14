@@ -1,7 +1,14 @@
 <span
     class="zem-help-popover__trigger"
-    [zemPopover]="content"
+    [zemPopover]="contentTooltip"
     [placement]="placement"
     triggers="mouseenter:mouseleave"
     container="body"
 ></span>
+
+<ng-template #contentTooltip>
+    <div
+        class="zem-help-popover__content {{ helpPopoverClass }}"
+        [innerHTML]="content"
+    ></div>
+</ng-template>

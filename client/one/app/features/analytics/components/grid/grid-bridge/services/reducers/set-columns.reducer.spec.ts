@@ -2,6 +2,7 @@ import {ColDef} from 'ag-grid-community';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
+import {GridColumnOrder} from '../../types/grid-column-order';
 import {GridBridgeStoreState} from '../grid-bridge.store.state';
 import {ColumnMapper} from '../mappers/column.mapper';
 import {ColumnMapperProvider} from '../mappers/column.provider';
@@ -9,6 +10,10 @@ import {SetColumnsAction, SetColumnsActionReducer} from './set-columns.reducer';
 
 class TestColumnMapper extends ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {
+        return this.getColDef(grid, column);
+    }
+
+    getColDef(grid: Grid, column: GridColumn): ColDef {
         return {
             headerName: column.data.name,
             field: column.data.field,
@@ -49,7 +54,7 @@ describe('SetColumnsActionReducer', () => {
                 },
                 visible: true,
                 disabled: false,
-                order: 'none',
+                order: GridColumnOrder.NONE,
             },
         ];
     });

@@ -1,9 +1,13 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {ColDef, Column} from 'ag-grid-community';
+import {InternalFeatureDirective} from '../../../../../directives/internal-feature/internal-feature.directive';
 import {HelpPopoverComponent} from '../../../../help-popover/help-popover.component';
 import {PopoverDirective} from '../../../../popover/popover.directive';
 import {HeaderCellComponent} from './header-cell.component';
-import {DEFAULT_HEADER_CELL_SORT_ORDER} from './header-cell.component.config';
+import {
+    DEFAULT_HEADER_CELL_SORT_ORDER,
+    DEFAULT_HEADER_PARAMS,
+} from './header-cell.component.config';
 import {HeaderCellSort} from './header-cell.component.constants';
 import {HeaderParams} from './types/header-params';
 
@@ -22,6 +26,7 @@ describe('HeaderCellComponent', () => {
                 HeaderCellComponent,
                 HelpPopoverComponent,
                 PopoverDirective,
+                InternalFeatureDirective,
             ],
         });
 
@@ -29,7 +34,7 @@ describe('HeaderCellComponent', () => {
         colId = 'test_field_id';
         colDef = {
             field: field,
-            sortingOrder: null,
+            sort: null,
         };
         column = {
             getColDef: () => {
@@ -37,9 +42,6 @@ describe('HeaderCellComponent', () => {
             },
             getColId: () => {
                 return colId;
-            },
-            getSort: () => {
-                return null;
             },
         };
         params = {
@@ -64,7 +66,12 @@ describe('HeaderCellComponent', () => {
         expect(component).toBeDefined();
         component.agInit(params as HeaderParams);
 
-        expect(component.params).toEqual(params as HeaderParams);
+        const componentParams = {
+            ...DEFAULT_HEADER_PARAMS,
+            ...params,
+        };
+
+        expect(component.params).toEqual(componentParams as HeaderParams);
         expect(component.colDef).toEqual(colDef);
         expect(component.colId).toEqual(colId);
         expect(component.field).toEqual(field);

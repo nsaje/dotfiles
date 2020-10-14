@@ -855,6 +855,13 @@ export enum CostMode {
     ANY = 'any',
 }
 
+export enum DefaultFractionSize {
+    NUMBER = 0,
+    CURRENCY = 2,
+    PERCENT = 2,
+    SECONDS = 1,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1566,12 +1573,7 @@ export const APP_CONSTANTS = {
         OK: 'ok',
         ERRORS: 'errors',
     },
-    defaultFractionSize: {
-        NUMBER: 0,
-        CURRENCY: 2,
-        PERCENT: 2,
-        SECONDS: 1,
-    },
+    defaultFractionSize: DefaultFractionSize,
     interestCategory: {
         ENTERTAINMENT: 'entertainment',
         FUN_QUIZZES: 'fun_quizzes',

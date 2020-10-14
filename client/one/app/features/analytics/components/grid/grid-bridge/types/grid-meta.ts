@@ -1,5 +1,6 @@
 import {PaginationOptions} from '../../../../../../shared/components/smart-grid/types/pagination-options';
 import {GridRenderingEngineType} from '../../../../analytics.constants';
+import {GridMetaData} from './grid-meta-data';
 
 // meta information and functionality
 export interface GridMeta {
@@ -15,6 +16,6 @@ export interface GridMeta {
     collapseService: any; // zemGridCollapseService
     selectionService: any; // zemGridSelectionService
     pubsub: any; // zemGridPubSub - internal message queue
-    data: any; // meta-data retrieved through Endpoint - columns definitions
+    data: GridMetaData; // meta-data retrieved through Endpoint - columns definitions
     scope: any; // zem-grid scope used for running $digest and $emit internally
 }

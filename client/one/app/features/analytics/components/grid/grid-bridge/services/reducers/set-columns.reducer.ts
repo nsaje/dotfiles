@@ -7,7 +7,7 @@ import {ColumnMapper} from '../mappers/column.mapper';
 import {ColumnMapperProvider} from '../mappers/column.provider';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridColumn} from '../../types/grid-column';
-import {StringColumnMapper} from '../mappers/string.mapper';
+import {DefaultColumnMapper} from '../mappers/default.mapper';
 import {
     BASE_GRID_COLUMN_TYPES,
     EXTERNAL_LINK_COLUMN_TYPES,
@@ -26,47 +26,47 @@ export class SetColumnsActionReducer extends StoreReducer<
     >[] = [
         {
             provide: GridColumnTypes.BREAKDOWN,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.ACTIONS,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.CHECKBOX,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.STATUS,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.SUBMISSION_STATUS,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.PERFORMANCE_INDICATOR,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.EXTERNAL_LINK,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.BASE_FIELD,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.THUMBNAIL,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
         {
             provide: GridColumnTypes.BID_MODIFIER_FIELD,
-            useClass: StringColumnMapper,
+            useClass: DefaultColumnMapper,
         },
     ];
 

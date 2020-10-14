@@ -99,6 +99,8 @@ angular
                 grid.meta.api.setOrder(orderField);
                 grid.meta.api.loadData();
                 zemGridStorageService.saveOrder(grid);
+
+                pubsub.notify(pubsub.EVENTS.EXT_ORDER_UPDATED);
             }
         }
 

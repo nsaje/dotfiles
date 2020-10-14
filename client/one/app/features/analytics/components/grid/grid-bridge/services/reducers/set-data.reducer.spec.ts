@@ -92,11 +92,13 @@ describe('SetDataActionReducer', () => {
                     },
                 },
             ] as any[],
-            totals: {
-                test_field: {
-                    value: 'TOTALS OF TEST VALUE',
+            totals: [
+                {
+                    test_field: {
+                        value: 'TOTALS OF TEST VALUE',
+                    },
                 },
-            } as any,
+            ] as any[],
             paginationOptions: {
                 type: 'server',
                 page: 1,

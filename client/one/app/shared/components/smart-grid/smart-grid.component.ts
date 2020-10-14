@@ -21,6 +21,7 @@ import {
     ColDef,
     RowSelectedEvent,
     SelectionChangedEvent,
+    GridSizeChangedEvent,
 } from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
@@ -35,6 +36,7 @@ import {PageSizeConfig} from './types/page-size-config';
 import {PaginationState} from './types/pagination-state';
 import {DOCUMENT} from '@angular/common';
 import {ResizeObserverHelper} from '../../helpers/resize-observer.helper';
+import {HeaderCellComponent} from './components/cells/header-cell/header-cell.component';
 
 @Component({
     selector: 'zem-smart-grid',
@@ -92,6 +94,7 @@ export class SmartGridComponent
             frameworkComponents: {
                 loadingOverlayComponent: GridLoadingOverlayComponent,
                 noRowsOverlayComponent: NoRowsOverlayComponent,
+                agColumnHeader: HeaderCellComponent,
             },
         };
     }
@@ -151,6 +154,11 @@ export class SmartGridComponent
         this.gridApi = params.api;
         this.gridApi.sizeColumnsToFit();
         this.gridReady.emit(params);
+    }
+
+    onGridSizeChanged($event: GridSizeChangedEvent) {
+        $event.api.sizeColumnsToFit();
+        $event.api.redrawRows();
     }
 
     onPageChange(page: number) {

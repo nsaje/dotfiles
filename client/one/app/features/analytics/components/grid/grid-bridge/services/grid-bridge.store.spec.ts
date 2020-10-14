@@ -13,6 +13,7 @@ import {
 } from '../../../../analytics.constants';
 import {Grid} from '../types/grid';
 import {GridColumn} from '../types/grid-column';
+import {GridColumnOrder} from '../types/grid-column-order';
 import {GridBridgeStore} from './grid-bridge.store';
 import {GridBridgeStoreState} from './grid-bridge.store.state';
 import {
@@ -87,7 +88,7 @@ describe('GridBridgeStore', () => {
                 },
                 visible: true,
                 disabled: false,
-                order: 'none',
+                order: GridColumnOrder.DESC,
             },
         ];
         mockedGrid = {
@@ -195,11 +196,13 @@ describe('GridBridgeStore', () => {
                     },
                 },
             ] as any[],
-            totals: {
-                test_field: {
-                    value: 'TOTALS OF TEST VALUE',
+            totals: [
+                {
+                    test_field: {
+                        value: 'TOTALS OF TEST VALUE',
+                    },
                 },
-            } as any,
+            ] as any[],
             paginationOptions: {
                 type: 'server',
                 page: 1,

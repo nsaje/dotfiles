@@ -19,7 +19,7 @@ export class SetDataActionReducer extends StoreReducer<
             data: {
                 ...state.data,
                 rows: action.payload.body.rows.map(row => row.data.stats),
-                totals: action.payload.footer.row.data.stats,
+                totals: [action.payload.footer.row.data.stats],
                 pagination: {
                     ...state.data.pagination,
                     ...action.payload.body.pagination,
