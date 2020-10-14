@@ -23,8 +23,7 @@ class RuleHistoryInstanceTest(TestCase):
             history.failure_reason = failure_reason
             if failure_reason == constants.RuleFailureReason.UNEXPECTED_ERROR:
                 self.assertEqual(
-                    "Automation rule failed to be applied because of an unforeseen error.",
-                    history.get_formatted_changes(),
+                    "Automation rule failed to apply because of an unforeseen error.", history.get_formatted_changes()
                 )
             else:
                 self.assertNotEqual("N/A", history.get_formatted_changes())
