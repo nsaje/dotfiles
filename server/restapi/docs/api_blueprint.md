@@ -741,9 +741,9 @@ adobe    |                   |                                       |
 
 Targeting        | Property | Property  | Type                                          | Description
 -----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
-devices          |          |           | array[[device](#device)]                      | A list of default device types that will be set on newly created ad groups.
-environments     |          |           | array[[environment](#environment)]            | A list of default environments that will be set on newly created ad groups.
-os               |          |           | array[[operatingSystem](#os-targeting)        | A list of default operating systems and operating system versions that will be se on newly created ad groups.
+devices (deprecated)         |          |           | array[[device](#device)]                      | A list of default device types that will be set on newly created ad groups.
+environments (deprecated)     |          |           | array[[environment](#environment)]            | A list of default environments that will be set on newly created ad groups.
+os (deprecated)               |          |           | array[[operatingSystem](#os-targeting)        | A list of default operating systems and operating system versions that will be se on newly created ad groups.
 publisherGroups  |          |           |                                               |
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs

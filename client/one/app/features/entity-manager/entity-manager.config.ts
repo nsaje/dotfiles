@@ -1483,7 +1483,7 @@ export const INCLUDE_EXCLUDE_TYPES = [
 
 export const DEFAULT_ZIP_TARGETING_LOCATION_KEY = 'US';
 
-export const CONNECTION_TYPE_TARGETING_OPTIONS: ImageCheckboxInputGroupItem[] = [
+export const TARGETING_CONNECTION_TYPE_OPTIONS: ImageCheckboxInputGroupItem[] = [
     {
         value: ConnectionType.WIFI,
         displayValue: 'Wi-Fi',

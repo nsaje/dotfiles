@@ -89,7 +89,7 @@
                 <zem-expandable-section
                     class="zem-expandable-section"
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(state.entity.dayparting)
+                        expandedSectionsByDefault[expandableSection.SCHEDULING]
                     "
                     [expandLabel]="'Show advanced settings (Dayparting)'"
                     [collapseLabel]="'Hide advanced settings (Dayparting)'"
@@ -182,11 +182,7 @@
                 <zem-expandable-section
                     class="zem-expandable-section"
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(
-                            store.state.entity
-                                .clickCappingDailyAdGroupMaxClicks,
-                            store.state.entity.frequencyCapping
-                        )
+                        expandedSectionsByDefault[expandableSection.BUDGET]
                     "
                     [expandLabel]="
                         'Show advanced settings (Daily click cap, Daily impression frequency cap)'
@@ -346,13 +342,9 @@
 
                 <zem-expandable-section
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(
-                            state.entity.targeting.os,
-                            state.entity.targeting.environments,
-                            state.entity.targeting.browsers?.included,
-                            state.entity.targeting.browsers?.excluded,
-                            state.entity.targeting.connectionTypes
-                        )
+                        expandedSectionsByDefault[
+                            expandableSection.DEVICE_TARGETING
+                        ]
                     "
                     [expandLabel]="
                         'Show advanced settings (Advanced device targeting options)'
@@ -567,10 +559,9 @@
                 <zem-expandable-section
                     class="zem-expandable-section"
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(
-                            state.entity.targeting.geo.included.postalCodes,
-                            state.entity.targeting.geo.excluded.postalCodes
-                        )
+                        expandedSectionsByDefault[
+                            expandableSection.GEOTARGETING
+                        ]
                     "
                     [expandLabel]="
                         'Show advanced settings (ZIP / Postal code targeting, Language matching)'
@@ -643,10 +634,7 @@
                 <zem-expandable-section
                     class="zem-expandable-section"
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(
-                            state.entity.redirectPixelUrls,
-                            state.entity.redirectJavascript
-                        )
+                        expandedSectionsByDefault[expandableSection.TRACKING]
                     "
                     [expandLabel]="
                         'Show advanced settings (3rd party pixel tracking)'
@@ -754,13 +742,7 @@
                         !authStore.hasPermission('zemauth.disable_public_rcs')
                     "
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(
-                            state.entity.targeting.customAudiences.included,
-                            state.entity.targeting.customAudiences.excluded,
-                            state.entity.targeting.retargetingAdGroups.included,
-                            state.entity.targeting.retargetingAdGroups.included,
-                            state.entity.targeting.audience
-                        )
+                        expandedSectionsByDefault[expandableSection.AUDIENCE]
                     "
                     [expandLabel]="
                         'Show advanced settings (Retargeting, BlueKai targeting)'

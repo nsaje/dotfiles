@@ -11,6 +11,7 @@ import {
 import {
     TARGETING_DEVICE_OPTIONS,
     TARGETING_ENVIRONMENT_OPTIONS,
+    TARGETING_CONNECTION_TYPE_OPTIONS,
     ENTITY_MANAGER_CONFIG,
 } from '../../entity-manager.config';
 import {AdGroupSettingsStore} from '../../services/ad-group-settings-store/ad-group-settings.store';
@@ -36,6 +37,12 @@ import {ImageCheckboxInputGroupItem} from '../../../../shared/components/image-c
 import {Router} from '@angular/router';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {AdGroupSettingsStoreState} from '../../services/ad-group-settings-store/ad-group-settings.store.state';
+import {
+    EXPANDABLE_SECTIONS,
+    EXPANDED_SECTIONS_CONFIG,
+} from './ad-group-settings-drawer.config';
+import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
+import {ExpandableSection} from './ad-group-settings.drawer.constants';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -59,6 +66,18 @@ export class AdGroupSettingsDrawerView
 
     targetingDeviceOptions: ImageCheckboxInputGroupItem[] = TARGETING_DEVICE_OPTIONS;
     targetingEnvironmentOptions: ImageCheckboxInputGroupItem[] = TARGETING_ENVIRONMENT_OPTIONS;
+    targetingConnectionTypeOptions: ImageCheckboxInputGroupItem[] = TARGETING_CONNECTION_TYPE_OPTIONS;
+
+    expandableSection = ExpandableSection;
+
+    expandedSectionsByDefault: {[key in ExpandableSection]: boolean} = {
+        [ExpandableSection.SCHEDULING]: false,
+        [ExpandableSection.BUDGET]: false,
+        [ExpandableSection.DEVICE_TARGETING]: false,
+        [ExpandableSection.GEOTARGETING]: false,
+        [ExpandableSection.TRACKING]: false,
+        [ExpandableSection.AUDIENCE]: false,
+    };
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -78,9 +97,19 @@ export class AdGroupSettingsDrawerView
         setTimeout(() => {
             this.open();
             if (this.isNewEntity) {
-                this.store.loadEntityDefaults(this.newEntityParentId);
+                this.store
+                    .loadEntityDefaults(this.newEntityParentId)
+                    .then(() => {
+                        this.expandedSectionsByDefault = this.getExpandedSectionsByDefault(
+                            this.store.state.entity
+                        );
+                    });
             } else {
-                this.store.loadEntity(this.entityId);
+                this.store.loadEntity(this.entityId).then(() => {
+                    this.expandedSectionsByDefault = this.getExpandedSectionsByDefault(
+                        this.store.state.entity
+                    );
+                });
             }
         }, 1000);
     }
@@ -119,20 +148,6 @@ export class AdGroupSettingsDrawerView
                 this.close();
             }
         }
-    }
-
-    doesAnySettingHaveValue(...values: any[]): boolean {
-        if (!commonHelpers.isDefined(values) || values.length < 1) {
-            return false;
-        }
-        let settingHasValue = false;
-        for (const value of values) {
-            if (commonHelpers.isNotEmpty(value)) {
-                settingHasValue = true;
-                break;
-            }
-        }
-        return settingHasValue;
     }
 
     async saveSettings() {
@@ -225,5 +240,19 @@ export class AdGroupSettingsDrawerView
                     });
                 }
             });
+    }
+
+    private getExpandedSectionsByDefault(
+        entity: AdGroup
+    ): {[key in ExpandableSection]: boolean} {
+        const expandedSectionsByDefault = {} as {
+            [key in ExpandableSection]: boolean;
+        };
+        EXPANDABLE_SECTIONS.forEach(section => {
+            expandedSectionsByDefault[section] = EXPANDED_SECTIONS_CONFIG[
+                section
+            ](entity);
+        });
+        return expandedSectionsByDefault;
     }
 }

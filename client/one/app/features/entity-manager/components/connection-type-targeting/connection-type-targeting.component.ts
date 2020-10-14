@@ -8,7 +8,7 @@ import {
     EventEmitter,
 } from '@angular/core';
 import {ConnectionType} from '../../../../app.constants';
-import {CONNECTION_TYPE_TARGETING_OPTIONS} from '../../entity-manager.config';
+import {TARGETING_CONNECTION_TYPE_OPTIONS} from '../../entity-manager.config';
 
 @Component({
     selector: 'zem-connection-type-targeting',
@@ -25,5 +25,5 @@ export class ConnectionTypeTargetingComponent {
         ConnectionType
     >();
 
-    connectionTypeOptions = CONNECTION_TYPE_TARGETING_OPTIONS;
+    connectionTypeOptions = TARGETING_CONNECTION_TYPE_OPTIONS;
 }

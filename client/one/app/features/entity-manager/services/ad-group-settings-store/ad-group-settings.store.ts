@@ -40,7 +40,7 @@ import {
     TARGETING_DEVICE_OPTIONS,
     TARGETING_ENVIRONMENT_OPTIONS,
     DEFAULT_ZIP_TARGETING_LOCATION_KEY,
-    CONNECTION_TYPE_TARGETING_OPTIONS,
+    TARGETING_CONNECTION_TYPE_OPTIONS,
 } from '../../entity-manager.config';
 import {isEmpty} from '../../../../shared/helpers/array.helpers';
 import {GeolocationsService} from '../../../../core/geolocations/services/geolocations.service';
@@ -99,41 +99,47 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     loadEntityDefaults(campaignId: string) {
-        this.adGroupService
-            .defaults(campaignId, this.requestStateUpdater)
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe(
-                (adGroupWithExtras: AdGroupWithExtras) => {
-                    this.setState({
-                        ...this.state,
-                        entity: adGroupWithExtras.adGroup,
-                        extras: adGroupWithExtras.extras,
-                    });
-                    this.loadSources(this.state.extras.agencyId);
-                },
-                error => {}
-            );
+        return new Promise<void>(resolve => {
+            this.adGroupService
+                .defaults(campaignId, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (adGroupWithExtras: AdGroupWithExtras) => {
+                        this.setState({
+                            ...this.state,
+                            entity: adGroupWithExtras.adGroup,
+                            extras: adGroupWithExtras.extras,
+                        });
+                        this.loadSources(this.state.extras.agencyId);
+                        resolve();
+                    },
+                    error => {}
+                );
+        });
     }
 
     loadEntity(id: string) {
-        this.adGroupService
-            .get(id, this.requestStateUpdater)
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe(
-                (adGroupWithExtras: AdGroupWithExtras) => {
-                    this.originalEntity = clone(adGroupWithExtras.adGroup);
-                    this.setState({
-                        ...this.state,
-                        entity: adGroupWithExtras.adGroup,
-                        extras: adGroupWithExtras.extras,
-                    });
-                    this.loadSources(this.state.extras.agencyId);
-                    this.loadSelectedLocations(
-                        getGeolocationsKeys(this.state.entity.targeting.geo)
-                    );
-                },
-                error => {}
-            );
+        return new Promise<void>(resolve => {
+            this.adGroupService
+                .get(id, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (adGroupWithExtras: AdGroupWithExtras) => {
+                        this.originalEntity = clone(adGroupWithExtras.adGroup);
+                        this.setState({
+                            ...this.state,
+                            entity: adGroupWithExtras.adGroup,
+                            extras: adGroupWithExtras.extras,
+                        });
+                        this.loadSources(this.state.extras.agencyId);
+                        this.loadSelectedLocations(
+                            getGeolocationsKeys(this.state.entity.targeting.geo)
+                        );
+                        resolve();
+                    },
+                    error => {}
+                );
+        });
     }
 
     validateEntity() {
@@ -586,7 +592,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     toggleConnectionTypeTargeting(connectionType: ConnectionType) {
         const oldConnectionTypes: ConnectionType[] = this.state.entity.targeting
             .connectionTypes;
-        const allConnectionTypes: ConnectionType[] = CONNECTION_TYPE_TARGETING_OPTIONS.map(
+        const allConnectionTypes: ConnectionType[] = TARGETING_CONNECTION_TYPE_OPTIONS.map(
             option => option.value as ConnectionType
         );
         const newConnectionTypes: ConnectionType[] = this.toggleTargetingItem(

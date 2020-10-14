@@ -60,6 +60,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_os = campaign_settings.target_os
         new_settings.target_environments = campaign_settings.target_environments
+        new_settings.target_connection_types = [constants.ConnectionType.WIFI, constants.ConnectionType.CELLULAR]
         new_settings.ad_group_name = ad_group.name
         return new_settings
 

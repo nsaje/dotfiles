@@ -11,6 +11,7 @@ class CampaignSettingsManager(core.common.QuerySetManager):
         new_settings.language = dash.constants.Language.ENGLISH
         new_settings.autopilot = autopilot
         new_settings.target_devices = dash.constants.AdTargetDevice.get_all()
+        new_settings.target_environments = [dash.constants.Environment.SITE, dash.constants.Environment.APP]
 
         if request:
             new_settings.campaign_manager = request.user
