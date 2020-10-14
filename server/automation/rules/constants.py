@@ -440,11 +440,13 @@ class RuleFailureReason(ConstantBase):
     UNEXPECTED_ERROR = 1
     CAMPAIGN_AUTOPILOT_ACTIVE = 2
     BUDGET_AUTOPILOT_INACTIVE = 3
+    NO_CPA_GOAL = 4
 
     _VALUES = {
         UNEXPECTED_ERROR: "Unexpected error",
         CAMPAIGN_AUTOPILOT_ACTIVE: "Campaign autopilot active",
         BUDGET_AUTOPILOT_INACTIVE: "Budget autopilot inactive",
+        NO_CPA_GOAL: "No CPA goal",
     }
 
 

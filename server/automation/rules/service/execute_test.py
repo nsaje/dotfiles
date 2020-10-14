@@ -288,25 +288,32 @@ class ExecuteRulesDailyRunTest(TestCase):
     def test_execute_rules_daily_run_known_error(self, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_apply.side_effect = exceptions.CampaignAutopilotActive
-        rule = magic_mixer.blend(
-            Rule,
-            agency=self.agency,
-            target_type=constants.TargetType.PUBLISHER,
-            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
-            ad_groups_included=[ad_group],
-        )
 
-        self.assertFalse(RuleHistory.objects.exists())
-        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+        all_known_errors = [
+            val
+            for val in exceptions.__dict__.values()
+            if isinstance(val, type)
+            and issubclass(val, exceptions.ApplyFailedBase)
+            and val != exceptions.ApplyFailedBase
+        ]
+        for exc in all_known_errors:
+            mock_apply.side_effect = exc
+            # all ApplyFailedBase subclasses should be handled because they represent a known execution error
+            rule = magic_mixer.blend(
+                Rule,
+                agency=self.agency,
+                target_type=constants.TargetType.PUBLISHER,
+                action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+                ad_groups_included=[ad_group],
+            )
+            self.assertFalse(rule.history.exists())
 
-        execute.execute_rules_daily_run()
+            execute.execute_rules([rule])
 
-        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
-        history = RuleHistory.objects.get()
-        self.assertEqual(rule, history.rule)
-        self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
-        self.assertEqual(None, history.changes)
+            history = rule.history.latest("id")
+            self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
+            self.assertEqual(None, history.changes)
+            self.assertNotEqual(constants.RuleFailureReason.UNEXPECTED_ERROR, history.failure_reason)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.fetch.stats._format", mock.MagicMock())
@@ -335,6 +342,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(rule, history.rule)
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual(None, history.changes)
+        self.assertEqual(constants.RuleFailureReason.UNEXPECTED_ERROR, history.failure_reason)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.apply.apply_rule")

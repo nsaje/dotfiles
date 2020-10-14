@@ -37,7 +37,7 @@ def execute_rules(rules: Sequence[models.Rule]) -> None:
 
     for target_type, rules in rules_by_target_type.items():
         rules_map = helpers.get_rules_by_ad_group_map(rules, filter_active=False)
-        _apply_rules(target_type, rules_map)
+        _fetch_data_and_apply_rules(target_type, rules_map)
 
 
 def execute_rules_daily_run() -> None:
@@ -214,6 +214,8 @@ def _get_failure_reason(exception):
         return constants.RuleFailureReason.CAMPAIGN_AUTOPILOT_ACTIVE
     elif isinstance(exception, exceptions.BudgetAutopilotInactive):
         return constants.RuleFailureReason.BUDGET_AUTOPILOT_INACTIVE
+    elif isinstance(exception, exceptions.NoCPAGoal):
+        return constants.RuleFailureReason.NO_CPA_GOAL
     elif exception:
         return constants.RuleFailureReason.UNEXPECTED_ERROR
     else:
