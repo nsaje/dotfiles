@@ -57,7 +57,9 @@
             [timeRange]="ruleCondition.metric.window"
             [hasTimeRangeModifier]="selectedMetricConfig.hasTimeRangeModifier"
             [valueModifier]="selectedMetricConfig.valueModifier"
-            [modifierErrors]="conditionErrors?.metric?.type"
+            [modifierErrors]="
+                conditionErrors?.metric?.type || conditionErrors?.metric?.window
+            "
             [isDisabled]="isDisabled"
             (valueChange)="updateMetricModifier($event)"
             (timeRangeChange)="updateMetricWindow($event)"

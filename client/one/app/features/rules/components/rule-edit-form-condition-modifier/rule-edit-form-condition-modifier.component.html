@@ -58,8 +58,13 @@
     </span>
 </div>
 
-<div *ngIf="hasTimeRangeModifier">
-    <div class="zem-rule-edit-form__section-title">Time range:</div>
+<div *ngIf="hasTimeRangeModifier" class="zem-rule-edit-form__section--error">
+    <div
+        class="zem-rule-edit-form__section-title"
+        [class.zem-rule-edit-form__section-title--error]="modifierErrors"
+    >
+        Time range:
+    </div>
     <zem-radio-input
         class="zem-radio-input zem-rule-edit-form-condition-modifier__value-modifier-item"
         *ngFor="let availableTimeRange of availableTimeRanges"
@@ -70,4 +75,10 @@
     >
         {{ availableTimeRange.label }}
     </zem-radio-input>
+    <div
+        class="zem-message zem-message--error"
+        *ngFor="let error of modifierErrors"
+    >
+        {{ error }}
+    </div>
 </div>

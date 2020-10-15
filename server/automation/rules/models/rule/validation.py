@@ -276,13 +276,13 @@ class RuleValidationMixin:
                         condition_errors["operator"] = str(e)
                     if isinstance(e, exceptions.InvalidLeftOperandType):
                         condition_errors.setdefault("metric", {})
-                        condition_errors["metric"]["type"] = str(e)
+                        condition_errors["metric"].setdefault("type", []).append(str(e))
                     if isinstance(e, exceptions.InvalidLeftOperandModifier):
                         condition_errors.setdefault("metric", {})
-                        condition_errors["metric"]["modifier"] = str(e)
+                        condition_errors["metric"].setdefault("modifier", []).append(str(e))
                     if isinstance(e, exceptions.InvalidLeftOperandWindow):
                         condition_errors.setdefault("metric", {})
-                        condition_errors["metric"]["window"] = str(e)
+                        condition_errors["metric"].setdefault("window", []).append(str(e))
                     if isinstance(e, exceptions.InvalidConversionPixel):
                         condition_errors.setdefault("metric", {})
                         condition_errors["metric"].setdefault("conversion_pixel", []).append(str(e))
@@ -294,13 +294,13 @@ class RuleValidationMixin:
                         condition_errors["metric"].setdefault("conversion_pixel_attribution", []).append(str(e))
                     if isinstance(e, exceptions.InvalidRightOperandType):
                         condition_errors.setdefault("value", {})
-                        condition_errors["value"]["type"] = str(e)
+                        condition_errors["value"].setdefault("type", []).append(str(e))
                     if isinstance(e, exceptions.InvalidRightOperandValue):
                         condition_errors.setdefault("value", {})
-                        condition_errors["value"]["value"] = str(e)
+                        condition_errors["value"].setdefault("value", []).append(str(e))
                     if isinstance(e, exceptions.InvalidRightOperandWindow):
                         condition_errors.setdefault("value", {})
-                        condition_errors["value"]["window"] = str(e)
+                        condition_errors["value"].setdefault("window", []).append(str(e))
             errors.append(condition_errors)
         if any(errors):
             raise exceptions.InvalidRuleConditions(conditions_errors=errors)
