@@ -1,3 +1,6 @@
+var Level = require('../../../../app.constants').Level;
+var Breakdown = require('../../../../app.constants').Breakdown;
+
 angular
     .module('one.widgets')
     .factory('zemGridIntegrationService', function(
@@ -227,12 +230,23 @@ angular
                 zemSelectionService.setSelection(selection);
             }
 
-            var smartGridSupportedLevels = [];
-            var smartGridSupportedBreakdowns = [];
+            var smartGridSupportedLevels = [Level.ALL_ACCOUNTS];
+            var smartGridSupportedBreakdowns = [
+                Breakdown.COUNTRY,
+                Breakdown.STATE,
+                Breakdown.DMA,
+                Breakdown.DEVICE,
+                Breakdown.ENVIRONMENT,
+                Breakdown.OPERATING_SYSTEM,
+                Breakdown.BROWSER,
+                Breakdown.CONNECTION_TYPE,
+            ];
 
-            // TODO (msuber): add permission check
             function getGridRenderingEngine(level, breakdown) {
                 if (
+                    zemAuthStore.hasPermission(
+                        'zemauth.can_use_smart_grid_in_analytics_view'
+                    ) &&
                     smartGridSupportedLevels.includes(level) &&
                     smartGridSupportedBreakdowns.includes(breakdown)
                 ) {

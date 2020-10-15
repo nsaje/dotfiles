@@ -226,4 +226,5 @@ class User(
             ("can_use_connection_type_targeting", "User can use connection type targeting."),
             ("can_see_browser_reporting", "User can see browser reporting"),
             ("can_see_connection_type_reporting", "User can see connection type reporting"),
+            ("can_use_smart_grid_in_analytics_view", "User can use smart grid in analytics view"),
         )
