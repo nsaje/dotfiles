@@ -22,13 +22,22 @@ export class CanActivateBreakdownGuard implements CanActivate {
             return false;
         }
 
-        if (route.params.breakdown === BreakdownParam.BROWSER) {
+        if (!this.canSeeBreakdown(route.params.breakdown)) {
+            const parentUrl = this.getParentUrl(route, state);
+            this.router.navigate([parentUrl]);
+            return false;
+        }
+        return true;
+    }
+
+    private canSeeBreakdown(breakdown: BreakdownParam): boolean {
+        if (breakdown === BreakdownParam.BROWSER) {
             return this.authStore.hasPermission(
                 'zemauth.can_see_browser_reporting'
             );
         }
 
-        if (route.params.breakdown === BreakdownParam.CONNECTION_TYPE) {
+        if (breakdown === BreakdownParam.CONNECTION_TYPE) {
             return this.authStore.hasPermission(
                 'zemauth.can_see_connection_type_reporting'
             );

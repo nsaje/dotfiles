@@ -28,6 +28,7 @@ import {ArchivedModule} from './features/archived/archived.module';
 import {NewEntityAnalyticsMockModule} from './features/new-entity-analytics-mock/new-entity-analytics-mock.module';
 import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.guard';
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
+import {CanActivateUserGuard} from './route-guards/canActivateUser.guard';
 import {SidebarContentModule} from './features/sidebar-content/sidebar-content.module';
 import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 import {UsersModule} from './features/users/users.module';
@@ -96,6 +97,7 @@ if (APP_CONFIG.env.prod) {
     providers: [
         CanActivateDashboardGuard,
         CanActivateRedirectGuard,
+        CanActivateUserGuard,
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         {
             provide: '$scope',

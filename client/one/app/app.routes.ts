@@ -15,13 +15,18 @@ import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.gua
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
 import {USERS_ROUTES} from './features/users/users.routes';
 import {RULES_ROUTES} from './features/rules/rules.routes';
+import {CanActivateUserGuard} from './route-guards/canActivateUser.guard';
 
 export const APP_ROUTES: Routes = [
     {path: '', redirectTo: RoutePathName.APP_BASE, pathMatch: 'full'},
     {
         path: RoutePathName.APP_BASE,
         component: DashboardView,
-        canActivate: [CanActivateDashboardGuard, CanActivateRedirectGuard],
+        canActivate: [
+            CanActivateUserGuard,
+            CanActivateDashboardGuard,
+            CanActivateRedirectGuard,
+        ],
         children: [
             {
                 path: RoutePathName.ANALYTICS,
@@ -70,6 +75,10 @@ export const APP_ROUTES: Routes = [
             {path: '**', redirectTo: `/${RoutePathName.APP_BASE}`},
         ],
     },
-    {path: RoutePathName.ERROR_FORBIDDEN, component: ErrorForbiddenView},
+    {
+        path: RoutePathName.ERROR_FORBIDDEN,
+        component: ErrorForbiddenView,
+        canActivate: [CanActivateUserGuard],
+    },
     {path: '**', redirectTo: RoutePathName.APP_BASE},
 ];

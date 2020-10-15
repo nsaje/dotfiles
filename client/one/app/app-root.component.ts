@@ -15,7 +15,6 @@ import {Subject} from 'rxjs';
 import {GoogleAnalyticsService} from './core/google-analytics/google-analytics.service';
 import {MixpanelService} from './core/mixpanel/mixpanel.service';
 import {EventManager} from '@angular/platform-browser';
-import {AuthStore} from './core/auth/services/auth.store';
 import {PosthogService} from './core/posthog/posthog.service';
 
 @Component({
@@ -28,7 +27,6 @@ export class AppRootComponent implements OnInit, OnDestroy {
     cssClass = 'zem-app-root';
 
     isInitialized: boolean = false;
-    isRendered: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private removeResizeEventListener: Function;
@@ -36,7 +34,6 @@ export class AppRootComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private authStore: AuthStore,
         private googleAnalyticsService: GoogleAnalyticsService,
         private mixpanelService: MixpanelService,
         private posthogService: PosthogService,
@@ -46,23 +43,16 @@ export class AppRootComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.authStore.initStore().then((success: boolean) => {
-            if (success) {
-                this.zemInitializationService.initApp();
-                this.googleAnalyticsService.init();
-                this.mixpanelService.init();
-                this.posthogService.init();
-                this.isInitialized = true;
-                this.changeDetectorRef.markForCheck();
-            }
-        });
-
         this.router.events
             .pipe(takeUntil(this.ngUnsubscribe$))
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => {
                 setTimeout(() => {
-                    this.isRendered = true;
+                    this.zemInitializationService.initApp();
+                    this.googleAnalyticsService.init();
+                    this.mixpanelService.init();
+                    this.posthogService.init();
+                    this.isInitialized = true;
                     this.changeDetectorRef.markForCheck();
                 }, 250);
                 this.ngUnsubscribe$.next();
