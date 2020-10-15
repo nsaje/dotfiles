@@ -14,7 +14,7 @@ def getPreviousBuildResult() {
     return ""
 }
 
-properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
+// properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
 
 node {
     try {
