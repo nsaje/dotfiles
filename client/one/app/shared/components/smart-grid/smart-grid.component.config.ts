@@ -4,9 +4,11 @@ import {PageSizeConfig} from './types/page-size-config';
 export const DEFAULT_GRID_OPTIONS: GridOptions = {
     headerHeight: 35,
     rowHeight: 35,
+    rowBuffer: 100,
     domLayout: 'autoHeight',
     enableCellTextSelection: true,
     ensureDomOrder: true,
+    animateRows: false,
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
     suppressRowClickSelection: true,

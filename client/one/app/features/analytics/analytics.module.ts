@@ -24,8 +24,8 @@ import {AddToPublishersFormComponent} from './components/grid/actions/add-to-pub
 import {AlertsComponent} from './components/grid/alerts/alerts.component';
 import {AlertsStore} from './services/alerts-store/alerts.store';
 import {GridBridgeComponent} from './components/grid/grid-bridge/grid-bridge.component';
-import {GridBridgeStore} from './components/grid/grid-bridge/services/grid-bridge.store';
 import {ConversionPixelSelectorComponent} from './components/chart/components/conversion-pixel-selector/conversion-pixel-selector.component';
+import {BreakdownCellComponent} from './components/grid/cells/breakdown-cell/breakdown-cell.component';
 
 @NgModule({
     declarations: [
@@ -50,6 +50,7 @@ import {ConversionPixelSelectorComponent} from './components/chart/components/co
         AlertsComponent,
         GridBridgeComponent,
         ConversionPixelSelectorComponent,
+        BreakdownCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -66,6 +67,7 @@ import {ConversionPixelSelectorComponent} from './components/chart/components/co
         AddToPublishersActionComponent,
         GridBridgeComponent,
         ConversionPixelSelectorComponent,
+        BreakdownCellComponent,
     ],
 })
 export class AnalyticsModule {}

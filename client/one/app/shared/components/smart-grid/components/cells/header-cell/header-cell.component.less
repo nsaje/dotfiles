@@ -20,13 +20,8 @@
     margin-right: 5px;
 }
 
-.zem-header-cell__data-item {
-    display: inline-block;
+.zem-header-cell__data-item:not(:last-child) {
     margin-right: 5px;
-}
-
-.zem-header-cell__data-item:last-child {
-    margin-right: 0;
 }
 
 .zem-header-cell__sort {
@@ -34,7 +29,6 @@
 }
 
 .zem-header-cell__name {
-    display: inline-block;
     color: @color--secondary;
     font-weight: 500;
     font-size: (@font-size--default)-1;
@@ -49,7 +43,6 @@
 }
 
 .zem-header-cell__icon {
-    display: inline-block;
     width: 14px;
     height: 14px;
 }

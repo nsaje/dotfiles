@@ -7,12 +7,13 @@ import {ColumnMapper} from '../mappers/column.mapper';
 import {ColumnMapperProvider} from '../mappers/column.provider';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridColumn} from '../../types/grid-column';
-import {DefaultColumnMapper} from '../mappers/default.mapper';
+import {BreakdownColumnMapper} from '../mappers/breakdown.mapper';
 import {
     BASE_GRID_COLUMN_TYPES,
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../../../../analytics.config';
 import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
+import {TextColumnMapper} from '../mappers/text.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -26,48 +27,48 @@ export class SetColumnsActionReducer extends StoreReducer<
         ColumnMapper
     >[] = [
         {
-            provide: GridColumnTypes.BREAKDOWN,
-            useClass: DefaultColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.ACTIONS,
-            useClass: DefaultColumnMapper,
-        },
-        {
             provide: GridColumnTypes.CHECKBOX,
             useClass: CheckboxColumnMapper,
         },
         {
-            provide: GridColumnTypes.STATUS,
-            useClass: DefaultColumnMapper,
+            provide: GridColumnTypes.ACTIONS,
+            useClass: TextColumnMapper,
         },
         {
-            provide: GridColumnTypes.SUBMISSION_STATUS,
-            useClass: DefaultColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.PERFORMANCE_INDICATOR,
-            useClass: DefaultColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.EXTERNAL_LINK,
-            useClass: DefaultColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: DefaultColumnMapper,
+            provide: GridColumnTypes.BREAKDOWN,
+            useClass: BreakdownColumnMapper,
         },
         {
             provide: GridColumnTypes.BASE_FIELD,
-            useClass: DefaultColumnMapper,
+            useClass: TextColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.EDITABLE_BASE_FIELD,
+            useClass: TextColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.STATUS,
+            useClass: TextColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.SUBMISSION_STATUS,
+            useClass: TextColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.PERFORMANCE_INDICATOR,
+            useClass: TextColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.EXTERNAL_LINK,
+            useClass: TextColumnMapper,
         },
         {
             provide: GridColumnTypes.THUMBNAIL,
-            useClass: DefaultColumnMapper,
+            useClass: TextColumnMapper,
         },
         {
             provide: GridColumnTypes.BID_MODIFIER_FIELD,
-            useClass: DefaultColumnMapper,
+            useClass: TextColumnMapper,
         },
     ];
 

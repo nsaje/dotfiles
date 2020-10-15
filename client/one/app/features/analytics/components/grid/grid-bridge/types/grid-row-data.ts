@@ -16,4 +16,5 @@ export interface GridRowDataStats {
 
 export interface GridRowDataStatsValue {
     value: string | number;
+    popoverMessage?: string;
 }

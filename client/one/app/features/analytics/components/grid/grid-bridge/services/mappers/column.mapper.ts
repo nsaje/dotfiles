@@ -39,7 +39,7 @@ export abstract class ColumnMapper {
         return {...defaultColDef, ...(colDef || {})};
     }
 
-    abstract getColDef(grid: Grid, column: GridColumn): ColDef | null;
+    abstract getColDef(grid: Grid, column: GridColumn): ColDef;
 
     //
     // PRIVATE METHODS
