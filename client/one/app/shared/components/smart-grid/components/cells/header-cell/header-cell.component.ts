@@ -5,7 +5,6 @@ import {HeaderParams} from './types/header-params';
 import {Component} from '@angular/core';
 import * as commonHelpers from '../../../../../helpers/common.helpers';
 import {
-    DEFAULT_HEADER_CELL_SORT_OPTIONS,
     DEFAULT_HEADER_CELL_SORT_ORDER,
     DEFAULT_HEADER_PARAMS,
 } from './header-cell.component.config';
@@ -24,8 +23,12 @@ export class HeaderCellComponent implements IHeaderAngularComp {
     colDef: ColDef;
     colId: string;
     field: string;
+
     sort: string;
     sortingOrder: string[];
+
+    isChecked: boolean;
+    isCheckboxDisabled: boolean;
 
     agInit(params: HeaderParams): void {
         this.params = {
@@ -40,6 +43,21 @@ export class HeaderCellComponent implements IHeaderAngularComp {
             this.colDef.sortingOrder,
             DEFAULT_HEADER_CELL_SORT_ORDER
         );
+        if (this.params.enableSelection) {
+            this.isChecked = this.params.selectionOptions.isChecked(
+                this.params
+            );
+            this.isCheckboxDisabled = this.params.selectionOptions.isDisabled(
+                this.params
+            );
+        }
+    }
+
+    setChecked($event: boolean) {
+        if (!this.params.enableSelection) {
+            return;
+        }
+        this.params.selectionOptions.setChecked($event, this.params);
     }
 
     setSort(): void {

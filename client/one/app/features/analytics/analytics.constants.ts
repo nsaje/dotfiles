@@ -44,3 +44,9 @@ export enum GridRenderingEngineType {
     CUSTOM_GRID = 'custom-grid',
     SMART_GRID = 'smart-grid',
 }
+
+export enum GridSelectionFilterType {
+    NONE = 0,
+    ALL = 1,
+    CUSTOM = 2,
+}

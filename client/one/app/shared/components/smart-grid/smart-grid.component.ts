@@ -62,7 +62,7 @@ export class SmartGridComponent
     @Output()
     rowSelected = new EventEmitter<any>();
     @Output()
-    selectionChanged = new EventEmitter<any[]>();
+    selectionChange = new EventEmitter<any[]>();
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
@@ -143,10 +143,7 @@ export class SmartGridComponent
     }
 
     onSelectionChanged(event: SelectionChangedEvent) {
-        const selectedRows = event.api.getSelectedNodes().map(rowNode => {
-            return rowNode.data;
-        });
-        this.selectionChanged.emit(selectedRows);
+        this.selectionChange.emit(event.api.getSelectedRows());
     }
 
     onGridReady(params: DetailGridInfo) {

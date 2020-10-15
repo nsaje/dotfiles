@@ -18,7 +18,7 @@ describe('SetDataActionReducer', () => {
             body: {
                 rows: [
                     {
-                        id: 'test',
+                        id: 'row',
                         type: GridRowType.STATS,
                         entity: null,
                         data: {
@@ -43,7 +43,7 @@ describe('SetDataActionReducer', () => {
             },
             footer: {
                 row: {
-                    id: 'test',
+                    id: 'totals',
                     type: GridRowType.STATS,
                     entity: null,
                     data: {
@@ -87,6 +87,9 @@ describe('SetDataActionReducer', () => {
         expect(state.data).toEqual({
             rows: [
                 {
+                    id: {
+                        value: 'row',
+                    },
                     test_field: {
                         value: 'TEST VALUE',
                     },
@@ -94,6 +97,9 @@ describe('SetDataActionReducer', () => {
             ] as any[],
             totals: [
                 {
+                    id: {
+                        value: 'totals',
+                    },
                     test_field: {
                         value: 'TOTALS OF TEST VALUE',
                     },

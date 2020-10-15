@@ -4,7 +4,6 @@ import {Store} from 'rxjs-observable-store';
 import {ColDef, GridOptions} from 'ag-grid-community';
 import {TypeSummaryGridRow} from './type-summary-grid-row';
 import * as numericHelpers from '../../../helpers/numeric.helpers';
-import {HeaderCellComponent} from '../../smart-grid/components/cells/header-cell/header-cell.component';
 import {HeaderParams} from '../../smart-grid/components/cells/header-cell/types/header-params';
 
 @Injectable()
@@ -36,7 +35,6 @@ export class BidModifierTypesGridStore extends Store<
                         'Highest (Max) and lowest (Min) bid modifiers configured per dimension.',
                     popoverPlacement: 'bottom',
                 } as HeaderParams,
-                headerComponentFramework: HeaderCellComponent,
                 valueFormatter: data => this.formatMinMaxLimits(data.value),
             },
         ];
@@ -50,7 +48,6 @@ export class BidModifierTypesGridStore extends Store<
                         'Number of configured bid modifiers per dimension.',
                     popoverPlacement: 'bottom',
                 } as HeaderParams,
-                headerComponentFramework: HeaderCellComponent,
             });
         }
 
@@ -65,7 +62,6 @@ export class BidModifierTypesGridStore extends Store<
                         popoverTooltip: selectionTooltip,
                         popoverPlacement: 'bottom',
                     } as HeaderParams,
-                    headerComponentFramework: HeaderCellComponent,
                     minWidth: 40,
                     maxWidth: 40,
                 };

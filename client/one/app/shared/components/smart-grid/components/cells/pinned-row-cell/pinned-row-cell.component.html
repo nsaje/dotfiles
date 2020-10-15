@@ -1,10 +1,13 @@
 <div class="zem-pinned-row-cell">
-    <span class="zem-pinned-row-cell__value {{ params.valueStyleClass }}">{{
-        value
-    }}</span>
+    <span
+        class="zem-pinned-row-cell__value {{
+            params.valueStyleClass
+        }} zem-pinned-row-cell__item"
+        >{{ params.valueFormatted }}</span
+    >
     <zem-help-popover
         *ngIf="params.popoverTooltip"
-        class="zem-pinned-row-cell__help-popover"
+        class="zem-help-popover zem-pinned-row-cell__item"
         content="{{ params.popoverTooltip }}"
         placement="{{ params.popoverPlacement || 'top' }}"
     ></zem-help-popover>

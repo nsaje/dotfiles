@@ -42,6 +42,19 @@ angular
                     pubsub.EVENTS.DATA_UPDATED,
                     null,
                     function() {
+                        if (
+                            grid.meta.renderingEngine ===
+                            zemGridConstants.gridRenderingEngineType.SMART_GRID
+                        ) {
+                            grid.ext.selection.selected = [grid.footer.row];
+                            grid.ext.selection.unselected = [];
+                            pubsub.notify(
+                                pubsub.EVENTS.EXT_SELECTION_UPDATED,
+                                grid.ext.selection
+                            );
+                            return;
+                        }
+
                         if (grid.body.rows.length === 0) {
                             restoreNeeded = true; // Full update in progress
                         } else if (restoreNeeded) {

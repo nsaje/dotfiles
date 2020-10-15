@@ -8,6 +8,7 @@ import {PinnedRowCellValueStyleClass} from '../../../../../../../shared/componen
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {
+    BREAKDOWN_MIN_COLUMN_WIDTH,
     MIN_COLUMN_WIDTH,
     NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
     NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
@@ -29,6 +30,7 @@ import {
     PINNED_GRID_COLUMN_TYPES,
     RESIZABLE_GRID_COLUMN_TYPES,
 } from '../../grid-bridge.component.config';
+import {GridColumnOrder} from '../../types/grid-column-order';
 
 export abstract class ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {
@@ -44,17 +46,29 @@ export abstract class ColumnMapper {
     //
 
     private getDefaultColDef(grid: Grid, column: GridColumn): ColDef {
-        const headerCellColDef = this.getHeaderCellColDef(grid, column);
-        const rowCellColDef = this.getRowCellColDef(grid, column);
-        const footerCellColDef = this.getFooterCellColDef(grid, column);
-        return {...headerCellColDef, ...rowCellColDef, ...footerCellColDef};
+        const defaultHeaderCellColDef = this.getDefaultHeaderCellColDef(
+            grid,
+            column
+        );
+        const defaultrowCellColDef = this.getDefaultRowCellColDef(grid, column);
+        const defaultfooterCellColDef = this.getDefaultFooterCellColDef(
+            grid,
+            column
+        );
+        return {
+            ...defaultHeaderCellColDef,
+            ...defaultrowCellColDef,
+            ...defaultfooterCellColDef,
+        };
     }
 
     // tslint:disable-next-line: cyclomatic-complexity
-    private getHeaderCellColDef(grid: Grid, column: GridColumn): ColDef {
+    private getDefaultHeaderCellColDef(grid: Grid, column: GridColumn): ColDef {
         const approximateWidth: number = getApproximateGridColumnWidth(
             column.data?.name,
-            MIN_COLUMN_WIDTH,
+            column.type === GridColumnTypes.BREAKDOWN
+                ? BREAKDOWN_MIN_COLUMN_WIDTH
+                : MIN_COLUMN_WIDTH,
             NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
             NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
         );
@@ -67,10 +81,13 @@ export abstract class ColumnMapper {
                 column.data?.order,
                 false
             ),
-            sort: column.order,
+            sort: commonHelpers.getValueOrDefault(
+                column.order,
+                GridColumnOrder.NONE
+            ),
             minWidth:
                 column.type === GridColumnTypes.BREAKDOWN
-                    ? approximateWidth
+                    ? BREAKDOWN_MIN_COLUMN_WIDTH
                     : MIN_COLUMN_WIDTH,
             width: approximateWidth,
             flex: column.type === GridColumnTypes.BREAKDOWN ? 1 : 0,
@@ -114,7 +131,7 @@ export abstract class ColumnMapper {
         };
     }
 
-    private getRowCellColDef(grid: Grid, column: GridColumn): ColDef {
+    private getDefaultRowCellColDef(grid: Grid, column: GridColumn): ColDef {
         return {
             valueFormatter: (params: ValueFormatterParams) => {
                 const statsValue: GridRowDataStatsValue = params.value;
@@ -135,28 +152,10 @@ export abstract class ColumnMapper {
         };
     }
 
-    private getFooterCellColDef(grid: Grid, column: GridColumn): ColDef {
+    private getDefaultFooterCellColDef(grid: Grid, column: GridColumn): ColDef {
         return {
             pinnedRowCellRendererFramework: PinnedRowCellComponent,
             pinnedRowCellRendererParams: {
-                formatValue: (value: GridRowDataStatsValue) => {
-                    if (column.type === GridColumnTypes.BREAKDOWN) {
-                        return TOTALS_LABELS;
-                    }
-                    if (commonHelpers.isDefined(value)) {
-                        const formatterOptions: FormatGridColumnValueOptions = {
-                            type: column.type,
-                            fractionSize: column.data?.fractionSize,
-                            currency: grid.meta.data.ext.currency,
-                            defaultValue: column.data?.defaultValue,
-                        };
-                        return formatGridColumnValue(
-                            value.value,
-                            formatterOptions
-                        );
-                    }
-                    return '';
-                },
                 valueStyleClass:
                     column.type === GridColumnTypes.BREAKDOWN
                         ? PinnedRowCellValueStyleClass.Strong
@@ -167,6 +166,25 @@ export abstract class ColumnMapper {
                         : null,
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
+            pinnedRowValueFormatter: (params: ValueFormatterParams) => {
+                const statsValue: GridRowDataStatsValue = params.value;
+                if (column.type === GridColumnTypes.BREAKDOWN) {
+                    return TOTALS_LABELS;
+                }
+                if (commonHelpers.isDefined(statsValue)) {
+                    const formatterOptions: FormatGridColumnValueOptions = {
+                        type: column.type,
+                        fractionSize: column.data?.fractionSize,
+                        currency: grid.meta.data.ext.currency,
+                        defaultValue: column.data?.defaultValue,
+                    };
+                    return formatGridColumnValue(
+                        statsValue.value,
+                        formatterOptions
+                    );
+                }
+                return '';
+            },
         };
     }
 }

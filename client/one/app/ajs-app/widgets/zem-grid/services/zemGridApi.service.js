@@ -43,6 +43,9 @@ angular
             this.editRow = grid.meta.dataService.editRow;
 
             // Selection service API
+            this.isRowSelected = grid.meta.selectionService.isRowSelected;
+            this.isRowSelectable = grid.meta.selectionService.isRowSelectable;
+            this.setRowSelection = grid.meta.selectionService.setRowSelection;
             this.isSelectionEmpty = grid.meta.selectionService.isSelectionEmpty;
             this.getSelection = grid.meta.selectionService.getSelection;
             this.clearSelection = grid.meta.selectionService.clearSelection;

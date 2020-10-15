@@ -6,6 +6,8 @@ var GridRowLevel = require('../../../../features/analytics/analytics.constants')
     .GridRowLevel;
 var GridRenderingEngineType = require('../../../../features/analytics/analytics.constants')
     .GridRenderingEngineType;
+var GridSelectionFilterType = require('../../../../features/analytics/analytics.constants')
+    .GridSelectionFilterType;
 var BASE_GRID_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
     .BASE_GRID_COLUMN_TYPES;
 var EXTERNAL_LINK_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
@@ -34,11 +36,7 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
             DEFAULT_MAX_COLUMN_WIDTH: 300,
             DEFAULT_MIN_COLUMN_WIDTH: 40,
         },
-        gridSelectionFilterType: {
-            NONE: 0,
-            ALL: 1,
-            CUSTOM: 2,
-        },
+        gridSelectionFilterType: GridSelectionFilterType,
         gridSelectionCustomFilterType: {
             ITEM: 1,
             LIST: 2,

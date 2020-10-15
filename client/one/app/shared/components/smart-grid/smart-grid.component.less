@@ -14,35 +14,52 @@
 //
 
 .zem-smart-grid__table .ag-header {
-    border-bottom: 1px solid tint(@color--secondary, 80%);
     background-color: tint(@color--secondary, 90%);
+    border-bottom: 1px solid tint(@color--secondary, 80%);
 }
 
-.zem-smart-grid__table .ag-header-cell:hover {
+.zem-smart-grid__table .ag-header .ag-header-cell:hover {
     background-color: tint(@color--secondary, 95%);
 }
 
-.zem-smart-grid__table .ag-pinned-left-header {
+.zem-smart-grid__table .ag-header .ag-pinned-left-header {
     border-right: 1px solid tint(@color--secondary, 80%);
 }
 
-.zem-smart-grid__table .ag-pinned-right-header {
+.zem-smart-grid__table .ag-header .ag-pinned-right-header {
     border-left: 1px solid tint(@color--secondary, 80%);
 }
 
-.zem-smart-grid__ag-header-component {
-    display: block;
-    width: 100%;
+.zem-smart-grid__table .ag-header .ag-header-cell .ag-header-select-all {
+    flex: 0 0 auto;
+    height: 100%;
+    padding: @spacing--small 0 @spacing--small @spacing--small;
+}
+
+.zem-smart-grid__table
+    .ag-header
+    .ag-header-cell
+    > *:not(.ag-header-cell-resize):not(.ag-header-select-all) {
+    flex: 1 1 0;
+    width: 0;
     height: 100%;
 }
 
 //
-// ag-body-viewport rows
+// ag-floating-top
+//
+.zem-smart-grid__table .ag-floating-top {
+    background-color: tint(@color--secondary, 90%);
+    border-bottom: 1px solid tint(@color--secondary, 80%);
+}
+
+//
+// ag-body-viewport
 //
 
 .zem-smart-grid__table .ag-body-viewport {
-    border-bottom: 1px solid tint(@color--secondary, 80%);
     background-color: white;
+    border-bottom: 1px solid tint(@color--secondary, 80%);
 }
 
 .zem-smart-grid .ag-center-cols-clipper {
@@ -62,23 +79,15 @@
 }
 
 //
-// ag-floating-bottom pinned bottom rows
+// ag-floating-bottom
 //
 
 .zem-smart-grid__table .ag-floating-bottom {
     background-color: tint(@color--secondary, 90%);
 }
 
-.zem-smart-grid__table .ag-floating-bottom .ag-row {
-    border-bottom: 1px solid tint(@color--secondary, 90%) !important;
-}
-
-.zem-smart-grid__table .ag-floating-bottom .ag-row:last-child {
-    border-bottom: 0px !important;
-}
-
 //
-// ag-row common styles
+// ag-row
 //
 
 .zem-smart-grid__table .ag-row .ag-cell {
@@ -95,8 +104,12 @@
     width: 100%;
 }
 
+.zem-smart-grid__table .ag-row .ag-cell .ag-checkbox {
+    margin-right: @spacing--small;
+}
+
 //
-// ag-cell common styles
+// ag-cell
 //
 
 .zem-smart-grid__table
@@ -110,59 +123,21 @@
 }
 
 //
-// ag-grid checkbox
+// ag-checkbox-input
 //
 
-.zem-smart-grid__table .ag-header-select-all,
-.zem-smart-grid__table .ag-selection-checkbox {
-    margin-right: @spacing--default;
+.zem-smart-grid__table .ag-checkbox-input-wrapper .ag-checkbox-input {
+    display: block;
+    width: 14px;
+    height: 14px;
+}
+
+.zem-smart-grid__table .ag-checkbox-input-wrapper .ag-checkbox-input:hover {
     cursor: pointer;
 }
 
-.zem-smart-grid__table .ag-icon-checkbox-unchecked,
-.zem-smart-grid__table .ag-icon-checkbox-indeterminate {
-    display: block;
-    position: relative;
-    border: 1px solid darken(@border-color--default, 10%);
-    border-radius: @border-radius--default;
-    background-color: white;
-    width: 14px;
-    height: 14px;
-
-    &:hover {
-        border: 1px solid @color--secondary;
-    }
-}
-
-.zem-smart-grid__table .ag-icon-checkbox-checked {
-    display: block;
-    position: relative;
-    border: 1px solid @color--secondary;
-    border-radius: @border-radius--default;
-    background-color: white;
-    width: 14px;
-    height: 14px;
-}
-
-.zem-smart-grid__table .ag-icon-checkbox-checked::after {
-    position: absolute;
-    content: '';
-    background-image: url('@{images-folder}/checkbox-sec.svg');
-    top: 1px;
-    left: 1px;
-    width: 10px;
-    height: 10px;
-    color: @color--secondary;
-    animation: checkbox-checked @duration-and-timing-fn--default;
-}
-
-@keyframes checkbox-checked {
-    0% {
-        transform: scale(0);
-    }
-    100% {
-        transform: scale(1);
-    }
+.zem-smart-grid input[type='checkbox'] {
+    margin: 0;
 }
 
 //

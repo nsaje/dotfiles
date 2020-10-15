@@ -81,6 +81,7 @@ import {EntitySelectorComponent} from './components/entity-selector/entity-selec
 import {ArchivedTagDirective} from './directives/archived-tag/archived-tag.directive';
 import {PinnedRowCellComponent} from './components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {HeaderCellComponent} from './components/smart-grid/components/cells/header-cell/header-cell.component';
+import {CheckboxCellComponent} from './components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -155,6 +156,7 @@ const EXPORTED_DECLARATIONS = [
     EntitySelectorComponent,
     PinnedRowCellComponent,
     HeaderCellComponent,
+    CheckboxCellComponent,
 ];
 
 @NgModule({
@@ -179,6 +181,7 @@ const EXPORTED_DECLARATIONS = [
             SwitchButtonCellComponent,
             PinnedRowCellComponent,
             HeaderCellComponent,
+            CheckboxCellComponent,
         ]),
         NgbPaginationModule,
     ],

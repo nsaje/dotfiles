@@ -12,6 +12,7 @@ import {
     BASE_GRID_COLUMN_TYPES,
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../../../../analytics.config';
+import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -34,7 +35,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.CHECKBOX,
-            useClass: DefaultColumnMapper,
+            useClass: CheckboxColumnMapper,
         },
         {
             provide: GridColumnTypes.STATUS,

@@ -12,11 +12,19 @@ import {
 import {downgradeComponent} from '@angular/upgrade/static';
 import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {merge, Observable, Subject} from 'rxjs';
-import {distinctUntilChanged, map, takeUntil, tap} from 'rxjs/operators';
+import {
+    debounceTime,
+    distinctUntilChanged,
+    map,
+    takeUntil,
+    tap,
+} from 'rxjs/operators';
 import {PaginationState} from '../../../../../shared/components/smart-grid/types/pagination-state';
 import {GridBridgeStore} from './services/grid-bridge.store';
 import {Grid} from './types/grid';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
+import {GridColumnTypes} from '../../../analytics.constants';
+import {GRID_API_DEBOUNCE_TIME} from './grid-bridge.component.constants';
 
 @Component({
     selector: 'zem-grid-bridge',
@@ -39,6 +47,9 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     private gridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
+    private onSelectionUpdatedDebouncer$: Subject<void> = new Subject<void>();
+    private onSelectionUpdatedHandler: Function;
+
     constructor(public store: GridBridgeStore) {
         this.context = {
             componentParent: this,
@@ -46,6 +57,22 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.onSelectionUpdatedDebouncer$
+            .pipe(
+                debounceTime(GRID_API_DEBOUNCE_TIME),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(() => {
+                if (!commonHelpers.isDefined(this.gridApi)) {
+                    return;
+                }
+                this.gridApi.refreshHeader();
+                this.gridApi.refreshCells({
+                    columns: [GridColumnTypes.CHECKBOX],
+                    force: true,
+                });
+            });
+
         this.store.initStore(this.grid);
         this.subscribeToStoreStateUpdates();
     }
@@ -57,6 +84,9 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        if (commonHelpers.isDefined(this.onSelectionUpdatedHandler)) {
+            this.onSelectionUpdatedHandler();
+        }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
@@ -78,8 +108,15 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
         return this.store.state$.pipe(
             map(state => state.grid),
             distinctUntilChanged(),
-            tap(() => {
+            tap(grid => {
                 this.store.connect();
+                if (commonHelpers.isDefined(this.onSelectionUpdatedHandler)) {
+                    this.onSelectionUpdatedHandler();
+                }
+                this.onSelectionUpdatedHandler = grid.meta.api.onSelectionUpdated(
+                    grid.meta.scope,
+                    this.handleSelectionUpdate.bind(this)
+                );
             })
         );
     }
@@ -89,14 +126,18 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
             map(state => state.columns),
             distinctUntilChanged(),
             tap(() => {
+                if (!commonHelpers.isDefined(this.gridApi)) {
+                    return;
+                }
                 setTimeout(() => {
-                    if (commonHelpers.isDefined(this.gridApi)) {
-                        this.gridApi.sizeColumnsToFit();
-                        this.gridApi.redrawRows();
-                    }
+                    this.gridApi.sizeColumnsToFit();
                 });
             })
         );
+    }
+
+    private handleSelectionUpdate(): void {
+        this.onSelectionUpdatedDebouncer$.next();
     }
 }
 

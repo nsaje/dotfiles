@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {ColDef, Column} from 'ag-grid-community';
 import {InternalFeatureDirective} from '../../../../../directives/internal-feature/internal-feature.directive';
+import {CheckboxInputComponent} from '../../../../checkbox-input/checkbox-input.component';
 import {HelpPopoverComponent} from '../../../../help-popover/help-popover.component';
 import {PopoverDirective} from '../../../../popover/popover.directive';
 import {HeaderCellComponent} from './header-cell.component';
@@ -27,6 +28,7 @@ describe('HeaderCellComponent', () => {
                 HelpPopoverComponent,
                 PopoverDirective,
                 InternalFeatureDirective,
+                CheckboxInputComponent,
             ],
         });
 
@@ -45,9 +47,16 @@ describe('HeaderCellComponent', () => {
             },
         };
         params = {
+            enableSorting: true,
             sortOptions: {
                 sortType: 'server',
                 initialSort: HeaderCellSort.DESC,
+            },
+            enableSelection: true,
+            selectionOptions: {
+                isChecked: (params: HeaderParams) => true,
+                isDisabled: (params: HeaderParams) => false,
+                setChecked: (value: boolean, params: HeaderParams) => {},
             },
             popoverTooltip: 'test popover text',
             popoverPlacement: 'top',
@@ -77,5 +86,7 @@ describe('HeaderCellComponent', () => {
         expect(component.field).toEqual(field);
         expect(component.sort).toEqual(null);
         expect(component.sortingOrder).toEqual(DEFAULT_HEADER_CELL_SORT_ORDER);
+        expect(component.isChecked).toEqual(true);
+        expect(component.isCheckboxDisabled).toEqual(false);
     });
 });

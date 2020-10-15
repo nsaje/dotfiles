@@ -3,6 +3,6 @@
     [rowData]="store.state.typeSummaryGridRows"
     [gridOptions]="store.state.gridOptions"
     [columnDefs]="store.state.columnDefs"
-    (selectionChanged)="onSelectionChanged($event)"
+    (selectionChange)="onSelectionChange($event)"
     (gridReady)="onGridReady($event)"
 ></zem-smart-grid>

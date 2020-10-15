@@ -10,6 +10,7 @@ export interface GridRowData {
 }
 
 export interface GridRowDataStats {
+    id?: GridRowDataStatsValue;
     [key: string]: GridRowDataStatsValue;
 }
 

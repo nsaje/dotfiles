@@ -1,5 +1,4 @@
 import {GridOptions} from 'ag-grid-community';
-import {DEFAULT_HEADER_CLASS} from './smart-grid.component.constants';
 import {PageSizeConfig} from './types/page-size-config';
 
 export const DEFAULT_GRID_OPTIONS: GridOptions = {
@@ -7,11 +6,12 @@ export const DEFAULT_GRID_OPTIONS: GridOptions = {
     rowHeight: 35,
     domLayout: 'autoHeight',
     enableCellTextSelection: true,
+    ensureDomOrder: true,
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
     suppressRowClickSelection: true,
+    suppressChangeDetection: true,
     defaultColDef: {
-        headerClass: [DEFAULT_HEADER_CLASS],
         suppressMovable: true,
         resizable: true,
     },

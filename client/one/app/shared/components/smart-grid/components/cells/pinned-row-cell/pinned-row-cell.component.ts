@@ -8,11 +8,9 @@ import {PinnedRowRendererParams} from './types/pinned-row.renderer-params';
 })
 export class PinnedRowCellComponent implements ICellRendererAngularComp {
     params: PinnedRowRendererParams;
-    value: string = '';
 
     agInit(params: PinnedRowRendererParams): void {
         this.params = params;
-        this.value = params.formatValue(params.value);
     }
 
     refresh(): boolean {

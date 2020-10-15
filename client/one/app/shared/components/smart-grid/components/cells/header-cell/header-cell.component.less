@@ -8,15 +8,16 @@
     height: 100%;
 }
 
-.zem-header-cell__item:not(:last-child) {
-    margin-right: 5px;
+.zem-header-cell__checkbox {
+    flex: 0 0 auto;
 }
 
 .zem-header-cell__data {
     display: flex;
     align-items: center;
-    flex: 1 1 calc(100% - 10px);
-    width: calc(100% - 15px);
+    flex: 1 1 auto;
+    width: 0px;
+    margin-right: 5px;
 }
 
 .zem-header-cell__data-item {
@@ -29,7 +30,7 @@
 }
 
 .zem-header-cell__sort {
-    flex: 0 0 10px;
+    flex: 0 0 auto;
 }
 
 .zem-header-cell__name {

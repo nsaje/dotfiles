@@ -10,7 +10,7 @@ import {
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
 import {
-    MIN_COLUMN_WIDTH,
+    BREAKDOWN_MIN_COLUMN_WIDTH,
     NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
     NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
     TOTALS_LABEL_HELP_TEXT,
@@ -18,7 +18,6 @@ import {
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
-import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {ColumnMapper} from './column.mapper';
 import {getApproximateGridColumnWidth} from '../../helpers/grid-bridge.helper';
 
@@ -81,7 +80,7 @@ describe('ColumnMapper', () => {
 
         const approximateWidth: number = getApproximateGridColumnWidth(
             'Test Header',
-            MIN_COLUMN_WIDTH,
+            BREAKDOWN_MIN_COLUMN_WIDTH,
             NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
             NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
         );
@@ -92,7 +91,7 @@ describe('ColumnMapper', () => {
             colId: 'test_field',
             sortable: true,
             sort: GridColumnOrder.DESC,
-            minWidth: approximateWidth,
+            minWidth: BREAKDOWN_MIN_COLUMN_WIDTH,
             width: approximateWidth,
             flex: 1,
             suppressSizeToFit: false,
@@ -115,13 +114,13 @@ describe('ColumnMapper', () => {
             },
             pinnedRowCellRendererFramework: PinnedRowCellComponent,
             pinnedRowCellRendererParams: {
-                formatValue: (value: GridRowDataStatsValue) => {
-                    return '';
-                },
                 valueStyleClass: PinnedRowCellValueStyleClass.Strong,
                 popoverTooltip: TOTALS_LABEL_HELP_TEXT,
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
+            pinnedRowValueFormatter: (params: ValueFormatterParams) => {
+                return '';
+            },
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

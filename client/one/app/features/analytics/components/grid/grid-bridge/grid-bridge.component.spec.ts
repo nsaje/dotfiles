@@ -1,8 +1,10 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {SharedModule} from '../../../../../shared/shared.module';
+import {GridRenderingEngineType} from '../../../analytics.constants';
 import {GridBridgeComponent} from './grid-bridge.component';
 import {GridBridgeStore} from './services/grid-bridge.store';
 import {Grid} from './types/grid';
+import {GridMeta} from './types/grid-meta';
 
 describe('GridBridgeComponent', () => {
     let component: GridBridgeComponent;
@@ -15,6 +17,11 @@ describe('GridBridgeComponent', () => {
             body: null,
             footer: null,
             meta: null,
+        };
+        (mockedGrid.meta as Partial<GridMeta>) = {
+            api: {
+                onSelectionUpdated: () => {},
+            },
         };
 
         TestBed.configureTestingModule({

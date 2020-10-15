@@ -59,7 +59,7 @@ export class BidModifierTypesGridComponent implements OnChanges, OnInit {
         }
     }
 
-    onSelectionChanged(event: any[]): void {
+    onSelectionChange(event: any[]): void {
         const selectedRows = event as TypeSummaryGridRow[];
         this.selectedTypeSummaryGridRows.emit(selectedRows);
     }
