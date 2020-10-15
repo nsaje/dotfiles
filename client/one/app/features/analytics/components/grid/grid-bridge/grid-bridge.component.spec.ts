@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {NotificationService} from '../../../../../core/notification/services/notification.service';
 import {SharedModule} from '../../../../../shared/shared.module';
-import {GridRenderingEngineType} from '../../../analytics.constants';
 import {GridBridgeComponent} from './grid-bridge.component';
 import {GridBridgeStore} from './services/grid-bridge.store';
 import {Grid} from './types/grid';
@@ -21,6 +21,7 @@ describe('GridBridgeComponent', () => {
         (mockedGrid.meta as Partial<GridMeta>) = {
             api: {
                 onSelectionUpdated: () => {},
+                onDataUpdatedError: () => {},
             },
         };
 
@@ -31,6 +32,12 @@ describe('GridBridgeComponent', () => {
                 {
                     provide: GridBridgeStore,
                     useValue: GridBridgeStore,
+                },
+                {
+                    provide: NotificationService,
+                    useValue: {
+                        error: () => {},
+                    },
                 },
             ],
         }).compileComponents();

@@ -152,6 +152,10 @@ angular
                             // Workaround - err is in this case null (see zem_grid_endpoint_api.js abortable promise)
                             grid.meta.loading = false;
                         }
+                        grid.meta.pubsub.notify(
+                            grid.meta.pubsub.EVENTS.DATA_UPDATED_ERROR,
+                            err
+                        );
                         deferred.reject(err);
                     }
                 );

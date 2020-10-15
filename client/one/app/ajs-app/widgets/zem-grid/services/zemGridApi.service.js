@@ -69,6 +69,7 @@ angular
             // Listeners - pubsub rewiring
             this.onMetaDataUpdated = onMetaDataUpdated;
             this.onDataUpdated = onDataUpdated;
+            this.onDataUpdatedError = onDataUpdatedError;
             this.onColumnsUpdated = onColumnsUpdated;
             this.onSelectionUpdated = onSelectionUpdated;
 
@@ -208,6 +209,14 @@ angular
             function onDataUpdated(scope, callback) {
                 return registerListener(
                     pubsub.EVENTS.DATA_UPDATED,
+                    scope,
+                    callback
+                );
+            }
+
+            function onDataUpdatedError(scope, callback) {
+                return registerListener(
+                    pubsub.EVENTS.DATA_UPDATED_ERROR,
                     scope,
                     callback
                 );

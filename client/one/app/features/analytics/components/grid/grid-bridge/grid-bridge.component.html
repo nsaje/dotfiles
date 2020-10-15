@@ -2,6 +2,7 @@
     <zem-smart-grid
         class="zem-smart-grid zem-grid-bridge__item"
         *ngIf="isMetaDataReady"
+        [gridOptions]="gridOptions"
         [context]="context"
         [columnDefs]="state.columns"
         [rowData]="state.data.rows"

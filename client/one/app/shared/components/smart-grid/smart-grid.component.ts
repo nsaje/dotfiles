@@ -155,7 +155,6 @@ export class SmartGridComponent
 
     onGridSizeChanged($event: GridSizeChangedEvent) {
         $event.api.sizeColumnsToFit();
-        $event.api.redrawRows();
     }
 
     onPageChange(page: number) {

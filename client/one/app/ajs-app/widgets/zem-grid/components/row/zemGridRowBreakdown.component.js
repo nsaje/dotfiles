@@ -1,3 +1,6 @@
+var GRID_API_LOADING_DATA_ERROR_MESSAGE = require('../../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.constants')
+    .GRID_API_LOADING_DATA_ERROR_MESSAGE;
+
 angular.module('one.widgets').directive('zemGridRowBreakdown', function() {
     return {
         restrict: 'E',
@@ -37,7 +40,7 @@ angular.module('one.widgets').directive('zemGridRowBreakdown', function() {
 
                 var pagination = vm.row.data.pagination;
                 if (vm.row.data.meta.error)
-                    return "Error: Data can't be retrieved";
+                    return GRID_API_LOADING_DATA_ERROR_MESSAGE;
                 if (pagination.count > 0) return 'All data loaded';
                 if (pagination.count <= 0) return 'No data available';
             }
