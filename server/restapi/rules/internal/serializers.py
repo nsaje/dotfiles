@@ -112,7 +112,18 @@ class RuleEntitiesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     accounts = RuleAccountsSerializer(source="*", required=False)
 
 
-class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class PublisherGroupSerializer(rest_framework.serializers.ModelSerializer):
+    class Meta:
+        model = core.features.publisher_groups.PublisherGroup
+        fields = ("id", "name", "account_id", "agency_id")
+
+    id = restapi.serializers.fields.IdField()
+    name = restapi.serializers.fields.PlainCharField(max_length=255, read_only=True)
+    agency_id = restapi.serializers.fields.IdField(read_only=True)
+    account_id = restapi.serializers.fields.IdField(read_only=True)
+
+
+class RuleSerializer(rest_framework.serializers.Serializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
     agency_name = rest_framework.serializers.CharField(source="agency.name", default=None, read_only=True)
@@ -145,12 +156,7 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=restapi.serializers.fields.PlainCharField(), default=[], allow_empty=True, required=False, initial=None
     )
 
-    publisher_group_id = rest_framework.serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        queryset=core.features.publisher_groups.PublisherGroup.objects.all(),
-        source="publisher_group",
-    )
+    publisher_group = PublisherGroupSerializer(required=False, allow_null=True)
 
     action_frequency = rest_framework.serializers.IntegerField(source="cooldown", required=False, allow_null=True)
 
@@ -164,12 +170,6 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
     window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, allow_null=True)
-
-    def validate_publisher_group_id(self, publisher_group):
-        if publisher_group:
-            user = self.context["request"].user
-            zemauth.access.get_publisher_group(user, Permission.WRITE, publisher_group.id)
-        return publisher_group
 
     def validate_entities(self, entities):
         if not any(
@@ -193,6 +193,11 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
                 self.context["request"].user, Permission.WRITE, value.get("account_id")
             )
 
+        publisher_group = value.get("publisher_group", {})
+        if publisher_group:
+            value["publisher_group"] = zemauth.access.get_publisher_group(
+                self.context["request"].user, Permission.READ, publisher_group["id"]
+            )
         return value
 
 

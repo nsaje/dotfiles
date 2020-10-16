@@ -57,7 +57,7 @@ describe('RulesService', () => {
                 sendEmailRecipients: [],
                 sendEmailSubject: null,
                 sendEmailBody: null,
-                publisherGroupId: null,
+                publisherGroup: null,
                 window: TimeRange.LastSixtyDays,
                 notificationType: RuleNotificationType.OnRuleRun,
                 notificationRecipients: ['test@test.com'],

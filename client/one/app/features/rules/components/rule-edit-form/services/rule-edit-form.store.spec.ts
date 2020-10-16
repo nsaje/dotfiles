@@ -88,7 +88,7 @@ describe('RuleEditFormStore', () => {
             sendEmailRecipients: [],
             sendEmailSubject: null,
             sendEmailBody: null,
-            publisherGroupId: null,
+            publisherGroup: null,
             conditions: [],
             window: TimeRange.LastSixtyDays,
             notificationType: RuleNotificationType.None,

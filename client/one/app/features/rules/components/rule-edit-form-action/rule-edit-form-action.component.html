@@ -84,7 +84,7 @@
 <zem-select-form-group
     class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
     label="Publisher Group"
-    [value]="publisherGroupId"
+    [value]="publisherGroup.id"
     helpMessage="The publisher group to be used."
     bindLabel="label"
     bindValue="value"
@@ -93,7 +93,7 @@
     [isLoading]="isSearchLoading"
     [isSearchable]="true"
     [isClearable]="false"
-    [errors]="publisherGroupIdErrors"
+    [errors]="publisherGroupErrors"
     [isDisabled]="isDisabled"
     (valueChange)="updatePublisherGroup($event)"
     (search)="publisherGroupsSearch.emit($event)"

@@ -109,6 +109,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     scopeState: rule.agencyId
                         ? ScopeSelectorState.AGENCY_SCOPE
                         : ScopeSelectorState.ACCOUNT_SCOPE,
+                    availablePublisherGroups: this.prepareAvailablePublisherGroups(
+                        rule.publisherGroup,
+                        this.state.availablePublisherGroups
+                    ), // prefill with publisher group object if set
                     availableConditions: rule.targetType
                         ? this.getConditionsForTarget(rule.targetType)
                         : null,
@@ -191,7 +195,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 sendEmailRecipients: [],
                 sendEmailSubject: null,
                 sendEmailBody: null,
-                publisherGroupId: null,
+                publisherGroup: null,
                 conditions: this.filterConditionsValidForTarget(
                     availableConditions,
                     this.state.rule.conditions
@@ -241,8 +245,8 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         this.patchState(body, 'rule', 'sendEmailBody');
     }
 
-    setPublisherGroupId(publisherGroupId: string) {
-        this.patchState(publisherGroupId, 'rule', 'publisherGroupId');
+    setPublisherGroup(publisherGroup: PublisherGroup) {
+        this.patchState(publisherGroup, 'rule', 'publisherGroup');
     }
 
     addCondition(condition: RuleCondition) {
@@ -355,7 +359,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 .subscribe(
                     (publisherGroups: PublisherGroup[]) => {
                         this.patchState(
-                            publisherGroups,
+                            this.prepareAvailablePublisherGroups(
+                                this.state.rule.publisherGroup,
+                                publisherGroups
+                            ),
                             'availablePublisherGroups'
                         );
                         resolve();
@@ -583,6 +590,19 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     }
                 );
         });
+    }
+
+    private prepareAvailablePublisherGroups(
+        publisherGroup: PublisherGroup,
+        availablePublisherGroups: PublisherGroup[]
+    ): PublisherGroup[] {
+        if (
+            publisherGroup &&
+            !availablePublisherGroups.some(pg => pg.id === publisherGroup.id)
+        ) {
+            availablePublisherGroups.unshift(publisherGroup);
+        }
+        return availablePublisherGroups;
     }
 
     private getConditionsForTarget(

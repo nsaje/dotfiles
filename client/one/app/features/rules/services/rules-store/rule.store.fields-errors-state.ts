@@ -15,7 +15,7 @@ export class RulesStoreFieldsErrorsState {
     sendEmailRecipients: FieldErrors = [];
     sendEmailSubject: FieldErrors = [];
     sendEmailBody: FieldErrors = [];
-    publisherGroupId: FieldErrors = [];
+    publisherGroup: FieldErrors = [];
     window: FieldErrors = [];
     notificationType: FieldErrors = [];
     notificationRecipients: FieldErrors = [];

@@ -27,6 +27,7 @@
         class="zem-modal zem-rules-view__modal"
         [canCloseOnBackdropClick]="false"
         [canCloseOnEscapeKey]="true"
+        (onClose)="closeEditRuleModal()"
     >
         <ng-container *ngIf="editRuleModal.isOpen">
             <div class="zem-modal__header">

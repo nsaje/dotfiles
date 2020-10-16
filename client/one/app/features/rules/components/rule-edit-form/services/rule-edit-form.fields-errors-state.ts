@@ -12,7 +12,7 @@ export class RulesEditFormStoreFieldsErrorsState {
     actionFrequency: FieldErrors = [];
     changeStep: FieldErrors = [];
     changeLimit: FieldErrors = [];
-    publisherGroupId: FieldErrors = [];
+    publisherGroup: FieldErrors = [];
     conditions: RuleConditionError[] | string[];
     notificationType: FieldErrors = [];
     notificationRecipients: FieldErrors = [];

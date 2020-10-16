@@ -82,7 +82,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         cooldown,
         notification_type,
         notification_recipients,
-        publisher_group_id,
+        publisher_group,
         conditions,
         archived=False,
     ):
@@ -92,7 +92,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
             "name": name,
             "state": automation.rules.RuleState.get_name(state),
             "agencyId": agency_id,
-            "agencyName": agency.name if agency else "",
+            "agencyName": agency.name if agency else None,
             "accountId": account_id,
             "entities": {
                 "adGroups": {
@@ -109,7 +109,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
                     ]
                 },
             },
-            "accountName": account.settings.name if account else "",
+            "accountName": account.settings.name if account else None,
             "targetType": automation.rules.TargetType.get_name(target_type),
             "actionType": automation.rules.ActionType.get_name(action_type),
             "window": automation.rules.MetricWindow.get_name(window),
@@ -121,7 +121,14 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
             "actionFrequency": cooldown,
             "notificationType": automation.rules.NotificationType.get_name(notification_type),
             "notificationRecipients": notification_recipients,
-            "publisherGroupId": publisher_group_id,
+            "publisherGroup": {
+                "id": str(publisher_group.id),
+                "name": publisher_group.name,
+                "accountId": str(publisher_group.account_id) if publisher_group.account_id else None,
+                "agencyId": str(publisher_group.agency_id) if publisher_group.agency_id else None,
+            }
+            if publisher_group
+            else None,
             "conditions": [cls.rule_condition_repr(**condition) for condition in conditions],
             "archived": archived,
         }
@@ -194,7 +201,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
             cooldown=rule_db.cooldown,
             notification_type=rule_db.notification_type,
             notification_recipients=rule_db.notification_recipients,
-            publisher_group_id=rule_db.publisher_group_id,
+            publisher_group=rule_db.publisher_group,
             conditions=[
                 {
                     "operator": condition.operator,
@@ -314,7 +321,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
             cooldown=48,
             notification_type=automation.rules.NotificationType.ON_RULE_RUN,
             notification_recipients=["user@domain.com"],
-            publisher_group_id=None,
+            publisher_group=None,
             conditions=[
                 {
                     "left_operand_type": automation.rules.MetricType.AVG_CPC,
@@ -354,7 +361,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
             cooldown=48,
             notification_type=automation.rules.NotificationType.ON_RULE_RUN,
             notification_recipients=["user@domain.com"],
-            publisher_group_id=invalid_publisher_group.id,
+            publisher_group=invalid_publisher_group,
             conditions=[
                 {
                     "left_operand_type": automation.rules.MetricType.AVG_CPC,
@@ -374,7 +381,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         valid_publisher_group = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, agency=self.agency, name="test pub group"
         )
-        rule_data["publisher_group_id"] = valid_publisher_group.id
+        rule_data["publisher_group"] = {"id": valid_publisher_group.id}
 
         response = self.client.post(reverse("restapi.rules.internal:rules_list"), data=rule_data, format="json")
         result = self.assertResponseValid(response, status_code=status.HTTP_201_CREATED)

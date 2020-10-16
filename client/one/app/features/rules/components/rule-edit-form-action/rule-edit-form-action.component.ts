@@ -24,7 +24,8 @@ import {
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_CURRENCY_HELP_TEXT,
     RULE_ACTION_DISABLED_HELP_TEXT,
-    RULE_PUBLISHER_PLACEMENT_TARGET_TEXT,
+    RULE_PLACEMENT_TARGET_TEXT,
+    RULE_PUBLISHER_TARGET_TEXT,
 } from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {Unit} from '../../../../app.constants';
@@ -54,6 +55,8 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     @Input()
     sendEmailBody: string;
     @Input()
+    publisherGroup: PublisherGroup;
+    @Input()
     availableActions: RuleActionConfig[];
     @Input()
     availablePublisherGroups: PublisherGroup[];
@@ -74,7 +77,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     @Input()
     sendEmailBodyErrors: FieldErrors;
     @Input()
-    publisherGroupIdErrors: FieldErrors;
+    publisherGroupErrors: FieldErrors;
     @Input()
     isDisabled: boolean = false;
     @Output()
@@ -95,7 +98,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     @Output()
     sendEmailBodyChange = new EventEmitter<string>();
     @Output()
-    publisherGroupChange = new EventEmitter<string>();
+    publisherGroupChange = new EventEmitter<PublisherGroup>();
     @Output()
     publisherGroupsSearch = new EventEmitter<string>();
     @Output()
@@ -105,7 +108,6 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     selectedActionConfig: RuleActionConfig;
     selectedMacro: Macro;
     shouldAppendMacroToSubject = true;
-    publisherGroupId: string;
     availableActionFrequencies: {label: string; value: number}[];
     availablePublisherGroupsItems: {label: string; value: string}[];
     availableTargetAndActionTypes: {
@@ -127,6 +129,9 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
 
     ngOnInit(): void {
         this.availableTargetAndActionTypes = this.constructAvailableTargetAndActionTypes();
+        this.availablePublisherGroupsItems = this.getAvailablePublisherGroupsItems(
+            this.availablePublisherGroups
+        );
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -141,7 +146,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
             );
         }
 
-        if (changes.availablePublisherGroups) {
+        if (changes.availablePublisherGroups || changes.publisherGroup) {
             this.availablePublisherGroupsItems = this.getAvailablePublisherGroupsItems(
                 this.availablePublisherGroups
             );
@@ -166,12 +171,14 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
             this.selectedActionConfig.unit === Unit.CurrencySign
                 ? RULE_CURRENCY_HELP_TEXT
                 : null;
-        this.actionHelpText = [
-            RuleTargetType.AdGroupPublisher,
-            RuleTargetType.AdGroupPlacement,
-        ].includes(this.targetType)
-            ? RULE_PUBLISHER_PLACEMENT_TARGET_TEXT
-            : null;
+
+        if (this.targetType === RuleTargetType.AdGroupPublisher) {
+            this.actionHelpText = RULE_PUBLISHER_TARGET_TEXT;
+        }
+
+        if (this.targetType === RuleTargetType.AdGroupPlacement) {
+            this.actionHelpText = RULE_PLACEMENT_TARGET_TEXT;
+        }
     }
 
     selectTargetAndActionType(targetActionType: string) {
@@ -209,7 +216,10 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     }
 
     updatePublisherGroup(publisherGroupId: string) {
-        this.publisherGroupChange.emit(publisherGroupId);
+        const publisherGroup = this.availablePublisherGroups.find(
+            pg => pg.id === publisherGroupId
+        );
+        this.publisherGroupChange.emit(publisherGroup);
     }
 
     updateSendEmailSubject(sendEmailSubject: string) {

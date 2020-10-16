@@ -2159,8 +2159,11 @@ export const RULE_CURRENCY_HELP_TEXT =
 export const RULE_ACTION_DISABLED_HELP_TEXT =
     'Rule action cannot be changed for an existing rule';
 
-export const RULE_PUBLISHER_PLACEMENT_TARGET_TEXT =
-    'To ensure sufficient data, the rule will only perform this action on publishers/placements with an impression count higher than 1000.';
+export const RULE_PUBLISHER_TARGET_TEXT =
+    'To ensure sufficient data, the rule will only perform this action on publishers with an impression count higher than 1000.';
+
+export const RULE_PLACEMENT_TARGET_TEXT =
+    'To ensure sufficient data, the rule will only perform this action on placements with an impression count higher than 1000.';
 
 export const ENTITY_TYPE_TEXT = {
     [EntityType.ACCOUNT]: 'accounts',
