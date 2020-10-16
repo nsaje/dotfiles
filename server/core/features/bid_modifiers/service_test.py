@@ -3,6 +3,7 @@ from io import StringIO
 
 import mock
 
+import core.common.entity_limits
 import dash.constants
 import dash.models
 from dash import history_helpers
@@ -206,6 +207,22 @@ class BidModifierServiceTestCase(BaseTestCase):
             ],
         )
 
+    def test_set_entity_limit(self):
+        magic_mixer.cycle(5000).blend(dash.models.BidModifier, ad_group=self.ad_group)
+        with self.assertRaises(core.common.entity_limits.EntityLimitExceeded):
+            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.2)
+
+    def test_unset_when_over_entity_limit(self):
+        bid_modifiers = magic_mixer.cycle(5002).blend(
+            dash.models.BidModifier, ad_group=self.ad_group, type=constants.BidModifierType.COUNTRY, modifier=1.2
+        )
+        bm_to_remove_1 = bid_modifiers[0]
+        bm_to_remove_2 = bid_modifiers[1]
+
+        service.set(self.ad_group, bm_to_remove_1.type, bm_to_remove_1.target, None, 1.0)
+        service.set(self.ad_group, bm_to_remove_2.type, bm_to_remove_2.target, None, None)
+        self.assertEqual(5000, len(service.get(self.ad_group)))
+
     def test_set_existing(self):
         service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
 
@@ -310,6 +327,30 @@ class BidModifierServiceTestCase(BaseTestCase):
                 },
             ],
         )
+
+    def test_set_bulk_entity_limit(self):
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
+        ]
+        service.set_bulk(self.ad_group, bms_to_set * 5000)
+
+        with self.assertRaises(core.common.entity_limits.EntityLimitExceeded):
+            service.set_bulk(self.ad_group, bms_to_set * 5001)
+
+    def test_set_and_unset_bulk_when_over_entity_limit(self):
+        bid_modifiers = magic_mixer.cycle(5099).blend(
+            dash.models.BidModifier, ad_group=self.ad_group, type=constants.BidModifierType.COUNTRY, modifier=1.2
+        )
+        self.assertEqual(5099, len(service.get(self.ad_group)))
+
+        bms_to_remove_1 = [service.BidModifierData(bm.type, bm.target, None, 1.0) for bm in bid_modifiers[:50]]
+        bms_to_remove_2 = [service.BidModifierData(bm.type, bm.target, None, None) for bm in bid_modifiers[50:100]]
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
+        ]
+
+        service.set_bulk(self.ad_group, bms_to_set + bms_to_remove_1 + bms_to_remove_2)
+        self.assertEqual(5000, len(service.get(self.ad_group)))
 
     def test_set_bulk_invalid_ad(self):
         valid_content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
@@ -504,6 +545,19 @@ class BidModifierServiceTestCase(BaseTestCase):
         self.assertEqual(history.created_by, None)
         self.assertEqual(history.action_type, dash.constants.HistoryActionType.BID_MODIFIER_DELETE)
         self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
+
+    def test_delete_when_over_entity_limit(self):
+        bid_modifiers = magic_mixer.cycle(5101).blend(dash.models.BidModifier, ad_group=self.ad_group)
+        self.assertEqual(5101, len(service.get(self.ad_group)))
+        to_remove_ids = [bm.id for bm in bid_modifiers[:100]]
+
+        service.delete(self.ad_group, to_remove_ids)
+        self.assertEqual(5001, len(service.get(self.ad_group)))
+
+        history = history_helpers.get_ad_group_history(self.ad_group).first()
+        self.assertEqual(history.created_by, None)
+        self.assertEqual(history.action_type, dash.constants.HistoryActionType.BID_MODIFIER_DELETE)
+        self.assertEqual(history.changes_text, "Removed 100 bid modifiers.")
 
     def test_delete_user_no_access(self):
         bid_modifiers_ids = [

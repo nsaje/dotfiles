@@ -57,6 +57,11 @@ def set(
     skip_source_settings_update=False,
     skip_validation=False,
 ):
+    if not _is_unset(modifier_type, modifier):
+        core.common.entity_limits.enforce(
+            models.BidModifier.objects.filter(ad_group=ad_group), ad_group.campaign.account_id
+        )
+
     if modifier_type == constants.BidModifierType.AD:
         if not core.models.ContentAd.objects.filter(ad_group=ad_group, id=target).exists():
             raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not a part of this ad group")
@@ -81,6 +86,13 @@ def set(
 def set_bulk(
     ad_group, bid_modifiers_to_set: Sequence[BidModifierData], user=None, write_history=True, propagate_to_k1=True
 ):
+    to_delete_count = sum(1 for bm in bid_modifiers_to_set if _is_unset(bm.type, bm.modifier))
+    core.common.entity_limits.enforce(
+        models.BidModifier.objects.filter(ad_group=ad_group),
+        ad_group.campaign.account_id,
+        create_count=len(bid_modifiers_to_set) - 2 * to_delete_count,
+    )
+
     target_ad_ids = {bm.target for bm in bid_modifiers_to_set if bm.type == constants.BidModifierType.AD}
     if target_ad_ids:
         if core.models.ContentAd.objects.filter(ad_group=ad_group, id__in=target_ad_ids).count() != len(target_ad_ids):
@@ -117,8 +129,7 @@ def _set(
     skip_source_settings_update=False,
     skip_validation=False,
 ):
-    if (modifier == 1.0 and modifier_type != constants.BidModifierType.PUBLISHER) or not modifier:
-        # TODO publisher modifiers with value of 1 are currently needed to correctly support publisher hierarchy in bidder
+    if _is_unset(modifier_type, modifier):
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
         if modifier_type == constants.BidModifierType.SOURCE and not skip_source_settings_update:
             _update_ad_group_source_settings(ad_group, target, modifier, user, skip_validation=skip_validation)
@@ -135,6 +146,11 @@ def _set(
         _update_ad_group_source_settings(ad_group, target, modifier, user, skip_validation=skip_validation)
 
     return instance, created
+
+
+def _is_unset(modifier_type, modifier):
+    # TODO publisher modifiers with value of 1 are currently needed to correctly support publisher hierarchy in bidder
+    return (modifier == 1.0 and modifier_type != constants.BidModifierType.PUBLISHER) or not modifier
 
 
 def _delete(ad_group, modifier_type, target, source, user=None, write_history=True):

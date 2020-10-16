@@ -16,11 +16,11 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
         super(BidModifierViewSetTest, self).setUp()
         self.request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
         self.content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
-        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
         self.foreign_ad_group = magic_mixer.blend(core.models.AdGroup)
 
         self.us = magic_mixer.blend(
@@ -339,6 +339,58 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
                 }
             },
         )
+
+    def test_create_limit_exceeded(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        magic_mixer.cycle(5000).blend(bid_modifiers.BidModifier, ad_group=ad_group)
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+            "sourceSlug": self.source.bidder_slug,
+            "target": "whatever.com",
+            "modifier": 2.5,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}), data=bm, format="json"
+        )
+
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {
+                "errorCode": "ValidationError",
+                "details": "You have reached the limit of 5000 bid modifiers per ad group. Please delete some to be able to create more.",
+            },
+        )
+
+    def test_unset_limit_exceeded(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        bms = magic_mixer.cycle(5002).blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.constants.BidModifierType.PUBLISHER,
+            modifier=2.0,
+            source_slug=self.source.bidder_slug,
+            source=self.source,
+        )
+        for bm in bms:
+            bm.target = bm.target.lower()
+            bm.save()
+        self.assertEqual(5002, len(bid_modifiers.service.get(ad_group)))
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bms[0].type),
+            "sourceSlug": bms[0].source_slug,
+            "target": bms[0].target,
+            "modifier": None,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}), data=bm, format="json"
+        )
+
+        result = self.assertResponseValid(response, status_code=status.HTTP_201_CREATED)
+        self.assertEqual(result, {"data": {"type": "", "sourceSlug": "", "target": "", "modifier": None}})
+        self.assertEqual(5001, len(bid_modifiers.service.get(ad_group)))
 
     def test_create_foreign_ad_group(self):
         bm = {
@@ -803,6 +855,88 @@ class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
                 ]
             },
         )
+
+    def test_update_bulk_limit_exceeded(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}),
+            data=[
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+                    "sourceSlug": self.source.bidder_slug,
+                    "target": "whatever.com",
+                    "modifier": 2.5,
+                }
+            ]
+            * 5001,
+            format="json",
+        )
+
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {
+                "errorCode": "ValidationError",
+                "details": "You have reached the limit of 5000 bid modifiers per ad group. Please delete some to be able to create more.",
+            },
+        )
+
+    def test_unset_bulk_limit_exceeded(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
+        bms = magic_mixer.cycle(5001).blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.constants.BidModifierType.PUBLISHER,
+            modifier=2.0,
+            source_slug=self.source.bidder_slug,
+            source=self.source,
+        )
+        for bm in bms:
+            bm.target = bm.target.lower()
+            bm.save()
+        self.assertEqual(5001, len(bid_modifiers.service.get(ad_group)))
+        bms_to_set = [
+            {
+                "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+                "sourceSlug": self.source.bidder_slug,
+                "target": "newpublisher.com",
+                "modifier": 1.1,
+            },
+            {
+                "type": bid_modifiers.BidModifierType.get_name(bms[0].type),
+                "sourceSlug": bms[0].source_slug,
+                "target": bms[0].target,
+                "modifier": None,
+            },
+            {
+                "type": bid_modifiers.BidModifierType.get_name(bms[1].type),
+                "sourceSlug": bms[1].source_slug,
+                "target": bms[1].target,
+                "modifier": None,
+            },
+        ]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": ad_group.id}), data=bms_to_set, format="json"
+        )
+
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+        self.assertEqual(
+            result,
+            {
+                "data": [
+                    {
+                        "id": result["data"][0]["id"],
+                        "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+                        "sourceSlug": self.source.bidder_slug,
+                        "target": "newpublisher.com",
+                        "modifier": 1.1,
+                    }
+                ]
+            },
+        )
+        self.assertEqual(5000, len(bid_modifiers.service.get(ad_group)))
 
     def test_update_bulk_ad_error(self):
         invalid_ad = magic_mixer.blend(core.models.ContentAd)
