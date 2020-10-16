@@ -86,7 +86,6 @@ def _fetch_data_and_apply_rules(target_type: int, rules_map: Dict[core.models.Ad
     )
 
 
-@utils.metrics_compat.timer("automation.rules.execute.apply_rules")
 def _apply_rules(
     target_type: int,
     rules_map: Dict[core.models.AdGroup, List[models.Rule]],
@@ -99,52 +98,57 @@ def _apply_rules(
     logger.info(
         f"Starting to apply rules of target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
     )
-    for ad_group, relevant_rules in rules_map.items():
-        for rule in relevant_rules:
-            try:
-                changes, per_target_condition_values = apply.apply_rule(
-                    rule,
-                    ad_group,
-                    stats.get(ad_group.id, {}),
-                    ad_group_settings_map.get(ad_group.id, {}),
-                    content_ad_settings_map.get(ad_group.id, {}),
-                    campaign_budgets_map.get(ad_group.campaign_id, {}),
-                    cpa_goals_map.get(ad_group.campaign_id, None),
-                )
-            except exceptions.RuleArchived:
-                continue
-            except exceptions.ApplyFailedBase as e:
-                utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="failed")
-                history = _write_fail_history(rule, ad_group, exception=e)
-            except Exception as e:
-                logger.exception("Unhandled exception in rule application")
-                utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="exception")
-                history = _write_fail_history(rule, ad_group, exception=e)
-                _write_history_details(rule, history, stack_trace=traceback.format_exc())
-            else:
-                utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="success")
-                history = _write_history(rule, ad_group, changes)
-                _write_history_details(rule, history, per_target_condition_values=per_target_condition_values)
+    with utils.metrics_compat.block_timer(
+        "automation.rules.execute.apply_rules", target_type=constants.TargetType.get_name(target_type).lower()
+    ):
+        for ad_group, relevant_rules in rules_map.items():
+            for rule in relevant_rules:
+                try:
+                    changes, per_target_condition_values = apply.apply_rule(
+                        rule,
+                        ad_group,
+                        stats.get(ad_group.id, {}),
+                        ad_group_settings_map.get(ad_group.id, {}),
+                        content_ad_settings_map.get(ad_group.id, {}),
+                        campaign_budgets_map.get(ad_group.campaign_id, {}),
+                        cpa_goals_map.get(ad_group.campaign_id, None),
+                    )
+                except exceptions.RuleArchived:
+                    continue
+                except exceptions.ApplyFailedBase as e:
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="failed")
+                    history = _write_fail_history(rule, ad_group, exception=e)
+                except Exception as e:
+                    logger.exception("Unhandled exception in rule application")
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="exception")
+                    history = _write_fail_history(rule, ad_group, exception=e)
+                    _write_history_details(rule, history, stack_trace=traceback.format_exc())
+                else:
+                    utils.metrics_compat.incr("automation.rules.execute.rule_processed", 1, status="success")
+                    history = _write_history(rule, ad_group, changes)
+                    _write_history_details(rule, history, per_target_condition_values=per_target_condition_values)
 
-            notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
+                notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
     logger.info(
         f"Finished applying rules of target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
     )
 
 
-@utils.metrics_compat.timer("automation.rules.execute.prefetch")
 def _prefetch_data(target_type: int, rules_map: Dict[core.models.AdGroup, List[models.Rule]]):
     logger.info(
         f"Starting to prefetch data for target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
     )
-    ad_groups = list(rules_map.keys())
-    stats = fetch.query_stats(target_type, rules_map)
-    ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
-    campaign_budgets_map = fetch.prepare_budgets(ad_groups)
-    cpa_goals_map = fetch.prepare_cpa_goal_by_campaign_id(ad_groups)
-    content_ad_settings_map = {}
-    if target_type == constants.TargetType.AD:
-        content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
+    with utils.metrics_compat.block_timer(
+        "automation.rules.execute.prefetch", target_type=constants.TargetType.get_name(target_type).lower()
+    ):
+        ad_groups = list(rules_map.keys())
+        stats = fetch.query_stats(target_type, rules_map)
+        ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
+        campaign_budgets_map = fetch.prepare_budgets(ad_groups)
+        cpa_goals_map = fetch.prepare_cpa_goal_by_campaign_id(ad_groups)
+        content_ad_settings_map = {}
+        if target_type == constants.TargetType.AD:
+            content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
 
     logger.info(
         f"Finished prefetching data for target type {constants.TargetType.get_name(target_type)} on {len(rules_map)} ad groups."
