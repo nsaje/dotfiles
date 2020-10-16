@@ -121,13 +121,29 @@
 
             <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
-                    <h2 class="zem-settings__panel-header-title">
+                    <h2
+                        class="zem-settings__panel-header-title"
+                        [class.zem-settings__panel-header-title--autopilot]="
+                            state.extras.agencyUsesRealtimeAutopilot
+                        "
+                    >
                         Campaign goals
                     </h2>
                 </div>
                 <div class="zem-settings-section">
                     <div class="zem-settings-section__header">
-                        <div class="zem-settings-section__description">
+                        <div
+                            *ngIf="state.extras.agencyUsesRealtimeAutopilot"
+                            class="zem-settings-section__description"
+                        >
+                            Campaign goals should reflect your primary marketing
+                            objective. Our Autopilot will automatically optimize
+                            towards the selected goal.
+                        </div>
+                        <div
+                            *ngIf="!state.extras.agencyUsesRealtimeAutopilot"
+                            class="zem-settings-section__description"
+                        >
                             Define your marketing objectives by adding campaign
                             goals.
                         </div>
@@ -176,6 +192,9 @@
                             state.conversionPixelsRequests
                         "
                         [isDisabled]="isReadOnly"
+                        [agencyUsesRealtimeAutopilot]="
+                            state.extras.agencyUsesRealtimeAutopilot
+                        "
                         (campaignGoalCreate)="store.createGoal()"
                         (campaignGoalPrimaryChange)="
                             store.setPrimaryGoal($event)

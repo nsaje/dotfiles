@@ -105,6 +105,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=CampaignBudgetSerializer(), default=[], allow_empty=True
     )
     credits = rest_framework.serializers.ListSerializer(child=CreditSerializer(), default=[], allow_empty=True)
+    agency_uses_realtime_autopilot = rest_framework.serializers.BooleanField(read_only=True, default=False)
 
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):

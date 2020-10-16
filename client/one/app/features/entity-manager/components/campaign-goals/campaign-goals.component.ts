@@ -53,6 +53,8 @@ export class CampaignGoalsComponent implements OnChanges {
     }[];
     @Input()
     isDisabled: boolean;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean = false;
     @Output()
     campaignGoalCreate = new EventEmitter<void>();
     @Output()

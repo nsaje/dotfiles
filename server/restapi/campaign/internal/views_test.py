@@ -307,6 +307,7 @@ class CampaignViewSetTest(RESTAPITestCase):
                 },
                 "budgetsDepleted": [],
                 "credits": [],
+                "agencyUsesRealtimeAutopilot": False,
             },
         )
 
@@ -584,6 +585,7 @@ class CampaignViewSetTest(RESTAPITestCase):
                         isAvailable=credit.is_available(),
                     )
                 ],
+                "agencyUsesRealtimeAutopilot": False,
             },
         )
 
@@ -761,6 +763,7 @@ class CampaignViewSetTest(RESTAPITestCase):
                 },
                 "budgetsDepleted": [depleted_campaign_budget_repr],
                 "credits": [credit_item_repr],
+                "agencyUsesRealtimeAutopilot": False,
             },
         )
 

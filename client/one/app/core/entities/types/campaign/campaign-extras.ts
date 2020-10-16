@@ -19,4 +19,5 @@ export interface CampaignExtras {
     credits: Credit[];
     hacks: Hack[];
     deals: Deal[];
+    agencyUsesRealtimeAutopilot: boolean;
 }

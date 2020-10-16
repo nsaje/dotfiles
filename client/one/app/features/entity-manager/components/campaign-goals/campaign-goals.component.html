@@ -53,6 +53,12 @@
     >
         Click on a goal to set it as primary
         <zem-help-popover
+            *ngIf="agencyUsesRealtimeAutopilot"
+            content="Autopilot evaluates performance across multiple parameters in real-time and optimizes toward your primary goal."
+            placement="left"
+        ></zem-help-popover>
+        <zem-help-popover
+            *ngIf="!agencyUsesRealtimeAutopilot"
             content="Primary goal will be used for auto-optimizing your campaign."
             placement="left"
         ></zem-help-popover>

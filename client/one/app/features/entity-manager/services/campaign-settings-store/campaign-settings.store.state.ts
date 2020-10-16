@@ -77,6 +77,7 @@ export class CampaignSettingsStoreState {
         credits: [],
         hacks: [],
         deals: [],
+        agencyUsesRealtimeAutopilot: false,
     };
     sources: Source[] = [];
     availableDeals: Deal[] = [];
