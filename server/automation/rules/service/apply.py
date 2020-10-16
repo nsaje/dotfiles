@@ -239,7 +239,7 @@ def _prepare_left_stat_operand_conversions(
     metric_key_prefix = constants.METRIC_CONVERSIONS_MAPPING[condition.left_operand_type]
     metric_key_suffix = constants.METRIC_CONVERSIONS_SUFFIX[attribution]
     metric_key = metric_key_prefix + metric_key_suffix
-    conversion_stats = target_stats["conversions"]
+    conversion_stats = target_stats.get("conversions", {})
     condition_window = condition.left_operand_window or rule.window
     value = conversion_stats.get(condition_window, {}).get(slug, {}).get(conversion_window, {}).get(metric_key)
     if value is None:
