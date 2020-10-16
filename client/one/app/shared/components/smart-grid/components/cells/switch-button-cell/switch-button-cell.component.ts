@@ -6,27 +6,27 @@ import {SwitchButtonRendererParams} from './types/switch-button.renderer-params'
 @Component({
     templateUrl: './switch-button-cell.component.html',
 })
-export class SwitchButtonCellComponent<T, S>
-    implements ICellRendererAngularComp {
-    params: SwitchButtonRendererParams<T, S>;
-    componentParent: S;
-    item: T;
+export class SwitchButtonCellComponent implements ICellRendererAngularComp {
+    params: SwitchButtonRendererParams;
     value: boolean;
-    isReadOnly: boolean;
+    isDisabled: boolean;
 
-    agInit(params: SwitchButtonRendererParams<T, S>) {
+    agInit(params: SwitchButtonRendererParams): void {
         this.params = params;
-        this.item = params.data;
-        this.componentParent = params.context.componentParent;
-        this.value = params.getSwitchValue(params.data);
-        this.isReadOnly = params.isReadOnly(this.componentParent, this.item);
+        this.value = this.params.isSwitchedOn(this.params);
+        this.isDisabled = this.params.isDisabled(this.params);
+    }
+
+    refresh(params: SwitchButtonRendererParams): boolean {
+        const value = params.isSwitchedOn(params);
+        const isDisabled = params.isDisabled(params);
+        if (this.value !== value || this.isDisabled !== isDisabled) {
+            return false;
+        }
+        return true;
     }
 
     toggle() {
-        this.params.toggle(this.componentParent, this.item, !this.value);
-    }
-
-    refresh(): boolean {
-        return false;
+        this.params.toggle(!this.value, this.params);
     }
 }

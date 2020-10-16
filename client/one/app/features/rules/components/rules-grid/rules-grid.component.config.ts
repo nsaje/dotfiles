@@ -51,14 +51,19 @@ export const COLUMN_STATUS: ColDef = {
     suppressSizeToFit: true,
     cellRendererFramework: SwitchButtonCellComponent,
     cellRendererParams: {
-        getSwitchValue: item => item.state === RuleState.ENABLED,
-        toggle: (componentParent: RulesView, item: Rule, value: boolean) => {
-            componentParent.onRuleStateToggle(item, value);
+        isSwitchedOn: (params: SwitchButtonRendererParams) => {
+            return params.data.state === RuleState.ENABLED;
         },
-        isReadOnly: (componentParent: RulesView, item: Rule) => {
-            return componentParent.store.isReadOnly(item);
+        isDisabled: (params: SwitchButtonRendererParams) => {
+            return params.context.componentParent.store.isReadOnly(params.data);
         },
-    } as SwitchButtonRendererParams<Rule, RulesView>,
+        toggle: (value: boolean, params: SwitchButtonRendererParams) => {
+            params.context.componentParent.onRuleStateToggle(
+                params.data,
+                value
+            );
+        },
+    } as SwitchButtonRendererParams,
 };
 
 export const COLUMN_ACTION_FREQUENCY: ColDef = {

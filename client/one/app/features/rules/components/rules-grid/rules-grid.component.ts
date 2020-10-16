@@ -7,7 +7,7 @@ import {
     EventEmitter,
     OnChanges,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {ColDef, DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {Rule} from '../../../../core/rules/types/rule';
@@ -56,6 +56,11 @@ export class RulesGridComponent implements OnChanges {
         COLUMN_ACTIONS,
     ];
 
+    gridOptions: GridOptions = {
+        immutableData: true,
+        getRowNodeId: this.getRowNodeId,
+    };
+
     private gridApi: GridApi;
 
     ngOnChanges() {
@@ -69,5 +74,9 @@ export class RulesGridComponent implements OnChanges {
         if (this.isLoading) {
             this.gridApi.showLoadingOverlay();
         }
+    }
+
+    private getRowNodeId(rule: Rule): string {
+        return rule.id;
     }
 }
