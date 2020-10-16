@@ -30,7 +30,13 @@
         (selectedTypeSummaryGridRows)="store.updateSelectedGridRows($event)"
     ></zem-bid-modifier-types-grid>
 </ng-container>
-<div class="zem-bid-range-info__final-range-message">
+<div
+    class="zem-bid-range-info__final-range-message"
+    *ngIf="
+        !store.state.agencyUsesRealtimeAutopilot ||
+        store.state.finalBidRangeValue
+    "
+>
     <span class="zem-bid-range-info__final-range-text">{{
         store.state.finalBidRangeMessage
     }}</span>

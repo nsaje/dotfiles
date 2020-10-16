@@ -18,7 +18,7 @@ export class BidRangeInfoStoreState {
     bid: string;
     biddingType: BiddingType;
     bidModifierTypeSummaries: BidModifierTypeSummary[];
-    sourceBidModifierTypeSummary: BidModifierTypeSummary = null;
+    sourceBidModifierTypeSummary: BidModifierTypeSummary = null; // TODO: RTAP: remove this after Phase 1
     bidModifierTypeGridRows: TypeSummaryGridRow[];
     currency: Currency = null;
     fractionSize: number = null;
