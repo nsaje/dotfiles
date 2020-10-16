@@ -37,4 +37,5 @@ export const campaignExtrasMock: CampaignExtras = {
     credits: [],
     hacks: [],
     deals: [],
+    agencyUsesRealtimeAutopilot: null,
 };
