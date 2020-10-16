@@ -165,7 +165,12 @@ export class GridBridgeComponent
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(this.createGridUpdater$(), this.createColumnsUpdater$())
+        merge(
+            this.createGridUpdater$(),
+            this.createColumnsUpdater$(),
+            this.createDataRowsUpdater$(),
+            this.createDataTotalsUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -198,14 +203,41 @@ export class GridBridgeComponent
         return this.store.state$.pipe(
             map(state => state.columns),
             distinctUntilChanged(),
-            tap(() => {
+            tap(columns => {
                 if (!commonHelpers.isDefined(this.gridApi)) {
                     return;
                 }
+                this.gridApi.setColumnDefs(columns);
                 setTimeout(() => {
                     this.setBreakdownColumnPinnedProperty();
                     this.gridApi.sizeColumnsToFit();
                 });
+            })
+        );
+    }
+
+    private createDataRowsUpdater$(): Observable<GridRowDataStats[]> {
+        return this.store.state$.pipe(
+            map(state => state.data.rows),
+            distinctUntilChanged(),
+            tap(rows => {
+                if (!commonHelpers.isDefined(this.gridApi)) {
+                    return;
+                }
+                this.gridApi.setRowData(rows);
+            })
+        );
+    }
+
+    private createDataTotalsUpdater$(): Observable<GridRowDataStats[]> {
+        return this.store.state$.pipe(
+            map(state => state.data.totals),
+            distinctUntilChanged(),
+            tap(totals => {
+                if (!commonHelpers.isDefined(this.gridApi)) {
+                    return;
+                }
+                this.gridApi.setPinnedBottomRowData(totals);
             })
         );
     }
