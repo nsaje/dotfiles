@@ -1960,17 +1960,37 @@ angular
             constants.breakdown.CAMPAIGN,
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
-            constants.breakdown.PUBLISHER,
-            constants.breakdown.PLACEMENT,
-            constants.breakdown.COUNTRY,
-            constants.breakdown.STATE,
-            constants.breakdown.DMA,
-            constants.breakdown.DEVICE,
-            constants.breakdown.ENVIRONMENT,
-            constants.breakdown.OPERATING_SYSTEM,
-            constants.breakdown.BROWSER,
-            constants.breakdown.CONNECTION_TYPE,
         ];
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.ACCOUNTS,
+            breakdown: constants.breakdown.PUBLISHER,
+            shown: true,
+        });
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.CAMPAIGNS,
+            breakdown: constants.breakdown.PUBLISHER,
+            shown: true,
+        });
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.AD_GROUPS,
+            breakdown: constants.breakdown.PUBLISHER,
+            shown: true,
+        });
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.ACCOUNTS,
+            breakdown: constants.breakdown.PLACEMENT,
+            shown: true,
+        });
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.CAMPAIGNS,
+            breakdown: constants.breakdown.PLACEMENT,
+            shown: true,
+        });
+        COLUMNS.actions.exceptions.custom.push({
+            level: constants.level.AD_GROUPS,
+            breakdown: constants.breakdown.PLACEMENT,
+            shown: true,
+        });
         COLUMNS.actions.exceptions.custom.push({
             level: constants.level.AD_GROUPS,
             breakdown: constants.breakdown.MEDIA_SOURCE,
