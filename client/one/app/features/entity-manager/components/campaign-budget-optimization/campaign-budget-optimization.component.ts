@@ -18,10 +18,8 @@ export class CampaignBudgetOptimizationComponent {
     autopilot: boolean;
     @Input()
     isDisabled: boolean;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean;
     @Output()
     autopilotChange = new EventEmitter<boolean>();
-
-    onAutopilotToggle($event: boolean) {
-        this.autopilotChange.emit($event);
-    }
 }

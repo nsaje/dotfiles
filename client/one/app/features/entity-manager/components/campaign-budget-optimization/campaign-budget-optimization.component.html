@@ -1,8 +1,35 @@
 <zem-checkbox-input
+    *ngIf="!agencyUsesRealtimeAutopilot"
     class="zem-checkbox-input zem-campaign-budget-optimization__item"
     [isChecked]="autopilot"
     [isDisabled]="isDisabled"
-    (toggle)="onAutopilotToggle($event)"
+    (toggle)="autopilotChange.emit($event)"
 >
     Enable budget optimization
 </zem-checkbox-input>
+
+<zem-radio-input
+    *ngIf="agencyUsesRealtimeAutopilot"
+    class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
+    [groupModel]="autopilot"
+    [value]="true"
+    [isDisabled]="isDisabled"
+    (select)="autopilotChange.emit($event)"
+>
+    <strong>Enabled</strong> Autopilot will automatically distribute your
+    campaign budget between all ad groups in order to hit your primary campaign
+    goal. The budget will be paced evenly throughout the flight time of the
+    campaign.
+</zem-radio-input>
+<zem-radio-input
+    *ngIf="agencyUsesRealtimeAutopilot"
+    class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
+    [groupModel]="autopilot"
+    [value]="false"
+    [isDisabled]="isDisabled"
+    (select)="autopilotChange.emit($event)"
+>
+    <strong>Disabled</strong> Autopilot will automatically optimize towards your
+    primary campaign goal, but you’ll take full control over your campaign
+    budget by manually setting your ad groups’ daily budgets.
+</zem-radio-input>
