@@ -11,6 +11,7 @@
         [paginationCount]="state.data.pagination.count"
         (paginationChange)="paginationChange.emit($event)"
         (gridReady)="onGridReady($event)"
+        (gridSizeChange)="onGridSizeChange($event)"
     >
     </zem-smart-grid>
 </ng-container>

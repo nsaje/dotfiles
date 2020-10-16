@@ -25,12 +25,15 @@ import {
     EditableCellMode,
     EditableCellPlacement,
 } from './editable-cell.constants';
-import {KeyCode} from '../../../../../../app.constants';
+import {
+    KeyCode,
+    RESIZE_OBSERVER_DEBOUNCE_TIME,
+} from '../../../../../../app.constants';
 import {ResizeObserverHelper} from '../../../../../../shared/helpers/resize-observer.helper';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import {EditableCellApi} from './types/editable-cell-api';
 import {Router, NavigationEnd} from '@angular/router';
-import {takeUntil, filter} from 'rxjs/operators';
+import {takeUntil, filter, debounceTime} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 
 @Component({
@@ -69,6 +72,7 @@ export class EditableCellComponent
     private onKeydownCallback: any;
     private onContainerElementScrollCallback: any;
 
+    private resizeObserverDebouncer$: Subject<void> = new Subject<void>();
     private resizeObserverHelper: ResizeObserverHelper;
 
     private sidebarContainerContentElement: Element;
@@ -94,9 +98,7 @@ export class EditableCellComponent
             this
         );
         this.resizeObserverHelper = new ResizeObserverHelper(() => {
-            if (this.portalHost.hasAttached() && !this.shouldRenderAsModal) {
-                this.switchToReadMode();
-            }
+            this.resizeObserverDebouncer$.next();
         });
     }
 
@@ -106,6 +108,19 @@ export class EditableCellComponent
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => {
                 this.modeChange.emit(EditableCellMode.READ);
+            });
+        this.resizeObserverDebouncer$
+            .pipe(
+                debounceTime(RESIZE_OBSERVER_DEBOUNCE_TIME),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(() => {
+                if (
+                    this.portalHost.hasAttached() &&
+                    !this.shouldRenderAsModal
+                ) {
+                    this.switchToReadMode();
+                }
             });
     }
 

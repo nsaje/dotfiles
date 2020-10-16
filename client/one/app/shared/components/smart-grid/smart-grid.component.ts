@@ -8,9 +8,6 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    OnDestroy,
-    AfterViewInit,
-    Inject,
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
@@ -34,8 +31,6 @@ import * as arrayHelpers from '../../helpers/array.helpers';
 import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
 import {PaginationState} from './types/pagination-state';
-import {DOCUMENT} from '@angular/common';
-import {ResizeObserverHelper} from '../../helpers/resize-observer.helper';
 import {HeaderCellComponent} from './components/cells/header-cell/header-cell.component';
 
 @Component({
@@ -43,8 +38,7 @@ import {HeaderCellComponent} from './components/cells/header-cell/header-cell.co
     templateUrl: './smart-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmartGridComponent
-    implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class SmartGridComponent implements OnInit, OnChanges {
     @Input('gridOptions')
     options: GridOptions;
     @Input()
@@ -66,6 +60,8 @@ export class SmartGridComponent
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
+    gridSizeChange = new EventEmitter<GridSizeChangedEvent>();
+    @Output()
     paginationChange = new EventEmitter<PaginationState>();
 
     isGridReady: boolean;
@@ -75,17 +71,6 @@ export class SmartGridComponent
     paginationPage: number;
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
-
-    private resizeObserverHelper: ResizeObserverHelper;
-    private sidebarContainerContentElement: Element;
-
-    constructor(@Inject(DOCUMENT) private document: Document) {
-        this.resizeObserverHelper = new ResizeObserverHelper(() => {
-            if (this.isGridReady) {
-                this.gridApi.sizeColumnsToFit();
-            }
-        });
-    }
 
     ngOnInit(): void {
         this.gridOptions = {
@@ -119,25 +104,6 @@ export class SmartGridComponent
         }
     }
 
-    ngAfterViewInit(): void {
-        this.sidebarContainerContentElement = this.document.getElementById(
-            'zem-sidebar-container__content'
-        );
-        if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
-            this.resizeObserverHelper.observe(
-                this.sidebarContainerContentElement
-            );
-        }
-    }
-
-    ngOnDestroy(): void {
-        if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
-            this.resizeObserverHelper.unobserve(
-                this.sidebarContainerContentElement
-            );
-        }
-    }
-
     onRowSelected(event: RowSelectedEvent) {
         this.rowSelected.emit(event.data);
     }
@@ -155,6 +121,7 @@ export class SmartGridComponent
 
     onGridSizeChanged($event: GridSizeChangedEvent) {
         $event.api.sizeColumnsToFit();
+        this.gridSizeChange.emit($event);
     }
 
     onPageChange(page: number) {

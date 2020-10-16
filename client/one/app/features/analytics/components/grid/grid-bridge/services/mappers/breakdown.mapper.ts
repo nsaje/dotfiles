@@ -6,10 +6,12 @@ import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {BreakdownCellComponent} from '../../../cells/breakdown-cell/breakdown-cell.component';
 import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/breakdown.renderer-params';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
+import {GridColumnTypes} from '../../../../../analytics.constants';
 
 export class BreakdownColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef {
         return {
+            colId: GridColumnTypes.BREAKDOWN,
             cellRendererFramework: BreakdownCellComponent,
             cellRendererParams: {
                 getPopoverTooltip: (params: BreakdownRendererParams) => {

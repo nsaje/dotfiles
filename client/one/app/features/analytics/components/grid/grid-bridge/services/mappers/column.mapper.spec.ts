@@ -96,7 +96,7 @@ describe('ColumnMapper', () => {
             flex: 1,
             suppressSizeToFit: false,
             resizable: true,
-            pinned: true,
+            pinned: 'left',
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,

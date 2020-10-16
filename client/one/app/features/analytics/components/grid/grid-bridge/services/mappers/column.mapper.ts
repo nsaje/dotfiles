@@ -93,7 +93,9 @@ export abstract class ColumnMapper {
             flex: column.type === GridColumnTypes.BREAKDOWN ? 1 : 0,
             suppressSizeToFit: column.type !== GridColumnTypes.BREAKDOWN,
             resizable: RESIZABLE_GRID_COLUMN_TYPES.includes(column.type),
-            pinned: PINNED_GRID_COLUMN_TYPES.includes(column.type),
+            pinned: PINNED_GRID_COLUMN_TYPES.includes(column.type)
+                ? 'left'
+                : null,
             headerComponentParams: {
                 icon:
                     column.type === GridColumnTypes.PERFORMANCE_INDICATOR

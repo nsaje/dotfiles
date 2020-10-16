@@ -65,7 +65,7 @@ describe('CheckboxColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
-            pinned: true,
+            pinned: 'left',
             headerComponentParams: {
                 enableSelection: true,
                 selectionOptions: {

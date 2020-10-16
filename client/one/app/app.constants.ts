@@ -848,6 +848,8 @@ export const ENTITY_TYPE_TO_LEVEL_MAP = {
     [EntityType.AD_GROUP]: Level.AD_GROUPS,
 };
 
+export const RESIZE_OBSERVER_DEBOUNCE_TIME = 100;
+
 export enum CostMode {
     LEGACY = 'legacy',
     PUBLIC = 'public',
