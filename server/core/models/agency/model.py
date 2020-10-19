@@ -38,6 +38,7 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
         "default_csv_decimal_separator",
         "is_externally_managed",
         "is_disabled",
+        "uses_realtime_autopilot",
         "entity_tags",
         "custom_attributes",
         "users",
