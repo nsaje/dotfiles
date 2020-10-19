@@ -65,6 +65,8 @@ class RuleManagerTest(BaseTestCase):
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)
         self.assertEqual("100", condition.right_operand_value)
 
+        self.assertTrue(rule.change_history.exists)
+
     def test_create_with_agency(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)

@@ -68,6 +68,16 @@ class RuleInstanceTest(TestCase):
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)
         self.assertEqual("100", condition.right_operand_value)
 
+    def test_add_rule_change_history(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[account])
+        self.assertEqual(rule.change_history.count(), 0)
+
+        rule.update(request, cooldown=72)
+        self.assertEqual(rule.change_history.count(), 1)
+
     def test_archive(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)

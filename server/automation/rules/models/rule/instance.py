@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils.functional import cached_property
 
 from ... import constants
+from ..rule_change_history import RuleChangeHistory
 from ..rule_condition import RuleCondition
 
 
@@ -41,6 +42,7 @@ class RuleInstanceMixin:
         self.save(request)
 
         self._apply_related_updates(updates)
+        RuleChangeHistory.objects.create_from_rule(request, self)
 
     def _clean_updates(self, updates):
         new_updates = {}

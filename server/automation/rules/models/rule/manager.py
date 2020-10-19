@@ -16,7 +16,6 @@ class RuleManager(core.common.BaseManager):
         rule = model.Rule(agency=agency, account=account)
         rule.update(request, **kwargs)
 
-        # TODO: write history ??
         return rule
 
     @staticmethod

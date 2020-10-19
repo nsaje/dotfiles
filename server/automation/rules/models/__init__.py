@@ -1,3 +1,4 @@
+from .rule_change_history import RuleChangeHistory  # isort:skip - has to be imported before Rule
 from .rule import Rule
 from .rule_condition import RuleCondition
 from .rule_history import RuleHistory
