@@ -25,11 +25,12 @@ class MasterDerivedView(Materialize):
     IS_DERIVED_VIEW = True
 
     @classmethod
-    def create(cls, table_name, breakdown, sortkey, distkey=None, diststyle="key"):
+    def create(cls, table_name, breakdown, sortkey, index, distkey=None, diststyle="key"):
         class Derived(cls):
             TABLE_NAME = table_name
             BREAKDOWN = breakdown
             SORTKEY = sortkey
+            INDEX = index
             DISTKEY = distkey
             DISTSTYLE = diststyle
 
@@ -76,8 +77,7 @@ class MasterDerivedView(Materialize):
     def prepare_create_table_postgres(cls):
         template = cls.TEMPLATE.replace("/redshift/", "/postgres/")
         with open(template) as rs:
-            assert cls.SORTKEY[0] == "date"
-            index = cls.SORTKEY[1:] + ["date"]
+            index = cls.INDEX
             dependencies = [col for col in cls.SORTKEY if col in DEPENDENT_COLUMNS]
             sql = derived_views.generate_table_definition_postgres(
                 cls.TABLE_NAME, rs, cls.BREAKDOWN, index, dependencies

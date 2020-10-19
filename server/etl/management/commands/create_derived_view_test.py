@@ -63,6 +63,7 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="new_table",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -136,6 +137,7 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="new_table",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -210,6 +212,7 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="new_table",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -390,6 +393,7 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="new_table",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -447,7 +451,7 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     local_base_effective_data_cost_nano bigint,
                     local_service_fee_nano bigint
                 );
-                CREATE INDEX IF NOT EXISTS new_table_main_idx ON new_table (source_id, account_id, date);SELECT create_hypertable('new_table', 'date', chunk_time_interval => INTERVAL '1 day');
+                CREATE INDEX IF NOT EXISTS new_table_idx ON new_table (source_id, account_id, date);SELECT create_hypertable('new_table', 'date', chunk_time_interval => INTERVAL '1 day');
                 """
                     )
                 )

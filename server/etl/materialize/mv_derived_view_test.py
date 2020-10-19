@@ -19,6 +19,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="newtable",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -148,6 +149,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="newtable",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
 
@@ -279,6 +281,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
             table_name="newtable",
             breakdown=["date", "source_id", "account_id"],
             sortkey=["date", "source_id", "account_id"],
+            index=["source_id", "account_id", "date"],
             distkey="source_id",
         )
         date_from = datetime.date(2016, 7, 1)
@@ -299,7 +302,11 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
     def test_prepare_insert_query(self, mock_transaction, mock_cursor):
         touchpoint_view = TouchpointConversionsDerivedView.create(
-            table_name="mv_derived", breakdown=["slug", "type"], sortkey=["slug"], distkey="content_ad_id"
+            table_name="mv_derived",
+            breakdown=["slug", "type"],
+            sortkey=["slug"],
+            index=["source_id", "account_id", "date"],
+            distkey="content_ad_id",
         )
         touchpoint_view = touchpoint_view(123, "2019-05-19", "2019-05-22", account_id=1234)
         sql, params = touchpoint_view.prepare_insert_query("2019-05-19", "2019-05-22")
