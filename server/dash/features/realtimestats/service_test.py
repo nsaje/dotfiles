@@ -59,33 +59,32 @@ class RealtimestatsServiceTest(TestCase):
             margin=decimal.Decimal("0.2200"),
         )
 
+    @mock.patch("utils.redirector_helper.get_adgroup_realtimestats")
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
-    def test_get_ad_group_stats(self, mock_k1_get):
+    def test_get_ad_group_stats(self, mock_k1_get, mock_redirector_get):
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"spend": 3.0, "source_slug": self.ad_group_sources[0].source.bidder_slug},
                 {"spend": 1.1, "source_slug": self.ad_group_sources[1].source.bidder_slug},
             ],
-            "clicks": 15,
-            "impressions": 100,
             "errors": {},
         }
+        mock_redirector_get.return_value = {"clicks": 13}
 
         result = service.get_ad_group_stats(self.ad_group)
-        self.assertEqual(
-            result, {"clicks": 15, "impressions": 100, "spend": test_helper.AlmostMatcher(decimal.Decimal("8.8696"))}
-        )
+        self.assertEqual(result, {"clicks": 13, "spend": test_helper.AlmostMatcher(decimal.Decimal("8.8696"))})
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
+        mock_redirector_get.assert_called_once_with(self.ad_group.id)
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
         )
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},
                 {"source_slug": sources[1].bidder_slug, "spend": 3.0},
             ],
@@ -111,14 +110,14 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_only_allowed(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
         )
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},
                 {"source_slug": sources[1].bidder_slug, "spend": 3.0},
                 {"source_slug": "amplify", "spend": 3.0},
@@ -145,11 +144,11 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
                 {"source_slug": sources[1].bidder_slug, "spend": decimal.Decimal("3.0")},
             ],
@@ -180,7 +179,7 @@ class RealtimestatsServiceTest(TestCase):
         )
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
                 {"source_slug": sources[1].bidder_slug, "spend": decimal.Decimal("3.0")},
             ],
@@ -204,9 +203,9 @@ class RealtimestatsServiceTest(TestCase):
             ],
         )
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
-        mock_k1_get.return_value = {"spend": [], "errors": {}}
+        mock_k1_get.return_value = {"stats": [], "errors": {}}
         budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
@@ -217,9 +216,9 @@ class RealtimestatsServiceTest(TestCase):
             expected_params = dict({})
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_yesterday(self, mock_k1_get):
-        mock_k1_get.return_value = {"spend": [], "errors": {}}
+        mock_k1_get.return_value = {"stats": [], "errors": {}}
         budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         utc_yesterday = dates_helper.day_before(utc_today)
@@ -233,14 +232,14 @@ class RealtimestatsServiceTest(TestCase):
             expected_params = dict({})
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_without_cache(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
         )
         mock_k1_get.return_value = {
-            "spend": [
+            "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},
                 {"source_slug": sources[1].bidder_slug, "spend": 3.0},
             ],
@@ -251,7 +250,7 @@ class RealtimestatsServiceTest(TestCase):
         self.assertEqual(
             result,
             {
-                "spend": [
+                "stats": [
                     {
                         "source_slug": sources[1].bidder_slug,
                         "source": sources[1],
@@ -272,7 +271,7 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = Exception("test")
         mock_k1_get.side_effect = e
@@ -283,7 +282,7 @@ class RealtimestatsServiceTest(TestCase):
         mock_logger.exception.assert_called_once_with(e)
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="exception")
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_exception_without_caching(self, mock_k1_get):
         e = Exception("test")
         mock_k1_get.side_effect = e
@@ -294,7 +293,7 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_http_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = urllib.error.HTTPError("url", 400, "msg", None, None)
         mock_k1_get.side_effect = e
@@ -305,7 +304,7 @@ class RealtimestatsServiceTest(TestCase):
         mock_logger.exception.assert_not_called()
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="http", status="400")
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_http_exception_without_caching(self, mock_k1_get):
         e = urllib.error.HTTPError("url", 400, "msg", None, None)
         mock_k1_get.side_effect = e
@@ -316,7 +315,7 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_ioerror_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = IOError()
         mock_k1_get.side_effect = e
@@ -327,7 +326,7 @@ class RealtimestatsServiceTest(TestCase):
         mock_logger.exception.assert_not_called()
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="ioerror")
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_ioerror_exception_without_caching(self, mock_k1_get):
         e = IOError()
         mock_k1_get.side_effect = e

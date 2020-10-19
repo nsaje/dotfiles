@@ -25,7 +25,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.source = magic_mixer.blend(core.models.Source, source_type=self.source_type)
         magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
 
-        self.data = {"spend": [{"source": self.source, "spend": decimal.Decimal("12.0")}]}
+        self.data = {"stats": [{"source": self.source, "spend": decimal.Decimal("12.0")}]}
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_refresh_realtime_data(self, mock_get_realtime_data):
@@ -42,12 +42,12 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(self.ad_group.id, history.ad_group_id)
         self.assertEqual(self.source.id, history.source_id)
         self.assertEqual(dates_helper.utc_today(), history.date)
-        self.assertEqual(self.data["spend"][0]["spend"], history.etfm_spend)
+        self.assertEqual(self.data["stats"][0]["spend"], history.etfm_spend)
 
         campaign_history = RealTimeCampaignDataHistory.objects.get()
         self.assertEqual(self.campaign.id, campaign_history.campaign_id)
         self.assertEqual(dates_helper.utc_today(), campaign_history.date)
-        self.assertEqual(self.data["spend"][0]["spend"], campaign_history.etfm_spend)
+        self.assertEqual(self.data["stats"][0]["spend"], campaign_history.etfm_spend)
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_refresh_archived_adgroup_today(self, mock_get_realtime_data):
@@ -66,12 +66,12 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(self.ad_group.id, history.ad_group_id)
         self.assertEqual(self.source.id, history.source_id)
         self.assertEqual(dates_helper.utc_today(), history.date)
-        self.assertEqual(self.data["spend"][0]["spend"], history.etfm_spend)
+        self.assertEqual(self.data["stats"][0]["spend"], history.etfm_spend)
 
         campaign_history = RealTimeCampaignDataHistory.objects.get()
         self.assertEqual(self.campaign.id, campaign_history.campaign_id)
         self.assertEqual(dates_helper.utc_today(), campaign_history.date)
-        self.assertEqual(self.data["spend"][0]["spend"], campaign_history.etfm_spend)
+        self.assertEqual(self.data["stats"][0]["spend"], campaign_history.etfm_spend)
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_refresh_archived_adgroup_in_the_past(self, mock_get_realtime_data):
@@ -121,7 +121,7 @@ class RefreshRealtimeDataTest(TestCase):
         )
 
         mock_get_realtime_data.return_value = {
-            "spend": [{"source": source_1, "spend": decimal.Decimal("12.0")}],
+            "stats": [{"source": source_1, "spend": decimal.Decimal("12.0")}],
             "errors": {source_2.bidder_slug: "Error"},
         }
 
@@ -157,7 +157,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(self.ad_group.id, new_history.ad_group_id)
         self.assertEqual(self.source.id, new_history.source_id)
         self.assertEqual(dates_helper.utc_today(), new_history.date)
-        self.assertEqual(self.data["spend"][0]["spend"], new_history.etfm_spend)
+        self.assertEqual(self.data["stats"][0]["spend"], new_history.etfm_spend)
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_update_for_custom_campaign(self, mock_get_realtime_data):
@@ -182,13 +182,13 @@ class RefreshRealtimeDataTest(TestCase):
 
         rt_stats_before = {
             ad_groups[0]: {
-                "spend": [
+                "stats": [
                     {"source": sources[0], "spend": decimal.Decimal("2.0")},
                     {"source": sources[1], "spend": decimal.Decimal("3.0")},
                 ]
             },
             ad_groups[1]: {
-                "spend": [
+                "stats": [
                     {"source": sources[0], "spend": decimal.Decimal("8.0")},
                     {"source": sources[1], "spend": decimal.Decimal("1.0")},
                 ]
@@ -199,12 +199,12 @@ class RefreshRealtimeDataTest(TestCase):
 
         rt_stats_after = {
             ad_groups[0]: {
-                "spend": [
+                "stats": [
                     {"source": sources[0], "spend": decimal.Decimal("2.0")},
                     {"source": sources[1], "spend": decimal.Decimal("3.0")},
                 ]
             },
-            ad_groups[1]: {"spend": [{"source": sources[0], "spend": decimal.Decimal("8.0")}]},
+            ad_groups[1]: {"stats": [{"source": sources[0], "spend": decimal.Decimal("8.0")}]},
         }
         mock_get_realtime_data.side_effect = lambda ad_group, **kwargs: rt_stats_after[ad_group]
         refresh.refresh_realtime_data([campaign])
@@ -216,7 +216,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(decimal.Decimal("14.0"), campaign_history.etfm_spend)
 
         for ad_group, stats in list(rt_stats_after.items()):
-            for stat in stats["spend"]:
+            for stat in stats["stats"]:
                 history = RealTimeDataHistory.objects.filter(ad_group=ad_group, source=stat["source"]).latest(
                     "created_dt"
                 )

@@ -155,7 +155,6 @@ CLIENT_STATIC_URL = "http://localhost:9999"
 # K1 API
 K1_API_SIGN_KEY = [Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()]
 K1_REALTIMESTATS_ADGROUP_URL = ""
-K1_REALTIMESTATS_ADGROUP_SPEND_URL = ""
 K1_YAHOO_MIGRATION_URL = ""
 K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = ""
 K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = ""
@@ -278,6 +277,7 @@ R1_API_SIGN_KEY = Secret("").get()
 R1_REDIRECTS_API_URL = "https://r1.zemanta.com/api/redirects/"
 R1_REDIRECTS_BATCH_API_URL = "https://r1.zemanta.com/api/redirectsbatch/"
 R1_REDIRECTS_ADGROUP_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/"
+R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/realtimestats"
 R1_VALIDATE_API_URL = "https://r1.zemanta.com/api/validate/"
 R1_BLANK_REDIRECT_URL = "http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/"
 R1_CUSTOM_AUDIENCE_API_URL = "https://r1.zemanta.com/api/audience/{audience_id}/"

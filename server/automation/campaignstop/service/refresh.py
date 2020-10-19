@@ -65,7 +65,7 @@ def _refresh_ad_groups_realtime_data(campaign):
 
 
 def _add_ad_group_history_stats(ad_group, stats):
-    for stat in stats["spend"]:
+    for stat in stats["stats"]:
         source, spend = stat["source"], stat["spend"]
         _add_source_stat(ad_group, source, spend)
     _log_source_errors(stats)

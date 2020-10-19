@@ -140,8 +140,7 @@ K1_API_SIGN_KEY = [
         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzCxAayWHRR/pHcGJECARCAU8Egv3f+Em+DqDgaMe66NowOSRJMqgsSQxdSHxd9MdIAuPiQdysR0hQo23uR9gBWdhRUTtBFBN04q4oLn3EPgkQN51XG0ndzWV0wmfEgYS3w/dHg"  # noqa
     ).get()
 ]
-K1_REALTIMESTATS_ADGROUP_URL = "https://k1.zemanta.com/realtimestats/adgroups/{ad_group_id}/combined"
-K1_REALTIMESTATS_ADGROUP_SPEND_URL = "https://k1.zemanta.com/realtimestats/adgroups/{ad_group_id}/"
+K1_REALTIMESTATS_ADGROUP_URL = "https://k1.zemanta.com/realtimestats/adgroups/{ad_group_id}/"
 K1_YAHOO_MIGRATION_URL = ""
 K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = ""
 K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = ""
@@ -268,6 +267,7 @@ R1_API_SIGN_KEY = Secret("").get()
 R1_REDIRECTS_API_URL = ""
 R1_REDIRECTS_BATCH_API_URL = ""
 R1_REDIRECTS_ADGROUP_API_URL = ""
+R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = ""
 R1_VALIDATE_API_URL = ""
 R1_BLANK_REDIRECT_URL = "http://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/"
 R1_CUSTOM_AUDIENCE_API_URL = ""

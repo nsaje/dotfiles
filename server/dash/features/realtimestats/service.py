@@ -8,23 +8,22 @@ import core.features.bcm.calculations
 from dash import models
 from utils import k1_helper
 from utils import metrics_compat
+from utils import redirector_helper
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
 
 def get_ad_group_stats(ad_group, use_local_currency=False):
-    stats = _get_k1_source_stats(ad_group)
-    _add_fees_and_margin(ad_group, stats["spend"])
-    if use_local_currency:
-        _to_local_currency(ad_group, stats["spend"])
-    spend = sum(stat["spend"] for stat in stats["spend"])
-    return {"spend": spend, "clicks": stats["clicks"], "impressions": stats["impressions"]}
+    stats = _get_etfm_source_stats(ad_group, use_local_currency=use_local_currency)
+    spend = sum(stat["spend"] for stat in stats["stats"])
+    stats = {"spend": spend, "clicks": redirector_helper.get_adgroup_realtimestats(ad_group.id)["clicks"]}
+    return stats
 
 
 def get_ad_group_sources_stats(ad_group, use_local_currency=False):
     stats = _get_ad_group_sources_stats(ad_group, use_local_currency=use_local_currency)
-    return stats["spend"]
+    return stats["stats"]
 
 
 def get_ad_group_sources_stats_without_caching(ad_group, use_local_currency=False):
@@ -32,17 +31,13 @@ def get_ad_group_sources_stats_without_caching(ad_group, use_local_currency=Fals
 
 
 def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False):
-    stats = _get_k1_source_stats(ad_group, spend_only=True, no_cache=no_cache)
-    _clean_sources(ad_group, stats)
-    _add_fees_and_margin(ad_group, stats["spend"])
-    if use_local_currency:
-        _to_local_currency(ad_group, stats["spend"])
+    stats = _get_etfm_source_stats(ad_group, no_cache=no_cache, use_local_currency=use_local_currency)
 
     sources = models.Source.objects.all().select_related("source_type")
     sources_by_slug = {source.bidder_slug: source for source in sources}
-    _augment_source(stats["spend"], sources_by_slug)
+    _augment_source(stats["stats"], sources_by_slug)
 
-    stats["spend"] = sorted(stats["spend"], key=itemgetter("spend"), reverse=True)
+    stats["stats"] = sorted(stats["stats"], key=itemgetter("spend"), reverse=True)
     return stats
 
 
@@ -53,6 +48,15 @@ def _augment_source(stats, sources_by_slug):
             stat["source"] = source
 
 
+def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False):
+    stats = _get_k1_source_stats(ad_group, no_cache=no_cache)
+    _clean_sources(ad_group, stats)
+    _add_fees_and_margin(ad_group, stats["stats"])
+    if use_local_currency:
+        _to_local_currency(ad_group, stats["stats"])
+    return stats
+
+
 def _clean_sources(ad_group, stats):
     allowed_sources = set(
         models.AdGroupSource.objects.filter(ad_group=ad_group)
@@ -60,11 +64,11 @@ def _clean_sources(ad_group, stats):
         .values_list("source__bidder_slug", flat=True)
     )
     cleaned_stats = []
-    for stat in stats["spend"]:
+    for stat in stats["stats"]:
         if stat["source_slug"] not in allowed_sources:
             continue
         cleaned_stats.append(stat)
-    stats["spend"] = cleaned_stats
+    stats["stats"] = cleaned_stats
 
 
 def _add_fees_and_margin(ad_group, k1_stats):
@@ -82,15 +86,15 @@ def _to_local_currency(ad_group, stats):
         stat["spend"] = decimal.Decimal(stat["spend"]) * exchange_rate
 
 
-def _get_k1_source_stats(ad_group, spend_only=False, no_cache=False):
+def _get_k1_source_stats(ad_group, no_cache=False):
     if no_cache:
-        return _try_get_k1_source_stats(ad_group, spend_only, no_cache)
-    return _get_k1_source_stats_with_error_handling(ad_group, spend_only)
+        return _try_get_k1_source_stats(ad_group, no_cache)
+    return _get_k1_source_stats_with_error_handling(ad_group)
 
 
-def _get_k1_source_stats_with_error_handling(ad_group, spend_only):
+def _get_k1_source_stats_with_error_handling(ad_group):
     try:
-        return _try_get_k1_source_stats(ad_group, spend_only)
+        return _try_get_k1_source_stats(ad_group)
     except urllib.error.HTTPError as e:
         metrics_compat.incr("dash.realtimestats.error", 1, type="http", status=str(e.code))
     except IOError:
@@ -98,14 +102,11 @@ def _get_k1_source_stats_with_error_handling(ad_group, spend_only):
     except Exception as e:
         metrics_compat.incr("dash.realtimestats.error", 1, type="exception")
         logger.exception(e)
-    return {"spend": []}
+    return {"stats": []}
 
 
-def _try_get_k1_source_stats(ad_group, spend_only=False, no_cache=False):
+def _try_get_k1_source_stats(ad_group, no_cache=False):
     params = {}
     if no_cache:
         params["no_cache"] = True
-    if spend_only:
-        return k1_helper.get_adgroup_realtimestats_spend(ad_group.id, params)
-    else:
-        return k1_helper.get_adgroup_realtimestats(ad_group.id, params)
+    return k1_helper.get_adgroup_realtimestats(ad_group.id, params)
