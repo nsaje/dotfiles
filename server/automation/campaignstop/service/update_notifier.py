@@ -14,6 +14,7 @@ AD_GROUP_SETTINGS_FIELDS = [
     "b1_sources_group_daily_budget",
     "start_date",
     "end_date",
+    "daily_budget",
 ]
 AD_GROUP_SOURCE_SETTINGS_FIELDS = ["daily_budget_cc", "state"]
 
