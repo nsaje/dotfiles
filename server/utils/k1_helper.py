@@ -94,10 +94,23 @@ def _call_api(url, data=None, method="GET"):
     return ret.get("response")
 
 
+def get_adgroup_realtimestats_spend(ad_group_id, params={}):
+    url = settings.K1_REALTIMESTATS_ADGROUP_SPEND_URL.format(ad_group_id=ad_group_id)
+    if not url:
+        return {"spend": []}
+    if params:
+        url += "?" + urllib.parse.urlencode(params)
+    result = _call_api(url)
+    if "stats" in result:
+        return {"spend": result["stats"]}
+    else:
+        return result
+
+
 def get_adgroup_realtimestats(ad_group_id, params={}):
     url = settings.K1_REALTIMESTATS_ADGROUP_URL.format(ad_group_id=ad_group_id)
     if not url:
-        return {"stats": []}
+        return {"spend": [], "clicks": 0, "impressions": 0}
     if params:
         url += "?" + urllib.parse.urlencode(params)
     return _call_api(url)
