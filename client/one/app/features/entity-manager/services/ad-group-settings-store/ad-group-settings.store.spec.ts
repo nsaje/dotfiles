@@ -481,6 +481,7 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly determine if ad group autopilot is enabled', () => {
+        // TODO: RTAP: remove this after Phase 1 ˇˇˇˇ
         store.patchState(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
             'entity',
@@ -491,6 +492,26 @@ describe('AdGroupSettingsStore', () => {
 
         store.patchState(
             AdGroupAutopilotState.ACTIVE_CPC,
+            'entity',
+            'autopilot',
+            'state'
+        );
+
+        expect(store.isAdGroupAutopilotEnabled()).toBe(false);
+
+        store.patchState(true, 'extras', 'agencyUsesRealtimeAutopilot');
+        // TODO: RTAP: remove this after Phase 1 ^^^^
+
+        store.patchState(
+            AdGroupAutopilotState.ACTIVE,
+            'entity',
+            'autopilot',
+            'state'
+        );
+        expect(store.isAdGroupAutopilotEnabled()).toBe(true);
+
+        store.patchState(
+            AdGroupAutopilotState.INACTIVE,
             'entity',
             'autopilot',
             'state'

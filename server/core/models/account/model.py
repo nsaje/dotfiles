@@ -118,3 +118,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
             return settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=self.id)
         else:
             return "N/A"
+
+    def agency_uses_realtime_autopilot(self):
+        return self.agency.uses_realtime_autopilot if self.agency else False

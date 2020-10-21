@@ -39,6 +39,7 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_b1_sources_group_cpm(new_settings)
         self._validate_b1_sources_group_daily_budget(new_settings)
         self._validate_target_browsers(new_settings)
+        self._validate_bid(new_settings)
 
     def _get_currency_symbol(self):
         currency = self.ad_group.campaign.account.currency
@@ -49,6 +50,7 @@ class AdGroupSettingsValidatorMixin(object):
         return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def _validate_cpc(self, changes):
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
         is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
         if is_cpm_buying and "local_cpc" in changes:
             raise exceptions.CannotSetCPC("Cannot set ad group CPC when ad group bidding type is CPM")
@@ -57,7 +59,11 @@ class AdGroupSettingsValidatorMixin(object):
             return
 
         cpc = changes["local_cpc"]
-        assert cpc is not None
+
+        if not agency_uses_realtime_autopilot:
+            assert cpc is not None
+        elif cpc is None:
+            return
 
         currency_symbol = self._get_currency_symbol()
         min_cpc = self.MIN_CPC_VALUE * self._get_exchange_rate()
@@ -289,4 +295,16 @@ class AdGroupSettingsValidatorMixin(object):
             return
 
         if len(new_settings.target_browsers) != 0 and len(new_settings.exclusion_target_browsers) != 0:
-            raise exceptions.TargetBrowsersInvalid("Cannnot set both included and excluded browser targeting")
+            raise exceptions.TargetBrowsersInvalid("Cannot set both included and excluded browser targeting")
+
+    def _validate_bid(self, new_settings):
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+
+        if (new_settings.ad_group.bidding_type == constants.BiddingType.CPC and new_settings.cpc is None) or (
+            new_settings.ad_group.bidding_type == constants.BiddingType.CPM and new_settings.cpm is None
+        ):
+            if not agency_uses_realtime_autopilot:
+                # In the legacy logic, the bid gets set to 0.45 by default if the user deletes it, so this should never happen
+                raise exceptions.CannotSetBidToUndefined("Cannot set bid to undefined.")
+            elif new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE:
+                raise exceptions.CannotSetBidToUndefined("Cannot set bid to undefined when using Target bid.")

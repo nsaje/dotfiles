@@ -116,10 +116,13 @@
                 </zem-expandable-section>
             </div>
 
-            <div class="zem-panel zem-settings__panel">
+            <div
+                *ngIf="state.extras.agencyUsesRealtimeAutopilot"
+                class="zem-panel zem-settings__panel"
+            >
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
-                        Budgets and daily limits
+                        Bidding and budgets
                     </h2>
                 </div>
                 <div class="zem-settings-section">
@@ -134,14 +137,27 @@
                         [bidErrors]="state.fieldsErrors.bid"
                         [maxBidErrors]="state.fieldsErrors.autopilot.maxBid"
                         [isDisabled]="isReadOnly"
+                        [agencyUsesRealtimeAutopilot]="
+                            state.extras.agencyUsesRealtimeAutopilot
+                        "
                         (biddingTypeChange)="store.setBiddingType($event)"
                         (bidChange)="store.setBid($event)"
                         (maxBidChange)="store.setMaxBid($event)"
                     ></zem-bidding-type-setting>
+                    <zem-bidding-strategy-setting
+                        class="zem-bidding-strategy-setting zem-settings-section__item"
+                        [biddingType]="state.entity.biddingType"
+                        [autopilotState]="state.entity.autopilot.state"
+                        [isDisabled]="isReadOnly"
+                        (autopilotStateChange)="store.setAutopilotState($event)"
+                    >
+                    </zem-bidding-strategy-setting>
                     <zem-currency-form-group
                         class="zem-currency-form-group zem-settings-section__item"
-                        label="Ad group's daily spend cap"
-                        helpMessage="Amount of budget autopilot can operate with on this ad group every day."
+                        label="Ad group's daily budget"
+                        helpMessage="Daily budget limit for this ad group. If the ad group is having difficulties spending the daily budget in full, consider increasing the Bid {{
+                            state.entity.biddingType
+                        }} or remove the maximum."
                         [value]="
                             store.isAdGroupAutopilotEnabled()
                                 ? state.entity.autopilot.dailyBudget
@@ -157,25 +173,16 @@
                     ></zem-currency-form-group>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
-                        *ngIf="!store.isAdGroupAutopilotEnabled()"
+                        *ngIf="
+                            !store.isAdGroupAutopilotEnabled() &&
+                            state.extras.isCampaignAutopilotEnabled
+                        "
                     >
                         <div
                             class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                         >
-                            <ng-container
-                                *ngIf="state.extras.isCampaignAutopilotEnabled"
-                            >
-                                Ad group's daily spend cap setting isn't
-                                available because campaign budget optimization
-                                is enabled.
-                            </ng-container>
-                            <ng-container
-                                *ngIf="!state.extras.isCampaignAutopilotEnabled"
-                            >
-                                Ad group's daily spend cap setting is disabled
-                                because autopilot is off. You must configure the
-                                daily spend on the media source tab.
-                            </ng-container>
+                            Ad group's daily budget setting isn't available
+                            because campaign budget optimization is enabled.
                         </div>
                     </div>
                 </div>
@@ -184,12 +191,8 @@
                     [expandedByDefault]="
                         expandedSectionsByDefault[expandableSection.BUDGET]
                     "
-                    [expandLabel]="
-                        'Show advanced settings (Daily click cap, Daily impression frequency cap)'
-                    "
-                    [collapseLabel]="
-                        'Hide advanced settings (Daily click cap, Daily impression frequency cap)'
-                    "
+                    [expandLabel]="'Show advanced settings'"
+                    [collapseLabel]="'Hide advanced settings'"
                 >
                     <div class="zem-settings-section">
                         <zem-integer-form-group
@@ -219,10 +222,166 @@
                             (valueChange)="store.setFrequencyCapping($event)"
                         ></zem-integer-form-group>
                     </div>
+
+                    <div class="zem-settings-section">
+                        <zem-ad-group-rtb-sources-management-setting
+                            class="zem-ad-group-rtb-sources-management-setting zem-settings-section__item"
+                            [manageRtbSourcesAsOne]="
+                                state.entity.manageRtbSourcesAsOne
+                            "
+                            [isDisabled]="isReadOnly"
+                            (manageRtbSourcesAsOneChange)="
+                                store.setManageRtbSourcesAsOne($event)
+                            "
+                        ></zem-ad-group-rtb-sources-management-setting>
+                        <div
+                            *ngIf="state.entity.manageRtbSourcesAsOne"
+                            class="zem-settings-section__item zem-settings-section__item--indented"
+                        >
+                            <div
+                                class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+                            >
+                                Managing RTB sources separately is unavailable
+                                and will soon be deprecated. For any questions,
+                                reach out to your Customer Success
+                                representative.
+                            </div>
+                        </div>
+                    </div>
                 </zem-expandable-section>
             </div>
 
-            <div class="zem-panel zem-settings__panel">
+            <!-- TODO: RTAP: remove this after Phase 1 -->
+            <div
+                *ngIf="!state.extras.agencyUsesRealtimeAutopilot"
+                class="zem-panel zem-settings__panel"
+            >
+                <div>
+                    <div class="zem-panel__header">
+                        <h2 class="zem-settings__panel-header-title">
+                            Budgets and daily limits
+                        </h2>
+                    </div>
+                    <div class="zem-settings-section">
+                        <zem-bidding-type-setting
+                            class="zem-bidding-type-setting zem-settings-section__item"
+                            [biddingType]="state.entity.biddingType"
+                            [bid]="state.entity.bid"
+                            [maxBid]="state.entity.autopilot.maxBid"
+                            [currencySymbol]="currencySymbol"
+                            [autopilotState]="state.entity.autopilot.state"
+                            [biddingTypeErrors]="state.fieldsErrors.biddingType"
+                            [bidErrors]="state.fieldsErrors.bid"
+                            [maxBidErrors]="state.fieldsErrors.autopilot.maxBid"
+                            [isDisabled]="isReadOnly"
+                            [agencyUsesRealtimeAutopilot]="
+                                state.extras.agencyUsesRealtimeAutopilot
+                            "
+                            (biddingTypeChange)="store.setBiddingType($event)"
+                            (bidChange)="store.setBid($event)"
+                            (maxBidChange)="store.setMaxBid($event)"
+                        ></zem-bidding-type-setting>
+                        <zem-currency-form-group
+                            class="zem-currency-form-group zem-settings-section__item"
+                            label="Ad group's daily spend cap"
+                            helpMessage="Amount of budget autopilot can operate with on this ad group every day."
+                            [value]="
+                                store.isAdGroupAutopilotEnabled()
+                                    ? state.entity.autopilot.dailyBudget
+                                    : ''
+                            "
+                            [currencySymbol]="currencySymbol"
+                            fractionSize="0"
+                            [isDisabled]="
+                                !store.isAdGroupAutopilotEnabled() || isReadOnly
+                            "
+                            [errors]="state.fieldsErrors.autopilot.dailyBudget"
+                            (valueChange)="
+                                store.setAutopilotDailyBudget($event)
+                            "
+                        ></zem-currency-form-group>
+                        <div
+                            class="zem-settings-section__item zem-settings-section__item--indented"
+                            *ngIf="!store.isAdGroupAutopilotEnabled()"
+                        >
+                            <div
+                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+                            >
+                                <ng-container
+                                    *ngIf="
+                                        state.extras.isCampaignAutopilotEnabled
+                                    "
+                                >
+                                    Ad group's daily spend cap setting isn't
+                                    available because campaign budget
+                                    optimization is enabled.
+                                </ng-container>
+                                <ng-container
+                                    *ngIf="
+                                        !state.extras.isCampaignAutopilotEnabled
+                                    "
+                                >
+                                    Ad group's daily spend cap setting is
+                                    disabled because autopilot is off. You must
+                                    configure the daily spend on the media
+                                    source tab.
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                    <zem-expandable-section
+                        class="zem-expandable-section"
+                        [expandedByDefault]="
+                            expandedSectionsByDefault[expandableSection.BUDGET]
+                        "
+                        [expandLabel]="
+                            'Show advanced settings (Daily click cap, Daily impression frequency cap)'
+                        "
+                        [collapseLabel]="
+                            'Hide advanced settings (Daily click cap, Daily impression frequency cap)'
+                        "
+                    >
+                        <div class="zem-settings-section">
+                            <zem-integer-form-group
+                                class="zem-integer-form-group zem-settings-section__item"
+                                label="Daily click cap"
+                                helpMessage="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set."
+                                [value]="
+                                    store.state.entity
+                                        .clickCappingDailyAdGroupMaxClicks
+                                "
+                                [errors]="
+                                    state.fieldsErrors
+                                        .clickCappingDailyAdGroupMaxClicks
+                                "
+                                [isDisabled]="isReadOnly"
+                                placeholder="No limit"
+                                (valueChange)="
+                                    store.setDailyClickCapping($event)
+                                "
+                            ></zem-integer-form-group>
+                            <zem-integer-form-group
+                                class="zem-integer-form-group zem-settings-section__item"
+                                label="Daily impression frequency cap"
+                                helpMessage="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
+                                [value]="store.state.entity.frequencyCapping"
+                                [errors]="state.fieldsErrors.frequencyCapping"
+                                [isDisabled]="isReadOnly"
+                                [placeholder]="'No limit'"
+                                (valueChange)="
+                                    store.setFrequencyCapping($event)
+                                "
+                            ></zem-integer-form-group>
+                        </div>
+                    </zem-expandable-section>
+                </div>
+            </div>
+
+            <!-- TODO: RTAP: remove this after Phase 1 -->
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="!state.extras.agencyUsesRealtimeAutopilot"
+            >
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Optimization

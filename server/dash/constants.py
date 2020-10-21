@@ -24,15 +24,16 @@ class AdGroupRunningStatus(ConstantBase):
 
 
 class AdGroupSettingsAutopilotState(ConstantBase):
-    # TODO: RTAP: After Phase 1 add ACTIVE
     ACTIVE_CPC_BUDGET = 1
     INACTIVE = 2
     ACTIVE_CPC = 3
+    ACTIVE = 4
 
     _VALUES = {
         ACTIVE_CPC: "Optimize Bids",
         ACTIVE_CPC_BUDGET: "Optimize Bids and Daily Spend Caps",
-        INACTIVE: "Disabled",
+        ACTIVE: "Optimal Bid Bidding Strategy",
+        INACTIVE: "Disabled",  # TODO: RTAP: Change this after all agencies are migrated
     }
 
 

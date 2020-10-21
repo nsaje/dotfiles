@@ -1,0 +1,43 @@
+<div class="zem-form-group">
+    <label class="zem-form-group__label">
+        Autopilot bidding strategy
+        <div class="zem-form-group__autopilot-icon"></div>
+        <zem-help-popover
+            class="zem-help-popover"
+            content="Autopilot uses advanced machine learning to adjust {{
+                biddingType
+            }}s in real-time based on your bidding strategy and primary campaign goal."
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+
+    <div class="zem-form-group__content">
+        <zem-radio-input
+            class="zem-radio-input zem-form-group__content-item"
+            [groupModel]="autopilotState"
+            [value]="AdGroupAutopilotState.ACTIVE"
+            [isDisabled]="isDisabled"
+            (select)="autopilotStateChange.emit($event)"
+        >
+            <strong>Optimal bid</strong>
+            <span class="zem-radio-input__deemphasized-label-text">
+                - Autopilot will find the optimal {{ biddingType }} to fill the
+                ad group's daily budget.</span
+            >
+        </zem-radio-input>
+
+        <zem-radio-input
+            class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
+            [groupModel]="autopilotState"
+            [value]="AdGroupAutopilotState.INACTIVE"
+            [isDisabled]="isDisabled"
+            (select)="autopilotStateChange.emit($event)"
+        >
+            <strong>Target bid</strong>
+            <span class="zem-radio-input__deemphasized-label-text">
+                - Autopilot will aim to buy traffic at the defined target bid
+                {{ biddingType }} consistently.</span
+            >
+        </zem-radio-input>
+    </div>
+</div>

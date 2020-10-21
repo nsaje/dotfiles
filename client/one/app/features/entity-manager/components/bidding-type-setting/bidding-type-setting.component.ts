@@ -34,6 +34,8 @@ export class BiddingTypeSettingComponent {
     maxBidErrors: string[];
     @Input()
     isDisabled: boolean;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean; // TODO: RTAP: remove this after Phase 1
     @Output()
     biddingTypeChange = new EventEmitter<BiddingType>();
     @Output()

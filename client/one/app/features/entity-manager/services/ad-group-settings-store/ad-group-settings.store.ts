@@ -18,7 +18,6 @@ import {
     DeliveryType,
     BiddingType,
     InterestCategory,
-    GeolocationType,
     IncludeExcludeType,
     ConnectionType,
 } from '../../../../app.constants';
@@ -346,12 +345,22 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     isAdGroupAutopilotEnabled() {
-        return (
-            !this.state.extras.isCampaignAutopilotEnabled &&
-            this.state.entity.autopilot &&
-            this.state.entity.autopilot.state ===
-                AdGroupAutopilotState.ACTIVE_CPC_BUDGET
-        );
+        if (this.state.extras.agencyUsesRealtimeAutopilot) {
+            return (
+                !this.state.extras.isCampaignAutopilotEnabled &&
+                this.state.entity.autopilot &&
+                this.state.entity.autopilot.state !==
+                    AdGroupAutopilotState.INACTIVE
+            );
+        } else {
+            // TODO: RTAP: remove this after Phase 1
+            return (
+                !this.state.extras.isCampaignAutopilotEnabled &&
+                this.state.entity.autopilot &&
+                this.state.entity.autopilot.state ===
+                    AdGroupAutopilotState.ACTIVE_CPC_BUDGET
+            );
+        }
     }
 
     setName(name: string) {
@@ -405,6 +414,11 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 bid: bid,
             },
         });
+        this.validateEntity();
+    }
+
+    setAutopilotState(autopilotState: AdGroupAutopilotState) {
+        this.patchState(autopilotState, 'entity', 'autopilot', 'state');
         this.validateEntity();
     }
 

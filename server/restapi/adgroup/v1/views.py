@@ -174,3 +174,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except exceptions.TargetBrowsersInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"browsers": [str(err)]}})
+
+        except exceptions.CannotSetBidToUndefined as err:
+            raise utils.exc.ValidationError(errors={"bid": [str(err)]})

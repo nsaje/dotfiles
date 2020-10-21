@@ -45,6 +45,7 @@ import {ENTITY_MANAGER_ROUTES} from './entity-manager.routes';
 import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySettings.guard';
 import {BrowserTargetingComponent} from './components/browser-targeting/browser-targeting.component';
 import {ConnectionTypeTargetingComponent} from './components/connection-type-targeting/connection-type-targeting.component';
+import {BiddingStrategySettingComponent} from './components/bidding-strategy-setting/bidding-strategy-setting.component';
 
 @NgModule({
     declarations: [
@@ -86,6 +87,7 @@ import {ConnectionTypeTargetingComponent} from './components/connection-type-tar
         MediaSourcesComponent,
         DealsListComponent,
         DealComponent,
+        BiddingStrategySettingComponent,
     ],
     imports: [SharedModule, RouterModule.forChild(ENTITY_MANAGER_ROUTES)],
     providers: [CanActivateEntitySettingsGuard],

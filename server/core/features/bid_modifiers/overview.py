@@ -4,6 +4,7 @@ import functools
 import operator
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Union
@@ -35,7 +36,7 @@ def get_min_max_local_bids(
     ad_group: core.models.AdGroup,
     included_types: Union[None, Sequence[int]] = None,
     excluded_types: Union[None, Sequence[int]] = None,
-) -> Tuple[decimal.Decimal, decimal.Decimal]:
+) -> Tuple[decimal.Decimal, Optional[decimal.Decimal]]:
     min_factor, max_factor = get_min_max_factors(
         ad_group.id, included_types=included_types, excluded_types=excluded_types
     )
@@ -44,6 +45,10 @@ def get_min_max_local_bids(
         if ad_group.bidding_type == dash.constants.BiddingType.CPC
         else ad_group.settings.local_cpm
     )
+
+    if bid is None:
+        return decimal.Decimal(0.0001), None
+
     return decimal.Decimal(min_factor) * bid, decimal.Decimal(max_factor) * bid
 
 

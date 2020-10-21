@@ -216,6 +216,15 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
     targeting = AdGroupTargetingSerializer(source="*", required=False)
+    bid = restapi.serializers.fields.TwoWayBlankDecimalField(
+        source="local_bid",
+        max_digits=10,
+        decimal_places=4,
+        output_precision=3,
+        allow_null=True,
+        required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
+    )
 
 
 class AdGroupInternalQueryParams(

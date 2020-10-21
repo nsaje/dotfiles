@@ -118,7 +118,13 @@ class AdGroupSettingsMixin(object):
         updates = self._remove_disallowed_fields(request, updates, skip_permission_check)
         return updates
 
+    # TODO: RTAP: remove this after Phase 1
     def _set_bid_defaults(self, updates):
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+
+        if agency_uses_realtime_autopilot:
+            return updates
+
         if self.ad_group.bidding_type == constants.BiddingType.CPC and (
             "cpc" in updates and updates["cpc"] is None or "local_cpc" in updates and updates["local_cpc"] is None
         ):
@@ -236,6 +242,7 @@ class AdGroupSettingsMixin(object):
         if new_settings.archived:
             new_settings.state = constants.AdGroupSettingsState.INACTIVE
 
+    # TODO: RTAP: Remove this after local_max_autopilot_bid is removed
     def _handle_max_autopilot_bid_change(self, new_settings):
         changes = self.get_setting_changes(new_settings)
         if (
@@ -304,6 +311,12 @@ class AdGroupSettingsMixin(object):
         skip_notification=False,
         write_source_history=True,
     ):
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        autopilot_active = self.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        if agency_uses_realtime_autopilot and autopilot_active:
+            return
+
         ad_group_sources_bids = helpers.calculate_ad_group_sources_bids(
             self,
             max_autopilot_bid_changed=max_autopilot_bid_changed,

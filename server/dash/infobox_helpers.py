@@ -109,11 +109,9 @@ def create_bid_value_overview_settings(ad_group):
         ).format(bidding_type=bidding_type)
 
         formatted_bid_value = _format_ad_group_bid_value(
-            ad_group.settings.local_cpc
-            if ad_group.bidding_type == dash.constants.BiddingType.CPC
-            else ad_group.settings.local_cpm,
-            ad_group.campaign.account.currency,
+            ad_group.settings.local_bid, ad_group.campaign.account.currency
         )
+
         overview_settings.append(
             OverviewSetting(name="Bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
         )
@@ -127,10 +125,11 @@ def create_bid_value_overview_settings(ad_group):
         ).format(bidding_type=bidding_type)
 
         formatted_bid_value = (
-            _format_ad_group_bid_value(ad_group.settings.local_max_autopilot_bid, ad_group.campaign.account.currency)
-            if ad_group.settings.local_max_autopilot_bid is not None
+            _format_ad_group_bid_value(ad_group.settings.local_bid, ad_group.campaign.account.currency)
+            if ad_group.settings.local_bid is not None
             else "No limit"
         )
+
         overview_settings.append(
             OverviewSetting(name="Max bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
         )

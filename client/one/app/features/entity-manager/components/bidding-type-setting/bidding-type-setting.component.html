@@ -41,6 +41,15 @@
                         (inputBlur)="bidChange.emit($event)"
                     ></zem-currency-input>
                     <div
+                        *ngIf="agencyUsesRealtimeAutopilot"
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        Autopilot will optimize towards the target CPC
+                        configured here. You can fine tune the target CPC on
+                        each traffic dimension using bid modifiers.
+                    </div>
+                    <div
+                        *ngIf="!agencyUsesRealtimeAutopilot"
                         class="message message--info message--with-icon zem-settings-section__item"
                     >
                         The bidder will optimise towards the target CPC
@@ -62,19 +71,32 @@
                     >
                     <zem-currency-input
                         class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
-                        [value]="maxBid"
+                        [value]="agencyUsesRealtimeAutopilot ? bid : maxBid"
                         placeholder="No limit"
                         [hasError]="maxBidErrors && maxBidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
                         [isDisabled]="isDisabled"
                         fractionSize="3"
-                        (inputBlur)="maxBidChange.emit($event)"
+                        (inputBlur)="
+                            agencyUsesRealtimeAutopilot
+                                ? bidChange.emit($event)
+                                : maxBidChange.emit($event)
+                        "
                     ></zem-currency-input>
+                    <!-- TODO: RTAP: remove this after Phase 1 -->
                     <div
+                        *ngIf="!agencyUsesRealtimeAutopilot"
                         class="message message--info message--with-icon zem-settings-section__item"
                     >
                         The change of Maximum Bid CPC will update bids on all
                         media sources within the ad group.
+                    </div>
+                    <div
+                        *ngIf="agencyUsesRealtimeAutopilot && !maxBid"
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        Autopilot will find the optimal CPC to fill the ad
+                        group's daily budget.
                     </div>
                 </div>
                 <div
@@ -117,6 +139,15 @@
                         (inputBlur)="bidChange.emit($event)"
                     ></zem-currency-input>
                     <div
+                        *ngIf="agencyUsesRealtimeAutopilot"
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        Autopilot will optimize towards the target CPM
+                        configured here. You can fine tune the target CPM on
+                        each traffic dimension using bid modifiers.
+                    </div>
+                    <div
+                        *ngIf="!agencyUsesRealtimeAutopilot"
                         class="message message--info message--with-icon zem-settings-section__item"
                     >
                         The bidder will optimise towards the target CPM
@@ -138,19 +169,24 @@
                     >
                     <zem-currency-input
                         class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
-                        [value]="maxBid"
+                        [value]="agencyUsesRealtimeAutopilot ? bid : maxBid"
                         placeholder="No limit"
                         [hasError]="maxBidErrors && maxBidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
                         [isDisabled]="isDisabled"
                         fractionSize="3"
-                        (inputBlur)="maxBidChange.emit($event)"
+                        (inputBlur)="
+                            agencyUsesRealtimeAutopilot
+                                ? bidChange.emit($event)
+                                : maxBidChange.emit($event)
+                        "
                     ></zem-currency-input>
                     <div
+                        *ngIf="agencyUsesRealtimeAutopilot && !maxBid"
                         class="message message--info message--with-icon zem-settings-section__item"
                     >
-                        The change of Maximum Bid CPM will update bids on all
-                        media sources within the ad group.
+                        Autopilot will find the optimal CPM to fill the ad
+                        group's daily budget.
                     </div>
                 </div>
                 <div

@@ -111,3 +111,7 @@ class TargetBrowsersInvalid(ValidationError):
 
 class B1SourcesBudgetUpdateWhileSourcesGroupDisabled(ValidationError):
     pass
+
+
+class CannotSetBidToUndefined(ValidationError):
+    pass

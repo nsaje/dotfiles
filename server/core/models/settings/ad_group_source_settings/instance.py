@@ -66,6 +66,15 @@ class AdGroupSourceSettingsMixin(object):
 
         user = request.user if request else None
 
+        agency_uses_realtime_autopilot = self.ad_group_source.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        autopilot_active = (
+            self.ad_group_source.ad_group.settings.autopilot_state
+            != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+
+        if agency_uses_realtime_autopilot and autopilot_active:
+            return
+
         bid_modifiers.source.handle_ad_group_source_settings_change(self, changes, user=user, system_user=system_user)
 
     def _filter_and_remap_input(self, updates):

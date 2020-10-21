@@ -153,6 +153,7 @@ export enum DeliveryType {
 export enum AdGroupAutopilotState {
     ACTIVE_CPC_BUDGET = 'ACTIVE_CPC_BUDGET',
     ACTIVE_CPC = 'ACTIVE_CPC',
+    ACTIVE = 'ACTIVE',
     INACTIVE = 'INACTIVE',
 }
 
@@ -879,6 +880,7 @@ export const APP_CONSTANTS = {
         ACTIVE_CPC_BUDGET: 1,
         INACTIVE: 2,
         ACTIVE_CPC: 3,
+        ACTIVE: 4,
     },
     adGroupRunningStatus: {
         ACTIVE: 1,

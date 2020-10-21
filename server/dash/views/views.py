@@ -151,9 +151,7 @@ class AdGroupOverview(DASHAPIBaseView):
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
 
-        agency_uses_realtime_autopilot = (
-            ad_group.campaign.account.agency.uses_realtime_autopilot if ad_group.campaign.account.agency else False
-        )
+        agency_uses_realtime_autopilot = ad_group.campaign.account.agency_uses_realtime_autopilot()
 
         header = {
             "title": ad_group.name,
@@ -250,9 +248,7 @@ class CampaignOverview(DASHAPIBaseView):
 
         campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
-        agency_uses_realtime_autopilot = (
-            campaign.account.agency.uses_realtime_autopilot if campaign.account.agency else False
-        )
+        agency_uses_realtime_autopilot = campaign.account.agency_uses_realtime_autopilot()
 
         header = {
             "title": campaign.name,
@@ -411,7 +407,7 @@ class AccountOverview(DASHAPIBaseView):
 
         account_running_status = infobox_helpers.get_account_running_status(account)
 
-        agency_uses_realtime_autopilot = account.agency.uses_realtime_autopilot if account.agency else False
+        agency_uses_realtime_autopilot = account.agency_uses_realtime_autopilot()
 
         header = {
             "title": account.name,
