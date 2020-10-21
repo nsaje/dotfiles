@@ -19,6 +19,7 @@ angular
         zemPublishersService,
         zemGridEndpointColumns,
         zemNavigationNewService,
+        zemNavigationService,
         zemModalsService,
         zemUtils,
         $location,
@@ -397,7 +398,11 @@ angular
                                 }
                             )
                             .then(function() {
-                                grid.meta.api.loadData();
+                                updateNavigationCachePromise(row).then(
+                                    function() {
+                                        grid.meta.api.loadData();
+                                    }
+                                );
                             });
                     }
                     return zemEntityService
@@ -407,7 +412,9 @@ angular
                             row.entity.id
                         )
                         .then(function() {
-                            grid.meta.api.loadData();
+                            updateNavigationCachePromise(row).then(function() {
+                                grid.meta.api.loadData();
+                            });
                         });
                 });
         }
@@ -437,7 +444,9 @@ angular
                         }
                     )
                     .then(function() {
-                        grid.meta.api.loadData();
+                        updateNavigationCachePromise(row).then(function() {
+                            grid.meta.api.loadData();
+                        });
                     });
             }
             return zemEntityService
@@ -447,7 +456,9 @@ angular
                     row.entity.id
                 )
                 .then(function() {
-                    grid.meta.api.loadData();
+                    updateNavigationCachePromise(row).then(function() {
+                        grid.meta.api.loadData();
+                    });
                 });
         }
 
@@ -551,5 +562,31 @@ angular
                     placement: row.data.stats[COLUMNS.name.field].value,
                 };
             }
+        }
+
+        function updateNavigationCachePromise(row) {
+            var deferred = $q.defer();
+            if (row.entity.type === constants.entityType.AD_GROUP) {
+                zemNavigationService
+                    .reloadAdGroup(row.entity.id)
+                    .then(function() {
+                        deferred.resolve();
+                    });
+            } else if (row.entity.type === constants.entityType.CAMPAIGN) {
+                zemNavigationService
+                    .reloadCampaign(row.entity.id)
+                    .then(function() {
+                        deferred.resolve();
+                    });
+            } else if (row.entity.type === constants.entityType.ACCOUNT) {
+                zemNavigationService
+                    .reloadAccount(row.entity.id)
+                    .then(function() {
+                        deferred.resolve();
+                    });
+            } else {
+                deferred.resolve();
+            }
+            return deferred.promise;
         }
     });

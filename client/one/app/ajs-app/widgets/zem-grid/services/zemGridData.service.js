@@ -1,4 +1,5 @@
 var Queue = require('promise-queue');
+var clone = require('clone');
 
 angular
     .module('one.widgets')
@@ -253,19 +254,38 @@ angular
             }
 
             function handleSourceDataUpdate(event, data) {
-                zemGridParser.parse(grid, data);
-                grid.meta.loading = !data.breakdown;
+                var xData =
+                    grid.meta.renderingEngine ===
+                    zemGridConstants.gridRenderingEngineType.SMART_GRID
+                        ? clone(data)
+                        : data;
+                zemGridParser.parse(grid, xData);
+                grid.meta.loading = !xData.breakdown;
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
 
-            function handleSourceRowUpdate(event, data) {
+            function handleSourceRowUpdate(event, row) {
+                if (
+                    grid.meta.renderingEngine ===
+                    zemGridConstants.gridRenderingEngineType.SMART_GRID
+                ) {
+                    var xData = clone(dataSource.getData());
+                    zemGridParser.parse(grid, xData);
+                }
                 grid.meta.pubsub.notify(
                     grid.meta.pubsub.EVENTS.ROW_UPDATED,
-                    data
+                    row
                 );
             }
 
             function handleSourceStatsUpdate() {
+                if (
+                    grid.meta.renderingEngine ===
+                    zemGridConstants.gridRenderingEngineType.SMART_GRID
+                ) {
+                    var xData = clone(dataSource.getData());
+                    zemGridParser.parse(grid, xData);
+                }
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
         }

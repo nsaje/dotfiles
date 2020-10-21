@@ -1,6 +1,6 @@
 angular
     .module('one.widgets')
-    .factory('zemDataSourceService', function($rootScope, $http, $q) {
+    .factory('zemDataSourceService', function($rootScope, $q) {
         // eslint-disable-line max-len
 
         //
@@ -169,12 +169,17 @@ angular
                 breakdown.rows.forEach(function(updatedRow) {
                     var row = findRow(updatedRow.breakdownId);
                     if (row) {
-                        if (updatedRow.archived !== undefined) {
+                        var rowChanged = false;
+                        if (row.archived !== updatedRow.archived) {
                             row.archived = updatedRow.archived;
+                            rowChanged = true;
                         }
                         if (updatedRow.stats) {
                             updateStats(row.stats, updatedRow.stats);
                             updatedStats.push(row.stats);
+                            rowChanged = true;
+                        }
+                        if (rowChanged) {
                             notifyListeners(EVENTS.ON_ROW_UPDATED, row);
                         }
                     }
@@ -185,7 +190,9 @@ angular
                     updatedStats.push(data.stats);
                 }
 
-                notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+                if (updatedStats.length > 0) {
+                    notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+                }
             }
 
             function isSaveRequestInProgress() {

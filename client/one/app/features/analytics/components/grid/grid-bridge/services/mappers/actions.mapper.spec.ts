@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ColDef} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -12,20 +8,22 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {STATUS_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
-import {GridColumnOrder} from '../../types/grid-column-order';
-import {StatusColumnMapper} from './status.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/breakdown.renderer-params';
+import {ActionsColumnMapper} from './actions.mapper';
+import {ActionsCellComponent} from '../../../cells/actions-cell/actions-cell.component';
+import {ActionsRendererParams} from '../../../cells/actions-cell/types/actions.renderer-params';
+import {ACTIONS_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
-describe('StatusColumnMapper', () => {
-    let mapper: StatusColumnMapper;
+describe('ActionsColumnMapper', () => {
+    let mapper: ActionsColumnMapper;
     let mockedGrid: Partial<Grid>;
     let mockedColumn: Partial<GridColumn>;
 
     beforeEach(() => {
-        mapper = new StatusColumnMapper();
+        mapper = new ActionsColumnMapper();
 
         mockedGrid = {
             meta: {
@@ -50,56 +48,47 @@ describe('StatusColumnMapper', () => {
             },
         };
         mockedColumn = {
-            type: GridColumnTypes.STATUS,
+            type: GridColumnTypes.ACTIONS,
             data: {
-                type: GridColumnTypes.STATUS,
-                name: 'Status',
-                field: 'status',
-                order: true,
-                internal: true,
-                help: 'Status help text',
+                type: GridColumnTypes.ACTIONS,
+                name: 'Actions',
                 shown: true,
             },
-            order: GridColumnOrder.DESC,
         };
     });
 
-    it('should correctly map status grid column to smart grid column', () => {
+    it('should correctly map breakdown grid column to smart grid column', () => {
         const colDef: ColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
         const expectedColDef: ColDef = {
-            headerName: 'Status',
-            field: 'status',
-            colId: 'status',
-            minWidth: STATUS_MIN_COLUMN_WIDTH,
-            width: STATUS_MIN_COLUMN_WIDTH,
+            headerName: 'Actions',
+            field: GridColumnTypes.ACTIONS,
+            colId: GridColumnTypes.ACTIONS,
+            minWidth: ACTIONS_MIN_COLUMN_WIDTH,
+            width: ACTIONS_MIN_COLUMN_WIDTH,
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
-            pinned: null,
+            pinned: 'left',
             headerComponentParams: {
                 icon: null,
-                internalFeature: true,
-                enableSorting: true,
+                internalFeature: false,
+                enableSorting: false,
                 sortOptions: {
                     sortType: 'server',
-                    sort: HeaderCellSort.DESC,
+                    sort: HeaderCellSort.NONE,
                     orderField: null,
                     initialSort: null,
                     setSortModel: (sortModel: SortModel[]) => {},
                 },
-                popoverTooltip: 'Status help text',
+                popoverTooltip: null,
                 popoverPlacement: 'top',
             } as HeaderParams,
-            valueFormatter: (params: ValueFormatterParams) => {
-                return '';
-            },
-            valueGetter: (params: ValueGetterParams) => {
-                return '';
-            },
+            valueFormatter: '',
+            valueGetter: '',
             pinnedRowCellRendererFramework: PinnedRowCellComponent,
             pinnedRowCellRendererParams: {
                 valueStyleClass: null,
@@ -107,6 +96,15 @@ describe('StatusColumnMapper', () => {
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
             pinnedRowValueFormatter: '',
+            cellRendererFramework: ActionsCellComponent,
+            cellRendererParams: {
+                getGrid: (params: BreakdownRendererParams) => {
+                    return null;
+                },
+                getGridRow: (params: BreakdownRendererParams) => {
+                    return null;
+                },
+            } as ActionsRendererParams,
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

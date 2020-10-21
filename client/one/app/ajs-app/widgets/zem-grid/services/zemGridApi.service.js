@@ -18,6 +18,7 @@ angular
             // Grid Object API
             this.isInitialized = isInitialized;
             this.getMetaData = getMetaData;
+            this.getRenderingEngine = getRenderingEngine;
             this.getRows = getRows;
             this.getColumns = getColumns;
             this.getCategorizedColumns = getCategorizedColumns;
@@ -70,6 +71,8 @@ angular
             this.onMetaDataUpdated = onMetaDataUpdated;
             this.onDataUpdated = onDataUpdated;
             this.onDataUpdatedError = onDataUpdatedError;
+            this.onRowDataUpdated = onRowDataUpdated;
+            this.onRowDataUpdatedError = onRowDataUpdatedError;
             this.onColumnsUpdated = onColumnsUpdated;
             this.onSelectionUpdated = onSelectionUpdated;
 
@@ -79,6 +82,10 @@ angular
 
             function getMetaData() {
                 return grid.meta.data;
+            }
+
+            function getRenderingEngine() {
+                return grid.meta.renderingEngine;
             }
 
             function loadData(row, offset, limit) {
@@ -217,6 +224,22 @@ angular
             function onDataUpdatedError(scope, callback) {
                 return registerListener(
                     pubsub.EVENTS.DATA_UPDATED_ERROR,
+                    scope,
+                    callback
+                );
+            }
+
+            function onRowDataUpdated(scope, callback) {
+                return registerListener(
+                    pubsub.EVENTS.ROW_UPDATED,
+                    scope,
+                    callback
+                );
+            }
+
+            function onRowDataUpdatedError(scope, callback) {
+                return registerListener(
+                    pubsub.EVENTS.ROW_UPDATED_ERROR,
                     scope,
                     callback
                 );

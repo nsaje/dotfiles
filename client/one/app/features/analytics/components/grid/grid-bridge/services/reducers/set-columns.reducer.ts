@@ -15,6 +15,7 @@ import {
 import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
 import {StatsColumnMapper} from '../mappers/stats.mapper';
 import {StatusColumnMapper} from '../mappers/status.mapper';
+import {ActionsColumnMapper} from '../mappers/actions.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -33,7 +34,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.ACTIONS,
-            useClass: StatsColumnMapper,
+            useClass: ActionsColumnMapper,
         },
         {
             provide: GridColumnTypes.BREAKDOWN,

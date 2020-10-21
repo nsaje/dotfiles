@@ -91,6 +91,7 @@ export class CheckboxColumnMapper extends ColumnMapper {
                     grid.meta.api.setRowSelection(grid.footer.row, value);
                 },
             } as CheckboxRendererParams,
+            pinnedRowValueFormatter: '',
         };
     }
 }

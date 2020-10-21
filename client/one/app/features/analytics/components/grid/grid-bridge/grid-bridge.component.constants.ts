@@ -6,6 +6,7 @@ export const TABLET_BREAKPOINT = 768;
 export const MIN_COLUMN_WIDTH = 50;
 export const BREAKDOWN_MIN_COLUMN_WIDTH = 300;
 export const STATUS_MIN_COLUMN_WIDTH = 100;
+export const ACTIONS_MIN_COLUMN_WIDTH = 100;
 
 export const NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN = 7;
 export const NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN = 50;
@@ -13,6 +14,8 @@ export const NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN = 50;
 export const TOTALS_LABELS = 'TOTALS';
 export const TOTALS_LABEL_HELP_TEXT =
     'Totals displays the sum of all metrics and costs including those that incurred on archived ads, ad groups, campaigns or accounts.';
+
+export const ARCHIVED_ROW_CLASS = 'zem-grid-bridge__row--archived';
 
 export enum EntityStatus {
     ACTIVE = 'Active',

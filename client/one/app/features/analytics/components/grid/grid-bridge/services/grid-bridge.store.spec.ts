@@ -152,6 +152,15 @@ describe('GridBridgeStore', () => {
                     onDataUpdated: (scope: any, handlerFn: Function) => {
                         handlerFn();
                     },
+                    onRowDataUpdated: (scope: any, handlerFn: Function) => {
+                        handlerFn();
+                    },
+                    onRowDataUpdatedError: (
+                        scope: any,
+                        handlerFn: Function
+                    ) => {
+                        handlerFn();
+                    },
                     getVisibleColumns: () => {
                         return mockedVisibleColumns;
                     },

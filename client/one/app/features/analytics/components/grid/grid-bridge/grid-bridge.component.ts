@@ -1,3 +1,5 @@
+import './grid-bridge.component.less';
+
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -5,6 +7,7 @@ import {
     EventEmitter,
     Inject,
     Input,
+    NgZone,
     OnChanges,
     OnDestroy,
     OnInit,
@@ -34,6 +37,7 @@ import {Grid} from './types/grid';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 import {GridColumnTypes} from '../../../analytics.constants';
 import {
+    ARCHIVED_ROW_CLASS,
     GRID_API_DEBOUNCE_TIME,
     GRID_API_LOADING_DATA_ERROR_MESSAGE,
     TABLET_BREAKPOINT,
@@ -77,12 +81,23 @@ export class GridBridgeComponent
     constructor(
         public store: GridBridgeStore,
         private router: Router,
+        private zone: NgZone,
         @Inject(DOCUMENT) private document: Document,
         private notificationService: NotificationService
     ) {
         this.gridOptions = {
             immutableData: true,
             getRowNodeId: this.getRowNodeId,
+            suppressChangeDetection: true,
+            rowClassRules: {
+                [ARCHIVED_ROW_CLASS]: (params: {data: GridRow}) => {
+                    const row: GridRow = params.data;
+                    return commonHelpers.getValueOrDefault(
+                        row.data?.archived,
+                        false
+                    );
+                },
+            },
         };
         this.context = {
             componentParent: this,
@@ -139,7 +154,9 @@ export class GridBridgeComponent
     }
 
     navigateByUrl(url: string) {
-        this.router.navigateByUrl(url);
+        this.zone.run(() => {
+            this.router.navigateByUrl(url);
+        });
     }
 
     private getRowNodeId(row: GridRow): string {
@@ -147,7 +164,11 @@ export class GridBridgeComponent
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(this.createGridUpdater$(), this.createColumnsUpdater$())
+        merge(
+            this.createGridUpdater$(),
+            this.createColumnsUpdater$(),
+            this.createRowUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -188,6 +209,22 @@ export class GridBridgeComponent
                 setTimeout(() => {
                     this.gridApi.sizeColumnsToFit();
                 }, 500);
+            })
+        );
+    }
+
+    private createRowUpdater$(): Observable<GridRow[]> {
+        return this.store.state$.pipe(
+            map(state => state.data.rows),
+            distinctUntilChanged(),
+            tap(() => {
+                if (!commonHelpers.isDefined(this.gridApi)) {
+                    return;
+                }
+                this.gridApi.refreshCells({
+                    columns: [GridColumnTypes.ACTIONS],
+                    force: true,
+                });
             })
         );
     }

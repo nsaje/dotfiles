@@ -26,6 +26,8 @@ import {AlertsStore} from './services/alerts-store/alerts.store';
 import {GridBridgeComponent} from './components/grid/grid-bridge/grid-bridge.component';
 import {ConversionPixelSelectorComponent} from './components/chart/components/conversion-pixel-selector/conversion-pixel-selector.component';
 import {BreakdownCellComponent} from './components/grid/cells/breakdown-cell/breakdown-cell.component';
+import {ActionsCellComponent} from './components/grid/cells/actions-cell/actions-cell.component';
+import {GridCellActionsComponent} from './components/grid/cells/actions-cell/grid-cell-actions.component';
 
 @NgModule({
     declarations: [
@@ -51,6 +53,8 @@ import {BreakdownCellComponent} from './components/grid/cells/breakdown-cell/bre
         GridBridgeComponent,
         ConversionPixelSelectorComponent,
         BreakdownCellComponent,
+        ActionsCellComponent,
+        GridCellActionsComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -68,6 +72,7 @@ import {BreakdownCellComponent} from './components/grid/cells/breakdown-cell/bre
         GridBridgeComponent,
         ConversionPixelSelectorComponent,
         BreakdownCellComponent,
+        ActionsCellComponent,
     ],
 })
 export class AnalyticsModule {}

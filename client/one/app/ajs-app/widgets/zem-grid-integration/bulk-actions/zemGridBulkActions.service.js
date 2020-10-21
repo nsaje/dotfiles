@@ -15,7 +15,8 @@ angular
         zemCloneContentService,
         zemUtils,
         zemAuthStore,
-        zemNavigationNewService
+        zemNavigationNewService,
+        zemNavigationService
     ) {
         // eslint-disable-line max-len
 
@@ -249,7 +250,7 @@ angular
                                 data.data.activeCount
                             );
                         }
-                        refreshData(data);
+                        updateNavigationCachePromise().then(refreshData(data));
                     }, handleError);
             }
 
@@ -264,7 +265,7 @@ angular
                         selection
                     )
                     .then(function(data) {
-                        refreshData(data);
+                        updateNavigationCachePromise().then(refreshData(data));
                     }, handleError);
             }
 
@@ -399,12 +400,12 @@ angular
             }
 
             function refreshData(data) {
+                gridApi.clearSelection();
                 if (data.data && angular.isArray(data.data.rows)) {
                     gridApi.updateData(data.data);
                 } else {
                     gridApi.loadData();
                 }
-                gridApi.clearSelection();
             }
 
             function handleError(data) {
@@ -413,6 +414,14 @@ angular
                     message: 'Error executing action: ' + data.data.message,
                     isClosable: true,
                 });
+            }
+
+            function updateNavigationCachePromise() {
+                var deferred = $q.defer();
+                zemNavigationService.reload().then(function() {
+                    deferred.resolve();
+                });
+                return deferred.promise;
             }
         }
 

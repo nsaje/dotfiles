@@ -232,6 +232,7 @@ angular
 
             var smartGridSupportedLevels = [Level.ALL_ACCOUNTS];
             var smartGridSupportedBreakdowns = [
+                Breakdown.ACCOUNT,
                 Breakdown.PUBLISHER,
                 Breakdown.PLACEMENT,
                 Breakdown.MEDIA_SOURCE,

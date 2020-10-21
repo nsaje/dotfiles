@@ -23,6 +23,8 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
 
     private onColumnsUpdatedHandler: Function;
     private onDataUpdatedHandler: Function;
+    private onRowDataUpdatedHandler: Function;
+    private onRowDataUpdatedErrorHandler: Function;
 
     constructor(injector: Injector) {
         super(new GridBridgeStoreState(), injector);
@@ -35,6 +37,12 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
         }
         if (commonHelpers.isDefined(this.onDataUpdatedHandler)) {
             this.onDataUpdatedHandler();
+        }
+        if (commonHelpers.isDefined(this.onRowDataUpdatedHandler)) {
+            this.onRowDataUpdatedHandler();
+        }
+        if (commonHelpers.isDefined(this.onRowDataUpdatedErrorHandler)) {
+            this.onRowDataUpdatedErrorHandler();
         }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -74,6 +82,14 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
             this.handleColumnsUpdate.bind(this)
         );
         this.onDataUpdatedHandler = api.onDataUpdated(
+            scope,
+            this.handleDataUpdate.bind(this)
+        );
+        this.onRowDataUpdatedHandler = api.onRowDataUpdated(
+            scope,
+            this.handleDataUpdate.bind(this)
+        );
+        this.onRowDataUpdatedErrorHandler = api.onRowDataUpdatedError(
             scope,
             this.handleDataUpdate.bind(this)
         );

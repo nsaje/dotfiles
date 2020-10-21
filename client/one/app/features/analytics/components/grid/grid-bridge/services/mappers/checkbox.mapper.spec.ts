@@ -82,6 +82,7 @@ describe('CheckboxColumnMapper', () => {
                     params: CheckboxRendererParams
                 ) => {},
             } as CheckboxRendererParams,
+            pinnedRowValueFormatter: '',
             cellRendererFramework: CheckboxCellComponent,
             cellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {},

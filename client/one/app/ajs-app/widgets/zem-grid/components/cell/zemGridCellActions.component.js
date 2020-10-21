@@ -1,3 +1,5 @@
+require('./zemGridCellActions.component.less');
+
 var commonHelpers = require('../../../../../shared/helpers/common.helpers');
 
 angular
@@ -5,7 +7,6 @@ angular
     .directive('zemGridCellActions', function($timeout) {
         return {
             restrict: 'E',
-            replace: true,
             scope: {},
             controllerAs: 'ctrl',
             bindToController: {
@@ -21,33 +22,65 @@ angular
             ) {
                 // eslint-disable-line max-len
                 var vm = this;
-                var pubsub = vm.grid.meta.pubsub;
+
+                var pubsub;
                 var previousState;
+
+                var rowChangeWatchHandler;
+                var gridChangeWatchHandler;
+                var onRowUpdatedHandler;
+                var onRowUpdatedErrorHandler;
 
                 var AUTOPILOT_DISABLED_MSG =
                     "To enable this Media Source please increase Autopilot's Daily Spend Cap.";
 
-                vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(
-                    vm.grid.meta.data.level,
-                    vm.grid.meta.data.breakdown
-                );
                 vm.toggleState = toggleState;
-                vm.isToggleStateInProgress = false;
                 vm.execute = execute;
 
-                $scope.$watch('ctrl.row', updateState);
-                $scope.$watch('vm.grid.meta.data.ext', updateState);
-                pubsub.register(
-                    pubsub.EVENTS.ROW_UPDATED,
-                    $scope,
-                    onRowUpdated
-                );
-                pubsub.register(
-                    pubsub.EVENTS.ROW_UPDATED_ERROR,
-                    $scope,
-                    onRowUpdatedError
-                );
+                vm.$onInit = function() {
+                    vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(
+                        vm.grid.meta.data.level,
+                        vm.grid.meta.data.breakdown
+                    );
 
+                    if (
+                        vm.grid.meta.renderingEngine ===
+                        zemGridConstants.gridRenderingEngineType.CUSTOM_GRID
+                    ) {
+                        pubsub = vm.grid.meta.pubsub;
+
+                        rowChangeWatchHandler = $scope.$watch(
+                            'ctrl.row',
+                            updateState
+                        );
+                        gridChangeWatchHandler = $scope.$watch(
+                            'ctrl.grid.meta.data.ext',
+                            updateState
+                        );
+
+                        onRowUpdatedHandler = pubsub.register(
+                            pubsub.EVENTS.ROW_UPDATED,
+                            $scope,
+                            onRowUpdated
+                        );
+                        onRowUpdatedErrorHandler = pubsub.register(
+                            pubsub.EVENTS.ROW_UPDATED_ERROR,
+                            $scope,
+                            onRowUpdatedError
+                        );
+                    }
+
+                    updateState();
+                };
+
+                vm.$onDestroy = function() {
+                    if (rowChangeWatchHandler) rowChangeWatchHandler();
+                    if (gridChangeWatchHandler) gridChangeWatchHandler();
+                    if (onRowUpdatedHandler) onRowUpdatedErrorHandler();
+                    if (onRowUpdatedErrorHandler) onRowUpdatedErrorHandler();
+                };
+
+                // TODO (msuber): remove when migrated to smart-grid
                 function onRowUpdated($scope, row) {
                     if (
                         row &&
@@ -59,6 +92,7 @@ angular
                     }
                 }
 
+                // TODO (msuber): remove when migrated to smart-grid
                 function onRowUpdatedError($scope, error) {
                     if (
                         error &&
@@ -71,6 +105,7 @@ angular
                 }
 
                 function updateState() {
+                    vm.isFieldVisible = false;
                     vm.showLoader = false;
                     vm.isToggleStateInProgress = false;
                     vm.active = false;
@@ -153,10 +188,10 @@ angular
                     vm.showLoader = true;
                     button.action(vm.row, vm.grid, button).finally(function() {
                         vm.showLoader = false;
+                        if (button !== vm.mainButton) {
+                            vm.modal.close();
+                        }
                     });
-                    if (button !== vm.mainButton) {
-                        vm.modal.close();
-                    }
                 }
 
                 function toggleState() {

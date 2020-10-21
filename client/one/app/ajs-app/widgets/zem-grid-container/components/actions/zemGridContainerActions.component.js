@@ -166,6 +166,8 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function isBreakdownSelectorVisible() {
             return (
+                $ctrl.gridApi.getRenderingEngine() ===
+                    zemGridConstants.gridRenderingEngineType.CUSTOM_GRID &&
                 $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
                 $ctrl.breakdown !== constants.breakdown.COUNTRY &&
                 $ctrl.breakdown !== constants.breakdown.STATE &&
