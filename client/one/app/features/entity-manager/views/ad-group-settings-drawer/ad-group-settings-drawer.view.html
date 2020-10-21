@@ -222,10 +222,7 @@
                 </zem-expandable-section>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="!authStore.hasPermission('zemauth.disable_public_rcs')"
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Optimization
@@ -615,10 +612,7 @@
                 </zem-expandable-section>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="!authStore.hasPermission('zemauth.disable_public_rcs')"
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">Tracking</h2>
                 </div>
@@ -738,9 +732,6 @@
                 </div>
                 <zem-expandable-section
                     class="zem-expandable-section"
-                    *ngIf="
-                        !authStore.hasPermission('zemauth.disable_public_rcs')
-                    "
                     [expandedByDefault]="
                         expandedSectionsByDefault[expandableSection.AUDIENCE]
                     "
@@ -751,14 +742,7 @@
                         'Hide advanced settings (Retargeting, BlueKai targeting)'
                     "
                 >
-                    <div
-                        class="zem-settings-section"
-                        *ngIf="
-                            !authStore.hasPermission(
-                                'zemauth.disable_public_rcs'
-                            )
-                        "
-                    >
+                    <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
                             <div class="zem-settings-section__title">
                                 Retargeting
@@ -795,14 +779,7 @@
                             (onUpdate)="store.setRetargeting($event.$event)"
                         ></zem-retargeting>
                     </div>
-                    <div
-                        class="zem-settings-section"
-                        *ngIf="
-                            !authStore.hasPermission(
-                                'zemauth.disable_public_rcs'
-                            )
-                        "
-                    >
+                    <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
                             <div class="zem-settings-section__title">
                                 BlueKai targeting

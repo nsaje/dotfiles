@@ -175,14 +175,6 @@
                     <zem-campaign-goals
                         class="zem-campaign-goals zem-settings-section__item"
                         [campaignType]="state.entity.type"
-                        [onlyCpc]="
-                            authStore.hasPermission(
-                                'zemauth.disable_public_rcs'
-                            ) ||
-                            authStore.hasPermission(
-                                'zemauth.disable_public_newscorp'
-                            )
-                        "
                         [currency]="state.extras.currency"
                         [campaignGoals]="state.entity.goals"
                         [campaignGoalsErrors]="state.fieldsErrors.goals"
@@ -253,10 +245,7 @@
                 </div>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="!authStore.hasPermission('zemauth.disable_public_rcs')"
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Performance tracking

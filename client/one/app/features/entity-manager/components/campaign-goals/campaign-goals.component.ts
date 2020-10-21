@@ -35,8 +35,6 @@ export class CampaignGoalsComponent implements OnChanges {
     @Input()
     campaignType: CampaignType;
     @Input()
-    onlyCpc: boolean;
-    @Input()
     currency: Currency;
     @Input()
     campaignGoals: CampaignGoal[];
@@ -84,8 +82,7 @@ export class CampaignGoalsComponent implements OnChanges {
             this.availableCampaignGoals = campaignGoalsHelpers.getAvailableGoals(
                 CAMPAIGN_GOAL_KPIS,
                 this.campaignGoals,
-                this.campaignType,
-                this.onlyCpc
+                this.campaignType
             );
             this.availableConversionPixels = campaignGoalsHelpers.getConversionPixelsWithAvailableConversionWindows(
                 this.campaignGoals,

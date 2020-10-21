@@ -12,7 +12,7 @@ from django.utils.functional import cached_property
 import core.models
 from zemauth.features.entity_permission import Permission
 
-SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_public_rcs", "disable_public_newscorp", "disable_budget_management")
+SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_budget_management",)
 
 
 class UserMixin(object):

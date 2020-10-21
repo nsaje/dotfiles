@@ -192,8 +192,7 @@ describe('campaignGoalsHelpers.getAvailableGoals', () => {
                     conversionGoal: null,
                 },
             ],
-            CampaignType.DISPLAY,
-            false
+            CampaignType.DISPLAY
         );
 
         expect(availableGoals).toEqual([
@@ -236,24 +235,6 @@ describe('campaignGoalsHelpers.getAvailableGoals', () => {
             {
                 name: 'Cost per Pageview',
                 value: CampaignGoalKPI.CP_PAGE_VIEW,
-                dataType: DataType.Currency,
-                unit: Unit.CurrencySign,
-            },
-        ]);
-    });
-
-    it('should correctly filter available goals (onlyCpc)', () => {
-        const availableGoals = campaignGoalsHelpers.getAvailableGoals(
-            CAMPAIGN_GOAL_KPIS,
-            [],
-            CampaignType.CONTENT,
-            true
-        );
-
-        expect(availableGoals).toEqual([
-            {
-                name: 'CPC',
-                value: CampaignGoalKPI.CPC,
                 dataType: DataType.Currency,
                 unit: Unit.CurrencySign,
             },

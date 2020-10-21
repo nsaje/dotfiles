@@ -58,35 +58,23 @@ export function extendAvailableGoalsWithEditedGoal(
 export function getAvailableGoals(
     allGoals: CampaignGoalKPIConfig[],
     enabledCampaignGoals: CampaignGoal[],
-    campaignType: CampaignType,
-    onlyCpc: boolean
+    campaignType: CampaignType
 ): CampaignGoalKPIConfig[] {
     return clone(allGoals).filter(goal =>
-        isGoalAvailable(goal, enabledCampaignGoals, campaignType, onlyCpc)
+        isGoalAvailable(goal, enabledCampaignGoals, campaignType)
     );
 }
 
 function isGoalAvailable(
     option: CampaignGoalKPIConfig,
     enabledCampaignGoals: CampaignGoal[],
-    campaignType: CampaignType,
-    onlyCpc: boolean
+    campaignType: CampaignType
 ): boolean {
     // TODO (msuber): simplify when legacy ajs components will no longer
     // use this helper function
 
     let isAvailable = true;
     let countConversionGoals = 0;
-
-    if (
-        onlyCpc &&
-        !commonHelpers.isEqualToAnyItem(option.value, [
-            CampaignGoalKPI.CPC,
-            APP_CONSTANTS.campaignGoalKPI.CPC,
-        ])
-    ) {
-        return false;
-    }
 
     enabledCampaignGoals.forEach(goal => {
         if (goal.type === option.value) {
