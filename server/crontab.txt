@@ -58,3 +58,4 @@
 #0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
 30 22 * * *      /home/ubuntu/docker-manage-py.sh clean_up_old_history_stacktraces
 30 20 * * *      /home/ubuntu/docker-manage-py.sh clean_up_old_celery_results
+*/30 * * * *     /home/ubuntu/docker-manage-py.sh sync_ads_pending_amplify_review

@@ -13,7 +13,10 @@ from . import queryset
 class ContentAdSource(instance.ContentAdSourceMixin, models.Model, prodops_mixin.ProdopsMixin):
     class Meta:
         app_label = "dash"
-        indexes = [models.Index(fields=["content_ad", "source"], name="dash_contentadsource_cadid_sid")]
+        indexes = [
+            models.Index(fields=["content_ad", "source"], name="dash_contentadsource_cadid_sid"),
+            models.Index(fields=["source", "submission_status"], name="dash_contentadsource_sid_ss"),
+        ]
 
     source = models.ForeignKey("Source", on_delete=models.PROTECT)
     content_ad = models.ForeignKey("ContentAd", on_delete=models.PROTECT)
