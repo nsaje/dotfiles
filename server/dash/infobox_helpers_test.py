@@ -15,10 +15,18 @@ from utils import test_helper
 from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
+from zemauth.models import User
 
 
 class InfoBoxHelpersTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.users = User.objects.all()
+        for user in cls.users:
+            user.refresh_entity_permissions()
 
     def test_format_flight_time(self):
         start_date = datetime.datetime(2016, 1, 1).date()

@@ -41,7 +41,6 @@
       - ["can_request_demo_v3", "zemauth", "user"]
       - ["can_review_bid_modifiers", "zemauth", "user"]
       - ["can_see_account_type", "zemauth", "user"]
-      - ["can_see_all_accounts", "zemauth", "user"]
       - ["can_see_all_available_sources", "zemauth", "user"]
       - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
       - ["can_see_all_users_for_managers", "zemauth", "user"]

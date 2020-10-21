@@ -76,7 +76,9 @@ CAMPAIGN_NOT_CONFIGURED_SCENARIOS = {
 
 def index(request):
     associated_agency = (
-        models.Agency.objects.all().filter(Q(users__id=request.user.id) | Q(account__users__id=request.user.id)).first()
+        models.Agency.objects.all()
+        .filter(Q(entitypermission__user__id=request.user.id) | Q(account__entitypermission__user__id=request.user.id))
+        .first()
     )
     whitelabel = associated_agency and associated_agency.white_label or None
     return render(

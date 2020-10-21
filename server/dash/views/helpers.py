@@ -9,7 +9,6 @@ from django.db.models import Q
 
 import automation
 import automation.autopilot
-import zemauth.models
 from dash import constants
 from dash import models
 from dash.dashapi import data_helper
@@ -601,20 +600,6 @@ def format_decimal_to_percent(num):
 
 def format_percent_to_decimal(num):
     return Decimal(str(num).replace(",", "").strip("%")) / 100
-
-
-def get_users_for_manager(user, account, current_manager=None):
-    if user.has_perm("zemauth.can_see_all_users_for_managers"):
-        users = zemauth.models.User.objects.all()
-    else:
-        users = account.users.all()
-        if account.is_agency():
-            users |= account.agency.users.all()
-
-    if current_manager is not None:
-        users |= zemauth.models.User.objects.filter(pk=current_manager.id)
-
-    return users.filter(is_active=True).distinct()
 
 
 def validate_ad_groups_state(ad_groups, campaign, campaign_settings, state):

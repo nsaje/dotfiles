@@ -48,7 +48,7 @@ class AllAccountsBreakdown(DASHAPIBaseView):
         only_used_sources = target_dim == "source_id"
         # HACK(nsaje): don't filter by sources for internal users because it takes too long. Maybe we should reimplement showing
         # only used sources by filtering by allowed_sources? Downside is it would hide sources that used to be allowed but aren't anymore. Maybe we could keep track per account.
-        only_used_sources = only_used_sources and not request.user.has_perm("zemauth.can_see_all_accounts")
+        only_used_sources = only_used_sources and not request.user.has_perm_on_all_entities(Permission.READ)
         constraints = stats.constraints_helper.prepare_all_accounts_constraints(
             request.user, only_used_sources=only_used_sources, **_get_constraints_kwargs(form.cleaned_data)
         )

@@ -29,7 +29,6 @@ class AgencyViewSetTest(RESTAPITestCase):
 
     def test_agency_list_internal_user(self):
         internal_user = magic_mixer.blend_user()
-        test_helper.add_permissions(internal_user, permissions=["can_see_all_accounts"])
         test_helper.add_entity_permissions(internal_user, permissions=[Permission.READ], entity=None)
         self.client.force_authenticate(user=internal_user)
 

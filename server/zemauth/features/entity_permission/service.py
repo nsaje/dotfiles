@@ -204,7 +204,7 @@ def _handle_agency_manager(user):
 
 
 def _handle_internal_user(user):
-    if not (user.is_superuser or user.has_perm("zemauth.can_see_all_accounts")):
+    if not user.is_superuser:
         return False
 
     _add_entity_permission(user, None, None, Permission.READ)

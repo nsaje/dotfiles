@@ -187,7 +187,11 @@ def _lookup_whitelabel(agency_or_user):
         agency = agency_or_user
     elif isinstance(agency_or_user, zemauth.models.User):
         user = agency_or_user
-        agency = dash.models.Agency.objects.all().filter(Q(users__id=user.id) | Q(account__users__id=user.id)).first()
+        agency = (
+            dash.models.Agency.objects.all()
+            .filter(Q(entitypermission__user__id=user.id) | Q(account__entitypermission__user__id=user.id))
+            .first()
+        )
     else:
         raise Exception("Incorrect agency or user for whitelabel purposes!")
 

@@ -73,8 +73,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         function getLevelFromEntity(entity) {
             if (!commonHelpers.isDefined(entity)) {
                 var canUserSeeAllAccounts = zemAuthStore.hasPermissionOnAllEntities(
-                    EntityPermissionValue.READ,
-                    'zemauth.can_see_all_accounts'
+                    EntityPermissionValue.READ
                 );
                 if (canUserSeeAllAccounts) {
                     return 'All accounts';

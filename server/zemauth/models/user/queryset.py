@@ -7,10 +7,8 @@ class UserQuerySet(models.QuerySet):
     def filter_by_agencies(self, agencies):
         if not agencies:
             return self
-        return self.filter(
-            models.Q(agency__id__in=agencies)
-            | models.Q(groups__permissions__codename="can_see_all_accounts")
-            | models.Q(user_permissions__codename="can_see_all_accounts")
+        return (
+            self.filter(models.Q(entitypermission__agency__id__in=agencies)).union(self.filter_by_internal()).distinct()
         )
 
     def filter_selfmanaged(self):

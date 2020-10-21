@@ -22,7 +22,9 @@ def _get_user_agencies(context=None):
     user = context["request"].user
     if user.is_anonymous:
         return None
-    return core.models.agency.Agency.objects.all().filter(Q(users__id=user.id) | Q(account__users__id=user.id))
+    return core.models.agency.Agency.objects.all().filter(
+        Q(entitypermission__user__id=user.id) | Q(account__entitypermission__user__id=user.id)
+    )
 
 
 def _get_agency_from_host(context):

@@ -93,7 +93,7 @@ class NavigationTreeView(DASHAPIBaseView):
         with metrics_compat.block_timer(
             "navigation",
             load_statuses=str(request.GET.get("loadStatuses") != "false"),
-            all_accounts=str(request.user.has_perm("zemauth.can_see_all_accounts")),
+            all_accounts=str(request.user.has_perm_on_all_entities(Permission.READ)),
         ):
             return self._get(request)
 

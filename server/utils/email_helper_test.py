@@ -10,7 +10,9 @@ from mock import patch
 import dash.constants
 from dash import models as dash_models
 from utils import email_helper
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
@@ -401,7 +403,8 @@ class WhitelabelTestCase(TestCase):
 
         self.agency = dash_models.Agency(name="Agency 1")
         self.agency.save(self.request)
-        self.agency.users.add(self.normal_user)
+
+        test_helper.add_entity_permissions(self.normal_user, [Permission.READ], self.agency)
         self.white_label = dash_models.WhiteLabel.objects.create(
             theme="greenpark", dashboard_title="greenpark", favicon_url="http://icon.cm"
         )
@@ -409,7 +412,7 @@ class WhitelabelTestCase(TestCase):
 
         self.whitelabel_agency = dash_models.Agency(name="Agency 2", white_label=self.white_label)
         self.whitelabel_agency.save(self.request)
-        self.whitelabel_agency.users.add(self.whitelabel_agency_user)
+        test_helper.add_entity_permissions(self.whitelabel_agency_user, [Permission.READ], self.whitelabel_agency)
 
     @staticmethod
     def _create_official_email(subject, body, **kwargs):

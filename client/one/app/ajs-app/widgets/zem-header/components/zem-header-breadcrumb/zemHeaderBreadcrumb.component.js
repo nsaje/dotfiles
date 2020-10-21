@@ -100,8 +100,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             }
 
             var canUserSeeAllAccounts = zemAuthStore.hasPermissionOnAllEntities(
-                EntityPermissionValue.READ,
-                'zemauth.can_see_all_accounts'
+                EntityPermissionValue.READ
             );
             var name = canUserSeeAllAccounts ? 'All accounts' : 'My accounts';
             breadcrumb.unshift({

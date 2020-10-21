@@ -1039,7 +1039,6 @@ class PublisherGroupConnectionsTestCase(CoreTestCase):
     def test_get_connections_foreign_entities_can_see_all_accounts(self):
         self.request.user.entitypermission_set.all().delete()
         test_helper.add_entity_permissions(self.request.user, [Permission.READ, Permission.WRITE], None)
-        test_helper.add_permissions(self.request.user, ["can_see_all_accounts"])
 
         foreign_agency = magic_mixer.blend(models.Agency)
         foreign_account = magic_mixer.blend(models.Account, agency=foreign_agency)

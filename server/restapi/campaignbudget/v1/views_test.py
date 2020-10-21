@@ -325,7 +325,6 @@ class CampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_budgets_post_no_budget_permission(self):
-        test_helper.add_permissions(self.user, permissions=["disable_budget_management"])
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(
