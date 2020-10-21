@@ -1,4 +1,6 @@
+import {HeaderCellSort} from '../header-cell.component.constants';
+
 export interface SortModel {
     colId: string;
-    sort: string;
+    sort: HeaderCellSort;
 }

@@ -24,8 +24,9 @@ export class HeaderCellComponent implements IHeaderAngularComp {
     colId: string;
     field: string;
 
-    sort: string;
-    sortingOrder: string[];
+    sort: HeaderCellSort;
+    initialSort: HeaderCellSort;
+    sortingOrder: HeaderCellSort[];
 
     isChecked: boolean;
     isCheckboxDisabled: boolean;
@@ -38,11 +39,16 @@ export class HeaderCellComponent implements IHeaderAngularComp {
         this.colDef = this.params.column.getColDef();
         this.colId = this.params.column.getColId();
         this.field = this.colDef.field;
-        this.sort = this.colDef.sort;
-        this.sortingOrder = commonHelpers.getValueOrDefault(
-            this.colDef.sortingOrder,
-            DEFAULT_HEADER_CELL_SORT_ORDER
-        );
+
+        if (this.params.enableSorting) {
+            this.sort = this.params.sortOptions.sort;
+            this.initialSort = this.params.sortOptions.initialSort;
+            this.sortingOrder = commonHelpers.getValueOrDefault(
+                this.params.sortOptions.sortingOrder,
+                DEFAULT_HEADER_CELL_SORT_ORDER
+            );
+        }
+
         if (this.params.enableSelection) {
             this.isChecked = this.params.selectionOptions.isChecked(
                 this.params
@@ -65,18 +71,18 @@ export class HeaderCellComponent implements IHeaderAngularComp {
             return;
         }
 
-        this.sort = this.toggleSort(this.sort);
+        const futureSort = this.toggleSort(this.sort);
         switch (this.params.sortOptions.sortType) {
             case 'client':
-                this.setClientSort(this.sort);
+                this.setClientSort(futureSort);
                 break;
             case 'server':
-                this.setServerSort(this.sort);
+                this.setServerSort(futureSort);
                 break;
         }
     }
 
-    private toggleSort(sort: string): string {
+    private toggleSort(sort: HeaderCellSort): HeaderCellSort {
         switch (sort) {
             case this.sortingOrder[0]:
                 return this.sortingOrder[1];
@@ -84,18 +90,18 @@ export class HeaderCellComponent implements IHeaderAngularComp {
                 return this.sortingOrder[0];
             default:
                 return commonHelpers.getValueOrDefault(
-                    this.params.sortOptions.initialSort,
+                    this.initialSort,
                     this.sortingOrder[0]
                 );
         }
     }
 
-    private setClientSort(sort: string): void {
+    private setClientSort(sort: HeaderCellSort): void {
         const sortModel: SortModel[] = [{colId: this.colId, sort: sort}];
         this.params.api.setSortModel(sortModel);
     }
 
-    private setServerSort(sort: string): void {
+    private setServerSort(sort: HeaderCellSort): void {
         const sortField: string = commonHelpers.getValueOrDefault(
             this.params.sortOptions.orderField,
             this.field

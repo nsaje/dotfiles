@@ -10,20 +10,11 @@ import {GridColumn} from '../../types/grid-column';
 import {ColumnMapper} from './column.mapper';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {CheckboxRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/types/checkbox.renderer-params';
-import {GridRowDataStats} from '../../types/grid-row-data';
 import {GridRow} from '../../types/grid-row';
 
 export class CheckboxColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef | null {
-        const headerCellColDef = this.getHeaderCellColDef(grid, column);
-        const rowCellColDef = this.getRowCellColDef(grid, column);
-        const footerCellColDef = this.getFooterCellColDef(grid, column);
-        return {...headerCellColDef, ...rowCellColDef, ...footerCellColDef};
-    }
-
-    private getHeaderCellColDef(grid: Grid, column: GridColumn): ColDef {
         return {
-            headerName: '',
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
             headerComponentParams: {
@@ -54,40 +45,21 @@ export class CheckboxColumnMapper extends ColumnMapper {
                     },
                 },
             } as HeaderParams,
-        };
-    }
-
-    private getRowCellColDef(grid: Grid, column: GridColumn): ColDef {
-        return {
             cellRendererFramework: CheckboxCellComponent,
             cellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {
-                    const statsRow: GridRowDataStats = params.data;
-                    if (
-                        commonHelpers.isDefined(statsRow) &&
-                        commonHelpers.isDefined(statsRow.id)
-                    ) {
-                        const row: GridRow = grid.body.rows.find(
-                            row => row.id === statsRow.id.value
-                        );
-                        if (commonHelpers.isDefined(row)) {
-                            return grid.meta.api.isRowSelected(row);
-                        }
+                    const row: GridRow = params.data;
+                    const xRow = grid.body.rows.find(x => x.id === row.id);
+                    if (commonHelpers.isDefined(xRow)) {
+                        return grid.meta.api.isRowSelected(xRow);
                     }
                     return false;
                 },
                 isDisabled: (params: CheckboxRendererParams) => {
-                    const statsRow: GridRowDataStats = params.data;
-                    if (
-                        commonHelpers.isDefined(statsRow) &&
-                        commonHelpers.isDefined(statsRow.id)
-                    ) {
-                        const row: GridRow = grid.body.rows.find(
-                            row => row.id === statsRow.id.value
-                        );
-                        if (commonHelpers.isDefined(row)) {
-                            return !grid.meta.api.isRowSelectable(row);
-                        }
+                    const row: GridRow = params.data;
+                    const xRow = grid.body.rows.find(x => x.id === row.id);
+                    if (commonHelpers.isDefined(xRow)) {
+                        return !grid.meta.api.isRowSelectable(xRow);
                     }
                     return true;
                 },
@@ -95,20 +67,15 @@ export class CheckboxColumnMapper extends ColumnMapper {
                     value: boolean,
                     params: CheckboxRendererParams
                 ) => {
-                    const statsRow: GridRowDataStats = params.data;
-                    const row = grid.body.rows.find(
-                        row => row.id === statsRow.id.value
-                    );
-                    grid.meta.api.setRowSelection(row, value);
+                    const row: GridRow = params.data;
+                    const xRow = grid.body.rows.find(x => x.id === row.id);
+                    if (commonHelpers.isDefined(xRow)) {
+                        grid.meta.api.setRowSelection(xRow, value);
+                    }
                 },
             } as CheckboxRendererParams,
             valueFormatter: '',
             valueGetter: '',
-        };
-    }
-
-    private getFooterCellColDef(grid: Grid, column: GridColumn): ColDef {
-        return {
             pinnedRowCellRendererFramework: CheckboxCellComponent,
             pinnedRowCellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {

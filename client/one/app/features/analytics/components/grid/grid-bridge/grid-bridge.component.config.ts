@@ -1,4 +1,10 @@
+import {
+    Breakdown,
+    SettingsState,
+    PublisherTargetingStatus,
+} from '../../../../../app.constants';
 import {GridColumnTypes} from '../../../analytics.constants';
+import {EntityStatus} from './grid-bridge.component.constants';
 
 export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.BREAKDOWN,
@@ -20,3 +26,40 @@ export const PINNED_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.ACTIONS,
     GridColumnTypes.BREAKDOWN,
 ];
+
+export const BREAKDOWN_TO_STATUS_CONFIG: {
+    [key in Breakdown]?:
+        | {
+              [key in SettingsState]: EntityStatus;
+          }
+        | {
+              [key in PublisherTargetingStatus]: EntityStatus;
+          };
+} = {
+    [Breakdown.ACCOUNT]: {
+        [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
+        [SettingsState.INACTIVE]: EntityStatus.PAUSED,
+    },
+    [Breakdown.CAMPAIGN]: {
+        [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
+        [SettingsState.INACTIVE]: EntityStatus.PAUSED,
+    },
+    [Breakdown.AD_GROUP]: {
+        [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
+        [SettingsState.INACTIVE]: EntityStatus.PAUSED,
+    },
+    [Breakdown.CONTENT_AD]: {
+        [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
+        [SettingsState.INACTIVE]: EntityStatus.PAUSED,
+    },
+    [Breakdown.PUBLISHER]: {
+        [PublisherTargetingStatus.UNLISTED]: EntityStatus.ACTIVE,
+        [PublisherTargetingStatus.BLACKLISTED]: EntityStatus.BLACKLISTED,
+        [PublisherTargetingStatus.WHITELISTED]: EntityStatus.WHITELISTED,
+    },
+    [Breakdown.PLACEMENT]: {
+        [PublisherTargetingStatus.UNLISTED]: EntityStatus.ACTIVE,
+        [PublisherTargetingStatus.BLACKLISTED]: EntityStatus.BLACKLISTED,
+        [PublisherTargetingStatus.WHITELISTED]: EntityStatus.WHITELISTED,
+    },
+};

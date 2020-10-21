@@ -4,12 +4,17 @@ import * as moment from 'moment';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import * as numericHelpers from '../../../../../../shared/helpers/numeric.helpers';
 import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
+import {
+    MIN_COLUMN_WIDTH,
+    NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
+    NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+} from '../grid-bridge.component.constants';
 
 export function getApproximateGridColumnWidth(
     columnName: string,
-    minGridColumnWidth: number,
-    numberOfPixelsPerCharacter: number,
-    numberOfPixelsPerAdditionalContent: number
+    minGridColumnWidth: number = MIN_COLUMN_WIDTH,
+    numberOfPixelsPerCharacter: number = NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+    numberOfPixelsPerAdditionalContent: number = NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
 ): number {
     if (commonHelpers.isDefined(columnName)) {
         return Math.max(
@@ -103,11 +108,10 @@ function formatGridColumnValueAsPercent(
     if (!commonHelpers.isDefined(columnValue)) {
         return commonHelpers.getValueOrDefault(defaultValue, 'N/A');
     }
-    return numericHelpers.convertToPercentValue(
+    return `${numericHelpers.parseDecimal(
         columnValue.toString(),
-        true,
         fractionSize
-    );
+    )}%`;
 }
 
 function formatGridColumnValueAsSeconds(

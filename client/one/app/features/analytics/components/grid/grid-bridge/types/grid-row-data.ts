@@ -10,11 +10,11 @@ export interface GridRowData {
 }
 
 export interface GridRowDataStats {
-    id?: GridRowDataStatsValue;
     [key: string]: GridRowDataStatsValue;
 }
 
 export interface GridRowDataStatsValue {
     value: string | number;
     popoverMessage?: string;
+    url?: string;
 }

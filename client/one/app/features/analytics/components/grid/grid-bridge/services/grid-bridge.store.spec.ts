@@ -1,5 +1,5 @@
 import {Injector} from '@angular/core';
-import {fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 import {ColDef} from 'ag-grid-community';
 import {StoreAction} from '../../../../../../shared/services/store/store.action';
 import {StoreEffect} from '../../../../../../shared/services/store/store.effect';
@@ -11,7 +11,6 @@ import {
     GridRowLevel,
     GridRowType,
 } from '../../../../analytics.constants';
-import {GRID_API_DEBOUNCE_TIME} from '../grid-bridge.component.constants';
 import {Grid} from '../types/grid';
 import {GridColumn} from '../types/grid-column';
 import {GridColumnOrder} from '../types/grid-column-order';
@@ -175,41 +174,55 @@ describe('GridBridgeStore', () => {
         expect(store.state.grid).toEqual(mockedGrid);
     });
 
-    it('should correctly reduce grid columns', fakeAsync(() => {
+    it('should correctly reduce grid columns', () => {
         store.initStore(mockedGrid);
         store.connect();
-        tick(GRID_API_DEBOUNCE_TIME);
         expect(store.state.columns).toEqual([
             {
                 headerName: 'Test',
                 field: 'test_field',
             },
         ]);
-    }));
+    });
 
-    it('should correctly reduce grid data', fakeAsync(() => {
+    it('should correctly reduce grid data', () => {
         store.initStore(mockedGrid);
         store.connect();
-        tick(GRID_API_DEBOUNCE_TIME);
         expect(store.state.data).toEqual({
             rows: [
                 {
-                    id: {
-                        value: 'row',
+                    id: 'row',
+                    type: GridRowType.STATS,
+                    entity: null,
+                    data: {
+                        stats: {
+                            test_field: {
+                                value: 'TEST VALUE',
+                            },
+                        },
                     },
-                    test_field: {
-                        value: 'TEST VALUE',
-                    },
+                    level: GridRowLevel.BASE,
+                    parent: null,
+                    collapsed: true,
+                    visible: true,
                 },
             ] as any[],
             totals: [
                 {
-                    id: {
-                        value: 'totals',
+                    id: 'totals',
+                    type: GridRowType.STATS,
+                    entity: null,
+                    data: {
+                        stats: {
+                            test_field: {
+                                value: 'TOTALS OF TEST VALUE',
+                            },
+                        },
                     },
-                    test_field: {
-                        value: 'TOTALS OF TEST VALUE',
-                    },
+                    level: GridRowLevel.BASE,
+                    parent: null,
+                    collapsed: true,
+                    visible: true,
                 },
             ] as any[],
             paginationOptions: {
@@ -224,5 +237,5 @@ describe('GridBridgeStore', () => {
                 count: 1,
             },
         });
-    }));
+    });
 });

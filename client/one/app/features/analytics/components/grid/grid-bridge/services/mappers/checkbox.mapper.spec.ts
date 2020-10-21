@@ -10,7 +10,6 @@ import {
 import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
-import {GridColumnOrder} from '../../types/grid-column-order';
 import {CheckboxColumnMapper} from './checkbox.mapper';
 
 describe('CheckboxColumnMapper', () => {
@@ -58,8 +57,6 @@ describe('CheckboxColumnMapper', () => {
             headerName: '',
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
-            sortable: false,
-            sort: GridColumnOrder.NONE,
             minWidth: MIN_COLUMN_WIDTH,
             width: MIN_COLUMN_WIDTH,
             flex: 0,
@@ -75,6 +72,7 @@ describe('CheckboxColumnMapper', () => {
                 },
             } as HeaderParams,
             valueFormatter: '',
+            valueGetter: '',
             pinnedRowCellRendererFramework: CheckboxCellComponent,
             pinnedRowCellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {},
@@ -93,7 +91,6 @@ describe('CheckboxColumnMapper', () => {
                     params: CheckboxRendererParams
                 ) => {},
             } as CheckboxRendererParams,
-            valueGetter: '',
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

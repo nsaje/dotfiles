@@ -8,27 +8,29 @@ import {HeaderParams} from '../../../../../../../shared/components/smart-grid/co
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
-import {GridRenderingEngineType} from '../../../../../analytics.constants';
-import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {
+    GridColumnTypes,
+    GridRenderingEngineType,
+} from '../../../../../analytics.constants';
+import {
+    MIN_COLUMN_WIDTH,
+    NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
+    NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
-import {ColumnMapper} from './column.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {StatsColumnMapper} from './stats.mapper';
+import {getApproximateGridColumnWidth} from '../../helpers/grid-bridge.helpers';
 
-class RealColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
-        return null;
-    }
-}
-
-describe('ColumnMapper', () => {
-    let mapper: RealColumnMapper;
+describe('StatsColumnMapper', () => {
+    let mapper: StatsColumnMapper;
     let mockedGrid: Partial<Grid>;
     let mockedColumn: Partial<GridColumn>;
 
     beforeEach(() => {
-        mapper = new RealColumnMapper();
+        mapper = new StatsColumnMapper();
 
         mockedGrid = {
             meta: {
@@ -53,35 +55,42 @@ describe('ColumnMapper', () => {
             },
         };
         mockedColumn = {
-            type: null,
+            type: GridColumnTypes.CURRENCY,
             data: {
-                type: null,
-                name: 'Test',
-                field: 'test',
+                type: GridColumnTypes.CURRENCY,
+                name: 'Stats',
+                field: 'stats',
                 order: true,
                 internal: true,
-                help: 'Help text',
+                help: 'Stats help text',
                 shown: true,
             },
             order: GridColumnOrder.DESC,
         };
     });
 
-    it('should correctly map abstract grid column to smart grid column', () => {
+    it('should correctly map stats grid column to smart grid column', () => {
         const colDef: ColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
+        const approximateWidth: number = getApproximateGridColumnWidth(
+            'Stats',
+            MIN_COLUMN_WIDTH,
+            NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+            NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+        );
+
         const expectedColDef: ColDef = {
-            headerName: 'Test',
-            field: 'test',
-            colId: 'test',
+            headerName: 'Stats',
+            field: 'stats',
+            colId: 'stats',
             minWidth: MIN_COLUMN_WIDTH,
-            width: MIN_COLUMN_WIDTH,
+            width: approximateWidth,
             flex: 0,
             suppressSizeToFit: true,
-            resizable: false,
+            resizable: true,
             pinned: null,
             headerComponentParams: {
                 icon: null,
@@ -94,7 +103,7 @@ describe('ColumnMapper', () => {
                     initialSort: null,
                     setSortModel: (sortModel: SortModel[]) => {},
                 },
-                popoverTooltip: 'Help text',
+                popoverTooltip: 'Stats help text',
                 popoverPlacement: 'top',
             } as HeaderParams,
             valueFormatter: (params: ValueFormatterParams) => {

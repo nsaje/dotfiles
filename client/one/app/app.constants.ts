@@ -864,15 +864,17 @@ export enum DefaultFractionSize {
     SECONDS = 1,
 }
 
+export enum SettingsState {
+    ACTIVE = 1,
+    INACTIVE = 2,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
-    settingsState: {
-        ACTIVE: 1,
-        INACTIVE: 2,
-    },
+    settingsState: SettingsState,
     adGroupSettingsAutopilotState: {
         ACTIVE_CPC_BUDGET: 1,
         INACTIVE: 2,

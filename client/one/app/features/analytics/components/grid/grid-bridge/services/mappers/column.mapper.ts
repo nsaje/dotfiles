@@ -1,29 +1,20 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {
+    ColDef,
+    ValueFormatterParams,
+    ValueGetterParams,
+} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
-import {PinnedRowCellValueStyleClass} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component.constants';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
-import {GridColumnTypes} from '../../../../../analytics.constants';
+import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {
-    BREAKDOWN_MIN_COLUMN_WIDTH,
-    MIN_COLUMN_WIDTH,
-    NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
-    NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-    TOTALS_LABELS,
-    TOTALS_LABEL_HELP_TEXT,
-} from '../../grid-bridge.component.constants';
-import {
-    getApproximateGridColumnWidth,
     formatGridColumnValue,
     FormatGridColumnValueOptions,
-} from '../../helpers/grid-bridge.helper';
-import {
-    HeaderCellIcon,
-    HeaderCellSort,
-} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+} from '../../helpers/grid-bridge.helpers';
+import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {
@@ -31,6 +22,7 @@ import {
     RESIZABLE_GRID_COLUMN_TYPES,
 } from '../../grid-bridge.component.config';
 import {GridColumnOrder} from '../../types/grid-column-order';
+import {GridRow} from '../../types/grid-row';
 
 export abstract class ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {
@@ -46,67 +38,34 @@ export abstract class ColumnMapper {
     //
 
     private getDefaultColDef(grid: Grid, column: GridColumn): ColDef {
-        const defaultHeaderCellColDef = this.getDefaultHeaderCellColDef(
-            grid,
-            column
-        );
-        const defaultrowCellColDef = this.getDefaultRowCellColDef(grid, column);
-        const defaultfooterCellColDef = this.getDefaultFooterCellColDef(
-            grid,
-            column
-        );
-        return {
-            ...defaultHeaderCellColDef,
-            ...defaultrowCellColDef,
-            ...defaultfooterCellColDef,
-        };
-    }
-
-    // tslint:disable-next-line: cyclomatic-complexity
-    private getDefaultHeaderCellColDef(grid: Grid, column: GridColumn): ColDef {
-        const approximateWidth: number = getApproximateGridColumnWidth(
-            column.data?.name,
-            column.type === GridColumnTypes.BREAKDOWN
-                ? BREAKDOWN_MIN_COLUMN_WIDTH
-                : MIN_COLUMN_WIDTH,
-            NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-            NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
-        );
-
         return {
             headerName: commonHelpers.getValueOrDefault(column.data?.name, ''),
             field: commonHelpers.getValueOrDefault(column.data?.field, ''),
             colId: commonHelpers.getValueOrDefault(column.data?.field, ''),
-            sortable: commonHelpers.getValueOrDefault(
-                column.data?.order,
-                false
-            ),
-            sort: commonHelpers.getValueOrDefault(
-                column.order,
-                GridColumnOrder.NONE
-            ),
-            minWidth:
-                column.type === GridColumnTypes.BREAKDOWN
-                    ? BREAKDOWN_MIN_COLUMN_WIDTH
-                    : MIN_COLUMN_WIDTH,
-            width: approximateWidth,
-            flex: column.type === GridColumnTypes.BREAKDOWN ? 1 : 0,
-            suppressSizeToFit: column.type !== GridColumnTypes.BREAKDOWN,
+            minWidth: MIN_COLUMN_WIDTH,
+            width: MIN_COLUMN_WIDTH,
+            flex: 0,
+            suppressSizeToFit: true,
             resizable: RESIZABLE_GRID_COLUMN_TYPES.includes(column.type),
             pinned: PINNED_GRID_COLUMN_TYPES.includes(column.type)
                 ? 'left'
                 : null,
             headerComponentParams: {
-                icon:
-                    column.type === GridColumnTypes.PERFORMANCE_INDICATOR
-                        ? HeaderCellIcon.EmoticonHappy
-                        : null,
+                icon: null,
                 internalFeature: commonHelpers.getValueOrDefault(
                     column.data?.internal,
                     false
                 ),
+                enableSorting: commonHelpers.getValueOrDefault(
+                    column.data?.order,
+                    false
+                ),
                 sortOptions: {
                     sortType: 'server',
+                    sort: (commonHelpers.getValueOrDefault(
+                        column.order,
+                        GridColumnOrder.NONE
+                    ) as any) as HeaderCellSort,
                     orderField: commonHelpers.getValueOrDefault(
                         column.data?.orderField,
                         null
@@ -130,11 +89,6 @@ export abstract class ColumnMapper {
                 ),
                 popoverPlacement: 'top',
             } as HeaderParams,
-        };
-    }
-
-    private getDefaultRowCellColDef(grid: Grid, column: GridColumn): ColDef {
-        return {
             valueFormatter: (params: ValueFormatterParams) => {
                 const statsValue: GridRowDataStatsValue = params.value;
                 if (commonHelpers.isDefined(statsValue)) {
@@ -151,28 +105,19 @@ export abstract class ColumnMapper {
                 }
                 return '';
             },
-        };
-    }
-
-    private getDefaultFooterCellColDef(grid: Grid, column: GridColumn): ColDef {
-        return {
+            valueGetter: (params: ValueGetterParams) => {
+                const row: GridRow = params.data;
+                const field = params.column.getColDef().field;
+                return row.data.stats[field];
+            },
             pinnedRowCellRendererFramework: PinnedRowCellComponent,
             pinnedRowCellRendererParams: {
-                valueStyleClass:
-                    column.type === GridColumnTypes.BREAKDOWN
-                        ? PinnedRowCellValueStyleClass.Strong
-                        : null,
-                popoverTooltip:
-                    column.type === GridColumnTypes.BREAKDOWN
-                        ? TOTALS_LABEL_HELP_TEXT
-                        : null,
+                valueStyleClass: null,
+                popoverTooltip: null,
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 const statsValue: GridRowDataStatsValue = params.value;
-                if (column.type === GridColumnTypes.BREAKDOWN) {
-                    return TOTALS_LABELS;
-                }
                 if (commonHelpers.isDefined(statsValue)) {
                     const formatterOptions: FormatGridColumnValueOptions = {
                         type: column.type,

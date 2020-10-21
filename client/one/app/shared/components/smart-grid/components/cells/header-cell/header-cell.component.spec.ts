@@ -50,6 +50,7 @@ describe('HeaderCellComponent', () => {
             enableSorting: true,
             sortOptions: {
                 sortType: 'server',
+                sort: null,
                 initialSort: HeaderCellSort.DESC,
             },
             enableSelection: true,

@@ -8,27 +8,30 @@ import {HeaderParams} from '../../../../../../../shared/components/smart-grid/co
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
-import {GridRenderingEngineType} from '../../../../../analytics.constants';
-import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {
+    GridColumnTypes,
+    GridRenderingEngineType,
+} from '../../../../../analytics.constants';
+import {
+    BREAKDOWN_MIN_COLUMN_WIDTH,
+    TOTALS_LABEL_HELP_TEXT,
+} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
-import {ColumnMapper} from './column.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {BreakdownColumnMapper} from './breakdown.mapper';
+import {BreakdownCellComponent} from '../../../cells/breakdown-cell/breakdown-cell.component';
+import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/breakdown.renderer-params';
+import {PinnedRowCellValueStyleClass} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component.constants';
 
-class RealColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
-        return null;
-    }
-}
-
-describe('ColumnMapper', () => {
-    let mapper: RealColumnMapper;
+describe('BreakdownColumnMapper', () => {
+    let mapper: BreakdownColumnMapper;
     let mockedGrid: Partial<Grid>;
     let mockedColumn: Partial<GridColumn>;
 
     beforeEach(() => {
-        mapper = new RealColumnMapper();
+        mapper = new BreakdownColumnMapper();
 
         mockedGrid = {
             meta: {
@@ -53,36 +56,36 @@ describe('ColumnMapper', () => {
             },
         };
         mockedColumn = {
-            type: null,
+            type: GridColumnTypes.BREAKDOWN,
             data: {
-                type: null,
-                name: 'Test',
-                field: 'test',
+                type: GridColumnTypes.BREAKDOWN,
+                name: 'Breakdown',
+                field: 'breakdown',
                 order: true,
                 internal: true,
-                help: 'Help text',
+                help: 'Breakdown help text',
                 shown: true,
             },
             order: GridColumnOrder.DESC,
         };
     });
 
-    it('should correctly map abstract grid column to smart grid column', () => {
+    it('should correctly map breakdown grid column to smart grid column', () => {
         const colDef: ColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
         const expectedColDef: ColDef = {
-            headerName: 'Test',
-            field: 'test',
-            colId: 'test',
-            minWidth: MIN_COLUMN_WIDTH,
-            width: MIN_COLUMN_WIDTH,
-            flex: 0,
-            suppressSizeToFit: true,
-            resizable: false,
-            pinned: null,
+            headerName: 'Breakdown',
+            field: 'breakdown',
+            colId: GridColumnTypes.BREAKDOWN,
+            minWidth: BREAKDOWN_MIN_COLUMN_WIDTH,
+            width: BREAKDOWN_MIN_COLUMN_WIDTH,
+            flex: 1,
+            suppressSizeToFit: false,
+            resizable: true,
+            pinned: 'left',
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,
@@ -94,7 +97,7 @@ describe('ColumnMapper', () => {
                     initialSort: null,
                     setSortModel: (sortModel: SortModel[]) => {},
                 },
-                popoverTooltip: 'Help text',
+                popoverTooltip: 'Breakdown help text',
                 popoverPlacement: 'top',
             } as HeaderParams,
             valueFormatter: (params: ValueFormatterParams) => {
@@ -105,13 +108,22 @@ describe('ColumnMapper', () => {
             },
             pinnedRowCellRendererFramework: PinnedRowCellComponent,
             pinnedRowCellRendererParams: {
-                valueStyleClass: null,
-                popoverTooltip: null,
+                valueStyleClass: PinnedRowCellValueStyleClass.Strong,
+                popoverTooltip: TOTALS_LABEL_HELP_TEXT,
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';
             },
+            cellRendererFramework: BreakdownCellComponent,
+            cellRendererParams: {
+                getEntity: (params: BreakdownRendererParams) => {},
+                getPopoverTooltip: (params: BreakdownRendererParams) => {},
+                navigateByUrl: (
+                    params: BreakdownRendererParams,
+                    url: string
+                ) => {},
+            } as BreakdownRendererParams,
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

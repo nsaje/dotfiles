@@ -15,18 +15,13 @@ import {SetDataAction, SetDataActionReducer} from './reducers/set-data.reducer';
 import {SetGridAction, SetGridActionReducer} from './reducers/set-grid.reducer';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import {Subject} from 'rxjs';
-import {debounceTime, takeUntil} from 'rxjs/operators';
-import {GRID_API_DEBOUNCE_TIME} from '../grid-bridge.component.constants';
 
 @Injectable()
 export class GridBridgeStore extends Store<GridBridgeStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
 
-    private onColumnsUpdatedDebouncer$: Subject<void> = new Subject<void>();
     private onColumnsUpdatedHandler: Function;
-
-    private onDataUpdatedDebouncer$: Subject<void> = new Subject<void>();
     private onDataUpdatedHandler: Function;
 
     constructor(injector: Injector) {
@@ -67,25 +62,6 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
     }
 
     initStore(grid: Grid): void {
-        this.onColumnsUpdatedDebouncer$
-            .pipe(
-                debounceTime(GRID_API_DEBOUNCE_TIME),
-                takeUntil(this.ngUnsubscribe$)
-            )
-            .subscribe(() => {
-                const api: any = this.state.grid.meta.api;
-                const columns: GridColumn[] = api.getVisibleColumns();
-                this.dispatch(new SetColumnsAction(columns));
-            });
-        this.onDataUpdatedDebouncer$
-            .pipe(
-                debounceTime(GRID_API_DEBOUNCE_TIME),
-                takeUntil(this.ngUnsubscribe$)
-            )
-            .subscribe(() => {
-                this.dispatch(new SetDataAction(this.state.grid));
-            });
-
         this.dispatch(new SetGridAction(grid));
     }
 
@@ -104,10 +80,12 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
     }
 
     private handleColumnsUpdate(): void {
-        this.onColumnsUpdatedDebouncer$.next();
+        const api: any = this.state.grid.meta.api;
+        const columns: GridColumn[] = api.getVisibleColumns();
+        this.dispatch(new SetColumnsAction(columns));
     }
 
     private handleDataUpdate(): void {
-        this.onDataUpdatedDebouncer$.next();
+        this.dispatch(new SetDataAction(this.state.grid));
     }
 }

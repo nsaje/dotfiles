@@ -19,6 +19,7 @@ import {
     RowSelectedEvent,
     SelectionChangedEvent,
     GridSizeChangedEvent,
+    FirstDataRenderedEvent,
 } from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
@@ -61,6 +62,8 @@ export class SmartGridComponent implements OnInit, OnChanges {
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
     gridSizeChange = new EventEmitter<GridSizeChangedEvent>();
+    @Output()
+    firstDataRender = new EventEmitter<FirstDataRenderedEvent>();
     @Output()
     paginationChange = new EventEmitter<PaginationState>();
 
@@ -115,13 +118,21 @@ export class SmartGridComponent implements OnInit, OnChanges {
     onGridReady(params: DetailGridInfo) {
         this.isGridReady = true;
         this.gridApi = params.api;
-        this.gridApi.sizeColumnsToFit();
         this.gridReady.emit(params);
     }
 
     onGridSizeChanged($event: GridSizeChangedEvent) {
-        $event.api.sizeColumnsToFit();
+        setTimeout(() => {
+            $event.api.sizeColumnsToFit();
+        }, 500);
         this.gridSizeChange.emit($event);
+    }
+
+    onFirstDataRendered($event: FirstDataRenderedEvent) {
+        setTimeout(() => {
+            this.gridApi.sizeColumnsToFit();
+        }, 500);
+        this.firstDataRender.emit($event);
     }
 
     onPageChange(page: number) {

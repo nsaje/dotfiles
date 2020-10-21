@@ -87,22 +87,38 @@ describe('SetDataActionReducer', () => {
         expect(state.data).toEqual({
             rows: [
                 {
-                    id: {
-                        value: 'row',
+                    id: 'row',
+                    type: GridRowType.STATS,
+                    entity: null,
+                    data: {
+                        stats: {
+                            test_field: {
+                                value: 'TEST VALUE',
+                            },
+                        },
                     },
-                    test_field: {
-                        value: 'TEST VALUE',
-                    },
+                    level: GridRowLevel.BASE,
+                    parent: null,
+                    collapsed: true,
+                    visible: true,
                 },
             ] as any[],
             totals: [
                 {
-                    id: {
-                        value: 'totals',
+                    id: 'totals',
+                    type: GridRowType.STATS,
+                    entity: null,
+                    data: {
+                        stats: {
+                            test_field: {
+                                value: 'TOTALS OF TEST VALUE',
+                            },
+                        },
                     },
-                    test_field: {
-                        value: 'TOTALS OF TEST VALUE',
-                    },
+                    level: GridRowLevel.BASE,
+                    parent: null,
+                    collapsed: true,
+                    visible: true,
                 },
             ] as any[],
             paginationOptions: {

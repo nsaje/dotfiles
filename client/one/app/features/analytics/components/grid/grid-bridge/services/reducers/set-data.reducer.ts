@@ -1,8 +1,6 @@
 import {StoreAction} from '../../../../../../../shared/services/store/store.action';
 import {StoreReducer} from '../../../../../../../shared/services/store/store.reducer';
 import {Grid} from '../../types/grid';
-import {GridRow} from '../../types/grid-row';
-import {GridRowDataStats} from '../../types/grid-row-data';
 import {GridBridgeStoreState} from '../grid-bridge.store.state';
 
 export class SetDataAction extends StoreAction<Grid> {}
@@ -20,8 +18,8 @@ export class SetDataActionReducer extends StoreReducer<
             ...state,
             data: {
                 ...state.data,
-                rows: action.payload.body.rows.map(this.mapToStatsRow),
-                totals: [action.payload.footer.row].map(this.mapToStatsRow),
+                rows: [...action.payload.body.rows],
+                totals: [{...action.payload.footer.row}],
                 pagination: {
                     ...state.data.pagination,
                     ...action.payload.body.pagination,
@@ -31,13 +29,6 @@ export class SetDataActionReducer extends StoreReducer<
                     ...action.payload.meta.paginationOptions,
                 },
             },
-        };
-    }
-
-    private mapToStatsRow(gridRow: GridRow): GridRowDataStats {
-        return {
-            ...gridRow.data.stats,
-            id: {value: gridRow.id},
         };
     }
 }

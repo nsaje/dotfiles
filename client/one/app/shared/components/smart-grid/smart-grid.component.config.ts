@@ -12,7 +12,7 @@ export const DEFAULT_GRID_OPTIONS: GridOptions = {
     rowSelection: 'multiple',
     rowMultiSelectWithClick: true,
     suppressRowClickSelection: true,
-    suppressChangeDetection: true,
+    suppressChangeDetection: false,
     defaultColDef: {
         suppressMovable: true,
         resizable: true,

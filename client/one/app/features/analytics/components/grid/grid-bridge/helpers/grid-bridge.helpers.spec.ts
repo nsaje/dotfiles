@@ -1,43 +1,59 @@
 import {Currency} from '../../../../../../app.constants';
 import {GridColumnTypes} from '../../../../analytics.constants';
-import * as gridBridgeHelpers from './grid-bridge.helper';
+import {MIN_COLUMN_WIDTH} from '../grid-bridge.component.constants';
+import * as gridBridgeHelpers from './grid-bridge.helpers';
 
 describe('GridBridgeHelpers', () => {
-    const MIN_COLUMN_WIDTH = 50;
-    const NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN = 10;
-    const NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN = 50;
+    const CUSTOM_MIN_COLUMN_WIDTH = 50;
+    const CUSTOM_NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN = 10;
+    const CUSTOM_NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN = 50;
+
+    it('should correctly compute approximate grid column width with default values', () => {
+        expect(gridBridgeHelpers.getApproximateGridColumnWidth('')).toEqual(
+            MIN_COLUMN_WIDTH
+        );
+        expect(gridBridgeHelpers.getApproximateGridColumnWidth(null)).toEqual(
+            MIN_COLUMN_WIDTH
+        );
+        expect(
+            gridBridgeHelpers.getApproximateGridColumnWidth(undefined)
+        ).toEqual(MIN_COLUMN_WIDTH);
+        expect(
+            gridBridgeHelpers.getApproximateGridColumnWidth('Test Column Name')
+        ).toEqual(162);
+    });
 
     it('should correctly compute approximate grid column width', () => {
         expect(
             gridBridgeHelpers.getApproximateGridColumnWidth(
                 '',
-                MIN_COLUMN_WIDTH,
-                NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-                NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+                CUSTOM_MIN_COLUMN_WIDTH,
+                CUSTOM_NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+                CUSTOM_NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
             )
-        ).toEqual(MIN_COLUMN_WIDTH);
+        ).toEqual(CUSTOM_MIN_COLUMN_WIDTH);
         expect(
             gridBridgeHelpers.getApproximateGridColumnWidth(
                 null,
-                MIN_COLUMN_WIDTH,
-                NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-                NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+                CUSTOM_MIN_COLUMN_WIDTH,
+                CUSTOM_NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+                CUSTOM_NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
             )
-        ).toEqual(MIN_COLUMN_WIDTH);
+        ).toEqual(CUSTOM_MIN_COLUMN_WIDTH);
         expect(
             gridBridgeHelpers.getApproximateGridColumnWidth(
                 undefined,
-                MIN_COLUMN_WIDTH,
-                NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-                NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+                CUSTOM_MIN_COLUMN_WIDTH,
+                CUSTOM_NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+                CUSTOM_NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
             )
-        ).toEqual(MIN_COLUMN_WIDTH);
+        ).toEqual(CUSTOM_MIN_COLUMN_WIDTH);
         expect(
             gridBridgeHelpers.getApproximateGridColumnWidth(
                 'Test Column Name',
-                MIN_COLUMN_WIDTH,
-                NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-                NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+                CUSTOM_MIN_COLUMN_WIDTH,
+                CUSTOM_NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
+                CUSTOM_NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
             )
         ).toEqual(210);
     });
@@ -131,10 +147,10 @@ describe('GridBridgeHelpers', () => {
             })
         ).toEqual('');
         expect(
-            gridBridgeHelpers.formatGridColumnValue(0.5, {
+            gridBridgeHelpers.formatGridColumnValue(5, {
                 type: GridColumnTypes.PERCENT,
             })
-        ).toEqual('50.00%');
+        ).toEqual('5.00%');
     });
 
     it('should correctly format grid column seconds value', () => {

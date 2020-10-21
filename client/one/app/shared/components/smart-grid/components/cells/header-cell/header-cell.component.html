@@ -12,6 +12,7 @@
             class="zem-header-cell__icon {{
                 params.icon
             }} zem-header-cell__data-item"
+            [class.zem-header-cell__icon--link]="params.enableSorting"
             (click)="setSort()"
         ></span>
         <span

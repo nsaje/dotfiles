@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {RouterTestingModule} from '@angular/router/testing';
 import {NotificationService} from '../../../../../core/notification/services/notification.service';
 import {SharedModule} from '../../../../../shared/shared.module';
 import {GridBridgeComponent} from './grid-bridge.component';
@@ -27,7 +28,7 @@ describe('GridBridgeComponent', () => {
 
         TestBed.configureTestingModule({
             declarations: [GridBridgeComponent],
-            imports: [SharedModule],
+            imports: [SharedModule, RouterTestingModule.withRoutes([])],
             providers: [
                 {
                     provide: GridBridgeStore,

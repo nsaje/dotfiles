@@ -39,8 +39,9 @@ import {
     TABLET_BREAKPOINT,
 } from './grid-bridge.component.constants';
 import {NotificationService} from '../../../../../core/notification/services/notification.service';
-import {GridRowDataStats} from './types/grid-row-data';
 import {DOCUMENT} from '@angular/common';
+import {GridRow} from './types/grid-row';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'zem-grid-bridge',
@@ -69,14 +70,13 @@ export class GridBridgeComponent
 
     private onSelectionUpdatedDebouncer$: Subject<void> = new Subject<void>();
     private onSelectionUpdatedHandler: Function;
-
-    private onDataUpdatedErrorDebouncer$: Subject<void> = new Subject<void>();
     private onDataUpdatedErrorHandler: Function;
 
     private sidebarContainerContentElement: Element;
 
     constructor(
         public store: GridBridgeStore,
+        private router: Router,
         @Inject(DOCUMENT) private document: Document,
         private notificationService: NotificationService
     ) {
@@ -96,29 +96,7 @@ export class GridBridgeComponent
                 takeUntil(this.ngUnsubscribe$)
             )
             .subscribe(() => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.gridApi.refreshHeader();
-                this.gridApi.refreshCells({
-                    columns: [GridColumnTypes.CHECKBOX],
-                    force: true,
-                });
-            });
-        this.onDataUpdatedErrorDebouncer$
-            .pipe(
-                debounceTime(GRID_API_DEBOUNCE_TIME),
-                takeUntil(this.ngUnsubscribe$)
-            )
-            .subscribe(() => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.gridApi.hideOverlay();
-                this.gridApi.showNoRowsOverlay();
-                this.notificationService.error(
-                    GRID_API_LOADING_DATA_ERROR_MESSAGE
-                );
+                this.handleSelectionUpdate();
             });
 
         this.store.initStore(this.grid);
@@ -160,17 +138,16 @@ export class GridBridgeComponent
         this.setBreakdownColumnPinnedProperty();
     }
 
-    private getRowNodeId(data: GridRowDataStats): string {
-        return commonHelpers.getValueOrDefault(data.id?.value as string, '');
+    navigateByUrl(url: string) {
+        this.router.navigateByUrl(url);
+    }
+
+    private getRowNodeId(row: GridRow): string {
+        return row.id;
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(
-            this.createGridUpdater$(),
-            this.createColumnsUpdater$(),
-            this.createDataRowsUpdater$(),
-            this.createDataTotalsUpdater$()
-        )
+        merge(this.createGridUpdater$(), this.createColumnsUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -186,7 +163,7 @@ export class GridBridgeComponent
                 }
                 this.onSelectionUpdatedHandler = grid.meta.api.onSelectionUpdated(
                     grid.meta.scope,
-                    this.handleSelectionUpdate.bind(this)
+                    () => this.onSelectionUpdatedDebouncer$.next()
                 );
                 if (commonHelpers.isDefined(this.onDataUpdatedErrorHandler)) {
                     this.onDataUpdatedErrorHandler();
@@ -203,51 +180,36 @@ export class GridBridgeComponent
         return this.store.state$.pipe(
             map(state => state.columns),
             distinctUntilChanged(),
-            tap(columns => {
+            tap(() => {
                 if (!commonHelpers.isDefined(this.gridApi)) {
                     return;
                 }
-                this.gridApi.setColumnDefs(columns);
+                this.setBreakdownColumnPinnedProperty();
                 setTimeout(() => {
-                    this.setBreakdownColumnPinnedProperty();
                     this.gridApi.sizeColumnsToFit();
-                });
-            })
-        );
-    }
-
-    private createDataRowsUpdater$(): Observable<GridRowDataStats[]> {
-        return this.store.state$.pipe(
-            map(state => state.data.rows),
-            distinctUntilChanged(),
-            tap(rows => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.gridApi.setRowData(rows);
-            })
-        );
-    }
-
-    private createDataTotalsUpdater$(): Observable<GridRowDataStats[]> {
-        return this.store.state$.pipe(
-            map(state => state.data.totals),
-            distinctUntilChanged(),
-            tap(totals => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.gridApi.setPinnedBottomRowData(totals);
+                }, 500);
             })
         );
     }
 
     private handleSelectionUpdate(): void {
-        this.onSelectionUpdatedDebouncer$.next();
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
+        this.gridApi.refreshHeader();
+        this.gridApi.refreshCells({
+            columns: [GridColumnTypes.CHECKBOX],
+            force: true,
+        });
     }
 
     private handleDataUpdateError(): void {
-        this.onDataUpdatedErrorDebouncer$.next();
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
+        this.gridApi.hideOverlay();
+        this.gridApi.showNoRowsOverlay();
+        this.notificationService.error(GRID_API_LOADING_DATA_ERROR_MESSAGE);
     }
 
     private setBreakdownColumnPinnedProperty(): void {

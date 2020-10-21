@@ -13,7 +13,8 @@ import {
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../../../../analytics.config';
 import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
-import {TextColumnMapper} from '../mappers/text.mapper';
+import {StatsColumnMapper} from '../mappers/stats.mapper';
+import {StatusColumnMapper} from '../mappers/status.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -32,43 +33,43 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.ACTIONS,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.BREAKDOWN,
             useClass: BreakdownColumnMapper,
         },
         {
+            provide: GridColumnTypes.STATUS,
+            useClass: StatusColumnMapper,
+        },
+        {
             provide: GridColumnTypes.BASE_FIELD,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: TextColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.STATUS,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.SUBMISSION_STATUS,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.PERFORMANCE_INDICATOR,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.EXTERNAL_LINK,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.THUMBNAIL,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
         {
             provide: GridColumnTypes.BID_MODIFIER_FIELD,
-            useClass: TextColumnMapper,
+            useClass: StatsColumnMapper,
         },
     ];
 

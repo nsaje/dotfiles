@@ -1,12 +1,13 @@
 require('./zemNavigation.component.less');
 
+var isEmpty = require('../../../shared/helpers/array.helpers').isEmpty;
+
 angular.module('one.widgets').component('zemNavigation', {
     template: require('./zemNavigation.component.html'),
     controller: function(
         $scope,
         $element,
         $timeout,
-        zemAuthStore,
         zemNavigationUtils,
         zemNavigationNewService,
         zemDataFilterService,
@@ -193,6 +194,13 @@ angular.module('one.widgets').component('zemNavigation', {
                 showArchived,
                 true
             );
+            if (!isEmpty($ctrl.filteredList)) {
+                $ctrl.filteredList.forEach(function(item) {
+                    item.href = getItemHref(item);
+                    item.styleClasses = getItemClasses(item);
+                    item.iconClass = getItemIconClass(item);
+                });
+            }
 
             $ctrl.selectedEntity = null;
 

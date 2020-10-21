@@ -23,16 +23,16 @@
         vs-scroll-parent=".zem-navigation__results"
         vs-size="$ctrl.getItemHeight(item)"
     >
-        <li ng-repeat="item in $ctrl.filteredList">
+        <li ng-repeat="item in $ctrl.filteredList track by item.id">
             <a
                 class="zem-navigation__item"
-                ng-href="{{ $ctrl.getItemHref(item) }}"
+                ng-href="{{ item.href }}"
                 ng-click="$ctrl.navigateTo(item)"
-                ng-class="$ctrl.getItemClasses(item)"
+                ng-class="item.styleClasses"
             >
                 <span
                     class="zem-navigation__item-icon"
-                    ng-class="$ctrl.getItemIconClass(item)"
+                    ng-class="item.iconClass"
                 ></span>
                 <span
                     class="zem-navigation__item-name"
