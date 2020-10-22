@@ -2,7 +2,9 @@ import {ColDef} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {CheckboxCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
 import {CheckboxRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/types/checkbox.renderer-params';
+import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
+import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {
     GridColumnTypes,
     GridRenderingEngineType,
@@ -64,6 +66,18 @@ describe('CheckboxColumnMapper', () => {
             resizable: false,
             pinned: 'left',
             headerComponentParams: {
+                icon: null,
+                internalFeature: false,
+                enableSorting: false,
+                sortOptions: {
+                    sortType: 'server',
+                    sort: HeaderCellSort.NONE,
+                    orderField: null,
+                    initialSort: null,
+                    setSortModel: (sortModel: SortModel[]) => {},
+                },
+                popoverTooltip: null,
+                popoverPlacement: 'top',
                 enableSelection: true,
                 selectionOptions: {
                     isChecked: (params: HeaderParams) => {},

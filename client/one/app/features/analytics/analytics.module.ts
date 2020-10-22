@@ -28,6 +28,7 @@ import {ConversionPixelSelectorComponent} from './components/chart/components/co
 import {BreakdownCellComponent} from './components/grid/cells/breakdown-cell/breakdown-cell.component';
 import {ActionsCellComponent} from './components/grid/cells/actions-cell/actions-cell.component';
 import {GridCellActionsComponent} from './components/grid/cells/actions-cell/grid-cell-actions.component';
+import {PerformanceIndicatorCellComponent} from './components/grid/cells/performance-indicator-cell/performance-indicator-cell.component';
 
 @NgModule({
     declarations: [
@@ -55,6 +56,7 @@ import {GridCellActionsComponent} from './components/grid/cells/actions-cell/gri
         BreakdownCellComponent,
         ActionsCellComponent,
         GridCellActionsComponent,
+        PerformanceIndicatorCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -73,6 +75,7 @@ import {GridCellActionsComponent} from './components/grid/cells/actions-cell/gri
         ConversionPixelSelectorComponent,
         BreakdownCellComponent,
         ActionsCellComponent,
+        PerformanceIndicatorCellComponent,
     ],
 })
 export class AnalyticsModule {}

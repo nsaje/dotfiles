@@ -32,7 +32,9 @@ export class StatusColumnMapper extends ColumnMapper {
                 }
                 return '';
             },
-            pinnedRowValueFormatter: '',
+            pinnedRowValueFormatter: (params: any) => {
+                return '';
+            },
         };
     }
 }

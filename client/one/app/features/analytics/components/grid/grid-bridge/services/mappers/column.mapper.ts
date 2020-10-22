@@ -28,7 +28,14 @@ export abstract class ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {
         const defaultColDef = this.getDefaultColDef(grid, column);
         const colDef = this.getColDef(grid, column);
-        return {...defaultColDef, ...(colDef || {})};
+        return {
+            ...defaultColDef,
+            ...(colDef || {}),
+            headerComponentParams: {
+                ...defaultColDef.headerComponentParams,
+                ...(colDef || {}).headerComponentParams,
+            },
+        };
     }
 
     abstract getColDef(grid: Grid, column: GridColumn): ColDef;

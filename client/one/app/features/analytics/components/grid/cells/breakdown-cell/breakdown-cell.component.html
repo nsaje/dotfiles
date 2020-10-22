@@ -12,12 +12,6 @@
             title="valueFormatted"
             >{{ valueFormatted }}</a
         >
-        <zem-help-popover
-            *ngIf="popoverTooltip"
-            class="zem-help-popover zem-breakdown-cell__item"
-            content="{{ popoverTooltip }}"
-            placement="{{ params.popoverPlacement || 'top' }}"
-        ></zem-help-popover>
     </ng-container>
     <ng-container *ngIf="valueType === BreakdownValueType.EXTERNAL_LINK">
         <!--TODO (msuber): add support for external link-->
@@ -26,4 +20,10 @@
             >Add support for external link</span
         >
     </ng-container>
+    <zem-help-popover
+        *ngIf="popoverTooltip"
+        class="zem-help-popover zem-breakdown-cell__item"
+        content="{{ popoverTooltip }}"
+        placement="{{ params.popoverPlacement || 'top' }}"
+    ></zem-help-popover>
 </div>

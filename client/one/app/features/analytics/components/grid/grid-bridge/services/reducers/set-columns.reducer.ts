@@ -16,6 +16,7 @@ import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
 import {StatsColumnMapper} from '../mappers/stats.mapper';
 import {StatusColumnMapper} from '../mappers/status.mapper';
 import {ActionsColumnMapper} from '../mappers/actions.mapper';
+import {PerformanceIndicatorColumnMapper} from '../mappers/performance-indicator.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -45,6 +46,10 @@ export class SetColumnsActionReducer extends StoreReducer<
             useClass: StatusColumnMapper,
         },
         {
+            provide: GridColumnTypes.PERFORMANCE_INDICATOR,
+            useClass: PerformanceIndicatorColumnMapper,
+        },
+        {
             provide: GridColumnTypes.BASE_FIELD,
             useClass: StatsColumnMapper,
         },
@@ -54,10 +59,6 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.SUBMISSION_STATUS,
-            useClass: StatsColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.PERFORMANCE_INDICATOR,
             useClass: StatsColumnMapper,
         },
         {

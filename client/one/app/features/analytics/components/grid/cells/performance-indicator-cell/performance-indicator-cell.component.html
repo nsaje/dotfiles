@@ -1,0 +1,34 @@
+<div class="zem-performance-indicator-cell">
+    <img
+        class="zem-performance-indicator-cell__icon"
+        [class.zem-performance-indicator-cell__trigger]="
+            performanceIndicators.length > 0
+        "
+        src="{{ overallIconUrl }}"
+        [zemPopover]="
+            performanceIndicators.length > 0
+                ? performanceIndicatorsTemplate
+                : null
+        "
+        [stayOpenOnHover]="true"
+        triggers="mouseenter:mouseleave"
+        placement="top"
+        container="body"
+    />
+</div>
+
+<ng-template #performanceIndicatorsTemplate>
+    <div
+        class="zem-performance-indicator-cell__indicator"
+        *ngFor="let indicator of performanceIndicators"
+    >
+        <img
+            class="zem-performance-indicator-cell__icon zem-performance-indicator-cell__indicator-item"
+            src="{{ indicator.iconUrl }}"
+        />
+        <span
+            class="zem-performance-indicator-cell__text zem-performance-indicator-cell__indicator-item"
+            >{{ indicator.text }}</span
+        >
+    </div>
+</ng-template>

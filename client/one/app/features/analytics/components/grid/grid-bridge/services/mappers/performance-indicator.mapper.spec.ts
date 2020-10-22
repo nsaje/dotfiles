@@ -12,20 +12,23 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {STATUS_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
-import {StatusColumnMapper} from './status.mapper';
-import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {
+    HeaderCellIcon,
+    HeaderCellSort,
+} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {PerformanceIndicatorColumnMapper} from './performance-indicator.mapper';
 
-describe('StatusColumnMapper', () => {
-    let mapper: StatusColumnMapper;
+describe('PerformanceIndicatorColumnMapper', () => {
+    let mapper: PerformanceIndicatorColumnMapper;
     let mockedGrid: Partial<Grid>;
     let mockedColumn: Partial<GridColumn>;
 
     beforeEach(() => {
-        mapper = new StatusColumnMapper();
+        mapper = new PerformanceIndicatorColumnMapper();
 
         mockedGrid = {
             meta: {
@@ -50,14 +53,14 @@ describe('StatusColumnMapper', () => {
             },
         };
         mockedColumn = {
-            type: GridColumnTypes.STATUS,
+            type: GridColumnTypes.PERFORMANCE_INDICATOR,
             data: {
-                type: GridColumnTypes.STATUS,
-                name: 'Status',
-                field: 'status',
+                type: GridColumnTypes.PERFORMANCE_INDICATOR,
+                name: '',
+                field: 'performance',
                 order: true,
                 internal: true,
-                help: 'Status help text',
+                help: 'Performance help text',
                 shown: true,
             },
             order: GridColumnOrder.DESC,
@@ -71,17 +74,17 @@ describe('StatusColumnMapper', () => {
         );
 
         const expectedColDef: ColDef = {
-            headerName: 'Status',
-            field: 'status',
-            colId: 'status',
-            minWidth: STATUS_MIN_COLUMN_WIDTH,
-            width: STATUS_MIN_COLUMN_WIDTH,
+            headerName: '',
+            field: 'performance',
+            colId: GridColumnTypes.PERFORMANCE_INDICATOR,
+            minWidth: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
+            width: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
             pinned: null,
             headerComponentParams: {
-                icon: null,
+                icon: HeaderCellIcon.EmoticonHappy,
                 internalFeature: true,
                 enableSorting: true,
                 sortOptions: {
@@ -91,7 +94,7 @@ describe('StatusColumnMapper', () => {
                     initialSort: null,
                     setSortModel: (sortModel: SortModel[]) => {},
                 },
-                popoverTooltip: 'Status help text',
+                popoverTooltip: 'Performance help text',
                 popoverPlacement: 'top',
             } as HeaderParams,
             valueFormatter: (params: ValueFormatterParams) => {

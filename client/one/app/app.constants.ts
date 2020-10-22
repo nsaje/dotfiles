@@ -870,6 +870,12 @@ export enum SettingsState {
     INACTIVE = 2,
 }
 
+export enum Emoticon {
+    HAPPY = 1,
+    NEUTRAL = 2,
+    SAD = 3,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1519,11 +1525,7 @@ export const APP_CONSTANTS = {
         ZEMANTA: 'Zemanta',
         B1: 'B1',
     },
-    emoticon: {
-        HAPPY: 1,
-        NEUTRAL: 2,
-        SAD: 3,
-    },
+    emoticon: Emoticon,
     sideBarTabs: {
         PERFORMANCE: 'performance',
         CONTENT_INSIGHTS: 'content-insights',

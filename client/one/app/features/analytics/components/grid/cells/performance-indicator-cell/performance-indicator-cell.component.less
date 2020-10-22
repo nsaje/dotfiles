@@ -1,0 +1,36 @@
+@import 'variables';
+
+.zem-performance-indicator-cell {
+    display: block;
+    position: relative;
+}
+
+.zem-performance-indicator-cell__icon {
+    display: block;
+    width: 15px;
+    height: 15px;
+}
+
+.zem-performance-indicator-cell__trigger:hover {
+    cursor: help;
+}
+
+.zem-performance-indicator-cell__indicator {
+    display: flex;
+    padding: 8px 0 8px 0px;
+    border-bottom: 1px solid @border-color--lighter;
+    align-items: center;
+}
+
+.zem-performance-indicator-cell__indicator:first-child {
+    padding-top: 0;
+}
+
+.zem-performance-indicator-cell__indicator:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.zem-performance-indicator-cell__indicator-item:not(:last-child) {
+    margin-right: 5px;
+}
