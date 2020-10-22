@@ -11,6 +11,8 @@ from zemauth.features.entity_permission import Permission
 
 from . import exceptions
 
+CELERY_RETRIES = 3
+
 
 def clone(
     request,
@@ -45,8 +47,11 @@ def clone(
     return cloned_campaign
 
 
-@celery.app.task(acks_late=True, name="campaign_cloning", soft_time_limit=39 * 60)
+@celery.app.task(
+    bind=True, max_retries=CELERY_RETRIES, acks_late=True, name="campaign_cloning", soft_time_limit=39 * 60
+)
 def clone_async(
+    self,
     user,
     source_campaign_id,
     source_campaign_name,
@@ -82,8 +87,11 @@ def clone_async(
             )
 
     except Exception as err:
-        if send_email:
-            utils.email_helper.send_campaign_cloned_error_email(
-                request, source_campaign_name, destination_campaign_name
-            )
-        raise err
+        if self.request.retries < CELERY_RETRIES:
+            self.retry(exc=err, countdown=2 ** self.request.retries)
+        else:
+            if send_email:
+                utils.email_helper.send_campaign_cloned_error_email(
+                    request, source_campaign_name, destination_campaign_name
+                )
+            raise err

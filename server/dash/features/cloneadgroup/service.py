@@ -11,6 +11,8 @@ from core.models.account.exceptions import AccountDoesNotMatch
 from server import celery
 from zemauth.features.entity_permission import Permission
 
+CELERY_RETRIES = 3
+
 
 def clone(
     request,
@@ -41,8 +43,11 @@ def clone(
     return ad_group
 
 
-@celery.app.task(acks_late=True, name="ad_group_cloning", soft_time_limit=39 * 60)
+@celery.app.task(
+    bind=True, max_retries=CELERY_RETRIES, acks_late=True, name="ad_group_cloning", soft_time_limit=39 * 60
+)
 def clone_async(
+    self,
     user,
     source_ad_group_id,
     source_ad_group_name,
@@ -79,11 +84,14 @@ def clone_async(
             )
 
     except Exception as err:
-        if send_email:
-            utils.email_helper.send_ad_group_cloned_error_email(
-                request, source_ad_group_name, destination_ad_group_name
-            )
-        raise err
+        if self.request.retries < CELERY_RETRIES:
+            self.retry(exc=err, countdown=2 ** self.request.retries)
+        else:
+            if send_email:
+                utils.email_helper.send_ad_group_cloned_error_email(
+                    request, source_ad_group_name, destination_ad_group_name
+                )
+            raise err
 
 
 def _validate_same_account(source_ad_group, campaign):
