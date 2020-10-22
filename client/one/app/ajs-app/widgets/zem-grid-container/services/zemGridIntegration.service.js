@@ -230,9 +230,15 @@ angular
                 zemSelectionService.setSelection(selection);
             }
 
-            var smartGridSupportedLevels = [Level.ALL_ACCOUNTS];
+            var smartGridSupportedLevels = [
+                Level.ALL_ACCOUNTS,
+                Level.ACCOUNTS,
+                Level.CAMPAIGNS,
+            ];
             var smartGridSupportedBreakdowns = [
                 Breakdown.ACCOUNT,
+                Breakdown.CAMPAIGN,
+                Breakdown.AD_GROUP,
                 Breakdown.PUBLISHER,
                 Breakdown.PLACEMENT,
                 Breakdown.MEDIA_SOURCE,
