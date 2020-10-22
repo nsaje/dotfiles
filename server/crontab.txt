@@ -3,6 +3,7 @@
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
 * * * * *        /home/ubuntu/docker-manage-py.sh check_dcron_jobs
 */1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches
+*/1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches_oen
 */15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_batches
 */15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_reports
 */15 * * * *     /home/ubuntu/docker-manage-py.sh monitor_demo

@@ -669,17 +669,15 @@ def _mark_ads_images_present(callback_data, image_url):
         logger.warning("Marked additional ads as having an image present after lambda upload!", updated=updated)
 
 
-def handle_auto_save_batches(created_after):
-    batches = (
-        models.UploadBatch.objects.filter(
-            status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__gte=created_after
-        )
+def handle_auto_save_batches(batches_qs):
+    batches_qs = (
+        batches_qs.filter(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         .select_related("ad_group__campaign")
         .order_by("-pk")[:1000]
     )
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        executor.map(_handle_auto_save, batches)
+        executor.map(_handle_auto_save, batches_qs)
 
 
 def clean_up_old_in_progress_batches(created_before):
