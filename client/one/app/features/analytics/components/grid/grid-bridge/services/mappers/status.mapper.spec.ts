@@ -12,12 +12,12 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {STATUS_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {StatusColumnMapper} from './status.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {STATUS_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
 describe('StatusColumnMapper', () => {
     let mapper: StatusColumnMapper;
@@ -74,8 +74,8 @@ describe('StatusColumnMapper', () => {
             headerName: 'Status',
             field: 'status',
             colId: 'status',
-            minWidth: STATUS_MIN_COLUMN_WIDTH,
-            width: STATUS_MIN_COLUMN_WIDTH,
+            minWidth: STATUS_COLUMN_WIDTH,
+            width: STATUS_COLUMN_WIDTH,
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,

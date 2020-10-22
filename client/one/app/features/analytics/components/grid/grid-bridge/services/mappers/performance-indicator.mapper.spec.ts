@@ -12,7 +12,7 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {PERFORMANCE_INDICATOR_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
@@ -77,8 +77,8 @@ describe('PerformanceIndicatorColumnMapper', () => {
             headerName: '',
             field: 'performance',
             colId: GridColumnTypes.PERFORMANCE_INDICATOR,
-            minWidth: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
-            width: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
+            minWidth: PERFORMANCE_INDICATOR_COLUMN_WIDTH,
+            width: PERFORMANCE_INDICATOR_COLUMN_WIDTH,
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,

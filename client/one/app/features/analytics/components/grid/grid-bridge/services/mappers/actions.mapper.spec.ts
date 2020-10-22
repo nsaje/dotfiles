@@ -1,5 +1,5 @@
 import {ColDef} from 'ag-grid-community';
-import {Currency} from '../../../../../../../app.constants';
+import {Breakdown, Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
@@ -15,7 +15,7 @@ import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/break
 import {ActionsColumnMapper} from './actions.mapper';
 import {ActionsCellComponent} from '../../../cells/actions-cell/actions-cell.component';
 import {ActionsRendererParams} from '../../../cells/actions-cell/types/actions.renderer-params';
-import {ACTIONS_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH} from '../../grid-bridge.component.config';
 
 describe('ActionsColumnMapper', () => {
     let mapper: ActionsColumnMapper;
@@ -43,6 +43,7 @@ describe('ActionsColumnMapper', () => {
                     ext: {
                         currency: Currency.USD,
                     },
+                    breakdown: Breakdown.ACCOUNT,
                 },
                 scope: null,
             },
@@ -67,8 +68,8 @@ describe('ActionsColumnMapper', () => {
             headerName: 'Actions',
             field: GridColumnTypes.ACTIONS,
             colId: GridColumnTypes.ACTIONS,
-            minWidth: ACTIONS_MIN_COLUMN_WIDTH,
-            width: ACTIONS_MIN_COLUMN_WIDTH,
+            minWidth: BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH[Breakdown.ACCOUNT],
+            width: BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH[Breakdown.ACCOUNT],
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,

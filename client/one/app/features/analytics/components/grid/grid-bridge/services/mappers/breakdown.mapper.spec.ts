@@ -13,7 +13,7 @@ import {
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
 import {
-    BREAKDOWN_MIN_COLUMN_WIDTH,
+    BREAKDOWN_COLUMN_WIDTH,
     TOTALS_LABEL_HELP_TEXT,
 } from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
@@ -80,8 +80,8 @@ describe('BreakdownColumnMapper', () => {
             headerName: 'Breakdown',
             field: 'breakdown',
             colId: GridColumnTypes.BREAKDOWN,
-            minWidth: BREAKDOWN_MIN_COLUMN_WIDTH,
-            width: BREAKDOWN_MIN_COLUMN_WIDTH,
+            minWidth: BREAKDOWN_COLUMN_WIDTH,
+            width: BREAKDOWN_COLUMN_WIDTH,
             flex: 1,
             suppressSizeToFit: false,
             resizable: true,

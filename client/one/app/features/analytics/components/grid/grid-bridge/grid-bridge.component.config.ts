@@ -63,3 +63,23 @@ export const BREAKDOWN_TO_STATUS_CONFIG: {
         [PublisherTargetingStatus.WHITELISTED]: EntityStatus.WHITELISTED,
     },
 };
+
+export const BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH: {
+    [key in Breakdown]?: number;
+} = {
+    [Breakdown.ACCOUNT]: 90,
+    [Breakdown.CAMPAIGN]: 90,
+    [Breakdown.AD_GROUP]: 140,
+    [Breakdown.CONTENT_AD]: 140,
+    [Breakdown.PUBLISHER]: 70,
+    [Breakdown.PLACEMENT]: 70,
+    [Breakdown.MEDIA_SOURCE]: 70,
+    [Breakdown.COUNTRY]: 70,
+    [Breakdown.STATE]: 70,
+    [Breakdown.DMA]: 70,
+    [Breakdown.DEVICE]: 70,
+    [Breakdown.ENVIRONMENT]: 70,
+    [Breakdown.OPERATING_SYSTEM]: 70,
+    [Breakdown.BROWSER]: 70,
+    [Breakdown.CONNECTION_TYPE]: 70,
+};

@@ -9,7 +9,7 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {CHECKBOX_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {CheckboxColumnMapper} from './checkbox.mapper';
@@ -59,8 +59,8 @@ describe('CheckboxColumnMapper', () => {
             headerName: '',
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
-            minWidth: MIN_COLUMN_WIDTH,
-            width: MIN_COLUMN_WIDTH,
+            minWidth: CHECKBOX_COLUMN_WIDTH,
+            width: CHECKBOX_COLUMN_WIDTH,
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,

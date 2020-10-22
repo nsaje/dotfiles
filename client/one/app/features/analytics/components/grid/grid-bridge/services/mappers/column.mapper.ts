@@ -9,13 +9,11 @@ import {SortModel} from '../../../../../../../shared/components/smart-grid/compo
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
-import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {
     formatGridColumnValue,
     FormatGridColumnValueOptions,
 } from '../../helpers/grid-bridge.helpers';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
-import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {
     PINNED_GRID_COLUMN_TYPES,
@@ -23,6 +21,8 @@ import {
 } from '../../grid-bridge.component.config';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {GridRow} from '../../types/grid-row';
+import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
+import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
 export abstract class ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {

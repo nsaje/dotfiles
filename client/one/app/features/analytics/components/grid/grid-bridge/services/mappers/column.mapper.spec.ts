@@ -9,12 +9,12 @@ import {SortModel} from '../../../../../../../shared/components/smart-grid/compo
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
 import {GridRenderingEngineType} from '../../../../../analytics.constants';
-import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {ColumnMapper} from './column.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
+import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
 class RealColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef {

@@ -11,12 +11,15 @@ import {ColumnMapper} from './column.mapper';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {CheckboxRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/types/checkbox.renderer-params';
 import {GridRow} from '../../types/grid-row';
+import {CHECKBOX_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
 export class CheckboxColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef | null {
         return {
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
+            minWidth: CHECKBOX_COLUMN_WIDTH,
+            width: CHECKBOX_COLUMN_WIDTH,
             headerComponentParams: {
                 enableSelection: true,
                 selectionOptions: {

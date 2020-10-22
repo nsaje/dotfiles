@@ -8,7 +8,7 @@ import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/break
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {
-    BREAKDOWN_MIN_COLUMN_WIDTH,
+    BREAKDOWN_COLUMN_WIDTH,
     TOTALS_LABELS,
     TOTALS_LABEL_HELP_TEXT,
 } from '../../grid-bridge.component.constants';
@@ -21,8 +21,8 @@ export class BreakdownColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef {
         return {
             colId: GridColumnTypes.BREAKDOWN,
-            minWidth: BREAKDOWN_MIN_COLUMN_WIDTH,
-            width: BREAKDOWN_MIN_COLUMN_WIDTH,
+            minWidth: BREAKDOWN_COLUMN_WIDTH,
+            width: BREAKDOWN_COLUMN_WIDTH,
             flex: 1,
             suppressSizeToFit: false,
             cellRendererFramework: BreakdownCellComponent,

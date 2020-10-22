@@ -12,17 +12,16 @@ import {
     GridColumnTypes,
     GridRenderingEngineType,
 } from '../../../../../analytics.constants';
-import {
-    MIN_COLUMN_WIDTH,
-    NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN,
-    NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-} from '../../grid-bridge.component.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {StatsColumnMapper} from './stats.mapper';
-import {getApproximateGridColumnWidth} from '../../helpers/grid-bridge.helpers';
+import * as smartGridHelpers from '../../../../../../../shared/components/smart-grid/helpers/smart-grid.helpers';
+import {
+    MAX_COLUMN_WIDTH,
+    MIN_COLUMN_WIDTH,
+} from '../../grid-bridge.component.constants';
 
 describe('StatsColumnMapper', () => {
     let mapper: StatsColumnMapper;
@@ -75,19 +74,20 @@ describe('StatsColumnMapper', () => {
             mockedColumn as GridColumn
         );
 
-        const approximateWidth: number = getApproximateGridColumnWidth(
+        const columnWidth = smartGridHelpers.getApproximateColumnWidth(
             'Stats',
             MIN_COLUMN_WIDTH,
-            NUMBER_OF_PIXELS_PER_CHARACTER_IN_HEADER_COLUMN,
-            NUMBER_OF_PIXELS_PER_ADDITIONAL_CONTENT_IN_HEADER_COLUMN
+            MAX_COLUMN_WIDTH,
+            false,
+            true,
+            true
         );
-
         const expectedColDef: ColDef = {
             headerName: 'Stats',
             field: 'stats',
             colId: 'stats',
-            minWidth: MIN_COLUMN_WIDTH,
-            width: approximateWidth,
+            minWidth: columnWidth,
+            width: columnWidth,
             flex: 0,
             suppressSizeToFit: true,
             resizable: true,

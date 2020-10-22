@@ -8,15 +8,15 @@ import * as commonHelpers from '../../../../../../../shared/helpers/common.helpe
 import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {Emoticon} from '../../../../../../../app.constants';
 import {PerformanceIndicatorCellComponent} from '../../../cells/performance-indicator-cell/performance-indicator-cell.component';
-import {PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {PERFORMANCE_INDICATOR_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 
 export class PerformanceIndicatorColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef {
         return {
             colId: GridColumnTypes.PERFORMANCE_INDICATOR,
-            minWidth: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
-            width: PERFORMANCE_INDICATOR_MIN_COLUMN_WIDTH,
+            minWidth: PERFORMANCE_INDICATOR_COLUMN_WIDTH,
+            width: PERFORMANCE_INDICATOR_COLUMN_WIDTH,
             headerComponentParams: {
                 icon: HeaderCellIcon.EmoticonHappy,
             } as HeaderParams,
