@@ -14,6 +14,18 @@ def getPreviousBuildResult() {
     return ""
 }
 
+def isStartedByTimer() {
+    def startedByTimer = false    
+    def causes = currentBuild.rawBuild.getCauses()
+    for(cause in causes) {
+        if(cause.properties.shortDescription.contains('Started by timer')) {
+            startedByTimer = true
+            break
+        }
+    }
+    return startedByTimer
+}
+
 // properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
 
 node {
@@ -133,7 +145,7 @@ node {
         }
 
         stage('Trigger e2e') {
-            if (env.BRANCH_NAME == 'master') {
+            if (env.BRANCH_NAME == 'master' && !isStartedByTimer()) {
                 build job: 'z1-e2e', wait: false
             }
         }
