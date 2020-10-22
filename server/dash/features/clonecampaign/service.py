@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest
 
@@ -72,11 +73,17 @@ def clone_async(
         if send_email:
             utils.email_helper.send_campaign_cloned_success_email(request, source_campaign.name, cloned_campaign.name)
 
+        return cloned_campaign.id
+
+    except ValidationError as err:
+        if send_email:
+            utils.email_helper.send_campaign_cloned_error_email(
+                request, source_campaign_name, destination_campaign_name, err.message
+            )
+
     except Exception as err:
         if send_email:
             utils.email_helper.send_campaign_cloned_error_email(
                 request, source_campaign_name, destination_campaign_name
             )
         raise err
-
-    return cloned_campaign.id

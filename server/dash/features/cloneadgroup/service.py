@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest
 
@@ -69,14 +70,20 @@ def clone_async(
         if send_email:
             utils.email_helper.send_ad_group_cloned_success_email(request, source_ad_group.name, cloned_ad_group.name)
 
+        return cloned_ad_group.id
+
+    except ValidationError as err:
+        if send_email:
+            utils.email_helper.send_ad_group_cloned_error_email(
+                request, source_ad_group_name, destination_ad_group_name, err.message
+            )
+
     except Exception as err:
         if send_email:
             utils.email_helper.send_ad_group_cloned_error_email(
                 request, source_ad_group_name, destination_ad_group_name
             )
         raise err
-
-    return cloned_ad_group.id
 
 
 def _validate_same_account(source_ad_group, campaign):

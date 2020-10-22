@@ -742,9 +742,13 @@ def send_campaign_cloned_success_email(request, source_campaign_name, cloned_cam
     )
 
 
-def send_campaign_cloned_error_email(request, source_campaign_name, cloned_campaign_name):
+def send_campaign_cloned_error_email(request, source_campaign_name, cloned_campaign_name, error_message=None):
 
-    args = {"source_campaign_name": source_campaign_name, "cloned_campaign_name": cloned_campaign_name}
+    args = {
+        "source_campaign_name": source_campaign_name,
+        "cloned_campaign_name": cloned_campaign_name,
+        "error_message": error_message,
+    }
 
     send_official_email(
         agency_or_user=request.user,
@@ -764,9 +768,13 @@ def send_ad_group_cloned_success_email(request, source_ad_group_name, cloned_ad_
     )
 
 
-def send_ad_group_cloned_error_email(request, source_ad_group_name, cloned_ad_group_name):
+def send_ad_group_cloned_error_email(request, source_ad_group_name, cloned_ad_group_name, error_message=None):
 
-    args = {"source_ad_group_name": source_ad_group_name, "cloned_ad_group_name": cloned_ad_group_name}
+    args = {
+        "source_ad_group_name": source_ad_group_name,
+        "cloned_ad_group_name": cloned_ad_group_name,
+        "error_message": error_message,
+    }
 
     send_official_email(
         agency_or_user=request.user,

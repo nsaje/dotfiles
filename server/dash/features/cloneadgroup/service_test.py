@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
+import mock
+from django.core.exceptions import ValidationError
 from mock import patch
 
 import core.models
 import dash.constants
 from core.models.account.exceptions import AccountDoesNotMatch
+from utils.base_test_case import BaseTestCase
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import service
 
@@ -13,7 +17,7 @@ from . import service
 @patch.object(core.models.ContentAd.objects, "insert_redirects", autospec=True)
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
-class Clone(TestCase):
+class Clone(BaseTestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
@@ -112,3 +116,75 @@ class Clone(TestCase):
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.ACTIVE)
         for contend_ad in cloned_ad_group.contentad_set.all():
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+
+@patch.object(dash.features.cloneadgroup.service, "clone", autospec=True)
+class CloneAsyncServiceTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.request = get_request_mock(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Test ad group")
+        self.mocked_cloned_ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=campaign, name="Test ad group (copy)"
+        )
+        self.destination_campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        self.destination_campaign.get_current_settings().copy_settings().save()
+
+    @patch("utils.email_helper.send_ad_group_cloned_success_email")
+    def test_clone_async_success(self, mock_success_email, mock_clone):
+        mock_clone.return_value = self.mocked_cloned_ad_group
+        cloned_ad_group_id = service.clone_async(
+            self.request.user,
+            self.ad_group.id,
+            self.ad_group.name,
+            "Test ad group (copy)",
+            self.destination_campaign.id,
+            clone_ads=True,
+            send_email=True,
+        )
+
+        mock_clone.assert_called_with(
+            mock.ANY, self.ad_group, self.destination_campaign, "Test ad group (copy)", True, None, None
+        )
+        self.assertEqual(self.mocked_cloned_ad_group.id, cloned_ad_group_id)
+        mock_success_email.assert_called_with(mock.ANY, self.ad_group.name, self.mocked_cloned_ad_group.name)
+
+    @patch("utils.email_helper.send_ad_group_cloned_error_email")
+    def test_clone_async_validation_error(self, mock_error_email, mock_clone):
+        mock_clone.side_effect = ValidationError("Validation error")
+        service.clone_async(
+            self.request.user,
+            self.ad_group.id,
+            self.ad_group.name,
+            "Test ad group (copy)",
+            self.destination_campaign.id,
+            clone_ads=True,
+            send_email=True,
+        )
+
+        mock_clone.assert_called_with(
+            mock.ANY, self.ad_group, self.destination_campaign, "Test ad group (copy)", True, None, None
+        )
+        mock_error_email.assert_called_with(
+            mock.ANY, self.ad_group.name, self.mocked_cloned_ad_group.name, "Validation error"
+        )
+
+    @patch("utils.email_helper.send_ad_group_cloned_error_email")
+    def test_clone_async_exception(self, mock_error_email, mock_clone):
+        mock_clone.side_effect = Exception("test-error")
+        with self.assertRaises(Exception):
+            service.clone_async(
+                self.request.user,
+                self.campaign.id,
+                "Test campaign (copy)",
+                clone_ad_groups=True,
+                clone_ads=True,
+                send_email=True,
+            )
+
+            mock_clone.assert_called_with(
+                mock.ANY, self.ad_group, self.destination_campaign, "Test ad group (copy)", True, None, None
+            )
+            mock_error_email.assert_called_with(mock.ANY, self.ad_group.name, self.mocked_cloned_ad_group.name)

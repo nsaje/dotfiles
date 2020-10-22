@@ -1,6 +1,8 @@
 import datetime
 import decimal
 
+import mock
+from django.core.exceptions import ValidationError
 from mock import patch
 
 import core.features.bcm
@@ -196,3 +198,67 @@ class CloneServiceTest(BaseTestCase):
 
         for contend_ad in cloned_campaign.adgroup_set.get().contentad_set.all():
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+
+@patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
+class CloneAsyncServiceTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.request = get_request_mock(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=account, name="Test campaign")
+        self.mocked_cloned_campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign (copy)"
+        )
+
+    @patch("utils.email_helper.send_campaign_cloned_success_email")
+    def test_clone_async_success(self, mock_success_email, mock_clone):
+        mock_clone.return_value = self.mocked_cloned_campaign
+        cloned_campaign_id = service.clone_async(
+            self.request.user,
+            self.campaign.id,
+            self.campaign.name,
+            "Test campaign (copy)",
+            clone_ad_groups=True,
+            clone_ads=True,
+            send_email=True,
+        )
+
+        mock_clone.assert_called_with(mock.ANY, self.campaign, "Test campaign (copy)", True, True, None, None)
+        self.assertEqual(self.mocked_cloned_campaign.id, cloned_campaign_id)
+        mock_success_email.assert_called_with(mock.ANY, self.campaign.name, self.mocked_cloned_campaign.name)
+
+    @patch("utils.email_helper.send_campaign_cloned_error_email")
+    def test_clone_async_validation_error(self, mock_error_email, mock_clone):
+        mock_clone.side_effect = ValidationError("Validation error")
+        service.clone_async(
+            self.request.user,
+            self.campaign.id,
+            self.campaign.name,
+            "Test campaign (copy)",
+            clone_ad_groups=True,
+            clone_ads=True,
+            send_email=True,
+        )
+
+        mock_clone.assert_called_with(mock.ANY, self.campaign, "Test campaign (copy)", True, True, None, None)
+        mock_error_email.assert_called_with(
+            mock.ANY, self.campaign.name, self.mocked_cloned_campaign.name, "Validation error"
+        )
+
+    @patch("utils.email_helper.send_campaign_cloned_error_email")
+    def test_clone_async_exception(self, mock_error_email, mock_clone):
+        mock_clone.side_effect = Exception("test-error")
+        with self.assertRaises(Exception):
+            service.clone_async(
+                self.request.user,
+                self.campaign.id,
+                self.campaign.name,
+                "Test campaign (copy)",
+                clone_ad_groups=True,
+                clone_ads=True,
+                send_email=True,
+            )
+
+            mock_clone.assert_called_with(mock.ANY, self.campaign, "Test campaign (copy)", True, True, None, None)
+            mock_error_email.assert_called_with(mock.ANY, self.campaign.name, self.mocked_cloned_campaign.name)
