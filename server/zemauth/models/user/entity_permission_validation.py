@@ -1,4 +1,5 @@
 from zemauth.features.entity_permission import Permission
+from zemauth.models.user.exceptions import InvalidUser
 from zemauth.models.user.exceptions import MissingReadPermission
 from zemauth.models.user.exceptions import MissingRequiredPermission
 from zemauth.models.user.exceptions import MixedPermissionLevels
@@ -18,6 +19,11 @@ class EntityPermissionValidationMixin(object):
                 entity_permissions,
             )
         )
+
+        if has_internal_permission and not (
+            self.email.endswith("@outbrain.com") or self.email.endswith("@zemanta.com")
+        ):
+            raise InvalidUser("Only Outbrain accounts can have internal permissions assigned.")
 
         if has_account_permission and has_agency_permission:
             raise MixedPermissionLevels(

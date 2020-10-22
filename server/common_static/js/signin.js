@@ -15,7 +15,8 @@
                 return false;
             }
 
-            return email.match(/(@zemanta.com|@outbrain.com)$/i);
+            // exclude alias emails, e.g. name+alias@outbrain.com
+            return email.match(/^([^\+]+)(@zemanta.com|@outbrain.com)$/i);
         }
 
         function handleForm() {

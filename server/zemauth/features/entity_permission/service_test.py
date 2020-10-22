@@ -1,3 +1,5 @@
+import random
+
 import django.contrib.auth.models
 from django.db.models import Q
 from django.test import TestCase
@@ -509,7 +511,7 @@ class EntityPermissionServiceSetEntityPermissionsTestCase(BaseTestCase):
         if actual_new_requested_user_permissions is None:
             actual_new_requested_user_permissions = new_requested_user_permissions
 
-        calling_user, requested_user = self._setup_test_users()
+        calling_user, requested_user = self._setup_test_users(old_requested_user_role, new_requested_user_role)
         account, agency = self._prepare_callers_permissions(calling_user, calling_user_role, calling_user_permissions)
 
         self._grant_access(requested_user, old_requested_user_role, account, agency, old_requested_user_permissions)
@@ -544,9 +546,14 @@ class EntityPermissionServiceSetEntityPermissionsTestCase(BaseTestCase):
             with self.assertRaises((EntityPermissionChangeNotAllowed, MissingRequiredPermission)):
                 set_entity_permissions_on_user(requested_user, request, account, agency, new_permissions)
 
-    def _setup_test_users(self):
+    def _setup_test_users(self, old_requested_user_role, new_requested_user_role):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        if old_requested_user_role == "internal_usr" or new_requested_user_role == "internal_usr":
+            requested_user = magic_mixer.blend(
+                zemauth.models.User, email=str(random.randint(0, 100000)) + "@outbrain.com"
+            )
+        else:
+            requested_user = magic_mixer.blend(zemauth.models.User)
 
         return calling_user, requested_user
 

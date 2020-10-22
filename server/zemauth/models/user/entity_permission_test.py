@@ -114,7 +114,9 @@ class EntityPermissionMixinTestCase(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         another_agency = magic_mixer.blend(core.models.Agency)
 
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend(
+            zemauth.models.User, email="test-internal-user@outbrain.com"
+        )
 
         existing_permission = zemauth.features.entity_permission.EntityPermission(
             user=requested_user, permission=Permission.READ, agency=agency

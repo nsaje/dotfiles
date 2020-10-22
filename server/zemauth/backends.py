@@ -26,10 +26,11 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
         try:
             user = models.User.objects.get(**kwargs)
 
-            # maticz: Internal users in this context are users with @zemanta.com emails.
-            # Checked and confirmed by product guys.
-            if settings.GOOGLE_OAUTH_ENABLED and (
-                user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")
+            # exclude alias emails, e.g. name+alias@outbrain.com
+            if (
+                settings.GOOGLE_OAUTH_ENABLED
+                and "+" not in user.email
+                and (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com"))
             ):
                 if oauth_data and oauth_data["verified_email"]:
                     metrics_compat.incr("signin_request", 1, stage="success")
