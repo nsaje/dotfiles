@@ -133,7 +133,7 @@ node {
         }
 
         stage('Trigger e2e') {
-            if (env.BRANCH_NAME == 'master') {
+            if (env.BRANCH_NAME == 'master' && !manager.logContains("Started by timer")) {
                 build job: 'z1-e2e', wait: false
             }
         }
