@@ -32,9 +32,6 @@ INSERT INTO mv_master (
         a.gender as gender,
         a.age_gender as age_gender,
 
-        a.outbrain_publisher_id,
-        a.outbrain_section_id,
-
         a.impressions as impressions,
         a.clicks as clicks,
         -- convert micro to nano
@@ -146,7 +143,9 @@ INSERT INTO mv_master (
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_service_fee_nano,
         a.browser,
-        a.connection_type
+        a.connection_type,
+        a.outbrain_publisher_id,
+        a.outbrain_section_id
     FROM
         (
             SELECT
