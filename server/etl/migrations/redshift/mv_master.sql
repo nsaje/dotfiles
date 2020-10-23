@@ -84,6 +84,9 @@ CREATE TABLE mv_master (
 
     -- kw::dimensions
     browser varchar(127) encode zstd,
-    connection_type varchar(127) encode zstd
+    connection_type varchar(127) encode zstd,
+    outbrain_publisher_id varchar(127) encode zstd,
+    outbrain_section_id varchar(127) encode zstd
+
     -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id);

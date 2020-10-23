@@ -83,7 +83,10 @@ CREATE TABLE IF NOT EXISTS mv_master (
 
     -- kw::dimensions
     browser varchar(127),
-    connection_type varchar(127)
+    connection_type varchar(127),
+    outbrain_publisher_id varchar(127),
+    outbrain_section_id varchar(127)
+
     -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_main_idx ON mv_master (source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, date);

@@ -32,6 +32,9 @@ INSERT INTO mv_master (
         a.gender as gender,
         a.age_gender as age_gender,
 
+        a.outbrain_publisher_id,
+        a.outbrain_section_id,
+
         a.impressions as impressions,
         a.clicks as clicks,
         -- convert micro to nano
@@ -230,6 +233,9 @@ INSERT INTO mv_master (
                 NULLIF(TRIM(LOWER(gender)), '') as gender,
                 NULLIF(TRIM(LOWER(age)), '') || ' ' || COALESCE(TRIM(LOWER(gender)), '') AS age_gender,
 
+                outbrain_publisher_id,
+                outbrain_section_id,
+
                 SUM(impressions) as impressions,
                 SUM(clicks) as clicks,
                 SUM(spend) as spend,
@@ -257,7 +263,7 @@ INSERT INTO mv_master (
                 {% if account_id %}
                     AND ad_group_id=ANY(%(ad_group_id)s)
                 {% endif %}
-            GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+            GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
         ) a
         left outer join mvh_source b on a.source_slug=b.bidder_slug
         join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id
