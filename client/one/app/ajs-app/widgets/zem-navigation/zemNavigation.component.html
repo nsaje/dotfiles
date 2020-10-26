@@ -3,6 +3,7 @@
         type="text"
         ng-model="$ctrl.query"
         ng-change="$ctrl.filter($ctrl.query)"
+        ng-model-options="{ debounce: 500 }"
         ng-click="$event.stopPropagation()"
         placeholder="Search"
         class="input-text"
