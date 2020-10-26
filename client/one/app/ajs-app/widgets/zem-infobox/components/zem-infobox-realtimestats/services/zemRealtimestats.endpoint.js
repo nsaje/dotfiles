@@ -5,7 +5,9 @@ angular
 
         function getAdGroupSourcesStats(adGroupId) {
             var url =
-                '/rest/v1/adgroups/' + adGroupId + '/realtimestats/sources/';
+                '/rest/internal/adgroups/' +
+                adGroupId +
+                '/realtimestats/sources/';
             return $http.get(url);
         }
     });

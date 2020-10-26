@@ -78,7 +78,7 @@ class RealtimestatsServiceTest(TestCase):
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         magic_mixer.cycle(2).blend(
@@ -89,29 +89,35 @@ class RealtimestatsServiceTest(TestCase):
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},
                 {"source_slug": sources[1].bidder_slug, "spend": 3.0},
             ],
+            "clicks": 15,
+            "impressions": 100,
             "errors": {},
         }
 
         result = service.get_ad_group_sources_stats(self.ad_group)
         self.assertEqual(
             result,
-            [
-                {
-                    "source_slug": sources[1].bidder_slug,
-                    "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
-                },
-                {
-                    "source_slug": sources[0].bidder_slug,
-                    "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
-                },
-            ],
+            {
+                "spend": [
+                    {
+                        "source_slug": sources[1].bidder_slug,
+                        "source": sources[1],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
+                    },
+                    {
+                        "source_slug": sources[0].bidder_slug,
+                        "source": sources[0],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
+                    },
+                ],
+                "clicks": 15,
+                "impressions": 100,
+            },
         )
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_only_allowed(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         magic_mixer.cycle(2).blend(
@@ -123,29 +129,35 @@ class RealtimestatsServiceTest(TestCase):
                 {"source_slug": sources[1].bidder_slug, "spend": 3.0},
                 {"source_slug": "amplify", "spend": 3.0},
             ],
+            "clicks": 15,
+            "impressions": 100,
             "errors": {},
         }
 
         result = service.get_ad_group_sources_stats(self.ad_group)
         self.assertEqual(
             result,
-            [
-                {
-                    "source_slug": sources[1].bidder_slug,
-                    "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
-                },
-                {
-                    "source_slug": sources[0].bidder_slug,
-                    "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
-                },
-            ],
+            {
+                "spend": [
+                    {
+                        "source_slug": sources[1].bidder_slug,
+                        "source": sources[1],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
+                    },
+                    {
+                        "source_slug": sources[0].bidder_slug,
+                        "source": sources[0],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
+                    },
+                ],
+                "clicks": 15,
+                "impressions": 100,
+            },
         )
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         mock_k1_get.return_value = {
@@ -153,6 +165,8 @@ class RealtimestatsServiceTest(TestCase):
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
                 {"source_slug": sources[1].bidder_slug, "spend": decimal.Decimal("3.0")},
             ],
+            "clicks": 15,
+            "impressions": 100,
             "errors": {},
         }
         self.ad_group.campaign.account.currency = dash.constants.Currency.EUR
@@ -165,18 +179,22 @@ class RealtimestatsServiceTest(TestCase):
         result = service.get_ad_group_sources_stats(self.ad_group)
         self.assertEqual(
             result,
-            [
-                {
-                    "source_slug": sources[1].bidder_slug,
-                    "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
-                },
-                {
-                    "source_slug": sources[0].bidder_slug,
-                    "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
-                },
-            ],
+            {
+                "spend": [
+                    {
+                        "source_slug": sources[1].bidder_slug,
+                        "source": sources[1],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
+                    },
+                    {
+                        "source_slug": sources[0].bidder_slug,
+                        "source": sources[0],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
+                    },
+                ],
+                "clicks": 15,
+                "impressions": 100,
+            },
         )
         mock_k1_get.assert_called_once_with(self.ad_group.id, {})
         mock_k1_get.return_value = {
@@ -184,29 +202,35 @@ class RealtimestatsServiceTest(TestCase):
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
                 {"source_slug": sources[1].bidder_slug, "spend": decimal.Decimal("3.0")},
             ],
+            "clicks": 15,
+            "impressions": 100,
             "errors": {},
         }
 
         result_local = service.get_ad_group_sources_stats(self.ad_group, use_local_currency=True)
         self.assertEqual(
             result_local,
-            [
-                {
-                    "source_slug": sources[1].bidder_slug,
-                    "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("7.7880")),
-                },
-                {
-                    "source_slug": sources[0].bidder_slug,
-                    "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.8556")),
-                },
-            ],
+            {
+                "spend": [
+                    {
+                        "source_slug": sources[1].bidder_slug,
+                        "source": sources[1],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("7.7880")),
+                    },
+                    {
+                        "source_slug": sources[0].bidder_slug,
+                        "source": sources[0],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.8556")),
+                    },
+                ],
+                "clicks": 15,
+                "impressions": 100,
+            },
         )
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
-        mock_k1_get.return_value = {"spend": [], "errors": {}}
+        mock_k1_get.return_value = {"spend": [], "clicks": 15, "impressions": 100, "errors": {}}
         budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
@@ -217,9 +241,9 @@ class RealtimestatsServiceTest(TestCase):
             expected_params = dict({})
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_yesterday(self, mock_k1_get):
-        mock_k1_get.return_value = {"spend": [], "errors": {}}
+        mock_k1_get.return_value = {"spend": [], "clicks": 15, "impressions": 100, "errors": {}}
         budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         utc_yesterday = dates_helper.day_before(utc_today)
@@ -272,13 +296,13 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = Exception("test")
         mock_k1_get.side_effect = e
 
         result = service.get_ad_group_sources_stats(self.ad_group)
-        self.assertEqual([], result)
+        self.assertEqual({"spend": [], "clicks": 0, "impressions": 0}, result)
 
         mock_logger.exception.assert_called_once_with(e)
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="exception")
@@ -294,13 +318,13 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_http_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = urllib.error.HTTPError("url", 400, "msg", None, None)
         mock_k1_get.side_effect = e
 
         result = service.get_ad_group_sources_stats(self.ad_group)
-        self.assertEqual([], result)
+        self.assertEqual({"spend": [], "clicks": 0, "impressions": 0}, result)
 
         mock_logger.exception.assert_not_called()
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="http", status="400")
@@ -316,13 +340,13 @@ class RealtimestatsServiceTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
-    @mock.patch("utils.k1_helper.get_adgroup_realtimestats_spend")
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_ioerror_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = IOError()
         mock_k1_get.side_effect = e
 
         result = service.get_ad_group_sources_stats(self.ad_group)
-        self.assertEqual([], result)
+        self.assertEqual({"spend": [], "clicks": 0, "impressions": 0}, result)
 
         mock_logger.exception.assert_not_called()
         mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="ioerror")

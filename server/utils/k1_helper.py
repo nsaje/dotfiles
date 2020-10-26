@@ -113,7 +113,14 @@ def get_adgroup_realtimestats(ad_group_id, params={}):
         return {"spend": [], "clicks": 0, "impressions": 0}
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    return _call_api(url)
+    result = _call_api(url)
+
+    for rs in result["spend"]:
+        if "exchange" in rs:
+            rs["source_slug"] = rs["exchange"]
+            del rs["exchange"]
+
+    return result
 
 
 def get_yahoo_migration(account_id):

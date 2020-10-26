@@ -23,16 +23,16 @@ def get_ad_group_stats(ad_group, use_local_currency=False):
 
 
 def get_ad_group_sources_stats(ad_group, use_local_currency=False):
-    stats = _get_ad_group_sources_stats(ad_group, use_local_currency=use_local_currency)
-    return stats["spend"]
+    stats = _get_ad_group_sources_stats(ad_group, use_local_currency=use_local_currency, spend_only=False)
+    return {"spend": stats["spend"], "clicks": stats["clicks"], "impressions": stats["impressions"]}
 
 
 def get_ad_group_sources_stats_without_caching(ad_group, use_local_currency=False):
     return _get_ad_group_sources_stats(ad_group, no_cache=True, use_local_currency=use_local_currency)
 
 
-def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False):
-    stats = _get_k1_source_stats(ad_group, spend_only=True, no_cache=no_cache)
+def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False, spend_only=True):
+    stats = _get_k1_source_stats(ad_group, spend_only=spend_only, no_cache=no_cache)
     _clean_sources(ad_group, stats)
     _add_fees_and_margin(ad_group, stats["spend"])
     if use_local_currency:
@@ -98,7 +98,7 @@ def _get_k1_source_stats_with_error_handling(ad_group, spend_only):
     except Exception as e:
         metrics_compat.incr("dash.realtimestats.error", 1, type="exception")
         logger.exception(e)
-    return {"spend": []}
+    return {"spend": []} if spend_only else {"spend": [], "clicks": 0, "impressions": 0}
 
 
 def _try_get_k1_source_stats(ad_group, spend_only=False, no_cache=False):

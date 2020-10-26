@@ -28,12 +28,19 @@ class RealtimestatsViewsTest(RESTAPITestCase):
 
         mock_get.return_value = data
         r = self.client.get(
-            reverse("restapi.adgroupsourcestats.v1:adgroups_realtimestats_sources", kwargs={"ad_group_id": ad_group.id})
+            reverse(
+                "restapi.adgroupsourcestats.internal:adgroups_realtimestats_sources",
+                kwargs={"ad_group_id": ad_group.id},
+            )
         )
 
-        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json = self.assertResponseValid(r)
 
-        expected = [{"source": sources[0].name, "spend": "12.35"}, {"source": sources[1].name, "spend": "0.11"}]
+        expected = {
+            "spend": [{"source": sources[0].name, "spend": "12.35"}, {"source": sources[1].name, "spend": "0.11"}],
+            "clicks": 65464,
+            "impressions": 465973,
+        }
         self.assertEqual(resp_json["data"], expected)
 
         mock_get.assert_called_with(ad_group, use_local_currency=True)

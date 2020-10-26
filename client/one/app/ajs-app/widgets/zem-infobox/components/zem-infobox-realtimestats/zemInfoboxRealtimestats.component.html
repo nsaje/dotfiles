@@ -1,8 +1,8 @@
 <zem-infobox-data-row
-    ng-if="$ctrl.spendRow"
+    ng-repeat="row in $ctrl.realtimeRows"
     class="zem-infobox-data-row zem-infobox-data-row--exposed"
-    ng-class="$ctrl.spendRow.class"
-    row="$ctrl.spendRow"
-    is-internal="{{ $ctrl.spendRow.internal }}"
+    ng-class="row.class"
+    row="row"
+    is-internal="{{ row.internal }}"
 >
 </zem-infobox-data-row>
