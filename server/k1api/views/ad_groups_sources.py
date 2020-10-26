@@ -87,8 +87,7 @@ class AdGroupSourcesView(K1APIView):
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
-            cpc_cc = ad_group_source.settings.get_external_cpc_cc(service_fee, license_fee, margin)
-            cpm = ad_group_source.settings.get_external_cpm(service_fee, license_fee, margin)
+            # TODO: RTAP: remove when everyone uses realtime autopilot
             daily_budget_cc = ad_group_source.settings.get_external_daily_budget_cc(service_fee, license_fee, margin)
 
             if ad_group.is_blocked_by_custom_flag() or ad_group.is_disabled:
@@ -100,8 +99,6 @@ class AdGroupSourcesView(K1APIView):
                 "source_campaign_key": ad_group_source.source_campaign_key,
                 "tracking_code": tracking_code,
                 "state": source_state,
-                "cpc_cc": format(cpc_cc, ".4f"),
-                "cpm": format(cpm, ".4f") if cpm else cpm,
                 "daily_budget_cc": format(daily_budget_cc, ".4f"),
                 "blockers": ad_group_source.blockers,
             }
