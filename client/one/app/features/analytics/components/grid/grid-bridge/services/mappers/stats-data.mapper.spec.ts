@@ -1,4 +1,5 @@
 import {
+    CellClassParams,
     ColDef,
     ValueFormatterParams,
     ValueGetterParams,
@@ -16,20 +17,21 @@ import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
-import {StatsColumnMapper} from './stats.mapper';
+import {StatsDataColumnMapper} from './stats-data.mapper';
 import * as smartGridHelpers from '../../../../../../../shared/components/smart-grid/helpers/smart-grid.helpers';
 import {
     MAX_COLUMN_WIDTH,
     MIN_COLUMN_WIDTH,
 } from '../../grid-bridge.component.constants';
+import {CellRole} from '../../../../../../../shared/components/smart-grid/smart-grid.component.constants';
 
-describe('StatsColumnMapper', () => {
-    let mapper: StatsColumnMapper;
+describe('StatsDataColumnMapper', () => {
+    let mapper: StatsDataColumnMapper;
     let mockedGrid: Partial<Grid>;
     let mockedColumn: Partial<GridColumn>;
 
     beforeEach(() => {
-        mapper = new StatsColumnMapper();
+        mapper = new StatsDataColumnMapper();
 
         mockedGrid = {
             meta: {
@@ -68,7 +70,7 @@ describe('StatsColumnMapper', () => {
         };
     });
 
-    it('should correctly map stats grid column to smart grid column', () => {
+    it('should correctly map stats data grid column to smart grid column', () => {
         const colDef: ColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
@@ -86,7 +88,7 @@ describe('StatsColumnMapper', () => {
             headerName: 'Stats',
             field: 'stats',
             colId: 'stats',
-            minWidth: columnWidth,
+            minWidth: MIN_COLUMN_WIDTH,
             width: columnWidth,
             flex: 0,
             suppressSizeToFit: true,
@@ -105,6 +107,7 @@ describe('StatsColumnMapper', () => {
                 },
                 popoverTooltip: 'Stats help text',
                 popoverPlacement: 'top',
+                role: CellRole.Metric,
             } as HeaderParams,
             valueFormatter: (params: ValueFormatterParams) => {
                 return '';
@@ -117,10 +120,12 @@ describe('StatsColumnMapper', () => {
                 valueStyleClass: null,
                 popoverTooltip: null,
                 popoverPlacement: 'top',
+                role: CellRole.Metric,
             } as PinnedRowRendererParams,
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';
             },
+            cellClassRules: {},
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

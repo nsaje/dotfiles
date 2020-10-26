@@ -13,7 +13,7 @@ import {
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../../../../analytics.config';
 import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
-import {StatsColumnMapper} from '../mappers/stats.mapper';
+import {StatsDataColumnMapper} from '../mappers/stats-data.mapper';
 import {StatusColumnMapper} from '../mappers/status.mapper';
 import {ActionsColumnMapper} from '../mappers/actions.mapper';
 import {PerformanceIndicatorColumnMapper} from '../mappers/performance-indicator.mapper';
@@ -51,27 +51,27 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.BASE_FIELD,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.SUBMISSION_STATUS,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.EXTERNAL_LINK,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.THUMBNAIL,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.BID_MODIFIER_FIELD,
-            useClass: StatsColumnMapper,
+            useClass: StatsDataColumnMapper,
         },
     ];
 

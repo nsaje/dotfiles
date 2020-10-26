@@ -1,3 +1,4 @@
+import {CellRole} from '../../../smart-grid.component.constants';
 import {HeaderCellSort} from './header-cell.component.constants';
 import {HeaderParams} from './types/header-params';
 import {HeaderSortOptions} from './types/header-sort-options';
@@ -17,4 +18,5 @@ export const DEFAULT_HEADER_PARAMS: Partial<HeaderParams> = {
     enableSelection: false,
     enableSorting: false,
     sortOptions: DEFAULT_HEADER_CELL_SORT_OPTIONS,
+    role: CellRole.Dimension,
 };

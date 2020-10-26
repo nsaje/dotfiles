@@ -37,7 +37,7 @@ import {Grid} from './types/grid';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 import {GridColumnTypes} from '../../../analytics.constants';
 import {
-    ARCHIVED_ROW_CLASS,
+    SMART_GRID_ROW_ARCHIVED_CLASS,
     GRID_API_DEBOUNCE_TIME,
     GRID_API_LOADING_DATA_ERROR_MESSAGE,
     TABLET_BREAKPOINT,
@@ -90,13 +90,7 @@ export class GridBridgeComponent
             getRowNodeId: this.getRowNodeId,
             suppressChangeDetection: true,
             rowClassRules: {
-                [ARCHIVED_ROW_CLASS]: (params: {data: GridRow}) => {
-                    const row: GridRow = params.data;
-                    return commonHelpers.getValueOrDefault(
-                        row.data?.archived,
-                        false
-                    );
-                },
+                [SMART_GRID_ROW_ARCHIVED_CLASS]: this.isRowArchived.bind(this),
             },
         };
         this.context = {
@@ -163,6 +157,11 @@ export class GridBridgeComponent
         return row.id;
     }
 
+    private isRowArchived(params: {data: GridRow}): boolean {
+        const row: GridRow = params.data;
+        return commonHelpers.getValueOrDefault(row.data?.archived, false);
+    }
+
     private subscribeToStoreStateUpdates() {
         merge(
             this.createGridUpdater$(),
@@ -207,6 +206,7 @@ export class GridBridgeComponent
                 }
                 this.setBreakdownColumnPinnedProperty();
                 setTimeout(() => {
+                    this.columnApi.autoSizeColumn(GridColumnTypes.BREAKDOWN);
                     this.gridApi.sizeColumnsToFit();
                 }, 500);
             })

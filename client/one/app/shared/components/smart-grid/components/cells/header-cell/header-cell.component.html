@@ -1,12 +1,18 @@
 <div class="zem-header-cell" [zemInternalFeature]="params.internalFeature">
     <zem-checkbox-input
         *ngIf="params.enableSelection"
-        class="zem-checkbox-input zem-header-cell__checkbox"
+        class="zem-checkbox-input zem-header-cell__checkbox zem-header-cell__item"
         [isChecked]="isChecked"
         [isDisabled]="isCheckboxDisabled"
         (toggle)="setChecked($event)"
     ></zem-checkbox-input>
-    <div class="zem-header-cell__data">
+    <div
+        class="zem-header-cell__data zem-header-cell__item"
+        [class.zem-header-cell__data--dimension]="
+            params.role === CellRole.Dimension
+        "
+        [class.zem-header-cell__data--metric]="params.role === CellRole.Metric"
+    >
         <span
             *ngIf="params.icon"
             class="zem-header-cell__icon {{
@@ -30,7 +36,13 @@
             placement="{{ params.popoverPlacement || 'top' }}"
         ></zem-help-popover>
     </div>
-    <div *ngIf="params.enableSorting" class="zem-header-cell__sort">
+    <div
+        *ngIf="
+            params.enableSorting &&
+            (sort === HeaderCellSort.ASC || sort === HeaderCellSort.DESC)
+        "
+        class="zem-header-cell__sort zem-header-cell__item"
+    >
         <span
             class=" zem-header-cell__sort-arrow"
             [class.zem-header-cell__sort-arrow--up]="

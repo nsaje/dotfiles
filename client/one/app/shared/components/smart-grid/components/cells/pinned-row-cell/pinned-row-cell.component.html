@@ -1,4 +1,8 @@
-<div class="zem-pinned-row-cell">
+<div
+    class="zem-pinned-row-cell"
+    [class.zem-pinned-row-cell--dimension]="params.role === CellRole.Dimension"
+    [class.zem-pinned-row-cell--metric]="params.role === CellRole.Metric"
+>
     <span
         class="zem-pinned-row-cell__value {{
             params.valueStyleClass

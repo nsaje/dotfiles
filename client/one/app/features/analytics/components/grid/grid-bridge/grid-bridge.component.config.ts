@@ -27,6 +27,12 @@ export const PINNED_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.BREAKDOWN,
 ];
 
+export const METRIC_GRID_COLUMN_TYPES: GridColumnTypes[] = [
+    GridColumnTypes.NUMBER,
+    GridColumnTypes.CURRENCY,
+    GridColumnTypes.PERCENT,
+];
+
 export const BREAKDOWN_TO_STATUS_CONFIG: {
     [key in Breakdown]?:
         | {

@@ -11,6 +11,7 @@ import {
 import {SortModel} from './types/sort-models';
 import {HeaderCellSort} from './header-cell.component.constants';
 import {ColDef} from 'ag-grid-community';
+import {CellRole} from '../../../smart-grid.component.constants';
 
 @Component({
     templateUrl: './header-cell.component.html',
@@ -23,6 +24,7 @@ export class HeaderCellComponent implements IHeaderAngularComp {
     colDef: ColDef;
     colId: string;
     field: string;
+    role: CellRole;
 
     sort: HeaderCellSort;
     initialSort: HeaderCellSort;
@@ -30,6 +32,8 @@ export class HeaderCellComponent implements IHeaderAngularComp {
 
     isChecked: boolean;
     isCheckboxDisabled: boolean;
+
+    CellRole = CellRole;
 
     agInit(params: HeaderParams): void {
         this.params = {
