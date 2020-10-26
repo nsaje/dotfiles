@@ -55,7 +55,7 @@ export class PopoverDirective extends NgbPopover
         componentFactoryResolver: ComponentFactoryResolver,
         viewContainerRef: ViewContainerRef,
         config: NgbPopoverConfig,
-        ngZone: NgZone,
+        private ngZone: NgZone,
         @Inject(DOCUMENT) document: Document,
         changeDetectorRef: ChangeDetectorRef,
         applicationRef: ApplicationRef
@@ -124,6 +124,11 @@ export class PopoverDirective extends NgbPopover
 
     open(context?: any) {
         super.open(context);
+
+        // The popover logic positions the popover and fills it with content when ngZone.onStable event is fired
+        // In some cases this event is not fired on mouseover, so we add a dummy task to ngZone to make sure it fires.
+        this.ngZone.runTask(() => {});
+
         if (this.stayOpenOnHover && (this as any)._windowRef) {
             // In TS you can not access private properies of the base class
             // without getting compiler errors. The next implementation allows
