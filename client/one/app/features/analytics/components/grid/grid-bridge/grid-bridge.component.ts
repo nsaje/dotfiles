@@ -16,12 +16,13 @@ import {
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {
-    ColDef,
     ColumnApi,
     DetailGridInfo,
     GridApi,
+    GridColumnsChangedEvent,
     GridOptions,
     GridSizeChangedEvent,
+    RowDataUpdatedEvent,
 } from 'ag-grid-community';
 import {merge, Observable, Subject} from 'rxjs';
 import {
@@ -144,7 +145,30 @@ export class GridBridgeComponent
     }
 
     onGridSizeChange($event: GridSizeChangedEvent) {
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
         this.setBreakdownColumnPinnedProperty();
+    }
+
+    onGridColumnsChange($event: GridColumnsChangedEvent) {
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
+        this.setBreakdownColumnPinnedProperty();
+        setTimeout(() => {
+            this.gridApi.sizeColumnsToFit();
+        }, 250);
+    }
+
+    onRowDataUpdate($event: RowDataUpdatedEvent) {
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
+        this.gridApi.refreshCells({
+            columns: [GridColumnTypes.ACTIONS],
+            force: true,
+        });
     }
 
     navigateByUrl(url: string) {
@@ -163,11 +187,7 @@ export class GridBridgeComponent
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(
-            this.createGridUpdater$(),
-            this.createColumnsUpdater$(),
-            this.createRowUpdater$()
-        )
+        merge(this.createGridUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -192,39 +212,6 @@ export class GridBridgeComponent
                     grid.meta.scope,
                     this.handleDataUpdateError.bind(this)
                 );
-            })
-        );
-    }
-
-    private createColumnsUpdater$(): Observable<ColDef[]> {
-        return this.store.state$.pipe(
-            map(state => state.columns),
-            distinctUntilChanged(),
-            tap(() => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.setBreakdownColumnPinnedProperty();
-                setTimeout(() => {
-                    this.columnApi.autoSizeColumn(GridColumnTypes.BREAKDOWN);
-                    this.gridApi.sizeColumnsToFit();
-                }, 500);
-            })
-        );
-    }
-
-    private createRowUpdater$(): Observable<GridRow[]> {
-        return this.store.state$.pipe(
-            map(state => state.data.rows),
-            distinctUntilChanged(),
-            tap(() => {
-                if (!commonHelpers.isDefined(this.gridApi)) {
-                    return;
-                }
-                this.gridApi.refreshCells({
-                    columns: [GridColumnTypes.ACTIONS],
-                    force: true,
-                });
             })
         );
     }

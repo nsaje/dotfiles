@@ -63,6 +63,10 @@ export class HeaderCellComponent implements IHeaderAngularComp {
         }
     }
 
+    refresh(params: HeaderParams): boolean {
+        return false;
+    }
+
     setChecked($event: boolean) {
         if (!this.params.enableSelection) {
             return;

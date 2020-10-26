@@ -16,6 +16,9 @@
     (gridReady)="onGridReady($event)"
     (gridSizeChanged)="onGridSizeChanged($event)"
     (firstDataRendered)="onFirstDataRendered($event)"
+    (gridColumnsChanged)="onGridColumnsChanged($event)"
+    (rowDataChanged)="onRowDataChanged($event)"
+    (rowDataUpdated)="onRowDataUpdated($event)"
 ></ag-grid-angular>
 <div class="zem-smart-grid__pagination-container" *ngIf="canRenderPagination()">
     <zem-select-input
