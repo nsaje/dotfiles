@@ -1,7 +1,5 @@
 require('./zemNavigation.component.less');
 
-var isEmpty = require('../../../shared/helpers/array.helpers').isEmpty;
-
 angular.module('one.widgets').component('zemNavigation', {
     template: require('./zemNavigation.component.html'),
     controller: function(
@@ -168,13 +166,15 @@ angular.module('one.widgets').component('zemNavigation', {
         function initializeActiveEntityList() {
             if (!$ctrl.list) return;
 
-            var account = zemNavigationNewService.getActiveAccount();
-            $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
-            $ctrl.entityList = account
-                ? zemNavigationUtils.convertToEntityList(account)
-                : null;
+            $timeout(function() {
+                var account = zemNavigationNewService.getActiveAccount();
+                $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
+                $ctrl.entityList = account
+                    ? zemNavigationUtils.convertToEntityList(account)
+                    : null;
 
-            filterList();
+                filterList();
+            }, 500);
         }
 
         function filterList() {
@@ -182,38 +182,38 @@ angular.module('one.widgets').component('zemNavigation', {
             var showArchived = zemDataFilterService.getShowArchived();
             var activeAccount = zemNavigationNewService.getActiveAccount();
 
-            var list = $ctrl.list;
+            var list = angular.copy($ctrl.list);
             if ($ctrl.entityList && $ctrl.query.length === 0) {
-                list = $ctrl.entityList;
+                list = angular.copy($ctrl.entityList);
             }
 
-            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
-                list,
-                $ctrl.query,
-                activeAccount,
-                showArchived,
-                true
-            );
-            if (!isEmpty($ctrl.filteredList)) {
-                $ctrl.filteredList.forEach(function(item) {
-                    item.href = getItemHref(item);
-                    item.styleClasses = getItemClasses(item);
-                    item.iconClass = getItemIconClass(item);
+            zemNavigationUtils
+                .filterEntityList(
+                    list,
+                    $ctrl.query,
+                    activeAccount,
+                    showArchived,
+                    true
+                )
+                .then(function(filteredList) {
+                    filteredList.forEach(function(item) {
+                        item.href = getItemHref(item);
+                    });
+
+                    $ctrl.filteredList = filteredList;
+                    $ctrl.selectedEntity = null;
+
+                    // If search in progress always scroll to top,
+                    // otherwise scroll to active entity
+                    if ($ctrl.query) {
+                        scrollToTop();
+                    } else {
+                        scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
+                        $timeout(function() {
+                            scrollToItem($ctrl.activeEntity, true);
+                        }); // Wait for list to be rendered first
+                    }
                 });
-            }
-
-            $ctrl.selectedEntity = null;
-
-            // If search in progress always scroll to top,
-            // otherwise scroll to active entity
-            if ($ctrl.query) {
-                scrollToTop();
-            } else {
-                scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
-                $timeout(function() {
-                    scrollToItem($ctrl.activeEntity, true);
-                }); // Wait for list to be rendered first
-            }
         }
 
         function scrollToTop() {
