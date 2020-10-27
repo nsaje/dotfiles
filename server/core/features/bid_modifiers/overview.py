@@ -37,9 +37,6 @@ def get_min_max_local_bids(
     included_types: Union[None, Sequence[int]] = None,
     excluded_types: Union[None, Sequence[int]] = None,
 ) -> Tuple[decimal.Decimal, Optional[decimal.Decimal]]:
-    min_factor, max_factor = get_min_max_factors(
-        ad_group.id, included_types=included_types, excluded_types=excluded_types
-    )
     bid = (
         ad_group.settings.local_cpc
         if ad_group.bidding_type == dash.constants.BiddingType.CPC
@@ -48,6 +45,10 @@ def get_min_max_local_bids(
 
     if bid is None:
         return decimal.Decimal(0.0001), None
+
+    min_factor, max_factor = get_min_max_factors(
+        ad_group.id, included_types=included_types, excluded_types=excluded_types
+    )
 
     return decimal.Decimal(min_factor) * bid, decimal.Decimal(max_factor) * bid
 
