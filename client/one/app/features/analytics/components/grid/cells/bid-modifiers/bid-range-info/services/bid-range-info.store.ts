@@ -33,7 +33,7 @@ export class BidRangeInfoStore extends Store<BidRangeInfoStoreState> {
         modifierPercent: string,
         agencyUsesRealtimeAutopilot: boolean
     ): void {
-        if (!this.state.agencyUsesRealtimeAutopilot) {
+        if (!agencyUsesRealtimeAutopilot) {
             // TODO: RTAP: remove this after Phase 1
             return this.updateInputsLegacy(
                 bidModifier,

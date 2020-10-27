@@ -119,7 +119,7 @@ def create_bid_value_overview_settings(ad_group):
         tooltip_text = (
             "<p>Maximum bid {bidding_type} displays autopilot’s maximum allowed bid {bidding_type} set in ad group settings.</p>"
             + "<p>Autopilot will never buy with {bidding_type} higher than <strong>maximum {bidding_type}</strong>.</p>"
-            if ad_group.settings.local_max_autopilot_bid is not None
+            if ad_group.settings.local_bid is not None
             else "<p>Autopilot bids are not restricted.</p>"
             + "<p>Autopilot will find the optimal {bidding_type} to fill the ad group's daily budget.</p>"
         ).format(bidding_type=bidding_type)

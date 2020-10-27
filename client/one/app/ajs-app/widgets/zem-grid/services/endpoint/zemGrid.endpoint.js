@@ -125,8 +125,8 @@ angular
                     delete breakdown.biddingType;
                 }
 
+                metaData.ext.bid = breakdown.bid || undefined;
                 if (breakdown.bid) {
-                    metaData.ext.bid = breakdown.bid;
                     delete breakdown.bid;
                 }
 

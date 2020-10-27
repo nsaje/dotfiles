@@ -299,16 +299,18 @@ describe('BidRangeInfoStore', () => {
         );
         store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
 
-        expect(store.state.bidModifierTypeSummaries).toEqual([]);
-        expect(store.state.sourceBidModifierTypeSummary).toEqual({
-            type: BidModifierType.SOURCE,
-            count: 4,
-            min: 0.8,
-            max: 1.2,
-        } as BidModifierTypeSummary);
+        expect(store.state.bidModifierTypeSummaries).toEqual([
+            {
+                type: BidModifierType.SOURCE,
+                count: 4,
+                min: 0.8,
+                max: 1.2,
+            } as BidModifierTypeSummary,
+        ]);
+        expect(store.state.sourceBidModifierTypeSummary).toEqual(null);
         expect(store.state.autopilot).toEqual(true);
-        expect(store.state.minFactor).toEqual(1);
-        expect(store.state.maxFactor).toEqual(1);
+        expect(store.state.minFactor).toEqual(0.8);
+        expect(store.state.maxFactor).toEqual(1.2);
         expect(store.state.computedBidMin).toEqual('$0.0001');
         expect(store.state.computedBidMax).toEqual('$1.3200');
         expect(store.state.infoMessage).toEqual(
@@ -354,12 +356,7 @@ describe('BidRangeInfoStore', () => {
                 max: 1.1,
             } as BidModifierTypeSummary,
         ]);
-        expect(store.state.sourceBidModifierTypeSummary).toEqual({
-            type: BidModifierType.SOURCE,
-            count: 4,
-            min: 0.8,
-            max: 1.2,
-        } as BidModifierTypeSummary);
+        expect(store.state.sourceBidModifierTypeSummary).toEqual(null);
         expect(store.state.autopilot).toEqual(true);
         expect(store.state.minFactor).toEqual(0.9);
         expect(store.state.maxFactor).toEqual(1.1);
