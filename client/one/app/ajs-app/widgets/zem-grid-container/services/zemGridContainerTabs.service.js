@@ -153,6 +153,11 @@ angular
                     getAdditionalBreakdownsForEntityType(entity.type)
                 );
             }
+            options.sort(function(a, b) {
+                var textA = a.name.toUpperCase();
+                var textB = b.name.toUpperCase();
+                return textA.localeCompare(textB);
+            });
             return options;
         }
 
