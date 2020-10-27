@@ -187,33 +187,31 @@ angular.module('one.widgets').component('zemNavigation', {
                 list = angular.copy($ctrl.entityList);
             }
 
-            zemNavigationUtils
-                .filterEntityList(
-                    list,
-                    $ctrl.query,
-                    activeAccount,
-                    showArchived,
-                    true
-                )
-                .then(function(filteredList) {
-                    filteredList.forEach(function(item) {
-                        item.href = getItemHref(item);
-                    });
+            var filteredList = zemNavigationUtils.filterEntityList(
+                list,
+                $ctrl.query,
+                activeAccount,
+                showArchived,
+                true
+            );
 
-                    $ctrl.filteredList = filteredList;
-                    $ctrl.selectedEntity = null;
+            filteredList.forEach(function(item) {
+                item.href = getItemHref(item);
+            });
 
-                    // If search in progress always scroll to top,
-                    // otherwise scroll to active entity
-                    if ($ctrl.query) {
-                        scrollToTop();
-                    } else {
-                        scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
-                        $timeout(function() {
-                            scrollToItem($ctrl.activeEntity, true);
-                        }); // Wait for list to be rendered first
-                    }
-                });
+            $ctrl.filteredList = filteredList;
+            $ctrl.selectedEntity = null;
+
+            // If search in progress always scroll to top,
+            // otherwise scroll to active entity
+            if ($ctrl.query) {
+                scrollToTop();
+            } else {
+                scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
+                $timeout(function() {
+                    scrollToItem($ctrl.activeEntity, true);
+                }); // Wait for list to be rendered first
+            }
         }
 
         function scrollToTop() {
