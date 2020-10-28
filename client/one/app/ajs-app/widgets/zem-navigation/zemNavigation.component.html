@@ -29,11 +29,11 @@
                 class="zem-navigation__item"
                 ng-href="{{ item.href }}"
                 ng-click="$ctrl.navigateTo(item)"
-                ng-class="item.styleClasses"
+                ng-class="$ctrl.getItemClasses(item)"
             >
                 <span
                     class="zem-navigation__item-icon"
-                    ng-class="item.iconClass"
+                    ng-class="$ctrl.getItemIconClass(item)"
                 ></span>
                 <span
                     class="zem-navigation__item-name"

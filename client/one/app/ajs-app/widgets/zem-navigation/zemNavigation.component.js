@@ -1,8 +1,9 @@
 require('./zemNavigation.component.less');
 
-var isEmpty = require('../../../shared/helpers/array.helpers').isEmpty;
-
 angular.module('one.widgets').component('zemNavigation', {
+    bindings: {
+        isOpen: '<',
+    },
     template: require('./zemNavigation.component.html'),
     controller: function(
         $scope,
@@ -23,9 +24,7 @@ angular.module('one.widgets').component('zemNavigation', {
         var ITEM_HEIGHT_CAMPAIGN = 24; // NOTE: Change in CSS too!
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
-        var hierarchyUpdateHandler,
-            activeEntityUpdateHandler,
-            filteredStatusesUpdateHandler;
+        var hierarchyUpdateHandler;
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
@@ -41,24 +40,21 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.getItemIconClass = getItemIconClass;
 
         $ctrl.$onInit = function() {
-            initializeList();
-
             hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
                 initializeList
             );
-            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
-                initializeActiveEntityList
-            );
-            filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(
-                filterList
-            );
             $element.keydown(handleKeyDown);
+            initializeList();
+        };
+
+        $ctrl.$onChanges = function(changes) {
+            if (changes.isOpen && $ctrl.isOpen) {
+                filterList();
+            }
         };
 
         $ctrl.$onDestroy = function() {
             if (hierarchyUpdateHandler) hierarchyUpdateHandler();
-            if (activeEntityUpdateHandler) activeEntityUpdateHandler();
-            if (filteredStatusesUpdateHandler) filteredStatusesUpdateHandler();
             $element.unbind();
         };
 
@@ -161,47 +157,38 @@ angular.module('one.widgets').component('zemNavigation', {
             var hierarchy = zemNavigationNewService.getNavigationHierarchy();
             if (hierarchy) {
                 $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
-                initializeActiveEntityList();
             }
-        }
-
-        function initializeActiveEntityList() {
-            if (!$ctrl.list) return;
-
-            var account = zemNavigationNewService.getActiveAccount();
-            $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
-            $ctrl.entityList = account
-                ? zemNavigationUtils.convertToEntityList(account)
-                : null;
-
-            filterList();
         }
 
         function filterList() {
             if (!$ctrl.list) return;
+
             var showArchived = zemDataFilterService.getShowArchived();
             var activeAccount = zemNavigationNewService.getActiveAccount();
 
-            var list = $ctrl.list;
+            $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
+            $ctrl.entityList = activeAccount
+                ? zemNavigationUtils.convertToEntityList(activeAccount)
+                : null;
+
+            var list = angular.copy($ctrl.list);
             if ($ctrl.entityList && $ctrl.query.length === 0) {
-                list = $ctrl.entityList;
+                list = angular.copy($ctrl.entityList);
             }
 
-            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
+            var filteredList = zemNavigationUtils.filterEntityList(
                 list,
                 $ctrl.query,
                 activeAccount,
                 showArchived,
                 true
             );
-            if (!isEmpty($ctrl.filteredList)) {
-                $ctrl.filteredList.forEach(function(item) {
-                    item.href = getItemHref(item);
-                    item.styleClasses = getItemClasses(item);
-                    item.iconClass = getItemIconClass(item);
-                });
-            }
 
+            filteredList.forEach(function(item) {
+                item.href = getItemHref(item);
+            });
+
+            $ctrl.filteredList = filteredList;
             $ctrl.selectedEntity = null;
 
             // If search in progress always scroll to top,
