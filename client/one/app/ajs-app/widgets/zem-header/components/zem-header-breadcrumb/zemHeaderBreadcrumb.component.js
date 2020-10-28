@@ -16,7 +16,8 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         config,
         zemAuthStore,
         zemNavigationNewService,
-        zemUtils
+        zemUtils,
+        $timeout
     ) {
         // eslint-disable-line max-len
         var $ctrl = this;
@@ -55,9 +56,11 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         };
 
         function update() {
-            var activeEntity = zemNavigationNewService.getActiveEntity();
-            $ctrl.breadcrumb = getBreadcrumb(activeEntity);
-            updateTitle($ctrl.breadcrumb, activeEntity);
+            $timeout(function() {
+                var activeEntity = zemNavigationNewService.getActiveEntity();
+                $ctrl.breadcrumb = getBreadcrumb(activeEntity);
+                updateTitle($ctrl.breadcrumb, activeEntity);
+            });
         }
 
         function updateTitle(breadcrumb, activeEntity) {
