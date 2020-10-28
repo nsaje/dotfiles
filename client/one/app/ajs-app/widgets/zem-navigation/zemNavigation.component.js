@@ -171,12 +171,14 @@ angular.module('one.widgets').component('zemNavigation', {
                 ? zemNavigationUtils.convertToEntityList(activeAccount)
                 : null;
 
-            var list = angular.copy($ctrl.list);
+            var list = [];
             if ($ctrl.entityList && $ctrl.query.length === 0) {
-                list = angular.copy($ctrl.entityList);
+                list = $ctrl.entityList;
+            } else {
+                list = $ctrl.list;
             }
 
-            var filteredList = zemNavigationUtils.filterEntityList(
+            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
                 list,
                 $ctrl.query,
                 activeAccount,
@@ -184,11 +186,6 @@ angular.module('one.widgets').component('zemNavigation', {
                 true
             );
 
-            filteredList.forEach(function(item) {
-                item.href = getItemHref(item);
-            });
-
-            $ctrl.filteredList = filteredList;
             $ctrl.selectedEntity = null;
 
             // If search in progress always scroll to top,
