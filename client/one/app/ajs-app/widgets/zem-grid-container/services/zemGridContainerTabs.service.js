@@ -153,11 +153,6 @@ angular
                     getAdditionalBreakdownsForEntityType(entity.type)
                 );
             }
-            options.sort(function(a, b) {
-                var textA = a.name.toUpperCase();
-                var textB = b.name.toUpperCase();
-                return textA.localeCompare(textB);
-            });
             return options;
         }
 
@@ -213,6 +208,11 @@ angular
                 tabCopy.name = options[0].name;
                 tabCopy.breakdown = options[0].breakdown;
                 tabCopy.options = options.length > 1 ? options : null;
+                tabCopy.options.sort(function(a, b) {
+                    var textA = a.name.toUpperCase();
+                    var textB = b.name.toUpperCase();
+                    return textA.localeCompare(textB);
+                });
                 tabs.push(tabCopy);
             }
         }
