@@ -1,3 +1,4 @@
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
 var Queue = require('promise-queue');
 var clone = require('clone');
 
@@ -153,10 +154,14 @@ angular
                             // Workaround - err is in this case null (see zem_grid_endpoint_api.js abortable promise)
                             grid.meta.loading = false;
                         }
-                        grid.meta.pubsub.notify(
-                            grid.meta.pubsub.EVENTS.DATA_UPDATED_ERROR,
-                            err
-                        );
+
+                        // When err is null, that means it's an aborted request and we do not need to show an error message
+                        if (commonHelpers.isDefined(err)) {
+                            grid.meta.pubsub.notify(
+                                grid.meta.pubsub.EVENTS.DATA_UPDATED_ERROR,
+                                err
+                            );
+                        }
                         deferred.reject(err);
                     }
                 );
