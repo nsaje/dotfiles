@@ -305,6 +305,14 @@ def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_sou
     elif adgroup_row["autopilot_state"] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         calculated_daily_budget = adgroup_row["autopilot_daily_budget"]
         calculated_cpc = adgroup_row["cpc_cc"]
+    elif adgroup_row["autopilot_state"] == constants.AdGroupSettingsAutopilotState.ACTIVE:
+        calculated_daily_budget = adgroup_row["daily_budget"]
+        calculated_cpc = adgroup_row["cpc_cc"]
+
+        # TODO RTAP: don't fail the job until we fix daily budgets
+        if calculated_daily_budget is None:
+            logger.error("Unassigned daily budget", ad_group_id=adgroup_row["adgroup_id"])
+            calculated_daily_budget = Decimal(0.0)
     else:
         raise ValueError("Unhandled autopilot_state: %s" % adgroup_row["autopilot_state"])
 
@@ -807,6 +815,7 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "cpc_cc": F("settings__cpc_cc"),
         "target_devices": F("settings__target_devices"),
         "target_regions": F("settings__target_regions"),
+        "daily_budget": F("settings__daily_budget"),
         "autopilot_daily_budget": F("settings__autopilot_daily_budget"),
         "autopilot_state": F("settings__autopilot_state"),
         "retargeting_ad_groups": F("settings__retargeting_ad_groups"),
