@@ -3,7 +3,6 @@ describe('component: zemHeaderBreadcrumb', function() {
     var $componentController;
     var ctrl;
     var zemNavigationNewService;
-    var $timeout;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -11,13 +10,11 @@ describe('component: zemHeaderBreadcrumb', function() {
     beforeEach(inject(function(
         _$document_,
         _$componentController_,
-        _zemNavigationNewService_,
-        _$timeout_
+        _zemNavigationNewService_
     ) {
         $document = _$document_;
         $componentController = _$componentController_;
         zemNavigationNewService = _zemNavigationNewService_;
-        $timeout = _$timeout_;
 
         var locals = {zemNavigationNewService: zemNavigationNewService};
         ctrl = $componentController('zemHeaderBreadcrumb', locals, {});
@@ -44,7 +41,6 @@ describe('component: zemHeaderBreadcrumb', function() {
 
         it('should update document title on entity update', function() {
             callback(null);
-            $timeout.flush();
             expect($document[0].title).toEqual('My accounts | Zemanta');
 
             var activeEntity = {
@@ -55,7 +51,6 @@ describe('component: zemHeaderBreadcrumb', function() {
                 activeEntity
             );
             callback({}, activeEntity);
-            $timeout.flush();
             expect($document[0].title).toEqual('Account XY | Zemanta');
         });
 
@@ -67,7 +62,6 @@ describe('component: zemHeaderBreadcrumb', function() {
             };
 
             callback(null);
-            $timeout.flush();
             expect(ctrl.breadcrumb).toEqual([myAccountsBreadcrumb]);
 
             var account = {
@@ -85,7 +79,6 @@ describe('component: zemHeaderBreadcrumb', function() {
 
             zemNavigationNewService.getActiveEntity.and.returnValue(account);
             callback({}, account);
-            $timeout.flush();
             expect(ctrl.breadcrumb).toEqual([
                 myAccountsBreadcrumb,
                 {
@@ -97,7 +90,6 @@ describe('component: zemHeaderBreadcrumb', function() {
 
             zemNavigationNewService.getActiveEntity.and.returnValue(campaign);
             callback({}, campaign);
-            $timeout.flush();
             expect(ctrl.breadcrumb).toEqual([
                 myAccountsBreadcrumb,
                 {
