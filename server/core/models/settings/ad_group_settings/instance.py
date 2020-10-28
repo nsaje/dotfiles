@@ -1,3 +1,4 @@
+import decimal
 import logging
 
 from django.db import transaction
@@ -404,6 +405,9 @@ class AdGroupSettingsMixin(object):
         )
 
     def get_external_bid(self, service_fee, license_fee, margin):
+        if self.bid is None:
+            return decimal.Decimal(0.0)
+
         return core.features.bcm.calculations.subtract_fees_and_margin(self.bid, service_fee, license_fee, margin)
 
     def get_external_b1_sources_group_daily_budget(self, service_fee, license_fee, margin):
