@@ -59,6 +59,9 @@ class AdGroupSettingsValidatorMixin(object):
 
         cpc = changes["local_cpc"]
 
+        if cpc is None:
+            return
+
         currency_symbol = self._get_currency_symbol()
         min_cpc = self.MIN_CPC_VALUE * self._get_exchange_rate()
         max_cpc = self.MAX_CPC_VALUE * self._get_exchange_rate()
@@ -77,6 +80,9 @@ class AdGroupSettingsValidatorMixin(object):
             return
 
         cpm = changes["local_cpm"]
+
+        if cpm is None:
+            return
 
         currency_symbol = self._get_currency_symbol()
         min_cpm = self.MIN_CPM_VALUE * self._get_exchange_rate()
