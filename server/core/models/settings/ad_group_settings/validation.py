@@ -50,7 +50,6 @@ class AdGroupSettingsValidatorMixin(object):
         return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def _validate_cpc(self, changes):
-        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
         is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
         if is_cpm_buying and "local_cpc" in changes:
             raise exceptions.CannotSetCPC("Cannot set ad group CPC when ad group bidding type is CPM")
@@ -59,11 +58,6 @@ class AdGroupSettingsValidatorMixin(object):
             return
 
         cpc = changes["local_cpc"]
-
-        if not agency_uses_realtime_autopilot:
-            assert cpc is not None
-        elif cpc is None:
-            return
 
         currency_symbol = self._get_currency_symbol()
         min_cpc = self.MIN_CPC_VALUE * self._get_exchange_rate()
@@ -83,7 +77,6 @@ class AdGroupSettingsValidatorMixin(object):
             return
 
         cpm = changes["local_cpm"]
-        assert cpm is not None
 
         currency_symbol = self._get_currency_symbol()
         min_cpm = self.MIN_CPM_VALUE * self._get_exchange_rate()
