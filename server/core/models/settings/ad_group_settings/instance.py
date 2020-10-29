@@ -263,10 +263,10 @@ class AdGroupSettingsMixin(object):
             new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
 
             if "b1_sources_group_cpc_cc" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPC:
-                new_settings.b1_sources_group_cpc_cc = self.cpc
+                new_settings.b1_sources_group_cpc_cc = self.cpc or core.models.AllRTBSource.default_cpc_cc
 
             if "b1_sources_group_cpm" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPM:
-                new_settings.b1_sources_group_cpm = self.cpm
+                new_settings.b1_sources_group_cpm = self.cpm or core.models.AllRTBSource.default_cpm
 
             if "b1_sources_group_daily_budget" not in changes:
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
