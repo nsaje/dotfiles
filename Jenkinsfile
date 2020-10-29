@@ -27,6 +27,7 @@ def isStartedByTimer() {
 }
 
 // properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
+properties([pipelineTriggers([])])
 
 node {
     try {
