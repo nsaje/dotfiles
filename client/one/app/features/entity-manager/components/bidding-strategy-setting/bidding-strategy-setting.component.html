@@ -14,7 +14,7 @@
     <div class="zem-form-group__content">
         <zem-radio-input
             class="zem-radio-input zem-form-group__content-item"
-            [groupModel]="autopilotState"
+            [groupModel]="formattedAutopilotState"
             [value]="AdGroupAutopilotState.ACTIVE"
             [isDisabled]="isDisabled"
             (select)="autopilotStateChange.emit($event)"
@@ -28,7 +28,7 @@
 
         <zem-radio-input
             class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
-            [groupModel]="autopilotState"
+            [groupModel]="formattedAutopilotState"
             [value]="AdGroupAutopilotState.INACTIVE"
             [isDisabled]="isDisabled"
             (select)="autopilotStateChange.emit($event)"
