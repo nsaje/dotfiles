@@ -18,6 +18,8 @@ export class AdGroupRTBSourcesManagementSettingComponent {
     manageRtbSourcesAsOne: boolean;
     @Input()
     isDisabled: boolean;
+    @Input()
+    agencyUsesRealtimeAutopilot: boolean;
     @Output()
     manageRtbSourcesAsOneChange = new EventEmitter<boolean>();
 }

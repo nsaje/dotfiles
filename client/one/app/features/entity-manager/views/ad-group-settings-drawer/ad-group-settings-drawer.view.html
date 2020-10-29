@@ -229,6 +229,9 @@
                             [manageRtbSourcesAsOne]="
                                 state.entity.manageRtbSourcesAsOne
                             "
+                            [agencyUsesRealtimeAutopilot]="
+                                state.extras.agencyUsesRealtimeAutopilot
+                            "
                             [isDisabled]="isReadOnly"
                             (manageRtbSourcesAsOneChange)="
                                 store.setManageRtbSourcesAsOne($event)
@@ -427,6 +430,9 @@
                             class="zem-ad-group-rtb-sources-management-setting zem-settings-section__item"
                             [manageRtbSourcesAsOne]="
                                 state.entity.manageRtbSourcesAsOne
+                            "
+                            [agencyUsesRealtimeAutopilot]="
+                                state.extras.agencyUsesRealtimeAutopilot
                             "
                             [isDisabled]="
                                 state.extras.isCampaignAutopilotEnabled ||
