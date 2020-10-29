@@ -11,15 +11,16 @@
 </div>
 
 <div class="zem-navigation__results custom-scroller">
-    <div class="loader" ng-if="!$ctrl.list"></div>
+    <div class="loader" ng-if="!$ctrl.list || $ctrl.filterInProgress"></div>
     <div
         class="zem-navigation__no-results"
-        ng-if="$ctrl.filteredList.length === 0"
+        ng-if="$ctrl.list && !$ctrl.filterInProgress && $ctrl.filteredList.length === 0"
     >
         no matches found
     </div>
     <ul
         class="zem-navigation__results-list"
+        ng-if="$ctrl.list && !$ctrl.filterInProgress && $ctrl.filteredList.length > 0"
         vs-repeat
         vs-scroll-parent=".zem-navigation__results"
         vs-size="$ctrl.getItemHeight(item)"

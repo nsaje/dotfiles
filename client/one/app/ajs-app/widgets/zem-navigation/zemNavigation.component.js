@@ -31,6 +31,7 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
+        $ctrl.filterInProgress = false;
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
@@ -157,47 +158,54 @@ angular.module('one.widgets').component('zemNavigation', {
             var hierarchy = zemNavigationNewService.getNavigationHierarchy();
             if (hierarchy) {
                 $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
+                if ($ctrl.isOpen) {
+                    filterList();
+                }
             }
         }
 
         function filterList() {
             if (!$ctrl.list) return;
 
-            var showArchived = zemDataFilterService.getShowArchived();
-            var activeAccount = zemNavigationNewService.getActiveAccount();
+            $ctrl.filterInProgress = true;
+            $timeout(function() {
+                var showArchived = zemDataFilterService.getShowArchived();
+                var activeAccount = zemNavigationNewService.getActiveAccount();
 
-            $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
-            $ctrl.entityList = activeAccount
-                ? zemNavigationUtils.convertToEntityList(activeAccount)
-                : null;
+                $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
+                $ctrl.entityList = activeAccount
+                    ? zemNavigationUtils.convertToEntityList(activeAccount)
+                    : null;
 
-            var list = [];
-            if ($ctrl.entityList && $ctrl.query.length === 0) {
-                list = $ctrl.entityList;
-            } else {
-                list = $ctrl.list;
-            }
+                var list = [];
+                if ($ctrl.entityList && $ctrl.query.length === 0) {
+                    list = $ctrl.entityList;
+                } else {
+                    list = $ctrl.list;
+                }
 
-            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
-                list,
-                $ctrl.query,
-                activeAccount,
-                showArchived,
-                true
-            );
+                $ctrl.filteredList = zemNavigationUtils.filterEntityList(
+                    list,
+                    $ctrl.query,
+                    activeAccount,
+                    showArchived,
+                    true
+                );
 
-            $ctrl.selectedEntity = null;
+                $ctrl.selectedEntity = null;
+                $ctrl.filterInProgress = false;
 
-            // If search in progress always scroll to top,
-            // otherwise scroll to active entity
-            if ($ctrl.query) {
-                scrollToTop();
-            } else {
-                scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
-                $timeout(function() {
-                    scrollToItem($ctrl.activeEntity, true);
-                }); // Wait for list to be rendered first
-            }
+                // If search in progress always scroll to top,
+                // otherwise scroll to active entity
+                if ($ctrl.query) {
+                    scrollToTop();
+                } else {
+                    scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
+                    $timeout(function() {
+                        scrollToItem($ctrl.activeEntity, true);
+                    }); // Wait for list to be rendered first
+                }
+            }, 250);
         }
 
         function scrollToTop() {
