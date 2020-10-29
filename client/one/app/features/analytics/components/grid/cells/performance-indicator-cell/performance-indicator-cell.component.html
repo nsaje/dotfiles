@@ -1,7 +1,7 @@
 <div class="zem-performance-indicator-cell">
     <img
         class="zem-performance-indicator-cell__icon"
-        [class.zem-performance-indicator-cell__trigger]="
+        [class.zem-performance-indicator-cell__popover-trigger]="
             performanceIndicators.length > 0
         "
         src="{{ overallIconUrl }}"
@@ -19,15 +19,15 @@
 
 <ng-template #performanceIndicatorsTemplate>
     <div
-        class="zem-performance-indicator-cell__indicator"
+        class="zem-performance-indicator"
         *ngFor="let indicator of performanceIndicators"
     >
         <img
-            class="zem-performance-indicator-cell__icon zem-performance-indicator-cell__indicator-item"
+            class="zem-performance-indicator__icon zem-performance-indicator__item"
             src="{{ indicator.iconUrl }}"
         />
         <span
-            class="zem-performance-indicator-cell__text zem-performance-indicator-cell__indicator-item"
+            class="zem-performance-indicator__text zem-performance-indicator__item"
             >{{ indicator.text }}</span
         >
     </div>

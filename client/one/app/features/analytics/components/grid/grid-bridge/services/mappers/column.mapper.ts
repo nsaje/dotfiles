@@ -106,7 +106,7 @@ export abstract class ColumnMapper {
                         defaultValue: column.data?.defaultValue,
                     };
                     return formatGridColumnValue(
-                        statsValue.value,
+                        statsValue.value as string | number,
                         formatterOptions
                     );
                 }
@@ -133,7 +133,7 @@ export abstract class ColumnMapper {
                         defaultValue: column.data?.defaultValue,
                     };
                     return formatGridColumnValue(
-                        statsValue.value,
+                        statsValue.value as string | number,
                         formatterOptions
                     );
                 }

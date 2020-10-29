@@ -19,6 +19,7 @@ export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.VISIBLE_LINK,
     GridColumnTypes.TEXT_LINK,
     GridColumnTypes.INTERNAL_LINK,
+    GridColumnTypes.SUBMISSION_STATUS,
 ];
 
 export const PINNED_GRID_COLUMN_TYPES: GridColumnTypes[] = [

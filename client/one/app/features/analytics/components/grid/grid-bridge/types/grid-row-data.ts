@@ -1,4 +1,7 @@
-import {Emoticon} from '../../../../../../app.constants';
+import {
+    ContentAdApprovalStatus,
+    Emoticon,
+} from '../../../../../../app.constants';
 import {GridRowEntity} from './grid-row-entity';
 
 export interface GridRowData {
@@ -15,7 +18,7 @@ export interface GridRowDataStats {
 }
 
 export interface GridRowDataStatsValue {
-    value: string | number;
+    value: string | number | SubmissionStatus[];
     popoverMessage?: string;
     url?: string;
     overall?: Emoticon;
@@ -25,4 +28,12 @@ export interface GridRowDataStatsValue {
 export interface PerformanceItem {
     emoticon: Emoticon;
     text: string;
+}
+
+export interface SubmissionStatus {
+    name: string;
+    status: ContentAdApprovalStatus;
+    source_state: string;
+    text: string;
+    source_link: string;
 }

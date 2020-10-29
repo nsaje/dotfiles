@@ -876,6 +876,12 @@ export enum Emoticon {
     SAD = 3,
 }
 
+export enum ContentAdApprovalStatus {
+    PENDING = 1,
+    APPROVED = 2,
+    REJECTED = 3,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1473,11 +1479,7 @@ export const APP_CONSTANTS = {
     level: Level,
     breakdownParam: BreakdownParam,
     breakdown: Breakdown,
-    contentAdApprovalStatus: {
-        PENDING: 1,
-        APPROVED: 2,
-        REJECTED: 3,
-    },
+    contentAdApprovalStatus: ContentAdApprovalStatus,
     uploadBatchStatus: {
         DONE: 1,
         FAILED: 2,

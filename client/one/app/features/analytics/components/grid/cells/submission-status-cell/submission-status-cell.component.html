@@ -1,0 +1,74 @@
+<div class="zem-submission-status-cell">
+    <div
+        class="zem-submission-status-cell__popover"
+        [class.zem-submission-status-cell__popover--trigger]="
+            approvedItems.length > 0 || nonApprovedItems.length > 0
+        "
+        [zemPopover]="
+            approvedItems.length > 0 || nonApprovedItems.length > 0
+                ? submissionStatusesTemplate
+                : null
+        "
+        [stayOpenOnHover]="true"
+        triggers="mouseenter:mouseleave"
+        placement="left"
+        container="body"
+    >
+        <span
+            *ngIf="approvedItems.length > 0"
+            class="zem-submission-status-cell__item zem-submission-status-cell__item--approved"
+            [class.zem-submission-status-cell__item--single]="
+                nonApprovedItems.length === 0
+            "
+            [class.zem-submission-status-cell__item--archived]="isArchived"
+            >{{ approvedItems.length }}</span
+        >
+        <span
+            *ngIf="nonApprovedItems.length > 0"
+            class="zem-submission-status-cell__item zem-submission-status-cell__item--non-approved"
+            [class.zem-submission-status-cell__item--single]="
+                approvedItems.length === 0
+            "
+            [class.zem-submission-status-cell__item--archived]="isArchived"
+            >{{ nonApprovedItems.length }}</span
+        >
+        <span
+            *ngIf="approvedItems.length === 0 && nonApprovedItems.length === 0"
+            class="zem-submission-status-cell__item zem-submission-status-cell__item--no-submission"
+            [class.zem-submission-status-cell__item--archived]="isArchived"
+            >0</span
+        >
+    </div>
+</div>
+
+<ng-template #submissionStatusesTemplate>
+    <div class="zem-submission-statuses">
+        <zem-submission-status-item
+            *ngFor="let item of nonApprovedItems"
+            class="zem-submission-status-item"
+            [name]="item.name"
+            [status]="item.status"
+            [sourceState]="item.source_state"
+            [text]="item.text"
+            [isTextStrong]="true"
+            [sourceLink]="item.source_link"
+            [isSourceLinkVisible]="isSourceLinkVisible"
+            [isSourceLinkAnInternalFeature]="isSourceLinkAnInternalFeature"
+        ></zem-submission-status-item>
+        <div
+            *ngIf="approvedItems.length > 0 && nonApprovedItems.length > 0"
+            class="zem-submission-statuses__divider"
+        ></div>
+        <zem-submission-status-item
+            *ngFor="let item of approvedItems"
+            class="zem-submission-status-item"
+            [name]="item.name"
+            [status]="item.status"
+            [sourceState]="item.source_state"
+            [text]="item.text"
+            [sourceLink]="item.source_link"
+            [isSourceLinkVisible]="isSourceLinkVisible"
+            [isSourceLinkAnInternalFeature]="isSourceLinkAnInternalFeature"
+        ></zem-submission-status-item>
+    </div>
+</ng-template>

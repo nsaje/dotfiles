@@ -27,7 +27,7 @@ export class StatusColumnMapper extends ColumnMapper {
                     const config =
                         BREAKDOWN_TO_STATUS_CONFIG[grid.meta.data.breakdown];
                     if (commonHelpers.isDefined(config)) {
-                        return config[statsValue.value] || '';
+                        return config[statsValue.value as number] || '';
                     }
                 }
                 return '';

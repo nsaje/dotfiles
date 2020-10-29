@@ -5,32 +5,33 @@
     position: relative;
 }
 
-.zem-performance-indicator-cell__icon {
+.zem-performance-indicator-cell__icon,
+.zem-performance-indicator__icon {
     display: block;
     width: 15px;
     height: 15px;
 }
 
-.zem-performance-indicator-cell__trigger:hover {
+.zem-performance-indicator-cell__popover-trigger:hover {
     cursor: help;
 }
 
-.zem-performance-indicator-cell__indicator {
+.zem-performance-indicator {
     display: flex;
     padding: 8px 0 8px 0px;
     border-bottom: 1px solid @border-color--lighter;
     align-items: center;
 }
 
-.zem-performance-indicator-cell__indicator:first-child {
+.zem-performance-indicator:first-child {
     padding-top: 0;
 }
 
-.zem-performance-indicator-cell__indicator:last-child {
+.zem-performance-indicator:last-child {
     padding-bottom: 0;
     border-bottom: none;
 }
 
-.zem-performance-indicator-cell__indicator-item:not(:last-child) {
+.zem-performance-indicator__item:not(:last-child) {
     margin-right: 5px;
 }

@@ -17,6 +17,7 @@ import {StatsDataColumnMapper} from '../mappers/stats-data.mapper';
 import {StatusColumnMapper} from '../mappers/status.mapper';
 import {ActionsColumnMapper} from '../mappers/actions.mapper';
 import {PerformanceIndicatorColumnMapper} from '../mappers/performance-indicator.mapper';
+import {SubmissionStatusColumnMapper} from '../mappers/submission-status.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -50,15 +51,15 @@ export class SetColumnsActionReducer extends StoreReducer<
             useClass: PerformanceIndicatorColumnMapper,
         },
         {
+            provide: GridColumnTypes.SUBMISSION_STATUS,
+            useClass: SubmissionStatusColumnMapper,
+        },
+        {
             provide: GridColumnTypes.BASE_FIELD,
             useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: StatsDataColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.SUBMISSION_STATUS,
             useClass: StatsDataColumnMapper,
         },
         {

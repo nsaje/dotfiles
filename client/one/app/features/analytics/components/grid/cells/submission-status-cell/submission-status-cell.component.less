@@ -1,0 +1,75 @@
+@import 'variables';
+
+.zem-submission-status-cell {
+    display: flex;
+    justify-content: center;
+}
+
+.zem-submission-status-cell__popover--trigger {
+    cursor: help;
+}
+
+.zem-submission-status-cell__item {
+    display: inline-block;
+    vertical-align: top;
+    width: 30px;
+    height: 18px;
+    line-height: 10px;
+    text-align: center;
+    color: @color--success;
+    font-size: 10px;
+    padding: 4px 1px;
+    border: 1px solid @color--success;
+}
+
+.zem-submission-status-cell__item--single,
+.zem-submission-status-cell__item--no-submission {
+    width: 60px;
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    border-top-right-radius: @border-radius--default;
+    border-bottom-right-radius: @border-radius--default;
+}
+
+.zem-submission-status-cell__item--approved {
+    background-color: @color--success;
+    color: #ffffff;
+}
+
+.zem-submission-status-cell__item--approved.zem-submission-status-cell__item--archived {
+    background-color: @border-color--default;
+    border-color: @border-color--default;
+}
+
+.zem-submission-status-cell__item--non-approved.zem-submission-status-cell__item--archived,
+.zem-submission-status-cell__item--no-submission.zem-submission-status-cell__item--archived {
+    background-color: @color--lightest-neutral;
+    border-color: @border-color--default;
+    color: @text-color--lighter;
+}
+
+.zem-submission-status-cell__item--approved,
+.zem-submission-status-cell__item--non-approved.zem-submission-status-cell__item--single {
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+}
+
+.zem-submission-status-cell__item--non-approved,
+.zem-submission-status-cell__item--approved.zem-submission-status-cell__item--single {
+    border-top-right-radius: @border-radius--default;
+    border-bottom-right-radius: @border-radius--default;
+}
+
+.zem-submission-statuses {
+    display: block;
+    width: 300px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.zem-submission-statuses__divider {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid @border-color--default;
+}

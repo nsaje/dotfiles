@@ -4,22 +4,17 @@
         class="zem-breakdown-cell__value zem-breakdown-cell__item"
         >{{ valueFormatted }}</span
     >
-    <ng-container *ngIf="valueType === BreakdownValueType.INTERNAL_LINK">
-        <a
-            class="zem-breakdown-cell__value zem-breakdown-cell__value--link zem-breakdown-cell__item"
-            href="{{ url }}"
-            (click)="openUrl($event, url)"
-            title="valueFormatted"
-            >{{ valueFormatted }}</a
-        >
-    </ng-container>
-    <ng-container *ngIf="valueType === BreakdownValueType.EXTERNAL_LINK">
-        <!--TODO (msuber): add support for external link-->
-        <span
-            class="zem-breakdown-cell__value zem-breakdown-cell__value--link zem-breakdown-cell__item"
-            >Add support for external link</span
-        >
-    </ng-container>
+    <a
+        *ngIf="
+            valueType === BreakdownValueType.INTERNAL_LINK ||
+            valueType === BreakdownValueType.EXTERNAL_LINK
+        "
+        class="zem-breakdown-cell__value zem-breakdown-cell__value--link zem-breakdown-cell__item"
+        href="{{ url }}"
+        (click)="openUrl($event, url)"
+        title="valueFormatted"
+        >{{ valueFormatted }}</a
+    >
     <zem-help-popover
         *ngIf="popoverTooltip"
         class="zem-help-popover zem-breakdown-cell__item"
