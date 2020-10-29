@@ -26,8 +26,7 @@ def isStartedByTimer() {
     return startedByTimer
 }
 
-// properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "@hourly" : "")])])
-properties([pipelineTriggers([])])
+properties([pipelineTriggers([cron(BRANCH_NAME == "master" ? "5 1-6/2 * * *" : "")])])
 
 node {
     try {
@@ -140,7 +139,7 @@ node {
 
         stage('Notify success') {
             prevResult = getPreviousBuildResult()
-            if (prevResult == 'FAILURE' && env.BRANCH_NAME == 'master') {
+            if (prevResult == 'FAILURE' && env.BRANCH_NAME == 'master' && !isStartedByTimer()) {
                 slackSend channel: "#rnd-z1", color: "#8CC04F", failOnError: true, message: "Build Fixed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
             }
         }
@@ -152,7 +151,7 @@ node {
         }
     } catch (e) {
         prevResult = getPreviousBuildResult()
-        if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS' && env.BRANCH_NAME == 'master') {
+        if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS' && env.BRANCH_NAME == 'master' && !isStartedByTimer()) {
             slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
         }
         throw e
