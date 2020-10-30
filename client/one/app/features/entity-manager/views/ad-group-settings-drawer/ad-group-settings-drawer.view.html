@@ -158,11 +158,7 @@
                         helpMessage="Daily budget limit for this ad group. If the ad group is having difficulties spending the daily budget in full, consider increasing the Bid {{
                             state.entity.biddingType
                         }} or remove the maximum."
-                        [value]="
-                            store.isAdGroupAutopilotEnabled()
-                                ? state.entity.autopilot.dailyBudget
-                                : ''
-                        "
+                        [value]="state.entity.autopilot.dailyBudget"
                         [currencySymbol]="currencySymbol"
                         fractionSize="0"
                         [isDisabled]="
