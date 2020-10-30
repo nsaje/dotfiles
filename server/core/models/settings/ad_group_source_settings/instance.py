@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.db.models import Sum
 
 import core.features.bcm
 import dash.constants
@@ -94,21 +93,7 @@ class AdGroupSourceSettingsMixin(object):
         if is_create or "local_daily_budget_cc" not in changes:
             return
 
-        ad_group_budget_data = self.ad_group_source.ad_group.adgroupsource_set.filter_active().aggregate(
-            total_local_daily_budget=Sum("settings__local_daily_budget_cc")
-        )
-        self.ad_group_source.ad_group.settings.update(
-            request,
-            local_daily_budget=ad_group_budget_data["total_local_daily_budget"],
-            skip_validation=True,
-            skip_automation=True,
-            skip_permission_check=True,
-            skip_notification=True,
-            skip_field_change_validation_autopilot=True,
-            write_history=False,
-            write_source_history=False,
-            k1_sync=False,
-        )
+        self.ad_group_source.ad_group.settings.update_daily_budget(request)
 
     def _notify_ad_group_source_settings_changed(self, request, old_settings, new_settings):
         if not request:

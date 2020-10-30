@@ -42,6 +42,7 @@
 0 6 * * *        /home/ubuntu/docker-manage-py.sh pd_slack_summary
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
 15 9-14 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot_legacy --daily-run
+35 9-14 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 0 14 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 10 10-20 * * *   /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 0 12 * * *       /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack

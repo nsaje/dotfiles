@@ -44,7 +44,7 @@ def get_autopilot_daily_budget_recommendations(
         _uniformly_redistribute_remaining_budget(new_budgets, budget_left)
 
     else:
-        bandit = BetaBandit(active_ad_groups_with_spend, backup_ad_groups=ad_groups_data.keys())
+        bandit = BetaBandit(active_ad_groups_with_spend, backup_ad_groups=list(ad_groups_data.keys()))
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
             list(ad_groups_data.values()), campaign_goal
         )

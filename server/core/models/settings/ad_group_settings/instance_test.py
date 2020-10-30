@@ -279,6 +279,117 @@ class InstanceTest(TestCase):
             },
         )
 
+    def test_sync_legacy_fields(self):
+        def _reset_test_settings(b1_sources_group_enabled=True):
+            current_settings = self.ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+
+            new_settings.b1_sources_group_enabled = b1_sources_group_enabled
+            new_settings.daily_budget = Decimal("100.0")
+            new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+            new_settings.autopilot_daily_budget = Decimal("100.0")
+            new_settings.cpc = Decimal("3.0")
+            new_settings.cpm = Decimal("3.0")
+            new_settings.b1_sources_group_cpc_cc = Decimal("3.0")
+            new_settings.b1_sources_group_cpm = Decimal("3.0")
+            new_settings.max_autopilot_bid = Decimal("3.0")
+            new_settings.save(None)
+
+            return new_settings
+
+        self.ad_group.campaign.account.agency.uses_realtime_autopilot = True
+        budget_fields_values = {
+            "daily_budget": Decimal("101.0"),
+            "b1_sources_group_daily_budget": Decimal("102.0"),
+            "autopilot_daily_budget": Decimal("103.0"),
+        }
+        cpc_fields_values = {
+            "cpc": Decimal("7.0"),
+            "b1_sources_group_cpc_cc": Decimal("8.0"),
+            "max_autopilot_bid": Decimal("9.0"),
+        }
+        cpm_fields_values = {
+            "cpm": Decimal("9.0"),
+            "b1_sources_group_cpm": Decimal("7.0"),
+            "max_autopilot_bid": Decimal("8.0"),
+        }
+
+        # Budget (sources group)
+        _reset_test_settings()
+
+        for field, value in budget_fields_values.items():
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.daily_budget)
+            self.assertEqual(value, self.ad_group.settings.b1_sources_group_daily_budget)
+            self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
+
+        # Budget (sources separately)
+        _reset_test_settings(b1_sources_group_enabled=False)
+
+        for field, value in budget_fields_values.items():
+            old_b1_budget = self.ad_group.settings.b1_sources_group_daily_budget
+
+            if field == "b1_sources_group_daily_budget":
+                continue
+
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.daily_budget)
+            self.assertEqual(old_b1_budget, self.ad_group.settings.b1_sources_group_daily_budget)
+            self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
+
+        # CPC (sources group)
+        _reset_test_settings()
+
+        for field, value in cpc_fields_values.items():
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.cpc)
+            self.assertEqual(value, self.ad_group.settings.b1_sources_group_cpc_cc)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
+
+        # CPC (sources separately)
+        _reset_test_settings(b1_sources_group_enabled=False)
+
+        for field, value in cpc_fields_values.items():
+            old_b1_cpc = self.ad_group.settings.b1_sources_group_cpc_cc
+
+            if field == "b1_sources_group_cpc_cc":
+                continue
+
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.cpc)
+            self.assertEqual(old_b1_cpc, self.ad_group.settings.b1_sources_group_cpc_cc)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
+
+        # CPM (sources group)
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        _reset_test_settings()
+
+        for field, value in cpm_fields_values.items():
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.cpm)
+            self.assertEqual(value, self.ad_group.settings.b1_sources_group_cpm)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
+
+        # CPM (sources separately)
+        _reset_test_settings(b1_sources_group_enabled=False)
+
+        for field, value in cpm_fields_values.items():
+            old_b1_cpm = self.ad_group.settings.b1_sources_group_cpm
+
+            if field == "b1_sources_group_cpm":
+                continue
+
+            self.ad_group.settings.update(None, **{field: value})
+
+            self.assertEqual(value, self.ad_group.settings.cpm)
+            self.assertEqual(old_b1_cpm, self.ad_group.settings.b1_sources_group_cpm)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
+
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_external_cpc(self, mock_insert_adgroup):
         self.ad_group.settings.update(

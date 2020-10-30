@@ -65,8 +65,8 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(self.request.user, settings.created_by)
         self.assertEqual(decimal.Decimal("1.3"), settings.cpc_cc)
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
-        self.assertEqual(decimal.Decimal("8.2"), self.ad_group.settings.daily_budget)
-        self.assertEqual(decimal.Decimal("8.2"), self.ad_group.settings.local_daily_budget)
+        self.assertEqual(decimal.Decimal("50.0"), self.ad_group.settings.daily_budget)
+        self.assertEqual(decimal.Decimal("50.0"), self.ad_group.settings.local_daily_budget)
 
         self.k1_update_mock.assert_called_once_with(self.ad_group, "AdGroupSource.update")
         self.assertTrue(self.email_send_notification_mock.called)

@@ -31,6 +31,7 @@ class CampaignBudgetDepletionNotification(models.Model):
 
 class AutopilotLog(models.Model):
     campaign = models.ForeignKey(core.models.campaign.Campaign, related_name="+", on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey(core.models.ad_group.AdGroup, related_name="+", on_delete=models.PROTECT)
     campaign_goal = models.IntegerField(
         default=None, blank=True, null=True, choices=dash.constants.CampaignGoalKPI.get_choices()
     )
@@ -56,7 +57,6 @@ class AutopilotLog(models.Model):
     is_autopilot_job_run = models.NullBooleanField(default=False, null=True, blank=True)
 
     # TODO: RTAP: remove after real-time autopilot migration complete
-    ad_group = models.ForeignKey(core.models.ad_group.AdGroup, related_name="+", on_delete=models.PROTECT)
     ad_group_source = models.ForeignKey(
         core.models.ad_group_source.AdGroupSource, related_name="+", on_delete=models.PROTECT, null=True
     )

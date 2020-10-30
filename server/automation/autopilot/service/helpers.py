@@ -92,6 +92,7 @@ def update_ad_group_daily_budget(ad_group, daily_budget):
         daily_budget=daily_budget,
         skip_validation=True,
         skip_notification=True,
+        skip_field_change_validation_autopilot=True,
         system_user=dash.constants.SystemUserType.AUTOPILOT,
         write_source_history=False,
     )

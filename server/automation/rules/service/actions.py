@@ -64,6 +64,8 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
 
     helpers.ensure_ad_group_valid(rule, ad_group)
 
+    # TODO: RTAP: update on migration; need to decide which field to use, as the functionality like it is now won't exist anymore.
+    # Rule validation will also have to be fixed as the conditions are very specific.
     base_budget = ad_group.settings.local_autopilot_daily_budget
     budget = limiter(base_budget + Decimal(change), Decimal(rule.change_limit))
 

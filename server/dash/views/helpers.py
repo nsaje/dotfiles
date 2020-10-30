@@ -7,7 +7,6 @@ from django.conf import settings
 from django.db.models import Max
 from django.db.models import Q
 
-import automation
 import automation.autopilot
 import automation.autopilot_legacy
 from dash import constants

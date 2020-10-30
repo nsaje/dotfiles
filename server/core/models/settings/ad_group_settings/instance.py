@@ -2,6 +2,7 @@ import decimal
 import logging
 
 from django.db import transaction
+from django.db.models import Sum
 
 import core.common
 import core.features.audiences
@@ -46,6 +47,7 @@ class AdGroupSettingsMixin(object):
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
+            self._sync_legacy_fields(new_settings)
             is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
             if not skip_validation and not is_pause:
                 self.clean(new_settings)
@@ -78,6 +80,63 @@ class AdGroupSettingsMixin(object):
                 self._recalculate_multicurrency_values_if_necessary(changes)
                 return changes
         return None
+
+    # TODO: RTAP: remove after migration
+    def update_daily_budget(self, request):
+        if not self.b1_sources_group_enabled:
+            return
+
+        ad_group_budget_data = self.ad_group.adgroupsource_set.filter_active().aggregate(
+            total_local_daily_budget=Sum("settings__local_daily_budget_cc")
+        )
+        self.update(
+            request,
+            local_daily_budget=ad_group_budget_data["total_local_daily_budget"],
+            skip_validation=True,
+            skip_automation=True,
+            skip_permission_check=True,
+            skip_notification=True,
+            skip_field_change_validation_autopilot=True,
+            write_history=False,
+            write_source_history=False,
+            k1_sync=False,
+        )
+
+    def _sync_legacy_fields(self, new_settings):
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+            return
+
+        changes = self.get_setting_changes(new_settings)
+
+        # TODO: RTAP: add validation that at most one budget field is updated at once
+        budget = (
+            changes.get("daily_budget")
+            or (new_settings.b1_sources_group_enabled and changes.get("b1_sources_group_daily_budget"))
+            or changes.get("autopilot_daily_budget")
+        )
+        if budget:
+            new_settings.daily_budget = budget
+            new_settings.autopilot_daily_budget = budget
+
+            if new_settings.b1_sources_group_enabled:
+                new_settings.b1_sources_group_daily_budget = budget
+
+        bid_field, b1_sources_group_bid_field = (
+            ("cpc", "b1_sources_group_cpc_cc")
+            if self.ad_group.bidding_type == constants.BiddingType.CPC
+            else ("cpm", "b1_sources_group_cpm")
+        )
+        bid = (
+            changes.get(bid_field)
+            or (new_settings.b1_sources_group_enabled and changes.get(b1_sources_group_bid_field))
+            or changes.get("max_autopilot_bid")
+        )
+        if bid:
+            setattr(new_settings, bid_field, bid)
+            new_settings.max_autopilot_bid = bid
+
+            if new_settings.b1_sources_group_enabled:
+                setattr(new_settings, b1_sources_group_bid_field, bid)
 
     def keep_old_and_new_bid_values_in_sync(self, update_object):
         changes = update_object.__dict__
@@ -272,7 +331,11 @@ class AdGroupSettingsMixin(object):
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
                 new_settings.daily_budget = core.models.AllRTBSource.default_daily_budget_cc
 
-        if "b1_sources_group_daily_budget" in changes:
+        # TODO: RTAP: remove after migration
+        if (
+            not self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+            and "b1_sources_group_daily_budget" in changes
+        ):
             new_settings.daily_budget = new_settings.b1_sources_group_daily_budget
 
     def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):

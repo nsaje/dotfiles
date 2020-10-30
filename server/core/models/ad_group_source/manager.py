@@ -168,6 +168,8 @@ class AdGroupSourceManager(core.common.BaseManager):
                 logger.exception("Exception occurred on campaign", campaign=ad_group.campaign_id)
                 continue
 
+        ad_group.settings.update_daily_budget(request)
+
         if write_history:
             raise Exception("Can't write history at this stage")
 
