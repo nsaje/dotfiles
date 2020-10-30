@@ -59,13 +59,13 @@ def _update_accounts(currency):
 
 @transaction.atomic
 def _update_account(account):
-    for campaign in account.campaign_set.iterator(100):
+    for campaign in account.campaign_set.filter(archived=False).iterator(100):
         campaign.settings.recalculate_multicurrency_values()
         _recalculate_ad_group_amounts(campaign)
 
 
 def _recalculate_ad_group_amounts(campaign):
-    for ad_group in campaign.adgroup_set.iterator(200):
+    for ad_group in campaign.adgroup_set.filter(archived=False).iterator(200):
         changes = ad_group.settings.recalculate_multicurrency_values()
         _sanity_check(changes, ad_group.settings.multicurrency_fields, ad_group_id=ad_group.id)
         _recalculate_ad_group_sources_amounts(ad_group)
