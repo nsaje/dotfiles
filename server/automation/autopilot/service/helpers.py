@@ -22,7 +22,7 @@ def get_active_ad_groups_on_autopilot():
 def get_processed_autopilot_campaign_ids(from_date_time):
     return set(
         models.AutopilotLog.objects.filter(created_dt__gte=from_date_time)
-        .filter(is_autopilot_job_run=True)
+        .filter(is_autopilot_job_run=True, campaign__isnull=False)
         .values_list("campaign", flat=True)
         .distinct()
     )
