@@ -225,7 +225,7 @@ class AdGroupsTest(K1APIBaseTest):
         )
 
     def test_get_ad_groups_autopilot_state(self):
-        campaign = magic_mixer.blend(dash.models.Campaign)
+        campaign = magic_mixer.blend(dash.models.Campaign, account__agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
 
         self.assertFalse(campaign.settings.autopilot)
@@ -263,6 +263,47 @@ class AdGroupsTest(K1APIBaseTest):
         response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
         data = json.loads(response.content)["response"][0]
         self.assertEqual(dash.constants.B1AutopilotState.ACTIVE, data["autopilot_state"])
+
+    # TODO: RTAP: LEGACY
+    def test_get_ad_groups_autopilot_state_legacy(self):
+        campaign = magic_mixer.blend(dash.models.Campaign, account__agency__uses_realtime_autopilot=False)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
+
+        self.assertFalse(campaign.settings.autopilot)
+        self.assertEqual(
+            dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET, ad_group.settings.autopilot_state
+        )
+
+        # campaign autopilot off, ad group cpc+budget autopilot on
+        response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
+
+        # campaign autopilot off, ad group cpc autopilot on
+        ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
+        response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
+
+        # campaign autopilot off, ad group autopilot off
+        ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
+        response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
+
+        # campaign autopilot on, ad group autopilot off
+        campaign.settings.update_unsafe(None, autopilot=True)
+        response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
+
+        # campaign autopilot on, ad group autopilot on
+        ad_group.settings.update_unsafe(
+            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        )
+        response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": ad_group.id})
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_ad_groups(self, mock_redirector):

@@ -75,10 +75,13 @@ class AdGroupsView(K1APIView):
             ad_group = ad_group.settings.ad_group
 
             b1_autopilot_state = (
-                dash.constants.B1AutopilotState.INACTIVE
-                if not ad_group.campaign.settings.autopilot
-                and ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-                else dash.constants.B1AutopilotState.ACTIVE
+                dash.constants.B1AutopilotState.ACTIVE
+                if ad_group.campaign.account.agency_uses_realtime_autopilot()
+                and (
+                    ad_group.campaign.settings.autopilot
+                    or ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+                )
+                else dash.constants.B1AutopilotState.INACTIVE
             )
 
             blacklist, whitelist = core.features.publisher_groups.concat_publisher_group_targeting(
