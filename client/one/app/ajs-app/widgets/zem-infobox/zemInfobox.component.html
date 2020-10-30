@@ -16,8 +16,14 @@
                 $ctrl.delivery.status === 'campaignstop-pending-budget-active-price-discovery' ||
                 $ctrl.delivery.status === 'campaignstop-pending-budget-active',
             'zem-infobox__delivery--autopilot': 
-                $ctrl.delivery.status === 'autopilot' || 
-                $ctrl.delivery.status === 'campaignstop-pending-budget-autopilot',
+                $ctrl.delivery.status === 'autopilot' ||
+                $ctrl.delivery.status === 'campaignstop-pending-budget-autopilot' ||
+                $ctrl.delivery.status === 'budget-optimization' ||
+                $ctrl.delivery.status === 'optimal-bid' ||
+                $ctrl.delivery.status === 'budget-optimization-optimal-bid' ||
+                $ctrl.delivery.status === 'campaignstop-pending-budget-budget-optimization' ||
+                $ctrl.delivery.status === 'campaignstop-pending-budget-optimal-bid' ||
+                $ctrl.delivery.status === 'campaignstop-pending-budget-budget-optimization-optimal-bid',
             'zem-infobox__delivery--inactive':
                 $ctrl.delivery.status === 'disabled' ||
                 $ctrl.delivery.status === 'inactive',
