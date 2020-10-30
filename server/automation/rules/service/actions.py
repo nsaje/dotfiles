@@ -36,15 +36,14 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs)
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group bid adjustment target")
 
-    if rule.action_type == constants.ActionType.INCREASE_BID:
-        limiter, change = min, rule.change_step
-    elif rule.action_type == constants.ActionType.DECREASE_BID:
-        limiter, change = max, -rule.change_step
-    else:
+    if rule.action_type not in [constants.ActionType.INCREASE_BID, constants.ActionType.DECREASE_BID]:
         raise Exception("Invalid bid action type")
 
     old_value = ad_group.settings.local_bid
-    new_value = limiter(old_value + Decimal(str(change)), Decimal(str(rule.change_limit)))
+    if rule.action_type == constants.ActionType.INCREASE_BID:
+        new_value = min(old_value + Decimal(str(rule.change_step)), max(old_value, Decimal(str(rule.change_limit))))
+    elif rule.action_type == constants.ActionType.DECREASE_BID:
+        new_value = max(old_value + Decimal(str(-rule.change_step)), min(old_value, Decimal(str(rule.change_limit))))
 
     ad_group.settings.update(None, local_bid=new_value)
 
@@ -55,11 +54,7 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group autopilot budget adjustment target")
 
-    if rule.action_type == constants.ActionType.INCREASE_BUDGET:
-        limiter, change = min, rule.change_step
-    elif rule.action_type == constants.ActionType.DECREASE_BUDGET:
-        limiter, change = max, -rule.change_step
-    else:
+    if rule.action_type not in [constants.ActionType.INCREASE_BUDGET, constants.ActionType.DECREASE_BUDGET]:
         raise Exception("Invalid budget action type")
 
     helpers.ensure_ad_group_valid(rule, ad_group)
@@ -67,7 +62,10 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     # TODO: RTAP: update on migration; need to decide which field to use, as the functionality like it is now won't exist anymore.
     # Rule validation will also have to be fixed as the conditions are very specific.
     base_budget = ad_group.settings.local_autopilot_daily_budget
-    budget = limiter(base_budget + Decimal(change), Decimal(rule.change_limit))
+    if rule.action_type == constants.ActionType.INCREASE_BUDGET:
+        budget = min(base_budget + Decimal(rule.change_step), max(base_budget, Decimal(rule.change_limit)))
+    elif rule.action_type == constants.ActionType.DECREASE_BUDGET:
+        budget = max(base_budget + Decimal(-rule.change_step), min(base_budget, Decimal(rule.change_limit)))
 
     ad_group.settings.update(None, local_autopilot_daily_budget=budget)
 
@@ -75,13 +73,8 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
 
 
 def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
-    if rule.action_type == constants.ActionType.INCREASE_BID_MODIFIER:
-        limiter, change = min, rule.change_step
-    elif rule.action_type == constants.ActionType.DECREASE_BID_MODIFIER:
-        limiter, change = max, -rule.change_step
-    else:
+    if rule.action_type not in [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER]:
         raise Exception("Invalid bid modifier action type")
-
     helpers.ensure_ad_group_valid(rule, ad_group)
 
     if rule.target_type == constants.TargetType.PUBLISHER:
@@ -107,7 +100,10 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, 
     except core.features.bid_modifiers.BidModifier.DoesNotExist:
         base_modifier = 1.0
 
-    modifier = limiter(base_modifier + change, rule.change_limit)
+    if rule.action_type == constants.ActionType.INCREASE_BID_MODIFIER:
+        modifier = min(base_modifier + rule.change_step, max(base_modifier, rule.change_limit))
+    elif rule.action_type == constants.ActionType.DECREASE_BID_MODIFIER:
+        modifier = max(base_modifier - rule.change_step, min(base_modifier, rule.change_limit))
 
     core.features.bid_modifiers.set(
         ad_group, bid_modifier_type, target, source, modifier, write_history=False, propagate_to_k1=False

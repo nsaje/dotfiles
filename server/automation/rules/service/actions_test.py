@@ -111,8 +111,10 @@ class ActionsTest(TestCase):
         test_functions = [
             self._test_adjust_bid_modifier_increase_new,
             self._test_adjust_bid_modifier_increase,
+            self._test_adjust_bid_modifier_increase_over_limit,
             self._test_adjust_bid_modifier_decrease_new,
             self._test_adjust_bid_modifier_decrease,
+            self._test_adjust_bid_modifier_decrease_under_limit,
         ]
 
         for case in test_cases:
@@ -180,6 +182,31 @@ class ActionsTest(TestCase):
         self.assertEqual(2.0, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
+    def _test_adjust_bid_modifier_increase_over_limit(
+        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    ):
+        bid_modifier = magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifier_type,
+            target=bid_modifier_target,
+            source=source,
+            source_slug=source.bidder_slug if source else "",
+            modifier=1.7,
+        )
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=target_type,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            change_step=0.2,
+            change_limit=1.5,
+        )
+
+        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        bid_modifier.refresh_from_db()
+        self.assertEqual(1.7, bid_modifier.modifier)
+        self.assertFalse(update.has_changes())
+
     def _test_adjust_bid_modifier_decrease_new(
         self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
     ):
@@ -238,6 +265,31 @@ class ActionsTest(TestCase):
         update = actions.adjust_bid_modifier(target, rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.6, bid_modifier.modifier)
+        self.assertFalse(update.has_changes())
+
+    def _test_adjust_bid_modifier_decrease_under_limit(
+        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    ):
+        bid_modifier = magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifier_type,
+            target=bid_modifier_target,
+            source=source,
+            source_slug=source.bidder_slug if source else "",
+            modifier=1.7,
+        )
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=target_type,
+            action_type=constants.ActionType.DECREASE_BID_MODIFIER,
+            change_step=0.2,
+            change_limit=2.0,
+        )
+
+        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        bid_modifier.refresh_from_db()
+        self.assertEqual(1.7, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
     def test_adjust_bid_modifier_unsupported_action(self):
@@ -304,6 +356,22 @@ class ActionsTest(TestCase):
 
         self.assertEqual(Decimal("0.8"), ad_group.settings.local_cpc)
 
+    def test_adjust_ad_group_bid_cpc_increase_over_limit(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPC)
+        ad_group.settings.update(None, cpc=Decimal("0.6"))
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.INCREASE_BID,
+            change_step=0.2,
+            change_limit=0.5,
+        )
+
+        update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("0.6"), ad_group.settings.cpc)
+        self.assertFalse(update.has_changes())
+
     def test_adjust_ad_group_bid_cpc_decrease(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPC)
         ad_group.settings.update(None, cpc=Decimal("0.5"))
@@ -331,6 +399,22 @@ class ActionsTest(TestCase):
         self.assertFalse(update.has_changes())
 
         self.assertEqual(Decimal("0.2"), ad_group.settings.local_cpc)
+
+    def test_adjust_ad_group_bid_cpc_decrease_below_limit(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPC)
+        ad_group.settings.update(None, cpc=Decimal("0.4"))
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.DECREASE_BID,
+            change_step=0.2,
+            change_limit=0.5,
+        )
+
+        update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("0.4"), ad_group.settings.cpc)
+        self.assertFalse(update.has_changes())
 
     def test_adjust_ad_group_bid_cpm_increase(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
@@ -360,6 +444,22 @@ class ActionsTest(TestCase):
 
         self.assertEqual(Decimal("1.8"), ad_group.settings.local_cpm)
 
+    def test_adjust_ad_group_bid_cpm_increase_over_limit(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
+        ad_group.settings.update(None, cpm=Decimal("1.6"))
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.INCREASE_BID,
+            change_step=0.2,
+            change_limit=1.5,
+        )
+
+        update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("1.6"), ad_group.settings.cpm)
+        self.assertFalse(update.has_changes())
+
     def test_adjust_ad_group_bid_cpm_decrease(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
         ad_group.settings.update(None, cpm=Decimal("1.5"))
@@ -387,6 +487,22 @@ class ActionsTest(TestCase):
         self.assertFalse(update.has_changes())
 
         self.assertEqual(Decimal("1.2"), ad_group.settings.local_cpm)
+
+    def test_adjust_ad_group_bid_cpm_decrease_below_limit(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
+        ad_group.settings.update(None, cpm=Decimal("1.4"))
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.DECREASE_BID,
+            change_step=0.2,
+            change_limit=1.5,
+        )
+
+        update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("1.4"), ad_group.settings.cpm)
+        self.assertFalse(update.has_changes())
 
     def test_adjust_ad_group_bid_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -441,6 +557,29 @@ class ActionsTest(TestCase):
         self.assertEqual(3, mock_recalculate_budgets.call_count)
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    def test_adjust_ad_group_autopilot_budget_increase_over_limit(self, mock_recalculate_budgets):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign.settings.update_unsafe(None, autopilot=False)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group.settings.update(
+            None,
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            autopilot_daily_budget=Decimal("180"),
+        )
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.INCREASE_BUDGET,
+            change_step=20,
+            change_limit=150,
+        )
+
+        update = actions.adjust_autopilot_daily_budget(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("180"), ad_group.settings.autopilot_daily_budget)
+        self.assertFalse(update.has_changes())
+
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_adjust_ad_group_autopilot_budget_decrease(self, mock_recalculate_budgets):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update_unsafe(None, autopilot=False)
@@ -479,6 +618,31 @@ class ActionsTest(TestCase):
 
         self.assertEqual(Decimal("120"), ad_group.settings.local_autopilot_daily_budget)
         self.assertEqual(3, mock_recalculate_budgets.call_count)
+
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    def test_adjust_ad_group_autopilot_budget_decrease_under_limit(self, mock_recalculate_budgets):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign.settings.update_unsafe(None, autopilot=False)
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=campaign, bidding_type=dash.constants.BiddingType.CPC
+        )
+        ad_group.settings.update(
+            None,
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            autopilot_daily_budget=Decimal("140"),
+        )
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD_GROUP,
+            action_type=constants.ActionType.DECREASE_BUDGET,
+            change_step=20,
+            change_limit=150,
+        )
+
+        update = actions.adjust_autopilot_daily_budget(str(ad_group.id), rule, ad_group)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("140"), ad_group.settings.autopilot_daily_budget)
+        self.assertFalse(update.has_changes())
 
     def test_adjust_ad_group_autopilot_budget_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
