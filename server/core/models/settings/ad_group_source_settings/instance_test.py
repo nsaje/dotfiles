@@ -16,7 +16,7 @@ class AdGroupSourceUpdate(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
-        self.ad_group.settings.update(
+        self.ad_group.settings.update_unsafe(
             None, b1_sources_group_enabled=False, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
         self.source_type = magic_mixer.blend(

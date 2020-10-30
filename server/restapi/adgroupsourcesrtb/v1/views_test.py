@@ -166,6 +166,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         settings = ad_group.get_current_settings().copy_settings()
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.b1_sources_group_enabled = False
         settings.local_b1_sources_group_daily_budget = Decimal("100.0")
         settings.save(None)
 
@@ -294,3 +295,40 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         )
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("Maximum CPM on RTB Sources is" in json.loads(r.content)["details"]["cpm"][0])
+
+    def test_adgroups_sources_rtb_disabled_fail(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.b1_sources_group_enabled = False
+        settings.save(None)
+
+        test_rtbs = self.adgroupsourcertb_repr(group_enabled=False)
+        r = self.client.put(
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
+            data=test_rtbs,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertFalse(resp_json["data"]["groupEnabled"])
+
+        test_rtbs["groupEnabled"] = True
+        r = self.client.put(
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
+            data=test_rtbs,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertTrue(resp_json["data"]["groupEnabled"])
+
+        test_rtbs["groupEnabled"] = False
+        r = self.client.put(
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
+            data=test_rtbs,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("deprecated" in json.loads(r.content)["details"]["groupEnabled"][0])

@@ -115,3 +115,7 @@ class B1SourcesBudgetUpdateWhileSourcesGroupDisabled(ValidationError):
 
 class CannotSetBidToUndefined(ValidationError):
     pass
+
+
+class SeparateSourceManagementDeprecated(ValidationError):
+    pass

@@ -127,7 +127,7 @@ class PrepareAdGroupSettingsTestCase(TestCase):
         self.assertEqual(decimal.Decimal("1.2"), ad_group_settings["ad_group_bid"])
 
     def test_ad_group_daily_caps_manual_rtb(self):
-        self.ad_group.settings.update(
+        self.ad_group.settings.update_unsafe(
             None, b1_sources_group_enabled=False, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         )
 

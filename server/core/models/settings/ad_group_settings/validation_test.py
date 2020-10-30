@@ -237,12 +237,18 @@ class ValidationTest(TestCase):
         current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
-        settings = model.AdGroupSettings()
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
+        settings = model.AdGroupSettings(ad_group=ad_group)
         new_settings = model.AdGroupSettings()
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = False
+        settings._validate_all_rtb_state(new_settings)
+
         settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_enabled = True
         settings._validate_all_rtb_state(new_settings)
@@ -254,8 +260,66 @@ class ValidationTest(TestCase):
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         settings._validate_all_rtb_state(new_settings)
 
+        settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = False
+        with self.assertRaises(exceptions.SeparateSourceManagementDeprecated):
+            settings._validate_all_rtb_state(new_settings)
+
+    def test_validate_all_rtb_state_adgroup_inactive_legacy(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False)
+        settings = model.AdGroupSettings(ad_group=ad_group)
+        new_settings = model.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.INACTIVE
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = False
+        settings._validate_all_rtb_state(new_settings)
+
+        settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = True
+        settings._validate_all_rtb_state(new_settings)
+
+        settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+        settings._validate_all_rtb_state(new_settings)
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        settings._validate_all_rtb_state(new_settings)
+
+        settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = False
+        settings._validate_all_rtb_state(new_settings)
+
     def test_validate_all_rtb_state(self):
-        current_settings = model.AdGroupSettings()
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
+        current_settings = model.AdGroupSettings(ad_group=ad_group)
+        new_settings = model.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = False
+        with self.assertRaises(exceptions.SeparateSourceManagementDeprecated):
+            current_settings._validate_all_rtb_state(new_settings)
+
+        current_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = True
+        with self.assertRaises(exceptions.AdGroupNotPaused):
+            current_settings._validate_all_rtb_state(new_settings)
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+        current_settings._validate_all_rtb_state(new_settings)
+
+        current_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = False
+        current_settings._validate_all_rtb_state(new_settings)
+
+    def test_validate_all_rtb_state_legacy(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False)
+        current_settings = model.AdGroupSettings(ad_group=ad_group)
         new_settings = model.AdGroupSettings()
         new_settings.state = constants.AdGroupSettingsState.ACTIVE
 

@@ -177,16 +177,36 @@ class AdGroupSettingsValidatorMixin(object):
 
     def _validate_all_rtb_state(self, new_settings):
         # MVP for all-RTB-sources-as-one
-        # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
-        # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
-        if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
+
+        # TODO: remove after migration
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+            # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
+            # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
+            if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
+                return
+
+            if self.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
+                msg = "To manage Daily Spend Cap for All RTB as one, ad group must be paused first."
+                if not new_settings.b1_sources_group_enabled:
+                    msg = "To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first."
+                raise exceptions.AdGroupNotPaused(msg)
+
             return
 
-        if self.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
-            msg = "To manage Daily Spend Cap for All RTB as one, ad group must be paused first."
-            if not new_settings.b1_sources_group_enabled:
-                msg = "To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first."
-            raise exceptions.AdGroupNotPaused(msg)
+        if self.b1_sources_group_enabled == new_settings.b1_sources_group_enabled:
+            return
+
+        if not new_settings.b1_sources_group_enabled:
+            raise exceptions.SeparateSourceManagementDeprecated(
+                "The option of managing Daily Spend Caps of individual sources is deprecated."
+            )
+
+        # Ensure that AdGroup is paused when enabling All RTB functionality
+        # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
+        if new_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            raise exceptions.AdGroupNotPaused(
+                "To manage Daily Spend Cap for All RTB as one, ad group must be paused first."
+            )
 
     def _validate_bluekai_tageting(self, bluekai_targeting):
         if isinstance(bluekai_targeting, list):

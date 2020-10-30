@@ -35,7 +35,10 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         try:
             ad_group.settings.update(request, write_source_history=False, **settings)
 
-        except core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused,
+            core.models.settings.ad_group_settings.exceptions.SeparateSourceManagementDeprecated,
+        ) as err:
             raise utils.exc.ValidationError(errors={"group_enabled": [str(err)]})
 
         except (
