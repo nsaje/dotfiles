@@ -21,7 +21,7 @@ class CampaignManagerTestCase(BaseTestCase):
         self.request = get_request_mock(user=self.user)
         self.account = self.mix_account(self.request.user, permissions=[Permission.READ, Permission.WRITE])
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     def test_create(self, mock_autopilot):
         campaign = Campaign.objects.create(self.request, self.account, "xyz")
         campaign_settings = campaign.get_current_settings()
@@ -42,7 +42,7 @@ class CampaignManagerTestCase(BaseTestCase):
         with self.assertRaises(exceptions.AccountIsArchived):
             core.models.Campaign.objects.create(request, account, "test")
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
     def test_clone(self, mock_today, mock_autopilot):
         campaign = magic_mixer.blend(
@@ -106,7 +106,7 @@ class CampaignManagerTestCase(BaseTestCase):
         self.assertEqual(5, cloned_campaign.directdealconnection_set.filter(deal=direct_deal).count())
         self.assertEqual(5, cloned_campaign.directdealconnection_set.count())
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
     def test_clone_without_budget(self, mock_today, mock_autopilot):
         campaign = magic_mixer.blend(

@@ -5,7 +5,6 @@ import mock
 from django.test import TestCase
 
 import core.features.multicurrency
-from automation.autopilot import helpers as autopilot_helpers
 from core.features import bid_modifiers
 from core.features.multicurrency.service.update import _recalculate_ad_group_amounts
 from core.models.settings.ad_group_source_settings import exceptions as ags_exceptions
@@ -871,7 +870,7 @@ class WorkflowTestCase(TestCase):
 
         self.request = magic_mixer.blend_request_user()
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_and_update_ad_group(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(self.request, self.campaign)
 
@@ -909,7 +908,7 @@ class WorkflowTestCase(TestCase):
         )
 
     @mock.patch("core.models.settings.ad_group_settings.helpers._replace_with_b1_sources_group_bid_if_needed")
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_and_update_ad_group_no_change_on_source(self, mock_autopilot, mock_replace):
         mock_replace.return_value = decimal.Decimal("0.15")
 
@@ -948,7 +947,7 @@ class WorkflowTestCase(TestCase):
             )
         )
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_with_initial_bid(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(
             self.request,
@@ -969,7 +968,7 @@ class WorkflowTestCase(TestCase):
             ).exists()
         )
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_with_initial_bid_over_source_max(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(
             self.request,
@@ -990,7 +989,7 @@ class WorkflowTestCase(TestCase):
             ).exists()
         )
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_with_initial_max_autopilot_bid(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(
             self.request,
@@ -1012,7 +1011,7 @@ class WorkflowTestCase(TestCase):
             ).exists()
         )
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_with_initial_max_autopilot_bid_no_autopilot(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(
             self.request,
@@ -1034,7 +1033,7 @@ class WorkflowTestCase(TestCase):
             ).exists()
         )
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_reset_source_bid_modifier(self, mock_autopilot):
         self.ad_group = models.AdGroup.objects.create(self.request, self.campaign)
 
@@ -1349,7 +1348,7 @@ class MirrorOldAndNewBidValuesTestCase(TestCase):
         self._assert_bid_values(bid_values)
 
 
-@mock.patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
+@mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
 @mock.patch.object(core.features.multicurrency, "get_current_exchange_rate")
 class MirrorOldBidValuesOnCreateTest(TestCase):
     def setUp(self):
@@ -1520,39 +1519,6 @@ class AllRTBUpdateTestCase(TestCase):
             ).modifier,
             bid_modifier_value,
             places=8,
-        )
-
-    def test_autopilot_b1_sources_group_update(self):
-        ad_group_settings = self._initial_ad_group_settings()
-        ad_group_settings.update({"autopilot_state": constants.AdGroupSettingsAutopilotState.ACTIVE_CPC})
-        ad_group_source_settings = self._initial_ad_group_source_settings()
-        self._setup_ad_group_and_sources(ad_group_settings, ad_group_source_settings, ad_group_source_settings)
-
-        autopilot_helpers.update_ad_group_b1_sources_group_values(self.ad_group, {"cpc_cc": decimal.Decimal("0.4000")})
-
-        self.ad_group.refresh_from_db()
-        self.ad_group_source_1.refresh_from_db()
-        self.ad_group_source_2.refresh_from_db()
-
-        self._assert_ad_group_state(
-            {
-                "cpc": decimal.Decimal("20.0000"),
-                "local_cpc": decimal.Decimal("17.9360"),
-                "b1_sources_group_cpc_cc": decimal.Decimal("0.4000"),
-                "local_b1_sources_group_cpc_cc": decimal.Decimal("0.3587"),
-            }
-        )
-
-        self._assert_ad_group_source_state(
-            self.ad_group_source_1,
-            {"cpc_cc": decimal.Decimal("0.2230"), "local_cpc_cc": decimal.Decimal("0.2000")},
-            float(decimal.Decimal("0.2230") / decimal.Decimal("20.0000")),
-        )
-
-        self._assert_ad_group_source_state(
-            self.ad_group_source_2,
-            {"cpc_cc": decimal.Decimal("0.4000"), "local_cpc_cc": decimal.Decimal("0.3587")},
-            float(decimal.Decimal("0.4000") / decimal.Decimal("20.0000")),
         )
 
     def test_manual_b1_sources_group_update(self):
@@ -1991,7 +1957,7 @@ class MaxAutopilotBidTestCase(TestCase):
 
         self.request = magic_mixer.blend_request_user()
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_full_autopilot_cpc(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPC)
 
@@ -2008,7 +1974,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_bid_autopilot_cpc(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPC)
         self.ad_group.settings.update(
@@ -2025,7 +1991,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_disable_autopilot_increase_cpc(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPC)
         self.ad_group.settings.update(
@@ -2044,7 +2010,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("20.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("20.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_increase_max_autopilot_bid_cpc_bid_modifier_resets(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPC)
         self.ad_group.settings.update(
@@ -2080,7 +2046,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("15.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("15.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_max_autopilot_bid_to_unlimited(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPC)
         self.ad_group.settings.update(
@@ -2113,7 +2079,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("10.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_disable_autopilot_cpm(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
@@ -2126,7 +2092,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("20.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("20.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_full_autopilot_cpm(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
@@ -2142,7 +2108,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_bid_autopilot_cpm(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
@@ -2159,7 +2125,7 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_increase_max_autopilot_bid_reset_bid_modifier(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(

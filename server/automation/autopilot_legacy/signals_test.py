@@ -39,13 +39,13 @@ class NotifyBudgetsTest(TestCase):
         signals.connect_notify_budgets()
         self.addCleanup(signals.disconnect_notify_budgets)
 
-    @patch("automation.autopilot.service.service.recalculate_ad_group_budgets")
+    @patch("automation.autopilot_legacy.service.recalculate_budgets_campaign")
     def test_recalculate_budget_change(self, mock_recalculate):
         self.budget.amount = self.budget.amount + 1
         self.budget.save()
         mock_recalculate.assert_called_with(self.budget.campaign)
 
-    @patch("automation.autopilot.service.service.recalculate_ad_group_budgets")
+    @patch("automation.autopilot_legacy.service.recalculate_budgets_campaign")
     def test_recalculate_budget_create(self, mock_recalculate):
         budget = core.features.bcm.BudgetLineItem(
             campaign=self.campaign,
@@ -58,7 +58,7 @@ class NotifyBudgetsTest(TestCase):
         budget.save()
         mock_recalculate.assert_called_with(self.budget.campaign)
 
-    @patch("automation.autopilot.service.service.recalculate_ad_group_budgets")
+    @patch("automation.autopilot_legacy.service.recalculate_budgets_campaign")
     def test_recalculate_budget_change_no_autopilot(self, mock_recalculate):
         self.campaign.settings.update_unsafe(None, autopilot=False)
         self.budget.amount = self.budget.amount + 1

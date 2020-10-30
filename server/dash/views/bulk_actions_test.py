@@ -36,9 +36,74 @@ class AdGroupSourceStateTestCase(DASHAPITestCase):
 
     @patch("dash.legacy.get_updated_ad_group_sources_changes")
     @patch("dash.views.bulk_actions.AdGroupSourceState._check_can_set_state")
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     @patch("utils.k1_helper.update_ad_group")
     def test_post(self, mock_k1_ping, mock_autopilot, mock_check, mock_table_update):
+        ad_group_id = 1
+        source_id = 1
+        maintenance_source_id = 6
+
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group.campaign.account.agency.uses_realtime_autopilot = True
+        ad_group.campaign.account.agency.save(None)
+
+        settings = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings().copy_settings()
+        settings.retargeting_ad_groups = False
+        settings.exclusion_retargeting_ad_groups = False
+        settings.audience_targeting = False
+        settings.exclusion_audience_targeting = False
+        settings.save(None)
+
+        data = {
+            "state": constants.AdGroupSourceSettingsState.ACTIVE,
+            "selected_ids": [source_id, maintenance_source_id],
+        }
+
+        mock_table_update.return_value = {"rows": {"1": {"bid_cpc": 3}, "2": {"bid_cpc": 4}}}
+
+        response = self._post_source_state(ad_group_id, data)
+
+        self.maxDiff = None
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "success": True,
+                "data": {
+                    "rows": [
+                        {
+                            "breakdownId": "1",
+                            "stats": {
+                                "state": {
+                                    "editMessage": "This source must be managed manually.",
+                                    "isEditable": False,
+                                    "value": 1,
+                                },
+                                "status": {"value": 1},
+                                "bid_cpc": {"value": 3},
+                            },
+                        },
+                        {"breakdownId": "2", "stats": {"bid_cpc": {"value": 4}}},
+                    ]
+                },
+            },
+        )
+
+        agss = models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id).get_current_settings()
+        self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, agss.state)
+
+        adg = models.AdGroup.objects.get(pk=ad_group_id)
+        mock_autopilot.assert_not_called()
+        self.assertEqual(1, mock_check.call_count)
+        self.assertEqual(1, mock_table_update.call_count)
+
+        mock_k1_ping.assert_called_once_with(adg, msg="AdGroupSourceState.post")
+
+    @patch("dash.legacy.get_updated_ad_group_sources_changes")
+    @patch("dash.views.bulk_actions.AdGroupSourceState._check_can_set_state")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("utils.k1_helper.update_ad_group")
+    def test_post_legacy(self, mock_k1_ping, mock_autopilot, mock_check, mock_table_update):
         ad_group_id = 1
         source_id = 1
         maintenance_source_id = 6
@@ -860,7 +925,7 @@ class CampaignAdGroupStateTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")
     @patch("dash.views.helpers.validate_ad_groups_state")
     def test_enable(self, mock_validate_state, mock_has_budget, mock_autopilot):

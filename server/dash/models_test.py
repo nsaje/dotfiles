@@ -783,7 +783,7 @@ class CampaignTestCase(TestCase):
         self.assertEqual(settings.target_devices, ["mobile"])
         self.assertEqual(settings.target_regions, ["US"])
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     def test_get_current_settings_no_existing_settings(self, mock_autopilot):
         campaign = models.Campaign.objects.create(
             test_helper.fake_request(self.user), models.Account.objects.get(pk=1), ""
@@ -1223,7 +1223,7 @@ class HistoryTest(TestCase):
         hist = models.History.objects.all().order_by("-created_dt").first()
         self.assertIn("Created settings", hist.changes_text)
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_create_campaign(self, mock_autopilot):
         req = test_helper.fake_request(self.u)
         account = models.Account.objects.all().get(pk=1)

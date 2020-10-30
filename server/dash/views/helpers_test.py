@@ -473,7 +473,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(result, {"enabled": True, "message": None})
 
     def test_get_editable_fields_bid_cpc_disabled(self):
@@ -489,7 +502,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result,
             {
@@ -511,7 +537,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the ad group is on Autopilot."}
         )
@@ -529,7 +568,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the ad group is on Autopilot."}
         )
@@ -547,7 +599,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result,
             {
@@ -569,7 +634,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpc(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the campaign is on Autopilot."}
         )
@@ -585,7 +663,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpm(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(result, {"enabled": True, "message": None})
 
     def test_get_editable_fields_bid_cpm_adgroup_cpm_autopilot(self):
@@ -601,7 +692,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpm(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the ad group is on Autopilot."}
         )
@@ -619,7 +723,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpm(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the ad group is on Autopilot."}
         )
@@ -636,7 +753,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpm(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result,
             {
@@ -658,7 +788,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_bid_cpm(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the campaign is on Autopilot."}
         )
@@ -678,7 +821,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_daily_budget(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(result, {"enabled": True, "message": None})
 
     def test_get_editable_fields_daily_budget_disabled(self):
@@ -694,7 +850,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_daily_budget(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result,
             {
@@ -716,7 +885,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_daily_budget(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result, {"enabled": False, "message": "This value cannot be edited because the ad group is on Autopilot."}
         )
@@ -736,7 +918,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
 
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
+
+        result = helpers._get_editable_fields_daily_budget(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
         self.assertEqual(
             result,
             {
@@ -754,6 +949,20 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         campaign_settings.update_unsafe(None, autopilot=True)
 
         ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(
+            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
+        self.assertEqual(
+            result,
+            {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            },
+        )
+
+        ad_group_source.ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group_source.ad_group.campaign.account.agency.save(None)
 
         result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings

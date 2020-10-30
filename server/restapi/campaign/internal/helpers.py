@@ -34,9 +34,7 @@ def get_extra_data(user, campaign):
     extra["budgets_overview"] = get_budgets_overview(user, campaign, budget_items, credit_items)
     extra["budgets_depleted"] = get_depleted_budgets(budget_items)
     extra["credits"] = credit_items
-    extra["agency_uses_realtime_autopilot"] = (
-        campaign.account.agency.uses_realtime_autopilot if campaign.account.agency else False
-    )
+    extra["agency_uses_realtime_autopilot"] = campaign.account.agency_uses_realtime_autopilot()
 
     return extra
 

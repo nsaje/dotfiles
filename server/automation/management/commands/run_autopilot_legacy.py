@@ -1,4 +1,4 @@
-import automation.autopilot
+import automation.autopilot_legacy
 import utils.slack
 from utils import metrics_compat
 from utils import zlogging
@@ -10,6 +10,7 @@ ALERT_MSG = """Autopilot terminated with an exception today ({}). PagerDuty aler
 
 
 class Command(Z1Command):
+    # TODO: RTAP: LEGACY
     help = "Autopilot rearranges daily spend caps and bid CPCs of all active media sources in participating ad groups."
 
     def add_arguments(self, parser):
@@ -24,13 +25,15 @@ class Command(Z1Command):
             "landing mode to overspend. Only to be used manually in rare events.",
         )
 
-    @metrics_compat.timer("automation.autopilot_plus.run_autopilot_job")
+    @metrics_compat.timer("automation.autopilot_plus_legacy.run_autopilot_job")
     def handle(self, *args, **options):
         logger.info("Running Ad Group Autopilot.")
         dry_run = options.get("dry_run", False)
         daily_run = options.get("daily_run", False)
         try:
-            automation.autopilot.run_autopilot(update_metrics=not dry_run, dry_run=dry_run, daily_run=daily_run)
+            automation.autopilot_legacy.run_autopilot(
+                report_to_influx=not dry_run, dry_run=dry_run, daily_run=daily_run
+            )
         except Exception as exc:
             if not dry_run:
                 utils.slack.publish(

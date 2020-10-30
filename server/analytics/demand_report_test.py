@@ -266,7 +266,7 @@ class DemandReportTestCase(test.TestCase):
     def setUp(self):
         self._create_entities()
 
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def _create_entities(self, mock_autopilot):
         self.user = magic_mixer.blend(zemauth.models.User)
         self.mock_request = mock.MagicMock()
@@ -666,7 +666,7 @@ class DemandReportTestCase(test.TestCase):
     @mock.patch("redshiftapi.db.get_stats_cursor")
     def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_stats):
 
-        with mock.patch("automation.autopilot.recalculate_budgets_ad_group"):
+        with mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group"):
             self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
             self.ad_group_2_3.settings.update(
                 None,

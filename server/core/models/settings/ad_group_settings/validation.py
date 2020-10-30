@@ -135,7 +135,11 @@ class AdGroupSettingsValidatorMixin(object):
             raise exceptions.CannotChangeAdGroupState(str(err))
 
     def _validate_autopilot_settings(self, new_settings):
-        from automation import autopilot
+        from automation import autopilot_legacy
+
+        # TODO: RTAP: LEGACY
+        if self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+            return
 
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             if not new_settings.b1_sources_group_enabled:
@@ -162,7 +166,8 @@ class AdGroupSettingsValidatorMixin(object):
             new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
             and self.autopilot_daily_budget != new_settings.autopilot_daily_budget
         ):
-            min_autopilot_daily_budget = autopilot.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
+            min_autopilot_daily_budget = autopilot_legacy.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
+
             if new_settings.autopilot_daily_budget < min_autopilot_daily_budget:
                 msg = "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot " "requires {symbol}{min_per_source:.2f} or more per active media source."
                 exchange_rate = self._get_exchange_rate()
@@ -170,7 +175,7 @@ class AdGroupSettingsValidatorMixin(object):
                     msg.format(
                         symbol=self._get_currency_symbol(),
                         min_budget=min_autopilot_daily_budget * exchange_rate,
-                        min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+                        min_per_source=autopilot_legacy.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
                         * exchange_rate,
                     )
                 )

@@ -604,7 +604,8 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                     campaign_settings,
                     allowed_sources,
                 ),
-                "enabling_autopilot_sources_allowed": helpers.enabling_autopilot_single_source_allowed(ad_group),
+                "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot()
+                or helpers.enabling_autopilot_single_source_allowed(ad_group),
             }
         )
 

@@ -12,6 +12,7 @@ import dash.models
 import etl.refresh
 import redshiftapi.db
 from automation import autopilot
+from automation import autopilot_legacy
 from utils import zlogging
 
 logger = zlogging.getLogger("stats.monitor")
@@ -85,9 +86,20 @@ def audit_autopilot_ad_groups():
         .filter(created_dt__lt=datetime.datetime.combine(date, datetime.time.min))
         .values_list("id", flat=True)
     )
-    return dash.models.AdGroup.objects.filter(id__in=ad_groups_ap_running - ad_groups_ids_in_logs)
+
+    # TODO: RTAP: LEGACY
+    ad_groups_ap_running_legacy = set(
+        autopilot_legacy.helpers.get_active_ad_groups_on_autopilot()
+        .filter(created_dt__lt=datetime.datetime.combine(date, datetime.time.min))
+        .values_list("id", flat=True)
+    )
+
+    return dash.models.AdGroup.objects.filter(
+        id__in=set((ad_groups_ap_running | ad_groups_ap_running_legacy) - ad_groups_ids_in_logs)
+    )
 
 
+# TODO: RTAP: LEGACY: remove after all migrated (can we do it now already?)
 def audit_autopilot_cpc_changes(date=None, min_changes=25):
     """
     When Autopilot modifies the daily cap, all modifications should not be all positive or all negative, it should
@@ -121,6 +133,7 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
     return alarms
 
 
+# TODO: RTAP: LEGACY: remove after all migrated (can we do it now already?)
 def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
     """
     Autopilot is modifying the daily cap of each source, by taking some money from the sources performing bad

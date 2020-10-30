@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 
 import core.features.bcm
 
-from .service import service
+from . import service
 
 
 def connect_notify_budgets():
@@ -15,4 +15,4 @@ def disconnect_notify_budgets():
 
 def _handle_budget_line_item_change(sender, instance, **kwargs):
     if instance.campaign.settings.autopilot:
-        service.recalculate_ad_group_budgets(instance.campaign)
+        service.recalculate_budgets_campaign(instance.campaign)

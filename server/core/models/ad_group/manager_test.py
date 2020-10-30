@@ -18,7 +18,7 @@ from . import exceptions
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
-@patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
+@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
 @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class AdGroupCreate(TestCase):
     def setUp(self):
@@ -26,6 +26,7 @@ class AdGroupCreate(TestCase):
         self.campaign = magic_mixer.blend(core.models.Campaign)
 
     def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+        self.campaign.settings.update_unsafe(None, autopilot=True)
         self.assertEqual(0, core.models.settings.AdGroupSettings.objects.all().count())
 
         ad_group = core.models.AdGroup.objects.create(self.request, self.campaign)
@@ -118,7 +119,7 @@ class AdGroupCreate(TestCase):
 @patch("core.models.AdGroupSource.objects.bulk_clone_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
-@patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
+@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
 class AdGroupClone(TestCase):
     def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
@@ -130,6 +131,7 @@ class AdGroupClone(TestCase):
 
         agency = magic_mixer.blend(core.models.Agency)
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.MOBILE)
+        campaign.settings.update_unsafe(None, autopilot=True)
         direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1, agency=agency)
 
         magic_mixer.cycle(5).blend(core.features.deals.DirectDealConnection, deal=direct_deal, adgroup=source_ad_group)
@@ -179,6 +181,7 @@ class AdGroupClone(TestCase):
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
 
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.VIDEO)
+        campaign.settings.update_unsafe(None, autopilot=True)
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
         self.assertNotEqual(ad_group.pk, source_ad_group.pk)
@@ -211,6 +214,7 @@ class AdGroupClone(TestCase):
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
 
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+        campaign.settings.update_unsafe(None, autopilot=True)
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
         self.assertNotEqual(ad_group.pk, source_ad_group.pk)

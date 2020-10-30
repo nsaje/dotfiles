@@ -3,155 +3,15 @@ from decimal import Decimal
 from dash.constants import BiddingType
 from dash.constants import CampaignGoalKPI
 
-from .constants import BidChangeComment
-
 # Autopilot General Settings
 SYNC_IS_RECENT_HOURS = 2
 AUTOMATION_AI_NAME = "Zemanta Autopilot"
 AUTOPILOT_EMAIL = "help@zemanta.com"
 AUTOPILOT_EMAIL_FOR_COPIES = "autopilot@zemanta.com"
 
-
-# CPC Autopilot Settings
-AUTOPILOT_CPC_CHANGE_TABLE = (
-    {"underspend_upper_limit": -1, "underspend_lower_limit": -0.8, "bid_proc_increase": Decimal("1.0")},
-    {"underspend_upper_limit": -0.8, "underspend_lower_limit": -0.6, "bid_proc_increase": Decimal("0.5")},
-    {"underspend_upper_limit": -0.6, "underspend_lower_limit": -0.4, "bid_proc_increase": Decimal("0.25")},
-    {"underspend_upper_limit": -0.4, "underspend_lower_limit": -0.2, "bid_proc_increase": Decimal("0.1")},
-    {"underspend_upper_limit": -0.2, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.05")},
-    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("0.02")},
-    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("0.01")},
-    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 10000.00, "bid_proc_increase": Decimal("-0.05")},
-)
-
-AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE = (
-    {"performance_upper_limit": 1.0, "performance_lower_limit": 0.75, "performance_factor": Decimal("1.0")},
-    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.99")},
-    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.975")},
-    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.96")},
-    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.95")},
-)
-
-AUTOPILOT_MIN_CPC = Decimal("0.005")
-AUTOPILOT_MAX_CPC = Decimal("20.0")
-AUTOPILOT_MIN_REDUCING_CPC_CHANGE = Decimal("0.001")
-AUTOPILOT_MAX_REDUCING_CPC_CHANGE = Decimal("0.4")
-AUTOPILOT_MIN_INCREASING_CPC_CHANGE = Decimal("0.001")
-AUTOPILOT_MAX_INCREASING_CPC_CHANGE = Decimal("0.5")
-AUTOPILOT_MAX_ALLOWED_CPC_SPENDING = AUTOPILOT_CPC_CHANGE_TABLE[-1]["underspend_lower_limit"]
-AUTOPILOT_CPC_NO_SPEND_CHANGE = Decimal("0.3")
-AUTOPILOT_CPC_NO_SPEND_THRESHOLD = Decimal("0.01")
-
-
-# CPM Autopilot Settings
-AUTOPILOT_CPM_CHANGE_TABLE = (
-    {"underspend_upper_limit": -1, "underspend_lower_limit": -0.8, "bid_proc_increase": Decimal("1.0")},
-    {"underspend_upper_limit": -0.8, "underspend_lower_limit": -0.6, "bid_proc_increase": Decimal("0.5")},
-    {"underspend_upper_limit": -0.6, "underspend_lower_limit": -0.4, "bid_proc_increase": Decimal("0.25")},
-    {"underspend_upper_limit": -0.4, "underspend_lower_limit": -0.2, "bid_proc_increase": Decimal("0.1")},
-    {"underspend_upper_limit": -0.2, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.05")},
-    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("0.02")},
-    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("0.01")},
-    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 10000.00, "bid_proc_increase": Decimal("-0.05")},
-)
-
-AUTOPILOT_CPM_CHANGE_PERFORMANCE_FACTOR_TABLE = (
-    {"performance_upper_limit": 1.0, "performance_lower_limit": 0.75, "performance_factor": Decimal("1.0")},
-    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.99")},
-    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.975")},
-    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.96")},
-    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.95")},
-)
-
-AUTOPILOT_MIN_CPM = Decimal("0.01")
-AUTOPILOT_MAX_CPM = Decimal("25.0")
-AUTOPILOT_MIN_REDUCING_CPM_CHANGE = Decimal("0.001")
-AUTOPILOT_MAX_REDUCING_CPM_CHANGE = Decimal("0.5")
-AUTOPILOT_MIN_INCREASING_CPM_CHANGE = Decimal("0.001")
-AUTOPILOT_MAX_INCREASING_CPM_CHANGE = Decimal("0.5")
-AUTOPILOT_MAX_ALLOWED_CPM_SPENDING = AUTOPILOT_CPM_CHANGE_TABLE[-1]["underspend_lower_limit"]
-AUTOPILOT_CPM_NO_SPEND_CHANGE = Decimal("0.3")
-AUTOPILOT_CPM_NO_SPEND_THRESHOLD = Decimal("0.01")
-
-
-# CPC/CPM Autopilot Settings
-AUTOPILOT_BID_MAX_DEC_PLACES = 3
-BID_CHANGE_ALLOWED_COMMENTS = [
-    BidChangeComment.CURRENT_BID_TOO_HIGH,
-    BidChangeComment.CURRENT_BID_TOO_LOW,
-    BidChangeComment.OVER_SOURCE_MAX_BID,
-    BidChangeComment.UNDER_SOURCE_MIN_BID,
-    BidChangeComment.OVER_AD_GROUP_MAX_BID,
-    BidChangeComment.OVER_AUTOPILOT_MAX_BID,
-    BidChangeComment.UNDER_AUTOPILOT_MIN_BID,
-    BidChangeComment.CURRENT_BID_TOO_HIGH,
-    BidChangeComment.CURRENT_BID_TOO_LOW,
-    BidChangeComment.OVER_ACCOUNT_SOURCE_MIN_BID,
-    BidChangeComment.UNDER_ACCOUNT_SOURCE_MIN_BID,
-    BidChangeComment.OVER_AD_GROUP_SOURCE_MIN_BID,
-    BidChangeComment.UNDER_AD_GROUP_SOURCE_MIN_BID,
-    BidChangeComment.BID_CONSTRAINT_APPLIED,
-    BidChangeComment.UNDER_GOAL_BID,
-    BidChangeComment.OVER_AD_GROUP_MAX_AUTOPILOT_BID,
-]
-
-
-def get_autopilot_bid_change_table(bidding_type):
-    return AUTOPILOT_CPM_CHANGE_TABLE if bidding_type == BiddingType.CPM else AUTOPILOT_CPC_CHANGE_TABLE
-
-
-def get_autopilot_bid_change_performance_factor_table(bidding_type):
-    return (
-        AUTOPILOT_CPM_CHANGE_PERFORMANCE_FACTOR_TABLE
-        if bidding_type == BiddingType.CPM
-        else AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE
-    )
-
-
-def get_autopilot_min_bid(bidding_type):
-    return AUTOPILOT_MIN_CPM if bidding_type == BiddingType.CPM else AUTOPILOT_MIN_CPC
-
-
-def get_autopilot_max_bid(bidding_type):
-    return AUTOPILOT_MAX_CPM if bidding_type == BiddingType.CPM else AUTOPILOT_MAX_CPC
-
-
-def get_autopilot_min_reducing_bid_change(bidding_type):
-    return AUTOPILOT_MIN_REDUCING_CPM_CHANGE if bidding_type == BiddingType.CPM else AUTOPILOT_MIN_REDUCING_CPC_CHANGE
-
-
-def get_autopilot_max_reducing_bid_change(bidding_type):
-    return AUTOPILOT_MAX_REDUCING_CPM_CHANGE if bidding_type == BiddingType.CPM else AUTOPILOT_MAX_REDUCING_CPC_CHANGE
-
-
-def get_autopilot_min_increasing_bid_change(bidding_type):
-    return (
-        AUTOPILOT_MIN_INCREASING_CPM_CHANGE if bidding_type == BiddingType.CPM else AUTOPILOT_MIN_INCREASING_CPC_CHANGE
-    )
-
-
-def get_autopilot_max_increasing_bid_change(bidding_type):
-    return (
-        AUTOPILOT_MAX_INCREASING_CPM_CHANGE if bidding_type == BiddingType.CPM else AUTOPILOT_MAX_INCREASING_CPC_CHANGE
-    )
-
-
-def get_autopilot_max_allowed_bid_spending(bidding_type):
-    return AUTOPILOT_MAX_ALLOWED_CPM_SPENDING if bidding_type == BiddingType.CPM else AUTOPILOT_MAX_ALLOWED_CPC_SPENDING
-
-
-def get_autopilot_bid_no_spend_change(bidding_type):
-    return AUTOPILOT_CPM_NO_SPEND_CHANGE if bidding_type == BiddingType.CPM else AUTOPILOT_CPC_NO_SPEND_CHANGE
-
-
-def get_autopilot_bid_no_spend_threshold(bidding_type):
-    return AUTOPILOT_CPM_NO_SPEND_THRESHOLD if bidding_type == BiddingType.CPM else AUTOPILOT_CPC_NO_SPEND_THRESHOLD
-
-
 # Budget Autopilot Settings
-MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.7)
-BUDGET_AP_MIN_SOURCE_BUDGET = Decimal(5.0)
+BUDGET_AP_MIN_BUDGET = Decimal(5.0)
 GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {"col": "bounce_rate", "importance": 0.7, "spend_perc": Decimal(0.3)},
     CampaignGoalKPI.TIME_ON_SITE: {"col": "avg_tos", "importance": 0.7, "spend_perc": Decimal(0.3)},
@@ -209,5 +69,4 @@ LOW_SPEND_PROB_LOWERING_FACTOR = 0.25
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
 AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS = 14
 AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)
-BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC = Decimal(10)
 BID_GOAL_THRESHOLD = Decimal("0.8")

@@ -34,7 +34,7 @@ class ValidateTestCase(TestCase):
 
 class ExpandTestCase(TestCase):
     def setUp(self):
-        patcher = patch("automation.autopilot.recalculate_budgets_ad_group")
+        patcher = patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
         patcher.start()
         self.addCleanup(patcher.stop)
 

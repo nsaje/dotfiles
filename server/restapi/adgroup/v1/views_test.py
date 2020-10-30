@@ -14,7 +14,7 @@ import dash.models
 import restapi.serializers
 import restapi.serializers.targeting
 import utils.test_helper
-from automation import autopilot
+from automation import autopilot_legacy as autopilot  # TODO: RTAP: LEGACY
 from dash import constants
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer

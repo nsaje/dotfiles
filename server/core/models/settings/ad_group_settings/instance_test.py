@@ -18,7 +18,8 @@ from . import model
 
 class InstanceTest(TestCase):
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=False)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
 
     def test_update(self):
         initial = {"cpc": Decimal("0.4"), "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE}
@@ -328,41 +329,64 @@ class InstanceTest(TestCase):
         model.AdGroupSettings.objects.create_default(self.ad_group, "test-name")
         mock_save.assert_any_call(update_fields=None)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_enable(self, mock_autopilot):
+        self.agency.uses_realtime_autopilot = True
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=False)
+        self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+        mock_autopilot.assert_not_called()
+
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    def test_recalculate_autopilot_enable_legacy(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_change_budget(self, mock_autopilot):
+        self.agency.uses_realtime_autopilot = True
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
+
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=False)
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
+        mock_autopilot.assert_not_called()
+
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    def test_recalculate_autopilot_change_budget_legacy(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_change_allrtb_state(self, mock_autopilot):
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_campaign_change_allrtb_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_skip_automation(self, mock_autopilot):
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"), skip_automation=True)
         mock_autopilot.assert_not_called()
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_cpc_change_changes_source_cpcs(self, mock_get_exchange_rate, mock_autopilot):
         # setup
@@ -403,7 +427,7 @@ class InstanceTest(TestCase):
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.4"))
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_max_cpm_change_changes_source_cpms(self, mock_get_exchange_rate, mock_autopilot):
         # setup
@@ -475,14 +499,14 @@ class InstanceTest(TestCase):
         ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.5"))
         mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_change_forbidden_fields(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         with self.assertRaises(utils.exc.ForbiddenError):
             self.ad_group.settings.update(None, autopilot_state=False, autopilot_daily_budget=Decimal("10.0"))
 
 
-@patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
+@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
 class DefaultBidsTest(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()

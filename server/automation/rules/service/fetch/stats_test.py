@@ -781,7 +781,7 @@ class FormatTest(TestCase):
         )
 
 
-@mock.patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
+@mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
 class AddMissingTargetsTest(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)

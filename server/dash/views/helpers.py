@@ -9,6 +9,7 @@ from django.db.models import Q
 
 import automation
 import automation.autopilot
+import automation.autopilot_legacy
 from dash import constants
 from dash import models
 from dash.dashapi import data_helper
@@ -415,6 +416,14 @@ def get_editable_fields(
 
 
 def _get_editable_fields_bid_modifier(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    # TODO: RTAP: LEGACY: in transitional period modifiers won't be editable when on autopilot;
+    # then we will reset all to 1.0 and enable editing
+    if campaign_settings.autopilot and ad_group.campaign.account.agency_uses_realtime_autopilot():
+        return {
+            "enabled": False,
+            "message": "This media source doesn't support setting this value through the dashboard.",
+        }
+
     message = None
 
     if (
@@ -429,6 +438,13 @@ def _get_editable_fields_bid_modifier(ad_group, ad_group_source, ad_group_settin
 
 
 def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    # TODO: RTAP: LEGACY
+    if ad_group.campaign.account.agency_uses_realtime_autopilot():
+        return {
+            "enabled": False,
+            "message": "This media source doesn't support setting this value through the dashboard.",
+        }
+
     message = None
 
     if (
@@ -444,6 +460,13 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
 
 
 def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    # TODO: RTAP: LEGACY
+    if ad_group.campaign.account.agency_uses_realtime_autopilot():
+        return {
+            "enabled": False,
+            "message": "This media source doesn't support setting this value through the dashboard.",
+        }
+
     message = None
 
     if (
@@ -458,6 +481,13 @@ def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, c
 
 
 def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    # TODO: RTAP: LEGACY
+    if ad_group.campaign.account.agency_uses_realtime_autopilot():
+        return {
+            "enabled": False,
+            "message": "This media source doesn't support setting this value through the dashboard.",
+        }
+
     message = None
 
     if (
@@ -566,6 +596,7 @@ def _get_bid_value_daily_budget_disabled_message(ad_group, ad_group_source, ad_g
     return "This media source doesn't support setting this value through the dashboard."
 
 
+# TODO: RTAP: LEGACY
 def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):
     if not ad_group.settings.b1_sources_group_enabled:
         num_sources = len(ad_group_sources)
@@ -575,10 +606,12 @@ def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):
     return _enabling_autopilot_sources_allowed(ad_group, num_sources)
 
 
+# TODO: RTAP: LEGACY
 def enabling_autopilot_single_source_allowed(ad_group):
     return _enabling_autopilot_sources_allowed(ad_group, 1)
 
 
+# TODO: RTAP: LEGACY
 def _enabling_autopilot_sources_allowed(ad_group, number_of_sources_to_enable):
     if ad_group.campaign.settings.autopilot:
         return True
@@ -586,11 +619,12 @@ def _enabling_autopilot_sources_allowed(ad_group, number_of_sources_to_enable):
         return True
 
     required_budget = (
-        number_of_sources_to_enable * automation.autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+        number_of_sources_to_enable
+        * automation.autopilot_legacy.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     )
     return (
         ad_group.settings.autopilot_daily_budget - required_budget
-        >= automation.autopilot.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
+        >= automation.autopilot_legacy.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
     )
 
 

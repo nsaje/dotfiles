@@ -30,7 +30,7 @@ logger = zlogging.getLogger(__name__)
 SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (hack_constants.AGENCY_RCS_ID, hack_constants.AGENCY_ZMS_VIDEO_ID)
 
 
-@metrics_compat.timer("automation.autopilot_plus.run_autopilot")
+@metrics_compat.timer("automation.autopilot_plus_legacy.run_autopilot")
 def run_autopilot(
     ad_group=None,
     campaign=None,
@@ -502,7 +502,7 @@ def _report_autopilot_exception(element, e):
     desc = {"element": ""}  # repr(element)
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
-        incident_key="automation_autopilot_error",
+        incident_key="automation_autopilot_legacy_error",
         description="Autopilot failed operating on element because an exception was raised: {}".format(
             traceback.format_exc()
         ),
@@ -551,33 +551,42 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
                     num_on_bid_ap += 1
                     yesterday_spend_on_bid_ap += yesterday_spend
 
-    metrics_compat.gauge("automation.autopilot_plus.adgroups_on", num_on_budget_ap, autopilot="budget_autopilot")
-    metrics_compat.gauge("automation.autopilot_plus.adgroups_on", num_on_bid_ap, autopilot="bid_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus_legacy.adgroups_on", num_on_budget_ap, autopilot="budget_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus_legacy.adgroups_on", num_on_bid_ap, autopilot="bid_autopilot")
     metrics_compat.gauge(
-        "automation.autopilot_plus.adgroups_on", num_ad_groups_on_campaign_ap, autopilot="campaign_autopilot"
+        "automation.autopilot_plus_legacy.adgroups_on", num_ad_groups_on_campaign_ap, autopilot="campaign_autopilot"
     )
     metrics_compat.gauge(
-        "automation.autopilot_plus.campaigns_on", num_campaigns_on_campaign_ap, autopilot="campaign_autopilot"
-    )
-
-    metrics_compat.gauge(
-        "automation.autopilot_plus.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="expected"
-    )
-    metrics_compat.gauge(
-        "automation.autopilot_plus.spend", total_budget_on_campaign_ap, autopilot="campaign_autopilot", type="expected"
+        "automation.autopilot_plus_legacy.campaigns_on", num_campaigns_on_campaign_ap, autopilot="campaign_autopilot"
     )
 
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend",
+        "automation.autopilot_plus_legacy.spend",
+        total_budget_on_budget_ap,
+        autopilot="budget_autopilot",
+        type="expected",
+    )
+    metrics_compat.gauge(
+        "automation.autopilot_plus_legacy.spend",
+        total_budget_on_campaign_ap,
+        autopilot="campaign_autopilot",
+        type="expected",
+    )
+
+    metrics_compat.gauge(
+        "automation.autopilot_plus_legacy.spend",
         yesterday_spend_on_campaign_ap,
         autopilot="campaign_autopilot",
         type="yesterday",
     )
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend", yesterday_spend_on_budget_ap, autopilot="budget_autopilot", type="yesterday"
+        "automation.autopilot_plus_legacy.spend",
+        yesterday_spend_on_budget_ap,
+        autopilot="budget_autopilot",
+        type="yesterday",
     )
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend", yesterday_spend_on_bid_ap, autopilot="bid_autopilot", type="yesterday"
+        "automation.autopilot_plus_legacy.spend", yesterday_spend_on_bid_ap, autopilot="bid_autopilot", type="yesterday"
     )
 
 
@@ -618,19 +627,26 @@ def _report_new_budgets_on_ap_to_influx(entities):
                     num_sources_on_bid_ap += 1
 
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend", total_budget_on_bid_ap, autopilot="bid_autopilot", type="actual"
+        "automation.autopilot_plus_legacy.spend", total_budget_on_bid_ap, autopilot="bid_autopilot", type="actual"
     )
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="actual"
+        "automation.autopilot_plus_legacy.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="actual"
     )
     metrics_compat.gauge(
-        "automation.autopilot_plus.spend", total_budget_on_campaign_ap, autopilot="campaign_autopilot", type="actual"
+        "automation.autopilot_plus_legacy.spend",
+        total_budget_on_campaign_ap,
+        autopilot="campaign_autopilot",
+        type="actual",
     )
 
-    metrics_compat.gauge("automation.autopilot_plus.sources_on", num_sources_on_bid_ap, autopilot="bid_autopilot")
-    metrics_compat.gauge("automation.autopilot_plus.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot")
     metrics_compat.gauge(
-        "automation.autopilot_plus.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot"
+        "automation.autopilot_plus_legacy.sources_on", num_sources_on_bid_ap, autopilot="bid_autopilot"
+    )
+    metrics_compat.gauge(
+        "automation.autopilot_plus_legacy.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot"
+    )
+    metrics_compat.gauge(
+        "automation.autopilot_plus_legacy.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot"
     )
 
 

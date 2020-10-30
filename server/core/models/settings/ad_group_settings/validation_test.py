@@ -212,7 +212,7 @@ class ValidationTest(TestCase):
         with self.assertRaises(exceptions.DailyBudgetAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
 
-    @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
+    @mock.patch("automation.autopilot_legacy.get_adgroup_minimum_daily_budget", autospec=True)
     def test_validate_autopilot_settings_autopilot_daily_budget(self, mock_get_min_budget):
         current_settings = self.ad_group.settings
         current_settings.autopilot_daily_budget = Decimal(50)
@@ -224,7 +224,7 @@ class ValidationTest(TestCase):
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_daily_budget = Decimal(100)
         current_settings._validate_autopilot_settings(new_settings)
-        mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
+        mock_get_min_budget.assert_called_with(new_settings.ad_group, new_settings)
 
         mock_get_min_budget.return_value = 1000000
         with self.assertRaises(exceptions.AutopilotDailyBudgetTooLow):

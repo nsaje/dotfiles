@@ -335,6 +335,12 @@ class AdGroupSettingsMixin(object):
         )
 
     def _should_recalculate_budget_autopilot(self, changes):
+        ap_campaign_budget_fields = ["b1_sources_group_state", "state", "start_date", "end_date"]
+        return self.ad_group.campaign.settings.autopilot and any(
+            field in changes for field in ap_campaign_budget_fields
+        )
+
+    def _should_recalculate_budget_autopilot_legacy(self, changes):
         ap_ad_group_budget_fields = ["autopilot_daily_budget", "autopilot_state", "b1_sources_group_state"]
         ap_campaign_budget_fields = ["b1_sources_group_state", "state", "start_date", "end_date"]
         return (
@@ -345,12 +351,21 @@ class AdGroupSettingsMixin(object):
         )
 
     def _handle_budget_autopilot(self, changes):
-        if not self._should_recalculate_budget_autopilot(changes):
-            return
+        # TODO: RTAP: LEGACY
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+            if not self._should_recalculate_budget_autopilot_legacy(changes):
+                return
 
-        from automation import autopilot
+            from automation import autopilot_legacy
 
-        autopilot.recalculate_budgets_ad_group(self.ad_group)
+            autopilot_legacy.recalculate_budgets_ad_group(self.ad_group)
+        else:
+            if not self._should_recalculate_budget_autopilot(changes):
+                return
+
+            from automation import autopilot
+
+            autopilot.recalculate_ad_group_budgets(self.ad_group.campaign)
 
     def _check_if_fields_are_allowed_to_be_changed_with_autopilot_on(self, changes):
         forbidden_fields = ["autopilot_state", "local_autopilot_daily_budget", "start_date", "end_date"]

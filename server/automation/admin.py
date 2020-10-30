@@ -31,28 +31,31 @@ class AutopilotLogAdmin(admin.ModelAdmin):
     list_display = (
         "get_campaign",
         "ad_group",
-        "ad_group_source",
-        "autopilot_type",
-        "is_rtb_as_one",
         "campaign_goal",
-        "previous_cpc_cc",
-        "new_cpc_cc",
         "previous_daily_budget",
         "new_daily_budget",
         "yesterdays_spend_cc",
         "goal_value",
         "campaign_goal_optimal_value",
-        "yesterdays_clicks",
         "created_dt",
-        "cpc_comments",
         "budget_comments",
+        # TODO: RTAP: remove after migration
+        "ad_group_source",
+        "autopilot_type",
+        "is_rtb_as_one",
+        "previous_cpc_cc",
+        "new_cpc_cc",
+        "yesterdays_clicks",
+        "cpc_comments",
     )
     readonly_fields = ("created_dt",)
     raw_id_fields = ("campaign", "ad_group")
+    # TODO: RTAP: remove after migration
     autocomplete_fields = ("ad_group_source",)
 
     def get_queryset(self, request):
         qs = super(AutopilotLogAdmin, self).get_queryset(request)
+        # TODO: RTAP: remove source selects after migration
         qs = qs.select_related("ad_group_source__source", "ad_group_source__ad_group", "ad_group__campaign")
         return qs
 

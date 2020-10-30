@@ -13,7 +13,7 @@ from . import constants
 
 
 class AutopilotBudgetsTestCase(test.TestCase):
-    fixtures = ["test_automation.yaml"]
+    fixtures = ["test_automation_legacy.yaml"]
 
     def test_uniformly_redistribute_remaining_budget(self):
         sources = [
@@ -58,7 +58,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
                 {k: Decimal(v) for k, v in list(test_case[2].items())},
             )
 
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_SPEND_PERC", 0.2)
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_SPEND_PERC", 0.2)
     def test_get_active_sources_with_spend(self):
         s0 = dash.models.AdGroupSource.objects.get(id=5)
         s1 = dash.models.AdGroupSource.objects.get(id=1)
@@ -74,8 +74,8 @@ class AutopilotBudgetsTestCase(test.TestCase):
         for test_case in test_cases:
             self.assertEqual(budgets._get_active_sources_with_spend([s0, s1], test_case[0], spends), test_case[1])
 
-    @patch("automation.autopilot.budgets._get_minimum_autopilot_budget_constraints")
-    @patch("automation.autopilot.budgets._get_optimistic_autopilot_budget_constraints")
+    @patch("automation.autopilot_legacy.budgets._get_minimum_autopilot_budget_constraints")
+    @patch("automation.autopilot_legacy.budgets._get_optimistic_autopilot_budget_constraints")
     def test_get_autopilot_budget_constraints(self, mock_opt_constr, mock_min_constr):
         sources = [0, 1]
         daily_budget = Decimal(100)
@@ -100,8 +100,8 @@ class AutopilotBudgetsTestCase(test.TestCase):
             sources, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
 
-    @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_GAIN", Decimal("10"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
     def test_get_minimum_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
         max_budgets, min_budgets = budgets._get_minimum_autopilot_budget_constraints(
@@ -111,8 +111,8 @@ class AutopilotBudgetsTestCase(test.TestCase):
         self.assertEqual(min_budgets, {sources.get(id=1): Decimal("6"), sources.get(id=5): Decimal("10")})
 
     @patch("core.models.all_rtb.AllRTBSourceType.min_daily_budget", Decimal("6"))
-    @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_GAIN", Decimal("10"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
     def test_get_minimum_autopilot_budget_constraints_rtb_as_one(self):
         all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(dash.models.AdGroup.objects.get(pk=1))
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
@@ -134,9 +134,9 @@ class AutopilotBudgetsTestCase(test.TestCase):
             },
         )
 
-    @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
-    @patch("automation.autopilot.settings.MAX_BUDGET_LOSS", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_GAIN", Decimal("10"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_LOSS", Decimal("0.5"))
     def test_get_optimistic_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
         data = {s: {"old_budget": s.settings.daily_budget_cc} for s in sources}
@@ -147,9 +147,9 @@ class AutopilotBudgetsTestCase(test.TestCase):
         self.assertEqual(min_budgets, {sources.get(id=1): Decimal("30"), sources.get(id=5): Decimal("25")})
         self.assertEqual(old_budgets, {sources.get(id=1): Decimal("60"), sources.get(id=5): Decimal("50")})
 
-    @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
-    @patch("automation.autopilot.settings.MAX_BUDGET_LOSS", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_GAIN", Decimal("10"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.MAX_BUDGET_LOSS", Decimal("0.5"))
     @patch("core.models.all_rtb.AllRTBSourceType.max_daily_budget", Decimal("100"))
     @patch("core.models.all_rtb.AllRTBSourceType.min_daily_budget", Decimal("10"))
     def test_get_optimistic_autopilot_budget_constraints_rtb_as_one(self):
@@ -214,7 +214,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
 
 
 class BetaBanditTestCase(test.TestCase):
-    fixtures = ["test_automation.yaml"]
+    fixtures = ["test_automation_legacy.yaml"]
 
     def test_naiive(self):
         ags = dash.models.AdGroupSource.objects.filter(ad_group=4)

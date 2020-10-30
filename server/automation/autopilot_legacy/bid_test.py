@@ -12,36 +12,36 @@ from .constants import BidChangeComment
 
 
 class AutopilotBidTestCase(test.TestCase):
-    fixtures = ["test_automation.yaml"]
+    fixtures = ["test_automation_legacy.yaml"]
 
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPC_CHANGE_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPC_CHANGE_TABLE",
         (
             {"underspend_upper_limit": -1, "underspend_lower_limit": -0.5, "bid_proc_increase": Decimal("0.1")},
             {"underspend_upper_limit": -0.5, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.5")},
             {"underspend_upper_limit": -0.1, "underspend_lower_limit": 0, "bid_proc_increase": Decimal("-0.5")},
         ),
     )
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPC", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.2"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.05"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.25"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPC", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.2"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.05"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.25"))
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPM_CHANGE_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPM_CHANGE_TABLE",
         (
             {"underspend_upper_limit": -1, "underspend_lower_limit": -0.5, "bid_proc_increase": Decimal("0.1")},
             {"underspend_upper_limit": -0.5, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.5")},
             {"underspend_upper_limit": -0.1, "underspend_lower_limit": 0, "bid_proc_increase": Decimal("-0.5")},
         ),
     )
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPM", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.2"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.05"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.25"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPM", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.2"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.05"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.25"))
     def test_calculate_new_autopilot_bid(self):
         test_cases = (
             #  bid, daily_budget, yesterday_spend, new_bid, comments
@@ -109,9 +109,9 @@ class AutopilotBidTestCase(test.TestCase):
         self.assertEqual(4, new_bid)
         self.assertEqual([BidChangeComment.UNDER_GOAL_BID], bid_change_comments)
 
-    @patch("automation.autopilot.settings.AUTOPILOT_CPC_NO_SPEND_CHANGE", Decimal("0.4"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_CPC_NO_SPEND_CHANGE", Decimal("0.4"))
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPC_CHANGE_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPC_CHANGE_TABLE",
         (
             {"underspend_upper_limit": -1, "underspend_lower_limit": -0.5, "bid_proc_increase": Decimal("0.1")},
             {"underspend_upper_limit": -0.5, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.5")},
@@ -119,22 +119,22 @@ class AutopilotBidTestCase(test.TestCase):
         ),
     )
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE",
         (
             {"performance_upper_limit": 1.0, "performance_lower_limit": 0.95, "performance_factor": Decimal("1.0")},
             {"performance_upper_limit": 0.95, "performance_lower_limit": 0.5, "performance_factor": Decimal("0.5")},
             {"performance_upper_limit": 0.5, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.1")},
         ),
     )
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPC", Decimal("0.01"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.2"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.05"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.25"))
-    @patch("automation.autopilot.settings.AUTOPILOT_CPM_NO_SPEND_CHANGE", Decimal("0.4"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPC", Decimal("0.01"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.2"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.05"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.25"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_CPM_NO_SPEND_CHANGE", Decimal("0.4"))
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPM_CHANGE_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPM_CHANGE_TABLE",
         (
             {"underspend_upper_limit": -1, "underspend_lower_limit": -0.5, "bid_proc_increase": Decimal("0.1")},
             {"underspend_upper_limit": -0.5, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.5")},
@@ -142,19 +142,19 @@ class AutopilotBidTestCase(test.TestCase):
         ),
     )
     @patch(
-        "automation.autopilot.settings.AUTOPILOT_CPM_CHANGE_PERFORMANCE_FACTOR_TABLE",
+        "automation.autopilot_legacy.settings.AUTOPILOT_CPM_CHANGE_PERFORMANCE_FACTOR_TABLE",
         (
             {"performance_upper_limit": 1.0, "performance_lower_limit": 0.95, "performance_factor": Decimal("1.0")},
             {"performance_upper_limit": 0.95, "performance_lower_limit": 0.5, "performance_factor": Decimal("0.5")},
             {"performance_upper_limit": 0.5, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.1")},
         ),
     )
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPM", Decimal("0.01"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.2"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.05"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.25"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPM", Decimal("0.01"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.2"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.05"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.25"))
     def test_calculate_new_autopilot_bid_automatic_mode_rtb(self):
         test_cases = (
             #  bid, rtb_daily_budget, rtb_yesterday_spend, source_yesterday_spend, source_performance, new_bid, comments
@@ -268,10 +268,10 @@ class AutopilotBidTestCase(test.TestCase):
         self.assertEqual(4, new_bid)
         self.assertEqual([BidChangeComment.UNDER_GOAL_BID], bid_change_comments)
 
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPC", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPM", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPC", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_CPM", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_CPM", Decimal("3"))
     def test_get_calculate_bid_comments(self):
         adgroup = dash.models.AdGroup.objects.get(id=1)
         adgroup.bidding_type = dash.constants.BiddingType.CPC
@@ -303,10 +303,10 @@ class AutopilotBidTestCase(test.TestCase):
                 (Decimal(test_case[3]), test_case[4]),
             )
 
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.5"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_REDUCING_CPM_CHANGE", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_REDUCING_CPM_CHANGE", Decimal("0.5"))
     def test_threshold_reducing_bid(self):
         adgroup = dash.models.AdGroup.objects.get(id=1)
         adgroup.bidding_type = dash.constants.BiddingType.CPC
@@ -334,10 +334,10 @@ class AutopilotBidTestCase(test.TestCase):
                 Decimal(test_case[2]),
             )
 
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.5"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.1"))
-    @patch("automation.autopilot.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE", Decimal("0.5"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MIN_INCREASING_CPM_CHANGE", Decimal("0.1"))
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_MAX_INCREASING_CPM_CHANGE", Decimal("0.5"))
     def test_threshold_increasing_bid(self):
         adgroup = dash.models.AdGroup.objects.get(id=1)
         adgroup.bidding_type = dash.constants.BiddingType.CPC
@@ -364,7 +364,7 @@ class AutopilotBidTestCase(test.TestCase):
                 Decimal(test_case[2]),
             )
 
-    @patch("automation.autopilot.bid._get_source_type_min_max_bid")
+    @patch("automation.autopilot_legacy.bid._get_source_type_min_max_bid")
     def test_threshold_source_constraints(self, mock_source_type_min_max_bid):
         mock_source_type_min_max_bid.return_value = (Decimal("0.1"), Decimal("1.0"))
         ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
@@ -437,7 +437,7 @@ class AutopilotBidTestCase(test.TestCase):
                 Decimal(test_case[1]),
             )
 
-    @patch("automation.autopilot.settings.AUTOPILOT_BID_MAX_DEC_PLACES", 3)
+    @patch("automation.autopilot_legacy.settings.AUTOPILOT_BID_MAX_DEC_PLACES", 3)
     def test_get_bid_max_decimal_places(self):
         test_cases = (
             # source_dec_places, returned_max_decimal_places

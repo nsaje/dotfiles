@@ -42,7 +42,7 @@ class InstanceTestCase(TestCase):
         self.assertEqual(mock_insert_adgroup.call_count, 0)
         self.assertEqual(mock_ping_adgroups.call_count, 1)
 
-    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     def test_recalculate_autopilot(self, mock_autopilot):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update(None, autopilot=True)

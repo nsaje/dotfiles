@@ -15,14 +15,6 @@
   model: zemauth.user
   pk: 1
 
-# Agency
-- fields:
-    uses_realtime_autopilot: true
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-  model: dash.agency
-  pk: 1
-
 # test accountsettings
 
 -   fields:
@@ -44,7 +36,6 @@
     modified_by: 1
     settings: 1
     name: 'Test Account 1'
-    agency: 1
   model: dash.account
   pk: 1
 
@@ -54,7 +45,6 @@
     modified_by: 1
     settings: 2
     name: 'Test Account 2 (BCM)'
-    agency: 1
   model: dash.account
   pk: 2
 
@@ -106,30 +96,27 @@
     name: 'Campaign Settings 1'
     campaign_manager: 1
     campaign: 1
-    autopilot: true
   model: dash.campaignsettings
   pk: 1
 
-- fields:
-    campaign: 2
-    autopilot: true
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.campaignsettings
-  pk: 2
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+        autopilot: true
+    model: dash.campaignsettings
+    pk: 2
 
-- fields:
-    campaign: 3
-    autopilot: true    
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.campaignsettings
-  pk: 3
+-   fields:
+        campaign: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 3
 
-- fields:
-    campaign: 4
-    autopilot: true    
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.campaignsettings
-  pk: 4
+-   fields:
+        campaign: 4
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 4
 
 # Ad Groups
 - fields:
@@ -188,7 +175,6 @@
     autopilot_daily_budget: 10
     max_autopilot_bid: 0.18
     daily_budget: 60
-    b1_sources_group_state: 1
   model: dash.adgroupsettings
   pk: 1
 
@@ -200,8 +186,6 @@
     state: 2
     autopilot_state: 2
     autopilot_daily_budget: 20
-    daily_budget: 20
-    b1_sources_group_state: 1
   model: dash.adgroupsettings
   pk: 2
 
@@ -213,8 +197,6 @@
     state: 1
     autopilot_state: 3
     autopilot_daily_budget: 30
-    daily_budget: 30
-    b1_sources_group_state: 1
   model: dash.adgroupsettings
   pk: 3
 
@@ -228,8 +210,6 @@
     cpc: 1.0
     cpm: 1.0
     autopilot_daily_budget: 40
-    daily_budget: 40
-    b1_sources_group_state: 1
   model: dash.adgroupsettings
   pk: 4
 

@@ -102,7 +102,7 @@ def _calculate_max_campaign_spend(campaign):
             spend_calculated_by_adg_source,
             spend_calculated_by_adg,
         )
-    if campaign.account.agency is not None and campaign.account.agency.uses_realtime_autopilot:
+    if campaign.account.agency_uses_realtime_autopilot():
         return spend_calculated_by_adg
     return spend_calculated_by_adg_source
 

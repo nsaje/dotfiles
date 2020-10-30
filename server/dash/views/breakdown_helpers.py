@@ -177,7 +177,8 @@ def get_upload_batches_response_list(upload_batches):
 
 def get_ad_group_sources_extras(ad_group):
     return {
-        "enabling_autopilot_sources_allowed": helpers.enabling_autopilot_single_source_allowed(ad_group),
+        "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot()
+        or helpers.enabling_autopilot_single_source_allowed(ad_group),
         "ad_group_autopilot_state": ad_group.settings.autopilot_state,
         "campaign_autopilot": ad_group.campaign.settings.autopilot,
     }

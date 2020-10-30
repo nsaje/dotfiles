@@ -50,7 +50,9 @@ class AdGroupSourceInstanceMixin:
             updates["daily_budget_cc"] = self.source.default_daily_budget_cc
 
         if not is_adgroup_creation:
-            enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, [self])
+            enabling_autopilot_sources_allowed = ad_group.campaign.account.agency_uses_realtime_autopilot() or helpers.enabling_autopilot_sources_allowed(
+                ad_group, [self]
+            )
             if not enabling_autopilot_sources_allowed:
                 updates["state"] = dash.constants.AdGroupSourceSettingsState.INACTIVE
 

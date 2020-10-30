@@ -155,13 +155,20 @@ class AdGroupManager(core.common.BaseManager):
         return ad_group
 
     def _post_create(self, ad_group):
-        if (
-            ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            or ad_group.campaign.settings.autopilot
-        ):
-            from automation import autopilot
+        # TODO: RTAP: LEGACY
+        if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+            if (
+                ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+                or ad_group.campaign.settings.autopilot
+            ):
+                from automation import autopilot_legacy
 
-            autopilot.recalculate_budgets_ad_group(ad_group)
+                autopilot_legacy.recalculate_budgets_ad_group(ad_group)
+        else:
+            if ad_group.campaign.settings.autopilot:
+                from automation import autopilot
+
+                autopilot.recalculate_ad_group_budgets(ad_group.campaign)
 
         utils.k1_helper.update_ad_group(ad_group, msg="Campaignmodel.AdGroups.put")
         utils.redirector_helper.insert_adgroup(ad_group)

@@ -74,7 +74,7 @@ class AdGroupSourceCreate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_create_ad_review_only_already_exists(self, mock_autopilot, mock_k1):
         ad_group_source = magic_mixer.blend(
             core.models.AdGroupSource,

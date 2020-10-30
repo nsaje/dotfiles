@@ -17,7 +17,7 @@ from . import ad_groups
 class PrepareAdGroupSettingsTestCase(TestCase):
     def setUp(self):
         # NOTE: patching the class with a decorator doesn't work because of import timing
-        patcher = mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+        patcher = mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
         patcher.start()
         self.addCleanup(patcher.stop)
 

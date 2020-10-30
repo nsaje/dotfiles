@@ -19,7 +19,7 @@ from . import service
 
 
 @patch.object(core.models.ContentAd.objects, "insert_redirects", autospec=True)
-@patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
+@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
 class CloneServiceTest(BaseTestCase):

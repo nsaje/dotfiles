@@ -10,6 +10,7 @@ import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import zemauth.access
 from automation import autopilot
+from automation import autopilot_legacy
 from dash import api
 from dash import constants
 from dash import forms
@@ -74,11 +75,16 @@ class AdGroupSourceState(BaseBulkActionView):
                     request, ad_group_source, state=state, k1_sync=False, skip_automation=True, skip_validation=False
                 )
 
-        if (
-            ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            or ad_group.campaign.settings.autopilot
-        ):
-            autopilot.recalculate_budgets_ad_group(ad_group)
+        # TODO: RTAP: LEGACY
+        if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+            if (
+                ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+                or ad_group.campaign.settings.autopilot
+            ):
+                autopilot_legacy.recalculate_budgets_ad_group(ad_group)
+        else:
+            if ad_group.campaign.settings.autopilot:
+                autopilot.recalculate_ad_group_budgets(ad_group.campaign)
 
         k1_helper.update_ad_group(ad_group, msg="AdGroupSourceState.post")
 
@@ -251,7 +257,10 @@ class AdGroupSourceState(BaseBulkActionView):
 
     def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
-            enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, ad_group_sources)
+            # TODO: RTAP: LEGACY
+            enabling_autopilot_sources_allowed = ad_group.campaign.account.agency_uses_realtime_autopilot() or helpers.enabling_autopilot_sources_allowed(
+                ad_group, ad_group_sources
+            )
             if not enabling_autopilot_sources_allowed:
                 raise exc.ValidationError("Please increase Autopilot Daily Spend Cap to enable these sources.")
 
@@ -504,7 +513,11 @@ class CampaignAdGroupState(BaseBulkActionView):
                 self._update_adgroup(request, ad_group, state=state, skip_automation=True)
 
         if campaign.settings.autopilot:
-            autopilot.recalculate_budgets_campaign(campaign)
+            # TODO: RTAP: LEGACY
+            if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+                autopilot_legacy.recalculate_budgets_campaign(campaign)
+            else:
+                autopilot.recalculate_ad_group_budgets(campaign)
 
         has_available_budget = data_helper.campaign_has_available_budget(campaign)
         editable_fields = {

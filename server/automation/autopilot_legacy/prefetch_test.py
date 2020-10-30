@@ -61,7 +61,7 @@ class AutopilotPrefetchTestCase(TestCase):
 
     def setUp(self):
         pixel_key = "pixel_{id}_{window}".format(id=self.conversion_goal.pixel_id, window=30)
-        redshift_patcher = patch("automation.autopilot.prefetch.redshiftapi.api_breakdowns.query")
+        redshift_patcher = patch("automation.autopilot_legacy.prefetch.redshiftapi.api_breakdowns.query")
         self.mock_rs = redshift_patcher.start()
         self.mock_rs.side_effect = itertools.cycle(
             [

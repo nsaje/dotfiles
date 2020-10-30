@@ -400,6 +400,7 @@ DCRON = {
     # Job severity overrides.
     "severities": {
         "run_autopilot": dcron_constants.Severity.HIGH,
+        "run_autopilot_legacy": dcron_constants.Severity.HIGH,  # TODO: RTAP: LEGACY
         "campaignstop_main": dcron_constants.Severity.HIGH,
         "campaignstop_simple": dcron_constants.Severity.HIGH,
         "campaignstop_selection": dcron_constants.Severity.HIGH,

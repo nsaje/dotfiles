@@ -7,6 +7,7 @@ import utils.exc
 import utils.k1_helper
 import utils.redirector_helper
 from automation import autopilot
+from automation import autopilot_legacy
 
 
 class CampaignSettingsMixin(object):
@@ -94,7 +95,12 @@ class CampaignSettingsMixin(object):
         if "autopilot" in changes:
             if changes["autopilot"]:
                 autopilot.adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(self.campaign)
-            autopilot.recalculate_budgets_campaign(self.campaign)
+
+            # TODO: RTAP: LEGACY
+            if not self.campaign.account.agency_uses_realtime_autopilot():
+                autopilot_legacy.recalculate_budgets_campaign(self.campaign)
+            else:
+                autopilot.recalculate_ad_group_budgets(self.campaign)
 
     def _handle_archived(self, request, changes):
         if changes.get("archived"):

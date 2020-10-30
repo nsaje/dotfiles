@@ -12,7 +12,7 @@ from . import helpers
 
 
 class AutopilotHelpersTestCase(test.TestCase):
-    fixtures = ["test_automation.yaml"]
+    fixtures = ["test_automation_legacy.yaml"]
 
     @patch("dash.models.AdGroup.get_running_status_by_sources_setting")
     @patch("dash.models.AdGroup.get_running_status")

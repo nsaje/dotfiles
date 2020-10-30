@@ -10,7 +10,7 @@ from . import content_ads
 
 
 class PrepareContentAdSettingsTestCase(TestCase):
-    @mock.patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
     def test_prepare_content_ad_settings(self):
         self.utc_today = dates_helper.utc_today()
         ad_group = magic_mixer.blend(core.models.AdGroup)

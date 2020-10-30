@@ -8,7 +8,7 @@ import dash.models
 import restapi.serializers
 import utils.dates_helper
 import utils.test_helper
-from automation import autopilot
+from automation import autopilot_legacy as autopilot  # TODO: RTAP: LEGACY
 from dash import constants
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
@@ -352,7 +352,8 @@ class CampaignViewSetTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
-    @mock.patch("automation.autopilot.recalculate_budgets_campaign")
+    # TODO: RTAP: LEGACY: convert
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post(self, mock_send, mock_autopilot):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -369,7 +370,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
 
-    @mock.patch("automation.autopilot.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post_account_archived(self, mock_send, mock_autopilot):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], archived=True)
@@ -388,7 +389,8 @@ class CampaignViewSetTest(RESTAPITestCase):
         )
         mock_send.assert_not_called()
 
-    @mock.patch("automation.autopilot.recalculate_budgets_campaign")
+    # TODO: RTAP: LEGACY: convert
+    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
     def test_campaigns_post_no_type(self, mock_autopilot):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         new_campaign = self.campaign_repr(account_id=account.id, name="All About Testing", frequency_capping=33)

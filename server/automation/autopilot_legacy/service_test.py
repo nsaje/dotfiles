@@ -21,7 +21,7 @@ from . import service
 
 
 class AutopilotPlusTestCase(test.TestCase):
-    fixtures = ["test_automation.yaml"]
+    fixtures = ["test_automation_legacy.yaml"]
 
     def mock_budget_recommender(
         self, ad_group, daily_budget, data, bcm, campaign_goal, ignore_daily_budget_too_small=False
@@ -126,13 +126,13 @@ class AutopilotPlusTestCase(test.TestCase):
         "django.utils.timezone.now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
     )
-    @patch("automation.autopilot.service._report_new_budgets_on_ap_to_influx")
-    @patch("automation.autopilot.service._report_adgroups_data_to_influx")
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
-    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("automation.autopilot_legacy.service._report_new_budgets_on_ap_to_influx")
+    @patch("automation.autopilot_legacy.service._report_adgroups_data_to_influx")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot_legacy.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_daily_run(
         self,
         mock_budgets,
@@ -191,11 +191,11 @@ class AutopilotPlusTestCase(test.TestCase):
         "django.utils.timezone.now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
     )
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
-    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot_legacy.budgets.get_autopilot_daily_budget_recommendations")
     @patch("utils.slack.publish")
     def test_run_autopilot_daily_run_exceptions(
         self, mock_slack, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb, mock_timezone_now
@@ -224,9 +224,9 @@ class AutopilotPlusTestCase(test.TestCase):
             else:
                 return original_get_budget_predictions_for_campaign(*args, **kwargs)
 
-        with patch("automation.autopilot.service._save_changes", side_effect=_failing_save_changes):
+        with patch("automation.autopilot_legacy.service._save_changes", side_effect=_failing_save_changes):
             with patch(
-                "automation.autopilot.service._get_budget_predictions_for_campaign",
+                "automation.autopilot_legacy.service._get_budget_predictions_for_campaign",
                 side_effect=_failing_get_budget_predictions_for_campaign,
             ):
                 service.run_autopilot(daily_run=True, report_to_influx=False)
@@ -270,11 +270,11 @@ class AutopilotPlusTestCase(test.TestCase):
         "utils.dates_helper.utc_now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
     )
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
-    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot_legacy.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_daily_run_exclude_processed_entities(
         self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb, mock_utc_now, mock_timezone_now
     ):
@@ -304,18 +304,18 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(ad_group=1, source=None)
         self.assertLogExists(campaign=2, ad_group=2, source=None)
 
-    @patch("automation.autopilot.service.logger.info")
+    @patch("automation.autopilot_legacy.service.logger.info")
     def test_run_autopilot_daily_run_late_materialization(self, mock_logger_info):
         service.run_autopilot(daily_run=True, report_to_influx=False)
         mock_logger_info.assert_called_once_with(
             "Autopilot daily run was aborted since materialized data is not yet available."
         )
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
-    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot_legacy.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_initialize_adgroup(
         self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb
     ):
@@ -342,11 +342,11 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(ad_group=4, source=4)
         self.assertLogExists(ad_group=4, source=None)
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
-    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot_legacy.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_intialize_campaign(
         self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb
     ):
@@ -380,7 +380,7 @@ class AutopilotPlusTestCase(test.TestCase):
             "http://pagerduty.example.com",
             json={
                 "routing_key": "123abc",
-                "dedup_key": "automation_autopilot_error",
+                "dedup_key": "automation_autopilot_legacy_error",
                 "event_action": "trigger",
                 "payload": {
                     "summary": desc,
@@ -392,15 +392,15 @@ class AutopilotPlusTestCase(test.TestCase):
             timeout=60,
         )
 
-    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.helpers.get_autopilot_entities")
-    @patch("automation.autopilot.helpers.get_active_ad_groups_on_autopilot")
-    @patch("automation.autopilot.service._get_bid_predictions")
-    @patch("automation.autopilot.service._get_budget_predictions_for_adgroup")
-    @patch("automation.autopilot.service.set_autopilot_changes")
-    @patch("automation.autopilot.service.persist_autopilot_changes_to_log")
-    @patch("automation.autopilot.service._get_autopilot_campaign_changes_data")
-    @patch("automation.autopilot.service._report_autopilot_exception")
+    @patch("automation.autopilot_legacy.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot_legacy.helpers.get_autopilot_entities")
+    @patch("automation.autopilot_legacy.helpers.get_active_ad_groups_on_autopilot")
+    @patch("automation.autopilot_legacy.service._get_bid_predictions")
+    @patch("automation.autopilot_legacy.service._get_budget_predictions_for_adgroup")
+    @patch("automation.autopilot_legacy.service.set_autopilot_changes")
+    @patch("automation.autopilot_legacy.service.persist_autopilot_changes_to_log")
+    @patch("automation.autopilot_legacy.service._get_autopilot_campaign_changes_data")
+    @patch("automation.autopilot_legacy.service._report_autopilot_exception")
     @patch("utils.k1_helper.update_ad_group")
     def test_dry_run(
         self,
@@ -438,7 +438,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_get_changes.called, True)
         mock_set.assert_not_called()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         cpc_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
@@ -448,7 +448,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_only_cpm(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
@@ -460,7 +460,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
     def test_set_autopilot_changes_only_cpc_rtb_as_one(self, mock_update_values):
         ag = dash.models.AdGroup.objects.get(id=1)
         ag_source = dash.models.AllRTBAdGroupSource(ag)
@@ -469,7 +469,7 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_values.assert_called_with(ag, {"cpc_cc": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
     def test_set_autopilot_changes_only_cpm_rtb_as_one(self, mock_update_values):
         ag = dash.models.AdGroup.objects.get(id=1)
         ag.bidding_type = dash.constants.BiddingType.CPM
@@ -480,7 +480,7 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_values.assert_called_with(ag, {"cpm": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_only_budget(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")}}
@@ -490,7 +490,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")}}
@@ -503,7 +503,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpm(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
@@ -520,7 +520,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_update_values.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpc_no_change(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("100")}}
@@ -528,7 +528,7 @@ class AutopilotPlusTestCase(test.TestCase):
         service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes)
         self.assertEqual(mock_update_values.called, False)
 
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpm_no_change(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
@@ -540,8 +540,8 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         self.assertEqual(mock_update_values.called, False)
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpc_rtb_as_one(self, mock_update_values, mock_update_rtb):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         ag = dash.models.AdGroup.objects.get(id=1)
@@ -563,8 +563,8 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_rtb.assert_called_with(ag, {"cpc_cc": Decimal("0.22"), "daily_budget_cc": Decimal("20")}, ap)
         mock_update_rtb.assert_called_once()
 
-    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
-    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot_legacy.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpm_rtb_as_one(self, mock_update_values, mock_update_rtb):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         ag = dash.models.AdGroup.objects.get(id=1)
@@ -667,7 +667,7 @@ class AutopilotPlusTestCase(test.TestCase):
             ],
         )
 
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("0.3"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("0.3"))
     def test_set_paused_ad_group_sources_to_minimum_values(self):
         adg = dash.models.AdGroup.objects.get(id=4)
         paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
@@ -692,7 +692,7 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         self.assertTrue(active_ad_group_source not in new_budgets)
 
-    @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("10"))
+    @patch("automation.autopilot_legacy.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("10"))
     def test_set_paused_ad_group_sources_to_minimum_values_rtb_as_one(self):
         adg = dash.models.AdGroup.objects.get(id=4)
         adg_settings = adg.get_current_settings().copy_settings()
@@ -735,8 +735,8 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal("19.0"))
 
-    @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
-    @patch("automation.autopilot.service.run_autopilot")
+    @patch("automation.autopilot_legacy.service._set_paused_ad_group_sources_to_minimum_values")
+    @patch("automation.autopilot_legacy.service.run_autopilot")
     def test_recalculate_budget_autopilot_on_ad_group(self, mock_run_autopilot, mock_set_paused):
         adg = dash.models.AdGroup.objects.get(id=4)
         changed_source = dash.models.AdGroupSource.objects.get(id=1)
@@ -761,8 +761,8 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
 
-    @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
-    @patch("automation.autopilot.service.run_autopilot")
+    @patch("automation.autopilot_legacy.service._set_paused_ad_group_sources_to_minimum_values")
+    @patch("automation.autopilot_legacy.service.run_autopilot")
     def test_recalculate_budget_autopilot_on_ad_group_campaign_ap(self, mock_run_autopilot, mock_set_paused):
         adg = dash.models.AdGroup.objects.get(id=4)
         adg.campaign.settings.update_unsafe(None, autopilot=True)
@@ -783,8 +783,8 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(set(), changed_sources)
         self.assertFalse(mock_set_paused.called)
 
-    @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
-    @patch("automation.autopilot.service.run_autopilot")
+    @patch("automation.autopilot_legacy.service._set_paused_ad_group_sources_to_minimum_values")
+    @patch("automation.autopilot_legacy.service.run_autopilot")
     def test_recalculate_budget_autopilot_on_campaign_inactive(self, mock_run_autopilot, mock_set_paused):
         campaign = dash.models.Campaign.objects.get(pk=4)
         service.recalculate_budgets_campaign(campaign)
@@ -793,8 +793,8 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         self.assertTrue(mock_set_paused.called)
 
-    @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
-    @patch("automation.autopilot.service.run_autopilot")
+    @patch("automation.autopilot_legacy.service._set_paused_ad_group_sources_to_minimum_values")
+    @patch("automation.autopilot_legacy.service.run_autopilot")
     def test_recalculate_budget_autopilot_on_campaign_active(self, mock_run_autopilot, mock_set_paused):
         campaign = dash.models.Campaign.objects.get(pk=4)
         campaign.settings.update_unsafe(None, autopilot=True)
@@ -823,17 +823,37 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_metrics_compat.assert_has_calls(
             [
-                call("automation.autopilot_plus.adgroups_on", 2, autopilot="budget_autopilot"),
-                call("automation.autopilot_plus.adgroups_on", 1, autopilot="bid_autopilot"),
-                call("automation.autopilot_plus.adgroups_on", 1, autopilot="campaign_autopilot"),
-                call("automation.autopilot_plus.campaigns_on", 1, autopilot="campaign_autopilot"),
-                call("automation.autopilot_plus.spend", Decimal("50"), autopilot="budget_autopilot", type="expected"),
-                call("automation.autopilot_plus.spend", Decimal("13"), autopilot="campaign_autopilot", type="expected"),
+                call("automation.autopilot_plus_legacy.adgroups_on", 2, autopilot="budget_autopilot"),
+                call("automation.autopilot_plus_legacy.adgroups_on", 1, autopilot="bid_autopilot"),
+                call("automation.autopilot_plus_legacy.adgroups_on", 1, autopilot="campaign_autopilot"),
+                call("automation.autopilot_plus_legacy.campaigns_on", 1, autopilot="campaign_autopilot"),
                 call(
-                    "automation.autopilot_plus.spend", Decimal("12"), autopilot="campaign_autopilot", type="yesterday"
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("50"),
+                    autopilot="budget_autopilot",
+                    type="expected",
                 ),
-                call("automation.autopilot_plus.spend", Decimal("35"), autopilot="budget_autopilot", type="yesterday"),
-                call("automation.autopilot_plus.spend", Decimal("10"), autopilot="bid_autopilot", type="yesterday"),
+                call(
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("13"),
+                    autopilot="campaign_autopilot",
+                    type="expected",
+                ),
+                call(
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("12"),
+                    autopilot="campaign_autopilot",
+                    type="yesterday",
+                ),
+                call(
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("35"),
+                    autopilot="budget_autopilot",
+                    type="yesterday",
+                ),
+                call(
+                    "automation.autopilot_plus_legacy.spend", Decimal("10"), autopilot="bid_autopilot", type="yesterday"
+                ),
             ]
         )
 
@@ -862,12 +882,22 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_metrics_compat.assert_has_calls(
             [
-                call("automation.autopilot_plus.spend", Decimal("50"), autopilot="bid_autopilot", type="actual"),
-                call("automation.autopilot_plus.spend", Decimal("210"), autopilot="budget_autopilot", type="actual"),
-                call("automation.autopilot_plus.spend", Decimal("50"), autopilot="campaign_autopilot", type="actual"),
-                call("automation.autopilot_plus.sources_on", 1, autopilot="bid_autopilot"),
-                call("automation.autopilot_plus.sources_on", 4, autopilot="budget_autopilot"),
-                call("automation.autopilot_plus.sources_on", 1, autopilot="campaign_autopilot"),
+                call("automation.autopilot_plus_legacy.spend", Decimal("50"), autopilot="bid_autopilot", type="actual"),
+                call(
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("210"),
+                    autopilot="budget_autopilot",
+                    type="actual",
+                ),
+                call(
+                    "automation.autopilot_plus_legacy.spend",
+                    Decimal("50"),
+                    autopilot="campaign_autopilot",
+                    type="actual",
+                ),
+                call("automation.autopilot_plus_legacy.sources_on", 1, autopilot="bid_autopilot"),
+                call("automation.autopilot_plus_legacy.sources_on", 4, autopilot="budget_autopilot"),
+                call("automation.autopilot_plus_legacy.sources_on", 1, autopilot="campaign_autopilot"),
             ]
         )
 

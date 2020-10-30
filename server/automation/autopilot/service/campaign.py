@@ -1,6 +1,8 @@
 from collections import defaultdict
 from decimal import Decimal
 
+from django.db.models import Q
+
 from dash import models
 from utils import dates_helper
 
@@ -8,7 +10,14 @@ from utils import dates_helper
 def calculate_campaigns_daily_budget(campaign=None):
     today = dates_helper.local_today()
 
-    budgets = models.BudgetLineItem.objects.all().filter_active().annotate_spend_data().select_related("campaign")
+    budgets = (
+        models.BudgetLineItem.objects.all()
+        .filter(Q(campaign__account__agency__isnull=False) & Q(campaign__account__agency__uses_realtime_autopilot=True))
+        .filter_active()
+        .annotate_spend_data()
+        .select_related("campaign")
+    )
+
     if campaign is not None:
         budgets = budgets.filter(campaign=campaign)
     else:
