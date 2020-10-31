@@ -96,6 +96,17 @@ def _save_changes(campaign, ad_groups_data, campaign_goals, budget_changes_map, 
         with transaction.atomic():
             for ad_group, data in ad_groups_data.items():
                 budget_changes = budget_changes_map[ad_group]
+
+                # TODO: RTAP: investigate daily_budget = 0 issue
+                if not budget_changes["new_budget"]:
+                    logger.info(
+                        "Autopilot would update the ad group daily budget to zero",
+                        campaign_id=campaign.id,
+                        ad_group_id=ad_group.id,
+                        budget_changes=budget_changes,
+                    )
+                    continue
+
                 _set_autopilot_changes(ad_group, budget_changes, dry_run=dry_run)
                 _persist_autopilot_changes_to_log(
                     campaign,

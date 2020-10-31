@@ -14,7 +14,7 @@ from . import signals
 
 class NotifyBudgetsTest(TestCase):
     def setUp(self):
-        account = magic_mixer.blend(core.models.Account)
+        account = magic_mixer.blend(core.models.Account, agency__uses_realtime_autopilot=True)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.campaign.settings.update_unsafe(None, autopilot=True)
         self.credit = magic_mixer.blend(
