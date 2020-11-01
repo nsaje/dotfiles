@@ -204,7 +204,9 @@ def _get_total_daily_budget_amount(campaign):
 
 def _get_active_campaigns():
     return _get_active_campaigns_subset(
-        dash.models.Campaign.objects.exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
+        dash.models.Campaign.objects.exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN).exclude(
+            account__agency_id=663
+        )
     )
 
 
