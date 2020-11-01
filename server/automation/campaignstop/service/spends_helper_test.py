@@ -352,36 +352,36 @@ class GetBudgetSpendEstimateTest(TestCase):
             )
             self.assertEqual({self.budget: 300}, estimate)
 
-    def test_real_time_data_spend(self):
-        today = dates_helper.local_today()
-        magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=dates_helper.local_yesterday(),
-            etfm_spend=decimal.Decimal("50.0"),
-        )
-        magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=dates_helper.local_today(),
-            etfm_spend=decimal.Decimal("100.0"),
-        )
+    # def test_real_time_data_spend(self):
+    #     today = dates_helper.local_today()
+    #     magic_mixer.blend(
+    #         RealTimeCampaignDataHistory,
+    #         campaign=self.campaign,
+    #         date=dates_helper.local_yesterday(),
+    #         etfm_spend=decimal.Decimal("50.0"),
+    #     )
+    #     magic_mixer.blend(
+    #         RealTimeCampaignDataHistory,
+    #         campaign=self.campaign,
+    #         date=dates_helper.local_today(),
+    #         etfm_spend=decimal.Decimal("100.0"),
+    #     )
 
-        with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
-            midnight = datetime.datetime(today.year, today.month, today.day)
-            mock_utc_now.return_value = midnight + datetime.timedelta(hours=12)
+    #     with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
+    #         midnight = datetime.datetime(today.year, today.month, today.day)
+    #         mock_utc_now.return_value = midnight + datetime.timedelta(hours=12)
 
-            estimate = spends_helper.get_budget_spend_estimates(
-                LogMock(), self.campaign, spends_helper._get_budgets_active_today(self.campaign)
-            )
-            self.assertEqual({self.budget: 100}, estimate)
+    #         estimate = spends_helper.get_budget_spend_estimates(
+    #             LogMock(), self.campaign, spends_helper._get_budgets_active_today(self.campaign)
+    #         )
+    #         self.assertEqual({self.budget: 100}, estimate)
 
-            mock_utc_now.return_value = midnight + datetime.timedelta(hours=config.HOURS_DELAY - 1)
+    #         mock_utc_now.return_value = midnight + datetime.timedelta(hours=config.HOURS_DELAY - 1)
 
-            estimate = spends_helper.get_budget_spend_estimates(
-                LogMock(), self.campaign, spends_helper._get_budgets_active_today(self.campaign)
-            )
-            self.assertEqual({self.budget: 150}, estimate)
+    #         estimate = spends_helper.get_budget_spend_estimates(
+    #             LogMock(), self.campaign, spends_helper._get_budgets_active_today(self.campaign)
+    #         )
+    #         self.assertEqual({self.budget: 150}, estimate)
 
     def test_multiple_budgets(self):
         today = dates_helper.local_today()
