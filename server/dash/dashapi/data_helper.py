@@ -3,9 +3,7 @@ from dash import models
 
 
 def campaign_has_available_budget(campaign):
-    if campaign.real_time_campaign_stop:
-        return True
-    return campaign.budgets.all().filter_active().exists()
+    return True
 
 
 def filter_active_source_settings(ad_group_source_settings, ad_group_status_map):
