@@ -258,9 +258,9 @@ class AdGroupsLoaderTest(TestCase):
         self.assertDictEqual(
             self.loader.base_level_settings_map,
             {
-                1: {"campaign_has_available_budget": False},
-                2: {"campaign_has_available_budget": False},
-                3: {"campaign_has_available_budget": False},
+                1: {"campaign_has_available_budget": True},
+                2: {"campaign_has_available_budget": True},
+                3: {"campaign_has_available_budget": True},
             },
         )
 

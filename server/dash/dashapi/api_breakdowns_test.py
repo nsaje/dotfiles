@@ -119,8 +119,8 @@ AD_GROUP_2 = {
     "sspd_url": settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=2),
 }
 
-AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {"campaign_has_available_budget": False})
-AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {"campaign_has_available_budget": False})
+AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {"campaign_has_available_budget": True})
+AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {"campaign_has_available_budget": True})
 
 CONTENT_AD_1 = {
     "content_ad_id": 1,
