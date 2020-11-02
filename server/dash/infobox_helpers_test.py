@@ -201,7 +201,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         )
 
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(350, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
+        self.assertEqual(600, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
         q = "UPDATE dash_adgroupsettings SET state=2"

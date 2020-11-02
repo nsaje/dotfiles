@@ -83,7 +83,7 @@ class AdGroupSettingsMixin(object):
 
     # TODO: RTAP: remove after migration
     def update_daily_budget(self, request):
-        if not self.b1_sources_group_enabled:
+        if self.b1_sources_group_enabled:
             return
 
         ad_group_budget_data = self.ad_group.adgroupsource_set.filter_active().aggregate(
