@@ -208,7 +208,7 @@ class CreditViewSetTest(RESTAPITestCase):
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today(),
+            start_date=datetime.date.today() - datetime.timedelta(5),
             end_date=datetime.date.today() + datetime.timedelta(30),
             amount=200000,
             currency=dash.constants.Currency.USD,
