@@ -43,7 +43,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "zemantaone-new.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
+        "HOST": "z1redshift.int.zemanta.com",
         "PORT": 5439,
     },
     "stats-postgres": {
