@@ -15,7 +15,7 @@ from . import model
 
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
-AGENCIES_WITHOUT_CAMPAIGN_STOP = {55, 663}  # OEN  # FrontStory
+AGENCIES_WITHOUT_CAMPAIGN_STOP = {55, 663, 635}  # OEN  # FrontStory # PubOcean
 ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {
     settings.HARDCODED_ACCOUNT_ID_INPOWERED_1,
     settings.HARDCODED_ACCOUNT_ID_INPOWERED_2,
