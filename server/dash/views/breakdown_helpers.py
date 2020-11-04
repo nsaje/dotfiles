@@ -223,7 +223,9 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings):
     if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         daily_budget_edit_enabled = False
         daily_budget_edit_message = "This value cannot be edited because the ad group is on Autopilot."
-    if campaign_settings.autopilot:
+    if campaign_settings.autopilot or (
+        ad_group.campaign.account.agency_uses_realtime_autopilot() and ad_group.settings.b1_sources_group_enabled
+    ):
         daily_budget_edit_enabled = False
         daily_budget_edit_message = "This value cannot be edited because the campaign is on Autopilot."
 

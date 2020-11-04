@@ -162,23 +162,36 @@
                         [currencySymbol]="currencySymbol"
                         fractionSize="0"
                         [isDisabled]="
-                            !store.isAdGroupAutopilotEnabled() || isReadOnly
+                            state.extras.isCampaignAutopilotEnabled ||
+                            !state.entity.manageRtbSourcesAsOne ||
+                            isReadOnly
                         "
                         [errors]="state.fieldsErrors.autopilot.dailyBudget"
                         (valueChange)="store.setAutopilotDailyBudget($event)"
                     ></zem-currency-form-group>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
-                        *ngIf="
-                            !store.isAdGroupAutopilotEnabled() &&
-                            state.extras.isCampaignAutopilotEnabled
-                        "
+                        *ngIf="state.extras.isCampaignAutopilotEnabled"
                     >
                         <div
                             class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                         >
                             Ad group's daily budget setting isn't available
                             because campaign budget optimization is enabled.
+                        </div>
+                    </div>
+                    <div
+                        class="zem-settings-section__item zem-settings-section__item--indented"
+                        *ngIf="
+                            !state.extras.isCampaignAutopilotEnabled &&
+                            !state.entity.manageRtbSourcesAsOne
+                        "
+                    >
+                        <div
+                            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+                        >
+                            Ad group's daily budget setting isn't available
+                            because RTB sources are being managed separately.
                         </div>
                     </div>
                 </div>

@@ -482,10 +482,13 @@ def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, c
 def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     # TODO: RTAP: LEGACY
     if ad_group.campaign.account.agency_uses_realtime_autopilot():
-        return {
-            "enabled": False,
-            "message": "This media source doesn't support setting this value through the dashboard.",
-        }
+        if campaign_settings.autopilot or ad_group.settings.b1_sources_group_enabled:
+            return {
+                "enabled": False,
+                "message": "This media source doesn't support setting this value through the dashboard.",
+            }
+        else:
+            return {"enabled": True, "message": None}
 
     message = None
 
