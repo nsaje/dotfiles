@@ -8,9 +8,9 @@ var GridRenderingEngineType = require('../../../../features/analytics/analytics.
     .GridRenderingEngineType;
 var GridSelectionFilterType = require('../../../../features/analytics/analytics.constants')
     .GridSelectionFilterType;
-var BASE_GRID_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
+var BASE_GRID_COLUMN_TYPES = require('../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.config')
     .BASE_GRID_COLUMN_TYPES;
-var EXTERNAL_LINK_COLUMN_TYPES = require('../../../../features/analytics/analytics.config')
+var EXTERNAL_LINK_COLUMN_TYPES = require('../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.config')
     .EXTERNAL_LINK_COLUMN_TYPES;
 
 angular.module('one.widgets').factory('zemGridConstants', function() {

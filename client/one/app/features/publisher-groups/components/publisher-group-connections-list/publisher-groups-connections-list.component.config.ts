@@ -37,16 +37,20 @@ export const COLUMN_ACTIONS: ColDef = {
     pinned: 'right',
 };
 
-function usedOnTextGetter(item: PublisherGroupConnection): string {
-    return `${CONNECTION_LOCATION_TO_ENTITY[item.location]}: ${item.name ||
-        ''}`;
+function usedOnTextGetter(
+    params: LinkRendererParams<PublisherGroupConnection>
+): string {
+    return `${CONNECTION_LOCATION_TO_ENTITY[params.data.location]}: ${params
+        .data.name || ''}`;
 }
 
-function usedOnLinkGetter(item: PublisherGroupConnection): string {
+function usedOnLinkGetter(
+    params: LinkRendererParams<PublisherGroupConnection>
+): string {
     const levelParam: LevelParam =
-        CONNECTION_LOCATION_TO_LEVEL_PARAM[item.location];
+        CONNECTION_LOCATION_TO_LEVEL_PARAM[params.data.location];
     if (isDefined(levelParam)) {
-        return `/v2/analytics/${levelParam}/${item.id}`;
+        return `/v2/analytics/${levelParam}/${params.data.id}`;
     } else {
         return null;
     }

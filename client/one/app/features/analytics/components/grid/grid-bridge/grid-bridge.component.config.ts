@@ -3,23 +3,37 @@ import {
     SettingsState,
     PublisherTargetingStatus,
 } from '../../../../../app.constants';
+import {LinkCellIcon} from '../../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component.constants';
 import {GridColumnTypes} from '../../../analytics.constants';
 import {EntityStatus} from './grid-bridge.component.constants';
 
-export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
-    GridColumnTypes.BREAKDOWN,
+export const BASE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.TEXT,
     GridColumnTypes.PERCENT,
     GridColumnTypes.NUMBER,
-    GridColumnTypes.DATE_TIME,
-    GridColumnTypes.SECONDS,
     GridColumnTypes.CURRENCY,
-    GridColumnTypes.EXTERNAL_LINK,
+    GridColumnTypes.SECONDS,
+    GridColumnTypes.DATE_TIME,
+];
+
+export const EXTERNAL_LINK_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.ICON_LINK,
     GridColumnTypes.VISIBLE_LINK,
     GridColumnTypes.TEXT_LINK,
-    GridColumnTypes.INTERNAL_LINK,
+];
+
+export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
+    GridColumnTypes.BREAKDOWN,
     GridColumnTypes.SUBMISSION_STATUS,
+    GridColumnTypes.TEXT,
+    GridColumnTypes.NUMBER,
+    GridColumnTypes.CURRENCY,
+    GridColumnTypes.PERCENT,
+    GridColumnTypes.DATE_TIME,
+    GridColumnTypes.SECONDS,
+    GridColumnTypes.ICON_LINK,
+    GridColumnTypes.VISIBLE_LINK,
+    GridColumnTypes.TEXT_LINK,
 ];
 
 export const PINNED_GRID_COLUMN_TYPES: GridColumnTypes[] = [
@@ -89,4 +103,26 @@ export const BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH: {
     [Breakdown.OPERATING_SYSTEM]: 70,
     [Breakdown.BROWSER]: 70,
     [Breakdown.CONNECTION_TYPE]: 70,
+};
+
+export const EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_COLUMN_WIDTH: {
+    [key in
+        | GridColumnTypes.ICON_LINK
+        | GridColumnTypes.VISIBLE_LINK
+        | GridColumnTypes.TEXT]?: number;
+} = {
+    [GridColumnTypes.ICON_LINK]: 100,
+    [GridColumnTypes.VISIBLE_LINK]: 100,
+    [GridColumnTypes.TEXT]: 300,
+};
+
+export const EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_LINK_CELL_ICON: {
+    [key in
+        | GridColumnTypes.ICON_LINK
+        | GridColumnTypes.VISIBLE_LINK
+        | GridColumnTypes.TEXT]?: LinkCellIcon;
+} = {
+    [GridColumnTypes.ICON_LINK]: LinkCellIcon.Link,
+    [GridColumnTypes.VISIBLE_LINK]: LinkCellIcon.Link,
+    [GridColumnTypes.TEXT]: null,
 };

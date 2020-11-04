@@ -8,16 +8,17 @@ import {ColumnMapperProvider} from '../mappers/column.provider';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridColumn} from '../../types/grid-column';
 import {BreakdownColumnMapper} from '../mappers/breakdown.mapper';
-import {
-    BASE_GRID_COLUMN_TYPES,
-    EXTERNAL_LINK_COLUMN_TYPES,
-} from '../../../../../analytics.config';
 import {CheckboxColumnMapper} from '../mappers/checkbox.mapper';
 import {StatsDataColumnMapper} from '../mappers/stats-data.mapper';
 import {StatusColumnMapper} from '../mappers/status.mapper';
 import {ActionsColumnMapper} from '../mappers/actions.mapper';
 import {PerformanceIndicatorColumnMapper} from '../mappers/performance-indicator.mapper';
 import {SubmissionStatusColumnMapper} from '../mappers/submission-status.mapper';
+import {ExternalLinkColumnMapper} from '../mappers/external-link.mapper';
+import {
+    BASE_GRID_COLUMN_TYPES,
+    EXTERNAL_LINK_COLUMN_TYPES,
+} from '../../grid-bridge.component.config';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -55,19 +56,19 @@ export class SetColumnsActionReducer extends StoreReducer<
             useClass: SubmissionStatusColumnMapper,
         },
         {
+            provide: GridColumnTypes.EXTERNAL_LINK,
+            useClass: ExternalLinkColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.THUMBNAIL,
+            useClass: StatsDataColumnMapper,
+        },
+        {
             provide: GridColumnTypes.BASE_FIELD,
             useClass: StatsDataColumnMapper,
         },
         {
             provide: GridColumnTypes.EDITABLE_BASE_FIELD,
-            useClass: StatsDataColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.EXTERNAL_LINK,
-            useClass: StatsDataColumnMapper,
-        },
-        {
-            provide: GridColumnTypes.THUMBNAIL,
             useClass: StatsDataColumnMapper,
         },
         {

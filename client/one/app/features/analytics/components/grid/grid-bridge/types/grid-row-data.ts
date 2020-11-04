@@ -21,6 +21,7 @@ export interface GridRowDataStatsValue {
     value: string | number | SubmissionStatus[];
     popoverMessage?: string;
     url?: string;
+    text?: string;
     overall?: Emoticon;
     list?: PerformanceItem[];
 }

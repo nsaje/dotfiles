@@ -33,9 +33,9 @@ export const COLUMN_AD_GROUP_NAME: ColDef = {
     resizable: true,
     cellRendererFramework: LinkCellComponent,
     cellRendererParams: {
-        getText: item => item.adGroupName,
-        getLink: item =>
-            `${RoutePathName.APP_BASE}/${RoutePathName.ANALYTICS}/${LevelParam.AD_GROUP}/${item.adGroupId}`,
+        getText: params => params.data.adGroupName,
+        getLink: params =>
+            `${RoutePathName.APP_BASE}/${RoutePathName.ANALYTICS}/${LevelParam.AD_GROUP}/${params.data.adGroupId}`,
     } as LinkRendererParams<RuleHistory>,
 };
 

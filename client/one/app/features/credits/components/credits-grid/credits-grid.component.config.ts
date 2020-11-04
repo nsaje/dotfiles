@@ -40,8 +40,8 @@ export const COLUMN_ID: ColDef = {
     resizable: false,
     cellRendererFramework: LinkCellComponent,
     cellRendererParams: {
-        getText: item => item.id,
-        getLink: item => item.salesforceUrl,
+        getText: params => params.data.id,
+        getLink: params => params.data.salesforceUrl,
     } as LinkRendererParams<Credit>,
 };
 

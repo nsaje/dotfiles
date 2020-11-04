@@ -5,9 +5,15 @@
         href="{{ link }}"
         target="_blank"
     >
-        {{ text }}
+        <span
+            *ngIf="text"
+            class="zem-link-cell__text zem-link-cell__link-item"
+            >{{ text }}</span
+        >
+        <div
+            *ngIf="linkIcon"
+            class="zem-link-cell__icon {{ linkIcon }} zem-link-cell__link-item"
+        ></div>
     </a>
-    <div *ngIf="!link" class="zem-link-cell__text">
-        {{ text }}
-    </div>
+    <span *ngIf="!link" class="zem-link-cell__text">N/A</span>
 </div>

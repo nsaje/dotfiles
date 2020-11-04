@@ -6,8 +6,8 @@
     text-overflow: ellipsis;
 }
 
-.zem-link-cell__link,
-.zem-link-cell__text {
+.zem-link-cell__link {
+    display: flex;
     color: @color--secondary;
     font-weight: 500;
 }
@@ -15,4 +15,20 @@
 .zem-link-cell__link:hover,
 .zem-link-cell__link:active {
     color: @color--secondary;
+}
+
+.zem-link-cell__link-item:not(:last-child) {
+    margin-right: 5px;
+}
+
+.zem-link-cell__icon {
+    display: inline-block;
+}
+
+.zem-link-cell__icon--link {
+    background: url('@{images-folder}/link.svg') no-repeat center;
+    background-size: 15px;
+    width: 15px;
+    height: 15px;
+    position: relative;
 }
