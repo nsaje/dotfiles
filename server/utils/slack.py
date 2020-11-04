@@ -30,7 +30,7 @@ MESSAGE_TYPE_INFO = ":information_source:"
 MESSAGE_TYPE_WARNING = ":warning:"
 MESSAGE_TYPE_CRITICAL = ":rage:"
 
-CHANNEL_ALERTS_RND_PRODOPS = "alert-rnd-prodops"
+CHANNEL_ALERTS_RND_PRODOPS = "rnd-solutions-feed"
 CHANNEL_ZEM_FEED_BUDGETS = "zem-feed-budgets"
 CHANNEL_ZEM_FEED_NEW_ACCOUNTS = "zem-feed-new-accounts"
 CHANNEL_ZEM_FEED_CAMPSTOP = "zem-feed-campstop"

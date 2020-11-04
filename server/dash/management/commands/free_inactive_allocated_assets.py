@@ -56,7 +56,7 @@ class Command(Z1Command):
 
         if error_count > 0:
             pagerduty_helper.trigger(
-                pagerduty_helper.PagerDutyEventType.PRODOPS,
+                pagerduty_helper.PagerDutyEventType.Z1,
                 incident_key,
                 "Z1 Free Allocated Assets job encountered {} errors. Please investigate!".format(error_count),
                 links={
@@ -64,6 +64,4 @@ class Command(Z1Command):
                 },
             )
         else:
-            pagerduty_helper.resolve(
-                pagerduty_helper.PagerDutyEventType.PRODOPS, incident_key, "Job encountered no errors."
-            )
+            pagerduty_helper.resolve(pagerduty_helper.PagerDutyEventType.Z1, incident_key, "Job encountered no errors.")

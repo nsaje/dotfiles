@@ -415,10 +415,6 @@ DCRON = {
     },
     # Job ownersip overrides.
     "ownerships": {
-        "audit_autopilot": dcron_constants.Ownership.PRODOPS,
-        "audit_credits": dcron_constants.Ownership.PRODOPS,
-        "ingest_product_feeds": dcron_constants.Ownership.PRODOPS,
-        "monitor_product_feeds_uploads": dcron_constants.Ownership.PRODOPS,
         "publisher_classification": dcron_constants.Ownership.PRODOPS,
         "refresh_partnerstats": dcron_constants.Ownership.PRODOPS,
         "send_supply_report_emails": dcron_constants.Ownership.PRODOPS,
