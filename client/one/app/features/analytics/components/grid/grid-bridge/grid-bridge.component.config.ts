@@ -7,21 +7,6 @@ import {LinkCellIcon} from '../../../../../shared/components/smart-grid/componen
 import {GridColumnTypes} from '../../../analytics.constants';
 import {EntityStatus} from './grid-bridge.component.constants';
 
-export const BASE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
-    GridColumnTypes.TEXT,
-    GridColumnTypes.PERCENT,
-    GridColumnTypes.NUMBER,
-    GridColumnTypes.CURRENCY,
-    GridColumnTypes.SECONDS,
-    GridColumnTypes.DATE_TIME,
-];
-
-export const EXTERNAL_LINK_COLUMN_TYPES: GridColumnTypes[] = [
-    GridColumnTypes.ICON_LINK,
-    GridColumnTypes.VISIBLE_LINK,
-    GridColumnTypes.TEXT_LINK,
-];
-
 export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.BREAKDOWN,
     GridColumnTypes.SUBMISSION_STATUS,
@@ -131,3 +116,5 @@ export const EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_LINK_CELL_ICON: {
     [GridColumnTypes.VISIBLE_LINK]: LinkCellIcon.Link,
     [GridColumnTypes.TEXT]: null,
 };
+
+export const AUTOPILOT_BREAKDOWNS: Breakdown[] = [Breakdown.MEDIA_SOURCE];

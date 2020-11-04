@@ -3,8 +3,9 @@
         class="zem-thumbnail-cell__popover zem-thumbnail-cell__popover--trigger"
         [zemPopover]="adPreviewTemplate"
         [stayOpenOnHover]="true"
+        [popoverOpenDelay]="500"
         triggers="mouseenter:mouseleave"
-        placement="left"
+        [placement]="['left', 'auto']"
         container="body"
     >
         <img
@@ -22,21 +23,21 @@
         <zem-native-ad-preview
             *ngIf="isNative"
             class="zem-native-ad-preview"
-            [url]="stats.display_url.value"
+            [url]="displayUrl"
             [landscapeHostedImageUrl]="landscape"
             [hostedImageUrl]="square"
             [hostedIconUrl]="icon"
-            [title]="stats.breakdown_name.text"
-            [brandName]="stats.brand_name.value"
-            [description]="stats.description.value"
-            [displayUrl]="stats.display_url.value"
-            [callToAction]="stats.call_to_action.value"
+            [title]="breakdownName"
+            [brandName]="brandName"
+            [description]="description"
+            [displayUrl]="displayUrl"
+            [callToAction]="callToAction"
         ></zem-native-ad-preview>
         <!-- DISPLAY CREATIVES -->
         <zem-display-ad-preview
             *ngIf="isImage || isAdTag"
             class="zem-display-ad-preview"
-            [url]="stats.display_url.value"
+            [url]="displayUrl"
             [adType]="adType"
             [displayHostedImageUrl]="image"
             [adTag]="adTag"

@@ -23,6 +23,8 @@ export const SMART_GRID_ROW_ARCHIVED_CLASS =
 export const SMART_GRID_CELL_METRIC_CLASS = 'zem-grid-bridge__ag-cell--metric';
 export const SMART_GRID_CELL_BID_MODIFIER_CLASS =
     'zem-grid-bridge__ag-cell--bid-modifier';
+export const SMART_GRID_CELL_CURRENCY_CLASS =
+    'zem-grid-bridge__ag-cell--currency';
 
 export enum EntityStatus {
     ACTIVE = 'Active',

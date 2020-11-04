@@ -1,9 +1,18 @@
-import {Currency, DefaultFractionSize} from '../../../../../../app.constants';
+import {
+    AdGroupSettingsAutopilotState,
+    Breakdown,
+    Currency,
+    DefaultFractionSize,
+    SettingsState,
+} from '../../../../../../app.constants';
 import {GridColumnTypes} from '../../../../analytics.constants';
 import * as moment from 'moment';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import * as numericHelpers from '../../../../../../shared/helpers/numeric.helpers';
 import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
+import {GridRow} from '../types/grid-row';
+import {GridRowDataStatsValue} from '../types/grid-row-data';
+import {AUTOPILOT_BREAKDOWNS} from '../grid-bridge.component.config';
 
 export interface FormatGridColumnValueOptions {
     type: GridColumnTypes;
@@ -143,4 +152,43 @@ function formatGridColumnValueAsCurrency(
         currency,
         fractionSize
     );
+}
+
+//
+// AUTOPILOT RELATED LOGIC
+// TODO (msuber): remove after migration to RTA completed
+//
+
+export function isAutopilotIconShown(
+    row: GridRow,
+    breakdown: Breakdown,
+    campaignAutopilot: boolean,
+    adGroupSettingsAutopilotState: AdGroupSettingsAutopilotState
+): boolean {
+    if (!AUTOPILOT_BREAKDOWNS.includes(breakdown)) {
+        return false;
+    }
+    if (commonHelpers.getValueOrDefault(campaignAutopilot, false)) {
+        return isRowActive(row);
+    }
+    if (
+        adGroupSettingsAutopilotState === AdGroupSettingsAutopilotState.INACTIVE
+    ) {
+        return false;
+    }
+    return isRowActive(row);
+}
+
+function isRowActive(row: GridRow): boolean {
+    if (commonHelpers.getValueOrDefault(row.data?.archived, false)) {
+        return false;
+    }
+
+    const state: GridRowDataStatsValue = row.data.stats
+        .state as GridRowDataStatsValue;
+    if (!commonHelpers.isDefined(state)) {
+        return false;
+    }
+
+    return state.value === SettingsState.ACTIVE;
 }

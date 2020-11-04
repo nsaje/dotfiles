@@ -14,7 +14,7 @@ export class ThumbnailColumnMapper extends ColumnMapper {
             width: THUMBNAIL_COLUMN_WIDTH,
             cellRendererFramework: ThumbnailCellComponent,
             valueFormatter: (params: ValueFormatterParams) => {
-                return params.value;
+                return '';
             },
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';

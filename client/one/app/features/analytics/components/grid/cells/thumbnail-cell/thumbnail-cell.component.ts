@@ -22,6 +22,12 @@ import {
 export class ThumbnailCellComponent implements ICellRendererAngularComp {
     stats: GridRowDataStats;
 
+    displayUrl: string;
+    breakdownName: string;
+    brandName: string;
+    description: string;
+    callToAction: string;
+
     image: string;
     square: string;
     landscape: string;
@@ -39,31 +45,55 @@ export class ThumbnailCellComponent implements ICellRendererAngularComp {
     agInit(params: ICellRendererParams): void {
         this.stats = (params.data as GridRow).data.stats;
 
-        this.image = (params.valueFormatted as GridRowDataStatsValue).image;
-        this.square = (params.valueFormatted as GridRowDataStatsValue).square;
-        this.landscape = (params.valueFormatted as GridRowDataStatsValue).landscape;
-        this.icon = (params.valueFormatted as GridRowDataStatsValue).icon;
-        this.adTag = (params.valueFormatted as GridRowDataStatsValue).ad_tag;
+        this.displayUrl = commonHelpers.getValueOrDefault(
+            (this.stats.display_url as GridRowDataStatsValue)?.value as string,
+            ''
+        );
+        this.breakdownName = commonHelpers.getValueOrDefault(
+            (this.stats.breakdown_name as GridRowDataStatsValue)
+                ?.text as string,
+            ''
+        );
+        this.brandName = commonHelpers.getValueOrDefault(
+            (this.stats.brand_name as GridRowDataStatsValue)?.value as string,
+            ''
+        );
+        this.description = commonHelpers.getValueOrDefault(
+            (this.stats.description as GridRowDataStatsValue)?.value as string,
+            ''
+        );
+        this.callToAction = commonHelpers.getValueOrDefault(
+            (this.stats.call_to_action as GridRowDataStatsValue)
+                ?.value as string,
+            ''
+        );
 
-        this.adType = this.getAdType(this.stats.creative_type?.value as string);
+        this.image = (params.value as GridRowDataStatsValue).image;
+        this.square = (params.value as GridRowDataStatsValue).square;
+        this.landscape = (params.value as GridRowDataStatsValue).landscape;
+        this.icon = (params.value as GridRowDataStatsValue).icon;
+        this.adTag = (params.value as GridRowDataStatsValue).ad_tag;
+
+        this.adType = this.getAdType(
+            (this.stats.creative_type as GridRowDataStatsValue)?.value as string
+        );
         this.isImage = this.adType === AdType.IMAGE;
         this.isAdTag = this.adType === AdType.AD_TAG;
         this.isNative = !this.isImage && !this.isAdTag;
 
         const creativeSize = this.parseCreativeSize(
-            this.stats.creative_size?.value as string
+            (this.stats.creative_size as GridRowDataStatsValue)?.value as string
         );
         this.creativeWidth = creativeSize[0];
         this.creativeHeight = creativeSize[1];
     }
 
     refresh(params: ICellRendererParams): boolean {
-        const image = (params.valueFormatted as GridRowDataStatsValue).image;
-        const square = (params.valueFormatted as GridRowDataStatsValue).square;
-        const landscape = (params.valueFormatted as GridRowDataStatsValue)
-            .landscape;
-        const icon = (params.valueFormatted as GridRowDataStatsValue).icon;
-        const adTag = (params.valueFormatted as GridRowDataStatsValue).ad_tag;
+        const image = (params.value as GridRowDataStatsValue).image;
+        const square = (params.value as GridRowDataStatsValue).square;
+        const landscape = (params.value as GridRowDataStatsValue).landscape;
+        const icon = (params.value as GridRowDataStatsValue).icon;
+        const adTag = (params.value as GridRowDataStatsValue).ad_tag;
 
         if (
             this.image !== image ||

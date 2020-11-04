@@ -10,8 +10,9 @@
                 : null
         "
         [stayOpenOnHover]="true"
+        [popoverOpenDelay]="500"
         triggers="mouseenter:mouseleave"
-        placement="left"
+        [placement]="['left', 'auto']"
         container="body"
     >
         <span

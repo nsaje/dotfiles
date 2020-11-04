@@ -23,8 +23,14 @@
                 <div ng-if="!tab.activated" class="zem-dummy-grid-container">
                     <div class="zem-dummy-grid-container__actions"></div>
                     <div class="zem-dummy-grid-container__header"></div>
-                    <div class="zem-dummy-grid-container__body"></div>
-                    <div class="zem-dummy-grid-container__footer"></div>
+                    <div
+                        ng-if="tab.grid.renderingEngine === 'CUSTOM'"
+                        class="zem-dummy-grid-container__body"
+                    ></div>
+                    <div
+                        ng-if="tab.grid.renderingEngine === 'CUSTOM'"
+                        class="zem-dummy-grid-container__footer"
+                    ></div>
                 </div>
                 <div ng-if="tab.activated">
                     <zem-grid-container-actions

@@ -76,6 +76,7 @@ export class GridBridgeComponent
     private onSelectionUpdatedDebouncer$: Subject<void> = new Subject<void>();
     private onSelectionUpdatedHandler: Function;
     private onDataUpdatedErrorHandler: Function;
+    private onRowDataUpdatedErrorHandler: Function;
 
     private sidebarContainerContentElement: Element;
 
@@ -131,6 +132,9 @@ export class GridBridgeComponent
         }
         if (commonHelpers.isDefined(this.onDataUpdatedErrorHandler)) {
             this.onDataUpdatedErrorHandler();
+        }
+        if (commonHelpers.isDefined(this.onRowDataUpdatedErrorHandler)) {
+            this.onRowDataUpdatedErrorHandler();
         }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -212,6 +216,15 @@ export class GridBridgeComponent
                     grid.meta.scope,
                     this.handleDataUpdateError.bind(this)
                 );
+                if (
+                    commonHelpers.isDefined(this.onRowDataUpdatedErrorHandler)
+                ) {
+                    this.onRowDataUpdatedErrorHandler();
+                }
+                this.onDataUpdatedErrorHandler = grid.meta.api.onRowDataUpdatedError(
+                    grid.meta.scope,
+                    this.handleRowDataUpdateError.bind(this)
+                );
             })
         );
     }
@@ -234,6 +247,28 @@ export class GridBridgeComponent
         this.gridApi.hideOverlay();
         this.gridApi.showNoRowsOverlay();
         this.notificationService.error(GRID_API_LOADING_DATA_ERROR_MESSAGE);
+    }
+
+    private handleRowDataUpdateError(
+        $scope: any,
+        payload: {
+            row: GridRow;
+        }
+    ) {
+        if (!commonHelpers.isDefined(this.gridApi)) {
+            return;
+        }
+        if (
+            !commonHelpers.isDefined(payload) ||
+            !commonHelpers.isDefined(payload.row)
+        ) {
+            return;
+        }
+        const rowNode = this.gridApi.getRowNode(payload.row.id);
+        this.gridApi.refreshCells({
+            rowNodes: [rowNode],
+            force: true,
+        });
     }
 
     private setBreakdownColumnPinnedProperty(): void {

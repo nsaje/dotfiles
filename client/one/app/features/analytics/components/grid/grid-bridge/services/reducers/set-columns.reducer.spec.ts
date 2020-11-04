@@ -28,7 +28,7 @@ class TestSetColumnsActionReducer extends SetColumnsActionReducer {
         ColumnMapper
     >[] = [
         {
-            provide: GridColumnTypes.BASE_FIELD,
+            provide: GridColumnTypes.TEXT,
             useClass: TestColumnMapper,
         },
     ];

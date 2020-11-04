@@ -206,11 +206,20 @@ angular
                 var deferred = $q.defer();
                 dataSource.saveData(value, row.data, column.data).then(
                     function(data) {
-                        if (data.notification)
+                        if (data.notification) {
                             showNotification(data.notification);
+                        }
+                        deferred.resolve(data);
                     },
-                    function(err) {
-                        deferred.reject(err);
+                    function(error) {
+                        grid.meta.pubsub.notify(
+                            grid.meta.pubsub.EVENTS.ROW_UPDATED_ERROR,
+                            {
+                                row: row,
+                                error: error,
+                            }
+                        );
+                        deferred.reject(error);
                     }
                 );
                 return deferred.promise;

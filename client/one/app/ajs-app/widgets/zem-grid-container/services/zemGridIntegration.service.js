@@ -234,11 +234,13 @@ angular
                 Level.ALL_ACCOUNTS,
                 Level.ACCOUNTS,
                 Level.CAMPAIGNS,
+                Level.AD_GROUPS,
             ];
             var smartGridSupportedBreakdowns = [
                 Breakdown.ACCOUNT,
                 Breakdown.CAMPAIGN,
                 Breakdown.AD_GROUP,
+                Breakdown.CONTENT_AD,
                 Breakdown.PUBLISHER,
                 Breakdown.PLACEMENT,
                 Breakdown.MEDIA_SOURCE,

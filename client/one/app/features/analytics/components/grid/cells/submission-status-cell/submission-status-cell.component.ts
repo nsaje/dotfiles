@@ -24,7 +24,7 @@ export class SubmissionStatusCellComponent implements ICellRendererAngularComp {
     constructor(private authStore: AuthStore) {}
 
     agInit(params: ICellRendererParams): void {
-        this.items = (params.valueFormatted as SubmissionStatus[]) || [];
+        this.items = (params.value as SubmissionStatus[]) || [];
         this.approvedItems = this.items.filter(
             item => item.status === ContentAdApprovalStatus.APPROVED
         );
@@ -43,7 +43,7 @@ export class SubmissionStatusCellComponent implements ICellRendererAngularComp {
     refresh(params: ICellRendererParams): boolean {
         const isArchived = this.isRowArchived(params.data as GridRow);
         if (
-            !deepEqual(this.items, params.valueFormatted) ||
+            !deepEqual(this.items, params.value) ||
             this.isArchived !== isArchived
         ) {
             return false;

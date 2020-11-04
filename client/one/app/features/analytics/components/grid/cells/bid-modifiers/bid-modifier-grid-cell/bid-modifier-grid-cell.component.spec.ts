@@ -9,7 +9,6 @@ import {
     Currency,
     Level,
 } from '../../../../../../../app.constants';
-import {AuthStore} from '../../../../../../../core/auth/services/auth.store';
 import {BidModifier} from '../../../../../../../core/bid-modifiers/types/bid-modifier';
 import {SharedModule} from '../../../../../../../shared/shared.module';
 import {Grid} from '../../../grid-bridge/types/grid';
@@ -25,7 +24,6 @@ import {BidModifierRendererParams} from './type/bid-modifier.renderer-params';
 describe('BidModifierGridCellComponent', () => {
     let component: BidModifierGridCellComponent;
     let fixture: ComponentFixture<BidModifierGridCellComponent>;
-    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     let grid: Partial<Grid>;
     let stats: GridRowDataStatsValue;
@@ -33,33 +31,7 @@ describe('BidModifierGridCellComponent', () => {
     let params: Partial<BidModifierRendererParams>;
 
     beforeEach(() => {
-        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
-            'hasReadOnlyAccessOn',
-        ]);
-        authStoreStub.hasReadOnlyAccessOn.and.callFake(() => {
-            return false;
-        });
-
         TestBed.configureTestingModule({
-            providers: [
-                {
-                    provide: AuthStore,
-                    useValue: authStoreStub,
-                },
-                {
-                    provide: 'zemNavigationNewService',
-                    useValue: {
-                        getActiveAccount: () => {
-                            return {
-                                data: {
-                                    agencyId: 12345,
-                                },
-                                id: 12345,
-                            };
-                        },
-                    },
-                },
-            ],
             declarations: [
                 EditableCellComponent,
                 BidRangeInfoComponent,
@@ -105,7 +77,8 @@ describe('BidModifierGridCellComponent', () => {
 
         params = {
             data: {},
-            valueFormatted: stats,
+            value: stats,
+            valueFormatted: '',
             getGrid: (params: BidModifierRendererParams) => {
                 return grid as Grid;
             },
@@ -127,6 +100,7 @@ describe('BidModifierGridCellComponent', () => {
         expect(component).toBeDefined();
         component.agInit(params as BidModifierRendererParams);
 
+        expect(component.grid).toEqual(grid as Grid);
         expect(component.row).toEqual({} as GridRow);
         expect(component.level).toEqual(Level.AD_GROUPS);
         expect(component.breakdown).toEqual(Breakdown.CONTENT_AD);

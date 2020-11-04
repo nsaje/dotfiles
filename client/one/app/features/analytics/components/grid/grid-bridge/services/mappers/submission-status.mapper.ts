@@ -14,7 +14,7 @@ export class SubmissionStatusColumnMapper extends ColumnMapper {
             width: SUBMISSION_STATUS_COLUMN_WIDTH,
             cellRendererFramework: SubmissionStatusCellComponent,
             valueFormatter: (params: ValueFormatterParams) => {
-                return params.value;
+                return '';
             },
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';

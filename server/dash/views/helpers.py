@@ -392,29 +392,29 @@ def get_editable_fields(
 ):
     editable_fields = {}
     editable_fields["status_setting"] = _get_editable_fields_status_setting(
-        ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
+        user, ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
     )
 
     editable_fields["bid_cpc"] = _get_editable_fields_bid_cpc(
-        ad_group, ad_group_source, ad_group_settings, campaign_settings
+        user, ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
     editable_fields["bid_cpm"] = _get_editable_fields_bid_cpm(
-        ad_group, ad_group_source, ad_group_settings, campaign_settings
+        user, ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
     editable_fields["daily_budget"] = _get_editable_fields_daily_budget(
-        ad_group, ad_group_source, ad_group_settings, campaign_settings
+        user, ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
     editable_fields["bid_modifier"] = _get_editable_fields_bid_modifier(
-        ad_group, ad_group_source, ad_group_settings, campaign_settings
+        user, ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
     return editable_fields
 
 
-def _get_editable_fields_bid_modifier(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+def _get_editable_fields_bid_modifier(user, ad_group, ad_group_source, ad_group_settings, campaign_settings):
     # TODO: RTAP: LEGACY: in transitional period modifiers won't be editable when on autopilot;
     # then we will reset all to 1.0 and enable editing
     if campaign_settings.autopilot and ad_group.campaign.account.agency_uses_realtime_autopilot():
@@ -433,10 +433,10 @@ def _get_editable_fields_bid_modifier(ad_group, ad_group_source, ad_group_settin
             ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
-    return {"enabled": message is None, "message": message}
+    return {"enabled": message is None and user.has_write_perm_on(ad_group), "message": message}
 
 
-def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+def _get_editable_fields_bid_cpc(user, ad_group, ad_group_source, ad_group_settings, campaign_settings):
     # TODO: RTAP: LEGACY
     if ad_group.campaign.account.agency_uses_realtime_autopilot():
         return {
@@ -455,10 +455,10 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
             ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
-    return {"enabled": message is None, "message": message}
+    return {"enabled": message is None and user.has_write_perm_on(ad_group), "message": message}
 
 
-def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+def _get_editable_fields_bid_cpm(user, ad_group, ad_group_source, ad_group_settings, campaign_settings):
     # TODO: RTAP: LEGACY
     if ad_group.campaign.account.agency_uses_realtime_autopilot():
         return {
@@ -476,10 +476,10 @@ def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, c
             ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
-    return {"enabled": message is None, "message": message}
+    return {"enabled": message is None and user.has_write_perm_on(ad_group), "message": message}
 
 
-def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+def _get_editable_fields_daily_budget(user, ad_group, ad_group_source, ad_group_settings, campaign_settings):
     # TODO: RTAP: LEGACY
     if ad_group.campaign.account.agency_uses_realtime_autopilot():
         if campaign_settings.autopilot or ad_group.settings.b1_sources_group_enabled:
@@ -488,7 +488,7 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
                 "message": "This media source doesn't support setting this value through the dashboard.",
             }
         else:
-            return {"enabled": True, "message": None}
+            return {"enabled": user.has_write_perm_on(ad_group), "message": None}
 
     message = None
 
@@ -502,11 +502,11 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
             ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
-    return {"enabled": message is None, "message": message}
+    return {"enabled": message is None and user.has_write_perm_on(ad_group), "message": message}
 
 
 def _get_editable_fields_status_setting(
-    ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
+    user, ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
 ):
     message = None
 
@@ -527,7 +527,7 @@ def _get_editable_fields_status_setting(
     elif message is None and not check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPM too low."
 
-    return {"enabled": message is None, "message": message}
+    return {"enabled": message is None and user.has_write_perm_on(ad_group), "message": message}
 
 
 def get_source_supply_dash_disabled_message(ad_group_source, source):

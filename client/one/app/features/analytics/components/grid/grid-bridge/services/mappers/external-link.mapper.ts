@@ -20,11 +20,11 @@ export class ExternalLinkColumnMapper extends ColumnMapper {
             cellRendererFramework: LinkCellComponent,
             cellRendererParams: {
                 getText: (params: LinkRendererParams<GridRow>) => {
-                    const value: GridRowDataStatsValue = params.valueFormatted;
+                    const value: GridRowDataStatsValue = params.value;
                     return value?.text;
                 },
                 getLink: (params: LinkRendererParams<GridRow>) => {
-                    const value: GridRowDataStatsValue = params.valueFormatted;
+                    const value: GridRowDataStatsValue = params.value;
                     return value?.url;
                 },
                 getLinkIcon: (params: LinkRendererParams<GridRow>) => {
@@ -34,7 +34,7 @@ export class ExternalLinkColumnMapper extends ColumnMapper {
                 },
             } as LinkRendererParams<GridRow>,
             valueFormatter: (params: ValueFormatterParams) => {
-                return params.value;
+                return '';
             },
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';

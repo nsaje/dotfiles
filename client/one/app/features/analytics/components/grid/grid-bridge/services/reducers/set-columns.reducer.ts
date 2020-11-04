@@ -15,12 +15,9 @@ import {ActionsColumnMapper} from '../mappers/actions.mapper';
 import {PerformanceIndicatorColumnMapper} from '../mappers/performance-indicator.mapper';
 import {SubmissionStatusColumnMapper} from '../mappers/submission-status.mapper';
 import {ExternalLinkColumnMapper} from '../mappers/external-link.mapper';
-import {
-    BASE_GRID_COLUMN_TYPES,
-    EXTERNAL_LINK_COLUMN_TYPES,
-} from '../../grid-bridge.component.config';
 import {ThumbnailColumnMapper} from '../mappers/thumbnail.mapper';
 import {BidModifierColumnMapper} from '../mappers/bid-modifier.mapper';
+import {CurrencyDataColumnMapper} from '../mappers/currency-data.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -58,7 +55,15 @@ export class SetColumnsActionReducer extends StoreReducer<
             useClass: SubmissionStatusColumnMapper,
         },
         {
-            provide: GridColumnTypes.EXTERNAL_LINK,
+            provide: GridColumnTypes.ICON_LINK,
+            useClass: ExternalLinkColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.VISIBLE_LINK,
+            useClass: ExternalLinkColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.TEXT_LINK,
             useClass: ExternalLinkColumnMapper,
         },
         {
@@ -66,11 +71,27 @@ export class SetColumnsActionReducer extends StoreReducer<
             useClass: ThumbnailColumnMapper,
         },
         {
-            provide: GridColumnTypes.BASE_FIELD,
+            provide: GridColumnTypes.TEXT,
             useClass: StatsDataColumnMapper,
         },
         {
-            provide: GridColumnTypes.EDITABLE_BASE_FIELD,
+            provide: GridColumnTypes.PERCENT,
+            useClass: StatsDataColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.NUMBER,
+            useClass: StatsDataColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.CURRENCY,
+            useClass: CurrencyDataColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.SECONDS,
+            useClass: StatsDataColumnMapper,
+        },
+        {
+            provide: GridColumnTypes.DATE_TIME,
             useClass: StatsDataColumnMapper,
         },
         {
@@ -97,31 +118,10 @@ export class SetColumnsActionReducer extends StoreReducer<
     }
 
     private getColumnMapper(column: GridColumn): ColumnMapper | null {
-        const gridColumnType = this.getGridColumnType(column);
-        const provider = this.providers.find(p => p.provide === gridColumnType);
+        const provider = this.providers.find(p => p.provide === column.type);
         if (commonHelpers.isDefined(provider)) {
             return new provider.useClass();
         }
         return null;
-    }
-
-    private getGridColumnType(column: GridColumn): GridColumnTypes {
-        const gridColumnType = column.type || GridColumnTypes.BASE_FIELD;
-
-        if (BASE_GRID_COLUMN_TYPES.includes(gridColumnType)) {
-            if (
-                commonHelpers.isDefined(column.data) &&
-                commonHelpers.getValueOrDefault(column.data.editable, false)
-            ) {
-                return GridColumnTypes.EDITABLE_BASE_FIELD;
-            }
-            return GridColumnTypes.BASE_FIELD;
-        }
-
-        if (EXTERNAL_LINK_COLUMN_TYPES.includes(gridColumnType)) {
-            return GridColumnTypes.EXTERNAL_LINK;
-        }
-
-        return gridColumnType;
     }
 }

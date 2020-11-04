@@ -17,8 +17,8 @@ export enum GridRowLevel {
 export enum GridColumnTypes {
     CHECKBOX = 'checkbox',
     BREAKDOWN = 'breakdown',
-    BASE_FIELD = 'baseField',
-    EDITABLE_BASE_FIELD = 'editableBaseField',
+    BASE_FIELD = 'baseField', // used only in custom grid
+    EDITABLE_BASE_FIELD = 'editableBaseField', // used only in custom grid
     TEXT = 'text',
     PERCENT = 'percent',
     NUMBER = 'number',

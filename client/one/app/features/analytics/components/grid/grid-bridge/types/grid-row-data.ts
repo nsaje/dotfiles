@@ -15,11 +15,11 @@ export interface GridRowData {
 }
 
 export interface GridRowDataStats {
-    [key: string]: GridRowDataStatsValue;
+    [key: string]: GridRowDataStatsValue | SubmissionStatus[];
 }
 
 export interface GridRowDataStatsValue {
-    value: string | number | SubmissionStatus[] | BidModifier;
+    value: string | number | BidModifier;
     popoverMessage?: string;
     url?: string;
     text?: string;

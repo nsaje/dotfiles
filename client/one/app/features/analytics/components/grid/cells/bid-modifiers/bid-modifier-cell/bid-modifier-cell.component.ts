@@ -99,7 +99,7 @@ export class BidModifierCellComponent
     ngAfterViewInit(): void {
         setTimeout(() => {
             this.hostElementOffsetHeight = `${this.hostElement.nativeElement.offsetHeight}px`;
-        }, 250);
+        });
     }
 
     onValueChange($event: string) {

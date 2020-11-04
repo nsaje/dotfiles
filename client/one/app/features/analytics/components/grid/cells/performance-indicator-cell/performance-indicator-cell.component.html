@@ -11,8 +11,9 @@
                 : null
         "
         [stayOpenOnHover]="true"
+        [popoverOpenDelay]="500"
         triggers="mouseenter:mouseleave"
-        placement="top"
+        [placement]="['top', 'auto']"
         container="body"
     />
 </div>

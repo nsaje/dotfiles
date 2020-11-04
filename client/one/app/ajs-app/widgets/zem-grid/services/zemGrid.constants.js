@@ -8,10 +8,6 @@ var GridRenderingEngineType = require('../../../../features/analytics/analytics.
     .GridRenderingEngineType;
 var GridSelectionFilterType = require('../../../../features/analytics/analytics.constants')
     .GridSelectionFilterType;
-var BASE_GRID_COLUMN_TYPES = require('../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.config')
-    .BASE_GRID_COLUMN_TYPES;
-var EXTERNAL_LINK_COLUMN_TYPES = require('../../../../features/analytics/components/grid/grid-bridge/grid-bridge.component.config')
-    .EXTERNAL_LINK_COLUMN_TYPES;
 
 angular.module('one.widgets').factory('zemGridConstants', function() {
     var constants = {
@@ -44,8 +40,20 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
         gridRenderingEngineType: GridRenderingEngineType,
     };
 
-    constants.gridColumnTypes.BASE_TYPES = BASE_GRID_COLUMN_TYPES;
-    constants.gridColumnTypes.EXTERNAL_LINK_TYPES = EXTERNAL_LINK_COLUMN_TYPES;
+    constants.gridColumnTypes.BASE_TYPES = [
+        GridColumnTypes.TEXT,
+        GridColumnTypes.PERCENT,
+        GridColumnTypes.NUMBER,
+        GridColumnTypes.CURRENCY,
+        GridColumnTypes.SECONDS,
+        GridColumnTypes.DATE_TIME,
+    ];
+
+    constants.gridColumnTypes.EXTERNAL_LINK_TYPES = [
+        GridColumnTypes.ICON_LINK,
+        GridColumnTypes.VISIBLE_LINK,
+        GridColumnTypes.TEXT_LINK,
+    ];
 
     constants.gridColumnTypes.EXPORT_TYPES = [].concat(
         [constants.gridColumnTypes.BREAKDOWN, constants.gridColumnTypes.STATUS],

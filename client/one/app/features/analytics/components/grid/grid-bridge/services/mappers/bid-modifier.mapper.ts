@@ -10,7 +10,10 @@ import {
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridRow} from '../../types/grid-row';
-import {GridRowDataStats} from '../../types/grid-row-data';
+import {
+    GridRowDataStats,
+    GridRowDataStatsValue,
+} from '../../types/grid-row-data';
 import {ColumnMapper} from './column.mapper';
 
 export class BidModifierColumnMapper extends ColumnMapper {
@@ -34,23 +37,19 @@ export class BidModifierColumnMapper extends ColumnMapper {
                         bid_modifier: {
                             ...row.data.stats.bid_modifier,
                             value: {
-                                ...(row.data.stats.bid_modifier
+                                ...((row.data.stats
+                                    .bid_modifier as GridRowDataStatsValue)
                                     .value as BidModifier),
                                 modifier: bidModifier.modifier,
                             } as BidModifier,
                         },
                     };
                     grid.meta.api.updateRowStats(row.data.breakdownId, stats);
-                    const rowNode = params.api.getRowNode(row.id);
-                    params.api.flashCells({
-                        columns: [GridColumnTypes.BID_MODIFIER_FIELD],
-                        rowNodes: [rowNode],
-                    });
                 },
             } as BidModifierRendererParams,
             cellClass: SMART_GRID_CELL_BID_MODIFIER_CLASS,
             valueFormatter: (params: ValueFormatterParams) => {
-                return params.value;
+                return '';
             },
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';

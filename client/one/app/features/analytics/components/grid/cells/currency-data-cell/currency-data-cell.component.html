@@ -1,0 +1,73 @@
+<div class="zem-currency-data-cell" #hostElement>
+    <zem-editable-cell
+        *ngIf="value"
+        class="zem-editable-cell"
+        [isEditable]="isEditable"
+        [mode]="mode"
+        [showAutopilotIcon]="showAutopilotIcon"
+        [containerElement]="gridElement"
+        [isMetric]="true"
+        (modeChange)="onModeChange($event)"
+        (placementChange)="onPlacementChange($event)"
+        (componentReady)="onEditableCellReady($event)"
+    >
+        <ng-container readMode>
+            <span
+                [zemPopover]="editMessageTemplate"
+                triggers="mouseenter:mouseleave"
+                [popoverOpenDelay]="500"
+                container="body"
+                [placement]="['right', 'auto']"
+            >
+                {{ valueFormatted }}
+            </span>
+        </ng-container>
+        <ng-container editMode>
+            <div
+                *ngIf="mode === EditableCellMode.EDIT"
+                class="zem-currency-data-cell__form"
+                [style.min-height]="hostElementOffsetHeight"
+            >
+                <div class="zem-currency-data-cell__form-input">
+                    <zem-currency-input
+                        class="zem-currency-input"
+                        [value]="value"
+                        [currencySymbol]="currencySymbol"
+                        [isFocused]="true"
+                        (inputBlur)="setValue($event)"
+                    ></zem-currency-input>
+                </div>
+                <div class="zem-currency-data-cell__form-buttons">
+                    <button
+                        *ngIf="isSaveInProgress"
+                        class="button button--highlight button--disabled zem-currency-data-cell__form-buttons-item"
+                        disabled
+                    >
+                        <span class="loader loader--white"></span>
+                    </button>
+                    <button
+                        *ngIf="!isSaveInProgress"
+                        class="button button--highlight button--with-icon check-icon zem-currency-data-cell__form-buttons-item"
+                        (click)="save()"
+                    >
+                        Save
+                    </button>
+                    <button
+                        class="button button--outline zem-currency-data-cell__form-buttons-item"
+                        [disabled]="isSaveInProgress"
+                        (click)="cancel()"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+    </zem-editable-cell>
+</div>
+
+<ng-template #editMessageTemplate>
+    <div
+        class="zem-currency-data-cell__popover-content"
+        [innerHTML]="editMessage"
+    ></div>
+</ng-template>

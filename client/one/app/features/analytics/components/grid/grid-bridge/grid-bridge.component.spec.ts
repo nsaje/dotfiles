@@ -23,6 +23,7 @@ describe('GridBridgeComponent', () => {
             api: {
                 onSelectionUpdated: () => {},
                 onDataUpdatedError: () => {},
+                onRowDataUpdatedError: () => {},
             },
         };
 
