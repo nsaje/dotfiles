@@ -19,6 +19,7 @@ import {
     BASE_GRID_COLUMN_TYPES,
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../grid-bridge.component.config';
+import {ThumbnailColumnMapper} from '../mappers/thumbnail.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -61,7 +62,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.THUMBNAIL,
-            useClass: StatsDataColumnMapper,
+            useClass: ThumbnailColumnMapper,
         },
         {
             provide: GridColumnTypes.BASE_FIELD,

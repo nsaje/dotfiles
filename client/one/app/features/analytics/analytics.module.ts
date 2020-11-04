@@ -31,6 +31,7 @@ import {GridCellActionsComponent} from './components/grid/cells/actions-cell/gri
 import {PerformanceIndicatorCellComponent} from './components/grid/cells/performance-indicator-cell/performance-indicator-cell.component';
 import {SubmissionStatusCellComponent} from './components/grid/cells/submission-status-cell/submission-status-cell.component';
 import {SubmissionStatusItemComponent} from './components/grid/cells/submission-status-cell/components/submission-status-item/submission-status-item.component';
+import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thumbnail-cell.component';
 
 @NgModule({
     declarations: [
@@ -61,6 +62,7 @@ import {SubmissionStatusItemComponent} from './components/grid/cells/submission-
         PerformanceIndicatorCellComponent,
         SubmissionStatusCellComponent,
         SubmissionStatusItemComponent,
+        ThumbnailCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -81,6 +83,7 @@ import {SubmissionStatusItemComponent} from './components/grid/cells/submission-
         ActionsCellComponent,
         PerformanceIndicatorCellComponent,
         SubmissionStatusCellComponent,
+        ThumbnailCellComponent,
     ],
 })
 export class AnalyticsModule {}

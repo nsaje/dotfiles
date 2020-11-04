@@ -1,0 +1,31 @@
+@import 'variables';
+
+.zem-thumbnail-cell {
+    display: flex;
+    justify-content: center;
+}
+
+.zem-thumbnail-cell__square {
+    display: block;
+    width: 30px;
+    height: 30px;
+}
+
+.zem-thumbnail-cell__ad-tag {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border: 1px solid tint(@color--secondary, 80%);
+    background: #ffffff url('images/image-gray.svg') center center no-repeat;
+    background-size: 20px;
+}
+
+.zem-thumbnail-cell__popover--trigger {
+    cursor: help;
+}
+
+.zem-ad-preview {
+    display: block;
+    max-height: 480px;
+    overflow-y: auto;
+}

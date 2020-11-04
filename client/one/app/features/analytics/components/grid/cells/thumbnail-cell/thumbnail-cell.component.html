@@ -1,0 +1,47 @@
+<div class="zem-thumbnail-cell">
+    <div
+        class="zem-thumbnail-cell__popover zem-thumbnail-cell__popover--trigger"
+        [zemPopover]="adPreviewTemplate"
+        [stayOpenOnHover]="true"
+        triggers="mouseenter:mouseleave"
+        placement="left"
+        container="body"
+    >
+        <img
+            *ngIf="square"
+            class="zem-thumbnail-cell__square"
+            src="{{ square }}"
+        />
+        <div *ngIf="adTag" class="zem-thumbnail-cell__ad-tag"></div>
+    </div>
+</div>
+
+<ng-template #adPreviewTemplate>
+    <div class="zem-ad-preview">
+        <!-- NATIVE CREATIVES -->
+        <zem-native-ad-preview
+            *ngIf="isNative"
+            class="zem-native-ad-preview"
+            [url]="stats.display_url.value"
+            [landscapeHostedImageUrl]="landscape"
+            [hostedImageUrl]="square"
+            [hostedIconUrl]="icon"
+            [title]="stats.breakdown_name.text"
+            [brandName]="stats.brand_name.value"
+            [description]="stats.description.value"
+            [displayUrl]="stats.display_url.value"
+            [callToAction]="stats.call_to_action.value"
+        ></zem-native-ad-preview>
+        <!-- DISPLAY CREATIVES -->
+        <zem-display-ad-preview
+            *ngIf="isImage || isAdTag"
+            class="zem-display-ad-preview"
+            [url]="stats.display_url.value"
+            [adType]="adType"
+            [displayHostedImageUrl]="image"
+            [adTag]="adTag"
+            [imageWidth]="creativeWidth"
+            [imageHeight]="creativeHeight"
+        ></zem-display-ad-preview>
+    </div>
+</ng-template>

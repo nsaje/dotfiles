@@ -24,6 +24,11 @@ export interface GridRowDataStatsValue {
     text?: string;
     overall?: Emoticon;
     list?: PerformanceItem[];
+    image?: string;
+    square?: string;
+    landscape?: string;
+    icon?: string;
+    ad_tag?: string;
 }
 
 export interface PerformanceItem {

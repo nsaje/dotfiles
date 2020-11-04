@@ -34,6 +34,7 @@ export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.ICON_LINK,
     GridColumnTypes.VISIBLE_LINK,
     GridColumnTypes.TEXT_LINK,
+    GridColumnTypes.THUMBNAIL,
 ];
 
 export const PINNED_GRID_COLUMN_TYPES: GridColumnTypes[] = [
@@ -73,6 +74,10 @@ export const BREAKDOWN_TO_STATUS_CONFIG: {
         [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
         [SettingsState.INACTIVE]: EntityStatus.PAUSED,
     },
+    [Breakdown.MEDIA_SOURCE]: {
+        [SettingsState.ACTIVE]: EntityStatus.ACTIVE,
+        [SettingsState.INACTIVE]: EntityStatus.PAUSED,
+    },
     [Breakdown.PUBLISHER]: {
         [PublisherTargetingStatus.UNLISTED]: EntityStatus.ACTIVE,
         [PublisherTargetingStatus.BLACKLISTED]: EntityStatus.BLACKLISTED,
@@ -94,7 +99,7 @@ export const BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH: {
     [Breakdown.CONTENT_AD]: 140,
     [Breakdown.PUBLISHER]: 70,
     [Breakdown.PLACEMENT]: 70,
-    [Breakdown.MEDIA_SOURCE]: 70,
+    [Breakdown.MEDIA_SOURCE]: 90,
     [Breakdown.COUNTRY]: 70,
     [Breakdown.STATE]: 70,
     [Breakdown.DMA]: 70,

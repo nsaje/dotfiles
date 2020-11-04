@@ -1,0 +1,2 @@
+export const DEFAULT_CREATIVE_WIDTH = 300;
+export const DEFAULT_CREATIVE_HEIGHT = 250;
