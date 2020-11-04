@@ -1,3 +1,5 @@
+import {formatNumber as angularFormatNumber} from '@angular/common';
+
 import * as commonHelpers from './common.helpers';
 import * as unitsHelpers from './units.helpers';
 import {Unit} from '../../app.constants';
@@ -97,4 +99,15 @@ export function convertNumberToPercentValue(
     return includePercentUnit
         ? `${percentValue}${unitsHelpers.getUnitText(Unit.Percent)}`
         : percentValue;
+}
+
+export function formatNumber(value: number, fractionSize: number = 0): string {
+    if (!commonHelpers.isDefined(value)) {
+        return null;
+    }
+    if (isNaN(value)) {
+        return null;
+    }
+    const digitInfo = `1.${fractionSize}-${fractionSize}`;
+    return angularFormatNumber(value, 'en-US', digitInfo);
 }

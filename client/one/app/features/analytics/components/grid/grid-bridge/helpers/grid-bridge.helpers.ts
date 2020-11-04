@@ -134,7 +134,7 @@ function formatGridColumnValueAsNumber(
     if (!commonHelpers.isDefined(columnValue)) {
         return commonHelpers.getValueOrDefault(defaultValue, 'N/A');
     }
-    return numericHelpers.parseDecimal(columnValue.toString(), fractionSize);
+    return numericHelpers.formatNumber(columnValue, fractionSize);
 }
 
 function formatGridColumnValueAsCurrency(

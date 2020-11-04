@@ -156,6 +156,11 @@ describe('GridBridgeHelpers', () => {
                 type: GridColumnTypes.NUMBER,
             })
         ).toEqual('10');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue(1000000, {
+                type: GridColumnTypes.NUMBER,
+            })
+        ).toEqual('1,000,000');
     });
 
     it('should correctly format grid column currency value', () => {

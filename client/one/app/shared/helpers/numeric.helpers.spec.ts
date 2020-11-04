@@ -95,4 +95,14 @@ describe('numericHelpers', () => {
             '0.0606'
         );
     });
+
+    it('should correctly format number value', () => {
+        expect(numericHelpers.formatNumber(null)).toEqual(null);
+        expect(numericHelpers.formatNumber(undefined)).toEqual(null);
+        expect(numericHelpers.formatNumber(123)).toEqual('123');
+        expect(numericHelpers.formatNumber(1234)).toEqual('1,234');
+        expect(numericHelpers.formatNumber(123456)).toEqual('123,456');
+        expect(numericHelpers.formatNumber(1234567)).toEqual('1,234,567');
+        expect(numericHelpers.formatNumber(1234567, 2)).toEqual('1,234,567.00');
+    });
 });
