@@ -120,6 +120,7 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
             None,
             state=constants.AdGroupSettingsState.ACTIVE,
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            start_date=dates_helper.local_today(),
         )
         return ad_group_source
 

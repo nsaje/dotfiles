@@ -49,6 +49,7 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
             None,
             state=constants.AdGroupSettingsState.ACTIVE,
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
+            start_date=dates_helper.local_today(),
         )
         ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         return ad_group
