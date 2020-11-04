@@ -18,6 +18,7 @@ import {
     OnInit,
     OnDestroy,
     ChangeDetectorRef,
+    HostBinding,
 } from '@angular/core';
 import {CdkPortal, DomPortalHost} from '@angular/cdk/portal';
 import {DOCUMENT} from '@angular/common';
@@ -51,6 +52,9 @@ export class EditableCellComponent
     mode: EditableCellMode;
     @Input()
     containerElement: HTMLElement;
+    @Input()
+    @HostBinding('class.zem-editable-cell--metric')
+    isMetric: boolean;
     @Output()
     modeChange = new EventEmitter<EditableCellMode>();
     @Output()

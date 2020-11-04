@@ -75,6 +75,7 @@ angular
             this.saveData = saveData;
             this.updateData = updateData;
             this.editRow = editRow;
+            this.updateRowStats = updateRowStats;
 
             this.isSaveRequestInProgress = isSaveRequestInProgress;
 
@@ -192,6 +193,14 @@ angular
 
                 if (updatedStats.length > 0) {
                     notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+                }
+            }
+
+            function updateRowStats(breakdownId, stats) {
+                var row = findRow(breakdownId);
+                if (row) {
+                    updateStats(row.stats, stats);
+                    notifyListeners(EVENTS.ON_ROW_UPDATED, row);
                 }
             }
 

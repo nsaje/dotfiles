@@ -8,3 +8,6 @@ export enum CellRole {
     Dimension = 'dimension',
     Metric = 'metric',
 }
+
+export const SMART_GRID_CENTER_COLS_VIEWPORT_SELECTOR =
+    '[ref="eCenterViewport"]';

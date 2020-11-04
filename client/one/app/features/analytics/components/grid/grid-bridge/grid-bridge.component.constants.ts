@@ -12,6 +12,7 @@ export const STATUS_COLUMN_WIDTH = 100;
 export const PERFORMANCE_INDICATOR_COLUMN_WIDTH = 70;
 export const SUBMISSION_STATUS_COLUMN_WIDTH = 85;
 export const THUMBNAIL_COLUMN_WIDTH = 80;
+export const BID_MODIFIER_COLUMN_WIDTH = 115;
 
 export const TOTALS_LABELS = 'TOTALS';
 export const TOTALS_LABEL_HELP_TEXT =
@@ -20,6 +21,8 @@ export const TOTALS_LABEL_HELP_TEXT =
 export const SMART_GRID_ROW_ARCHIVED_CLASS =
     'zem-grid-bridge__ag-row--archived';
 export const SMART_GRID_CELL_METRIC_CLASS = 'zem-grid-bridge__ag-cell--metric';
+export const SMART_GRID_CELL_BID_MODIFIER_CLASS =
+    'zem-grid-bridge__ag-cell--bid-modifier';
 
 export enum EntityStatus {
     ACTIVE = 'Active',

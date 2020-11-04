@@ -18,6 +18,7 @@
         [mode]="mode"
         [showAutopilotIcon]="showAutopilotIcon"
         [containerElement]="containerElement"
+        [isMetric]="true"
         (modeChange)="onModeChange($event)"
         (placementChange)="onPlacementChange($event)"
         (componentReady)="onEditableCellReady($event)"
@@ -37,8 +38,9 @@
         </ng-container>
         <ng-container editMode>
             <div
-                class="zem-bid-modifier-cell__form"
                 *ngIf="mode === EditableCellMode.EDIT"
+                class="zem-bid-modifier-cell__form"
+                [style.min-height]="hostElementOffsetHeight"
             >
                 <div class="zem-bid-modifier-cell__form-item">
                     <zem-bid-modifier-input

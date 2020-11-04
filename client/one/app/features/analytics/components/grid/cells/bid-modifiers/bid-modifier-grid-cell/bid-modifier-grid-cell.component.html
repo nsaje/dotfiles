@@ -1,0 +1,17 @@
+<zem-bid-modifier-cell
+    *ngIf="bidModifier"
+    class="zem-bid-modifier-cell"
+    [showAutopilotIcon]="showAutopilotIcon"
+    [adGroupAutopilotState]="adGroupAutopilotState"
+    [bidModifier]="bidModifier"
+    [entityId]="entityId"
+    [currency]="currency"
+    [isEditable]="isEditable"
+    [editMessage]="editMessage"
+    [containerElement]="containerElement"
+    [biddingType]="biddingType"
+    [bid]="bid"
+    [bidModifierTypeSummaries]="bidModifierTypeSummaries"
+    [agencyUsesRealtimeAutopilot]="agencyUsesRealtimeAutopilot"
+    (valueChange)="setBidModifier($event)"
+></zem-bid-modifier-cell>

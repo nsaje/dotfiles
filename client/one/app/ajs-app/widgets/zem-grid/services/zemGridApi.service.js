@@ -39,6 +39,7 @@ angular
             this.setFilter = grid.meta.dataService.setFilter;
             this.getFilter = grid.meta.dataService.getFilter;
             this.updateData = grid.meta.dataService.updateData;
+            this.updateRowStats = grid.meta.dataService.updateRowStats;
             this.isSaveRequestInProgress =
                 grid.meta.dataService.isSaveRequestInProgress;
             this.editRow = grid.meta.dataService.editRow;

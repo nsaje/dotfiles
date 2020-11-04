@@ -32,6 +32,7 @@ import {PerformanceIndicatorCellComponent} from './components/grid/cells/perform
 import {SubmissionStatusCellComponent} from './components/grid/cells/submission-status-cell/submission-status-cell.component';
 import {SubmissionStatusItemComponent} from './components/grid/cells/submission-status-cell/components/submission-status-item/submission-status-item.component';
 import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thumbnail-cell.component';
+import {BidModifierGridCellComponent} from './components/grid/cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
 
 @NgModule({
     declarations: [
@@ -63,6 +64,7 @@ import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thu
         SubmissionStatusCellComponent,
         SubmissionStatusItemComponent,
         ThumbnailCellComponent,
+        BidModifierGridCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -84,6 +86,7 @@ import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thu
         PerformanceIndicatorCellComponent,
         SubmissionStatusCellComponent,
         ThumbnailCellComponent,
+        BidModifierGridCellComponent,
     ],
 })
 export class AnalyticsModule {}

@@ -73,6 +73,9 @@ angular
             this.updateData = function() {
                 return dataSource.updateData.apply(dataSource, arguments);
             };
+            this.updateRowStats = function() {
+                return dataSource.updateRowStats.apply(dataSource, arguments);
+            };
             this.isSaveRequestInProgress = function() {
                 return dataSource.isSaveRequestInProgress.apply(
                     dataSource,

@@ -20,6 +20,7 @@ import {
     EXTERNAL_LINK_COLUMN_TYPES,
 } from '../../grid-bridge.component.config';
 import {ThumbnailColumnMapper} from '../mappers/thumbnail.mapper';
+import {BidModifierColumnMapper} from '../mappers/bid-modifier.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -74,7 +75,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.BID_MODIFIER_FIELD,
-            useClass: StatsDataColumnMapper,
+            useClass: BidModifierColumnMapper,
         },
     ];
 

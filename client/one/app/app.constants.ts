@@ -882,18 +882,20 @@ export enum ContentAdApprovalStatus {
     REJECTED = 3,
 }
 
+export enum AdGroupSettingsAutopilotState {
+    ACTIVE_CPC_BUDGET = 1,
+    INACTIVE = 2,
+    ACTIVE_CPC = 3,
+    ACTIVE = 4,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
     settingsState: SettingsState,
-    adGroupSettingsAutopilotState: {
-        ACTIVE_CPC_BUDGET: 1,
-        INACTIVE: 2,
-        ACTIVE_CPC: 3,
-        ACTIVE: 4,
-    },
+    adGroupSettingsAutopilotState: AdGroupSettingsAutopilotState,
     adGroupRunningStatus: {
         ACTIVE: 1,
         INACTIVE: 2,

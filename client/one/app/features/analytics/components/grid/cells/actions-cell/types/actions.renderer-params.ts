@@ -6,6 +6,6 @@ import {BreakdownRendererParams} from '../../breakdown-cell/types/breakdown.rend
 
 export interface ActionsRendererParams extends ICellRendererParams {
     context: {componentParent?: GridBridgeComponent};
-    getGrid?: (params: BreakdownRendererParams) => Grid;
-    getGridRow?: (params: BreakdownRendererParams) => GridRow;
+    getGrid: (params: BreakdownRendererParams) => Grid;
+    getGridRow: (params: BreakdownRendererParams) => GridRow;
 }

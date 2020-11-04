@@ -2,6 +2,7 @@ import {
     ContentAdApprovalStatus,
     Emoticon,
 } from '../../../../../../app.constants';
+import {BidModifier} from '../../../../../../core/bid-modifiers/types/bid-modifier';
 import {GridRowEntity} from './grid-row-entity';
 
 export interface GridRowData {
@@ -18,7 +19,7 @@ export interface GridRowDataStats {
 }
 
 export interface GridRowDataStatsValue {
-    value: string | number | SubmissionStatus[];
+    value: string | number | SubmissionStatus[] | BidModifier;
     popoverMessage?: string;
     url?: string;
     text?: string;
@@ -29,6 +30,8 @@ export interface GridRowDataStatsValue {
     landscape?: string;
     icon?: string;
     ad_tag?: string;
+    editMessage?: string;
+    isEditable?: boolean;
 }
 
 export interface PerformanceItem {

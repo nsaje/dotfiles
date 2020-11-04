@@ -9,6 +9,8 @@ import {
     Output,
     EventEmitter,
     OnInit,
+    ElementRef,
+    AfterViewInit,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import * as clone from 'clone';
@@ -35,7 +37,8 @@ import * as commonHelpers from '../../../../../../../shared/helpers/common.helpe
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [BidModifierCellStore, BidModifiersService],
 })
-export class BidModifierCellComponent implements OnInit, OnChanges {
+export class BidModifierCellComponent
+    implements OnInit, OnChanges, AfterViewInit {
     @Input()
     bidModifier: BidModifier;
     @Input()
@@ -71,7 +74,12 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
 
     editableCellApi: EditableCellApi;
 
-    constructor(public store: BidModifierCellStore) {}
+    hostElementOffsetHeight: string;
+
+    constructor(
+        public store: BidModifierCellStore,
+        private hostElement: ElementRef
+    ) {}
 
     ngOnInit(): void {
         this.mode = EditableCellMode.READ;
@@ -86,6 +94,12 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
                 this.currency
             );
         }
+    }
+
+    ngAfterViewInit(): void {
+        setTimeout(() => {
+            this.hostElementOffsetHeight = `${this.hostElement.nativeElement.offsetHeight}px`;
+        }, 250);
     }
 
     onValueChange($event: string) {

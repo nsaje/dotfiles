@@ -2,8 +2,8 @@ import {GridOptions} from 'ag-grid-community';
 import {PageSizeConfig} from './types/page-size-config';
 
 export const DEFAULT_GRID_OPTIONS: GridOptions = {
-    headerHeight: 35,
-    rowHeight: 35,
+    headerHeight: 40,
+    rowHeight: 40,
     rowBuffer: 100,
     domLayout: 'autoHeight',
     enableCellTextSelection: true,
@@ -17,6 +17,8 @@ export const DEFAULT_GRID_OPTIONS: GridOptions = {
         suppressMovable: true,
         resizable: true,
     },
+    cellFlashDelay: 100,
+    cellFadeDelay: 1000,
 };
 
 export const DEFAULT_PAGE_SIZE_OPTIONS: PageSizeConfig[] = [
