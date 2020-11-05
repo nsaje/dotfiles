@@ -1,4 +1,3 @@
-import datetime
 import io
 import json
 from collections import defaultdict
@@ -552,7 +551,7 @@ def _get_account_data_dict(account_ids=None, date=None):
 
 def _get_account_data(account_ids=None, date=None):
     if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+        date = dates_helper.local_yesterday()
 
     field_mapping = {
         "account_id": F("id"),
@@ -708,7 +707,7 @@ def _get_remaining_budget_data_map(campaign_ids, date=None):
 
 def _get_remaining_budget_data(campaign_ids, date=None):
     if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+        date = dates_helper.local_yesterday()
 
     return (
         bcm.BudgetLineItem.objects.filter(campaign__id__in=campaign_ids)
@@ -720,7 +719,7 @@ def _get_remaining_budget_data(campaign_ids, date=None):
 
 def _get_budget_data(campaign_ids, date=None):
     if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+        date = dates_helper.local_yesterday()
 
     return (
         bcm.BudgetLineItem.objects.filter(statements__date__lte=date, campaign_id__in=campaign_ids)
@@ -803,7 +802,7 @@ def _get_bid_modifier_count_by_ad_group(ad_group_ids):
 
 def _get_ad_group_data(ad_group_ids=None, date=None):
     if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+        date = dates_helper.local_yesterday()
 
     field_mapping = {
         "adgroup_id": F("id"),
@@ -859,7 +858,7 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
 
 def _get_ad_group_source_data(ad_group_ids=None, date=None):
     if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+        date = dates_helper.local_yesterday()
 
     field_mapping = {
         "adgroup_id": F("ad_group_id"),

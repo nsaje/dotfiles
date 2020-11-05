@@ -20,6 +20,7 @@ from core.models.tags import helpers as tag_helpers
 from dash import constants
 from dash.infobox_helpers import calculate_allocated_and_available_credit
 from dash.infobox_helpers import calculate_available_campaign_budget
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -95,15 +96,16 @@ class DemandReportTestCase(test.TestCase):
             goal_type = ""
             goal_value = ""
 
+        yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
         with mock.patch("utils.dates_helper.local_today") as mock_local_today:
-            mock_local_today.return_value = datetime.date.today() - datetime.timedelta(days=1)
+            mock_local_today.return_value = yesterday
             _, remaining_credit = calculate_allocated_and_available_credit(ad_group.campaign.account)
             remaining_credit = float(remaining_credit)
 
             remaining_budget = calculate_available_campaign_budget(ad_group.campaign)
 
         checks = {
-            "date": (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            "date": (dates_helper.local_today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             "agency_id": ad_group.campaign.account.agency.id,
             "agency_name": ad_group.campaign.account.agency.name,
             "agency_created_dt": ad_group.campaign.account.agency.created_dt,
@@ -348,8 +350,8 @@ class DemandReportTestCase(test.TestCase):
             core.features.goals.campaign_goal_value.CampaignGoalValue, campaign_goal=self.goal_2
         )
 
-        self.start_date = datetime.date.today() - datetime.timedelta(days=3)
-        self.end_date = datetime.date.today() + datetime.timedelta(days=5)
+        self.start_date = dates_helper.local_today() - datetime.timedelta(days=3)
+        self.end_date = dates_helper.local_today() + datetime.timedelta(days=5)
 
         self.credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
@@ -424,7 +426,7 @@ class DemandReportTestCase(test.TestCase):
         )
 
         _create_daily_budget_statements(
-            self.budget_1_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(4)]
+            self.budget_1_1, [dates_helper.local_today() - datetime.timedelta(days=n) for n in range(4)]
         )
 
         self.budget_2_1 = core.features.bcm.BudgetLineItem.objects.create_unsafe(
@@ -490,7 +492,7 @@ class DemandReportTestCase(test.TestCase):
         )
 
         _create_daily_budget_statements(
-            self.budget_2_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(4)]
+            self.budget_2_1, [dates_helper.local_today() - datetime.timedelta(days=n) for n in range(4)]
         )
 
         self.rule_ad_group_1 = magic_mixer.blend(automation.models.Rule, ad_groups_included=[self.ad_group_1_1])
@@ -875,8 +877,8 @@ class BudgetDataTestCase(test.TestCase):
             core.features.bcm.CreditLineItem,
             account=self.account,
             status=constants.CreditLineItemStatus.SIGNED,
-            start_date=datetime.date.today() - datetime.timedelta(days=10),
-            end_date=datetime.date.today() + datetime.timedelta(days=10),
+            start_date=dates_helper.local_today() - datetime.timedelta(days=10),
+            end_date=dates_helper.local_today() + datetime.timedelta(days=10),
             amount=100000,
         )
 
@@ -886,24 +888,24 @@ class BudgetDataTestCase(test.TestCase):
             campaign=self.campaign_1,
             credit=self.credit,
             amount=420,
-            start_date=datetime.date.today() - datetime.timedelta(days=4),
-            end_date=datetime.date.today() - datetime.timedelta(days=1),
+            start_date=dates_helper.local_today() - datetime.timedelta(days=4),
+            end_date=dates_helper.local_today() - datetime.timedelta(days=1),
         )
 
         _create_daily_budget_statements(
-            self.budget_1_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(1, 5)]
+            self.budget_1_1, [dates_helper.local_today() - datetime.timedelta(days=n) for n in range(1, 5)]
         )
 
         self.budget_1_2 = core.features.bcm.BudgetLineItem.objects.create_unsafe(
             campaign=self.campaign_1,
             credit=self.credit,
             amount=1000,
-            start_date=datetime.date.today() - datetime.timedelta(days=2),
-            end_date=datetime.date.today() + datetime.timedelta(days=2),
+            start_date=dates_helper.local_today() - datetime.timedelta(days=2),
+            end_date=dates_helper.local_today() + datetime.timedelta(days=2),
         )
 
         _create_daily_budget_statements(
-            self.budget_1_2, [datetime.date.today() - datetime.timedelta(days=n) for n in range(3)]
+            self.budget_1_2, [dates_helper.local_today() - datetime.timedelta(days=n) for n in range(3)]
         )
 
         self.campaign_2 = magic_mixer.blend(core.models.Campaign, account=self.account)
@@ -912,12 +914,12 @@ class BudgetDataTestCase(test.TestCase):
             campaign=self.campaign_2,
             credit=self.credit,
             amount=500,
-            start_date=datetime.date.today() - datetime.timedelta(days=2),
-            end_date=datetime.date.today() + datetime.timedelta(days=1),
+            start_date=dates_helper.local_today() - datetime.timedelta(days=2),
+            end_date=dates_helper.local_today() + datetime.timedelta(days=1),
         )
 
         _create_daily_budget_statements(
-            self.budget_2_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(3)]
+            self.budget_2_1, [dates_helper.local_today() - datetime.timedelta(days=n) for n in range(3)]
         )
 
     def test_get_budget_data(self):
