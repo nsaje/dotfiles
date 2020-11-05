@@ -54,6 +54,7 @@ class ReportJobAdmin(admin.ModelAdmin):
         "result",
         "scheduled_report",
         "link_to_scheduled_report",
+        "exception",
     )
     fields = readonly_fields
 
