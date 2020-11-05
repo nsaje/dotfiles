@@ -84,7 +84,8 @@ INSERT INTO mv_inventory (
               'playtem',
               'ividence',
               'livenetlife',
-              'prebid'
+              'prebid',
+              'prebid_display'
           ) OR NOT adstxt_status = 'HasAdstxt')
 
     GROUP BY 1, 2, 3, 4, 5
