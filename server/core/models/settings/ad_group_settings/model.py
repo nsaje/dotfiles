@@ -311,7 +311,7 @@ class AdGroupSettings(
         defaults = OrderedDict(
             [
                 ("state", constants.AdGroupSettingsState.INACTIVE),
-                ("start_date", dates_helper.utc_today()),
+                ("start_date", dates_helper.local_today()),
                 ("cpc_cc", None),
                 ("cpc", cls.DEFAULT_CPC_VALUE),
                 ("max_cpm", None),

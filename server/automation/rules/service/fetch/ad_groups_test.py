@@ -68,7 +68,7 @@ class PrepareAdGroupSettingsTestCase(TestCase):
                     "ad_group_end_date": self.utc_today + datetime.timedelta(days=7),
                     "ad_group_id": self.ad_group.id,
                     "ad_group_name": self.ad_group.name,
-                    "ad_group_start_date": self.utc_today,
+                    "ad_group_start_date": dates_helper.local_today(),
                     "campaign_category": dash.constants.IABCategory.IAB24,
                     "campaign_created_date": self.utc_today - datetime.timedelta(days=2),
                     "campaign_language": dash.constants.Language.ENGLISH,

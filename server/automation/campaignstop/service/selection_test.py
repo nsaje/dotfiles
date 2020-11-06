@@ -26,12 +26,12 @@ class UpdateAlmostDepletedTestCase(TestCase):
         test_helper.prepare_threadpoolexecutor_mock(self)
 
     def mocked_afternoon_est_now():
-        today = datetime.today()
-        return datetime(today.year, today.month, today.day, 20)
+        local_now = dates_helper.utc_to_local(datetime.utcnow()).replace(hour=20)
+        return dates_helper.local_to_utc_time(local_now)
 
     def mocked_morning_est_now():
-        today = datetime.today()
-        return datetime(today.year, today.month, today.day, 8)
+        local_now = dates_helper.utc_to_local(datetime.utcnow()).replace(hour=2)
+        return dates_helper.local_to_utc_time(local_now)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())

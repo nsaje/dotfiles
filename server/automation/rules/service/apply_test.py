@@ -7,6 +7,7 @@ from django.test import TestCase
 import core.models
 import dash.constants
 from utils import dates_helper
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
@@ -217,16 +218,15 @@ class ApplyTest(TestCase):
 
     @mock.patch("utils.dates_helper.utc_now")
     def test_prefetch_targets_on_cooldown(self, mock_now):
-        mock_now.return_value = datetime.datetime.now()
+        utc_now = datetime.datetime.utcnow().replace(hour=10, minute=0, second=0, microsecond=0)
+        mock_now.return_value = utc_now
 
         ad_group = magic_mixer.blend(core.models.AdGroup)
         rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, cooldown=48)
         target = "publisher1.com__234"
-        magic_mixer.blend(
-            RuleTriggerHistory, ad_group=ad_group, rule=rule, target=target, triggered_dt=datetime.datetime.utcnow()
-        )
+        with test_helper.disable_auto_now_add(RuleTriggerHistory, "triggered_dt"):
+            magic_mixer.blend(RuleTriggerHistory, ad_group=ad_group, rule=rule, target=target, triggered_dt=utc_now)
 
-        utc_now = datetime.datetime.utcnow().replace(hour=10, minute=0, second=0, microsecond=0)
         local_now = dates_helper.utc_to_local(utc_now)
 
         # calculation of midnight instead of setting it directly is done to account for DST

@@ -81,9 +81,9 @@ def _log_source_errors(stats):
 
 
 def _add_source_stat(ad_group, source, spend):
-    budgets_tz = dates_helper.DEFAULT_TIME_ZONE
-    tz_today = dates_helper.tz_today(budgets_tz)
-    RealTimeDataHistory.objects.create(ad_group=ad_group, source=source, date=tz_today, etfm_spend=spend)
+    RealTimeDataHistory.objects.create(
+        ad_group=ad_group, source=source, date=dates_helper.local_today(), etfm_spend=spend
+    )
 
 
 def _refresh_campaign_realtime_data(campaign):
