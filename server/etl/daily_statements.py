@@ -205,11 +205,12 @@ def _handle_overspend(date, campaign, base_media_nano, base_data_nano):
 
 
 def _get_dates(from_date, campaign):
-    if campaign.max_budget_end_date is None:
+    if campaign.real_time_campaign_stop and campaign.max_budget_end_date is None:
+        # campaign shouldn't have been spending in any of those days, no budgets
         return []
 
     today = dates_helper.local_today()
-    to_date = min(campaign.max_budget_end_date, today)
+    to_date = min(campaign.max_budget_end_date, today) if campaign.real_time_campaign_stop else today
 
     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
 
