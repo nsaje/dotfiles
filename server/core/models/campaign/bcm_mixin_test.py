@@ -7,6 +7,7 @@ import core.features.bcm
 import core.features.goals
 import core.models
 from dash import constants
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -111,7 +112,7 @@ class CampaignBcmMixin(TestCase):
         self.assertEqual(margin, decimal.Decimal("0.2200"))
 
     def test_get_todays_fees_and_margin_nothing(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        yesterday = dates_helper.local_yesterday()
 
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,

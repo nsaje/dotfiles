@@ -30,7 +30,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
 
     def test_format_flight_time(self):
         start_date = datetime.datetime(2016, 1, 1).date()
-        end_date = (datetime.datetime.today() + datetime.timedelta(days=1)).date()
+        end_date = dates_helper.local_today() + datetime.timedelta(days=1)
 
         formatted_flight_time, days_left = dash.infobox_helpers.format_flight_time(start_date, end_date, False)
 
@@ -63,7 +63,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         campaign = ad_group.campaign
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
 
         credit = dash.models.CreditLineItem.objects.create_unsafe(
@@ -95,7 +95,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         campaign = ad_group.campaign
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=100)
 
         credit = dash.models.CreditLineItem.objects.create_unsafe(
@@ -150,7 +150,7 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         campaign = ad_group.campaign
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=100)
 
         credit = dash.models.CreditLineItem.objects.create_unsafe(
@@ -480,7 +480,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             {"yesterday_etfm_cost": 60}, dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True)
         )
 
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        yesterday = dates_helper.local_yesterday()
         constraints = {
             "account_id": [account.id for account in self.accounts],
             "date__gte": yesterday,
@@ -502,7 +502,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, True),
         )
 
-        month_start = datetime.date.today().replace(day=1)
+        month_start = dates_helper.local_today().replace(day=1)
         constraints = {"account_id": [account.id for account in self.accounts], "date__gte": month_start}
         self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
@@ -513,12 +513,12 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
 
         self.assertEqual({"yesterday_etfm_cost": 30}, dash.infobox_helpers.get_yesterday_account_spend(account))
 
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        yesterday = dates_helper.local_yesterday()
         constraints = {"account_id": [account.id], "date__gte": yesterday, "date__lte": yesterday}
         self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
     def test_count_active_accounts(self):
-        today = datetime.datetime.utcnow()
+        today = dates_helper.local_today()
 
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
@@ -598,7 +598,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
     def test_get_adgroup_running_status(self):
         # adgroup is inactive and no active sources
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -616,7 +616,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         )
 
         # adgroup is active and sources are active
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -703,7 +703,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         ad_group.campaign.settings.update_unsafe(None, autopilot=False)
 
         # adgroup is active, sources are active and adgroup is on CPC autopilot
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -720,7 +720,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         )
 
         # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -741,7 +741,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             ad_group.campaign.set_real_time_campaign_stop(None, True)
 
             # adgroup is active and on CPC autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
+            start_date = dates_helper.local_today()
             end_date = start_date + datetime.timedelta(days=99)
             ad_group.settings.update_unsafe(
                 None,
@@ -758,7 +758,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             )
 
             # adgroup is active and on CPC+Budget autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
+            start_date = dates_helper.local_today()
             end_date = start_date + datetime.timedelta(days=99)
             ad_group.settings.update_unsafe(
                 None,
@@ -807,7 +807,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -906,7 +906,7 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
             dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_account_running_status(campaign.account)
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -941,7 +941,7 @@ class CountActiveAgencyAccountsTestCase(BaseTestCase):
         self.agency_manager = magic_mixer.blend_user()
 
     def test_count_active_agency_accounts(self):
-        today = datetime.datetime.utcnow()
+        today = dates_helper.local_today()
 
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
@@ -1052,7 +1052,7 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
         self.assertEqual(0, allocated_credit)
 
         user = zemauth.models.User.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,
@@ -1106,7 +1106,7 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
         self.assertEqual(0, available_credit)
         self.assertEqual(0, allocated_credit)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         credit = dash.models.CreditLineItem.objects.create_unsafe(
             agency=agency,
@@ -1144,7 +1144,7 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
         self.assertEqual(0, allocated_credit)
 
         user = zemauth.models.User.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
         credit = dash.models.CreditLineItem.objects.create_unsafe(
             account=account,

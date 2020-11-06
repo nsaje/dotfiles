@@ -96,13 +96,10 @@ class DemandReportTestCase(test.TestCase):
             goal_type = ""
             goal_value = ""
 
-        yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
-        with mock.patch("utils.dates_helper.local_today") as mock_local_today:
-            mock_local_today.return_value = yesterday
-            _, remaining_credit = calculate_allocated_and_available_credit(ad_group.campaign.account)
-            remaining_credit = float(remaining_credit)
+        _, remaining_credit = calculate_allocated_and_available_credit(ad_group.campaign.account)
+        remaining_credit = float(remaining_credit)
 
-            remaining_budget = calculate_available_campaign_budget(ad_group.campaign)
+        remaining_budget = calculate_available_campaign_budget(ad_group.campaign)
 
         checks = {
             "date": (dates_helper.local_today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),

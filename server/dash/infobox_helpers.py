@@ -20,6 +20,7 @@ import utils.dates_helper
 import utils.lc_helper
 import zemauth.models
 from utils import converters
+from utils import dates_helper
 from zemauth.features.entity_permission import Permission
 
 MAX_PREVIEW_REGIONS = 1
@@ -85,7 +86,7 @@ def format_flight_time(start_date, end_date, no_ad_groups_or_budgets):
     end_date_str = end_date.strftime("%m/%d") if end_date else "Ongoing"
 
     flight_time = "{start_date} - {end_date}".format(start_date=start_date_str, end_date=end_date_str)
-    today = datetime.datetime.today().date()
+    today = dates_helper.local_today()
     if not end_date:
         flight_time_left_days = None
     elif today > end_date:
@@ -189,7 +190,7 @@ def create_region_setting(regions):
 
 
 def get_ideal_campaign_spend(user, campaign, until_date=None):
-    at_date = until_date or datetime.datetime.today().date()
+    at_date = until_date or dates_helper.local_today()
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     if len(budgets) == 0:
         return Decimal(0)
@@ -293,7 +294,7 @@ def calculate_daily_account_cap(account):
 
 def calculate_available_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
-    today = datetime.datetime.utcnow().date()
+    today = dates_helper.local_today()
     budgets = _retrieve_active_budgetlineitems([campaign], today)
     return sum(x.get_local_available_etfm_amount(today) for x in budgets)
 

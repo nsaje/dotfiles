@@ -15,6 +15,7 @@ from mock import patch
 
 from dash import constants
 from dash import models
+from utils import dates_helper
 from utils import exc
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -223,10 +224,10 @@ class AdGroupRunningStatusTest(TestCase):
     fixtures = ["test_models.yaml"]
 
     def test_running_by_flight_time(self):
-
+        today = dates_helper.local_today()
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
-        ad_group_settings.end_date = datetime.date.today() + datetime.timedelta(days=1)
+        ad_group_settings.start_date = dates_helper.days_before(today, 1)
+        ad_group_settings.end_date = dates_helper.days_after(today, 1)
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
@@ -234,10 +235,10 @@ class AdGroupRunningStatusTest(TestCase):
         )
 
     def test_running_by_flight_time_end_today(self):
-
+        today = dates_helper.local_today()
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
-        ad_group_settings.end_date = datetime.date.today()
+        ad_group_settings.start_date = dates_helper.days_before(today, 1)
+        ad_group_settings.end_date = today
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
@@ -245,9 +246,9 @@ class AdGroupRunningStatusTest(TestCase):
         )
 
     def test_running_by_flight_time_no_end(self):
-
+        today = dates_helper.local_today()
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.start_date = dates_helper.days_before(today, 1)
         ad_group_settings.end_date = None
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
@@ -256,9 +257,10 @@ class AdGroupRunningStatusTest(TestCase):
         )
 
     def test_not_running_by_flight_time(self):
+        today = dates_helper.local_today()
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=2)
-        ad_group_settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.start_date = dates_helper.days_before(today, 2)
+        ad_group_settings.end_date = dates_helper.days_before(today, 1)
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
@@ -266,9 +268,10 @@ class AdGroupRunningStatusTest(TestCase):
         )
 
     def test_not_running_by_flight_time_settings_state(self):
+        today = dates_helper.local_today()
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
-        ad_group_settings.end_date = datetime.date.today() + datetime.timedelta(days=1)
+        ad_group_settings.start_date = dates_helper.days_before(today, 1)
+        ad_group_settings.end_date = dates_helper.days_after(today, 1)
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
 
         self.assertEqual(
@@ -571,7 +574,11 @@ class ArchiveRestoreTestCase(TestCase):
         c3 = models.Campaign.objects.get(id=3)
 
         credit = models.CreditLineItem.objects.create_unsafe(
-            amount=10, account=c3.account, start_date=datetime.date.today(), end_date=datetime.date.today(), status=1
+            amount=10,
+            account=c3.account,
+            start_date=dates_helper.local_today(),
+            end_date=dates_helper.local_today(),
+            status=1,
         )
         models.BudgetLineItem.objects.create_unsafe(
             amount=credit.amount, start_date=credit.start_date, end_date=credit.end_date, credit=credit, campaign=c3
@@ -864,7 +871,7 @@ class CreditLineItemTestCase(TestCase):
         acc = models.Account.objects.get(pk=1)
         user = User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
 
         credit = models.CreditLineItem(
@@ -882,7 +889,7 @@ class CreditLineItemTestCase(TestCase):
         user = User.objects.get(pk=1)
         agency = models.Agency.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
 
         credit = models.CreditLineItem(
@@ -899,7 +906,7 @@ class CreditLineItemTestCase(TestCase):
     def test_create_credit_without_acc_and_ag(self):
         user = User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
 
         credit = models.CreditLineItem(
@@ -918,7 +925,7 @@ class CreditLineItemTestCase(TestCase):
         agency = models.Agency.objects.get(pk=1)
         user = User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today()
         end_date = start_date + datetime.timedelta(days=99)
 
         credit = models.CreditLineItem(
