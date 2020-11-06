@@ -22,7 +22,7 @@
 0 */6 * * *      /home/ubuntu/docker-manage-py.sh ingest_product_feeds
 0 */9 * * *      /home/ubuntu/docker-manage-py.sh monitor_product_feeds_uploads
 0 0 * * *        /home/ubuntu/docker-manage-py.sh cleartokens
-0 8 2 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
+0 8 1 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
 10 * * * *       /home/ubuntu/docker-manage-py.sh sync_publisher_groups
 30 * * * *       /home/ubuntu/docker-manage-py.sh hack_cache_k1api_ga_accounts
 30 */6 * * *     /home/ubuntu/docker-manage-py.sh rds_materialization
