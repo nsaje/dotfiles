@@ -1,0 +1,35 @@
+<div class="zem-currency-refund-cell">
+    <div
+        class="zem-currency-refund-cell__value-container"
+        [class.zem-currency-refund-cell__value-container--with-refund]="
+            refundValueFormatted
+        "
+    >
+        <span class="zem-currency-refund-cell__value">{{
+            valueFormatted
+        }}</span>
+    </div>
+    <div
+        *ngIf="refundValueFormatted"
+        class="zem-currency-refund-cell__refund-container"
+    >
+        <span
+            class="zem-currency-refund-cell__value zem-currency-refund-cell__value--refund"
+            [zemPopover]="refundPopoverTemplate"
+            triggers="mouseenter:mouseleave"
+            [popoverOpenDelay]="500"
+            container="body"
+            [placement]="['top', 'auto']"
+            >-{{ refundValueFormatted }}</span
+        >
+    </div>
+</div>
+
+<ng-template #refundPopoverTemplate>
+    <div class="zem-currency-refund-cell__popover-content">
+        <span
+            >This number represents the refunded amount. It will not be charged
+            at the end of the month.</span
+        >
+    </div>
+</ng-template>

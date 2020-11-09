@@ -2,7 +2,7 @@ import {ColDef, ValueFormatterParams} from 'ag-grid-community';
 import {BidModifier} from '../../../../../../../core/bid-modifiers/types/bid-modifier';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {BidModifierGridCellComponent} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
-import {BidModifierRendererParams} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/type/bid-modifier.renderer-params';
+import {BidModifierRendererParams} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/types/bid-modifier.renderer-params';
 import {
     BID_MODIFIER_COLUMN_WIDTH,
     SMART_GRID_CELL_BID_MODIFIER_CLASS,

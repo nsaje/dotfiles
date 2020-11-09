@@ -7,7 +7,6 @@ import {
     EditableCellPlacement,
 } from '../editable-cell/editable-cell.constants';
 import {EditableCellApi} from '../editable-cell/types/editable-cell-api';
-import {CurrencyDataRendererParams} from './type/currency-data.renderer-params';
 import {GridRowDataStatsValue} from '../../grid-bridge/types/grid-row-data';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
@@ -22,6 +21,7 @@ import {
 import {isAutopilotIconShown} from '../../grid-bridge/helpers/grid-bridge.helpers';
 import {GridCellComponent} from '../grid-cell.component';
 import {SMART_GRID_CENTER_COLS_VIEWPORT_SELECTOR} from '../../../../../../shared/components/smart-grid/smart-grid.component.constants';
+import {CurrencyDataRendererParams} from './types/currency-data.renderer-params';
 
 @Component({
     templateUrl: './currency-data-cell.component.html',

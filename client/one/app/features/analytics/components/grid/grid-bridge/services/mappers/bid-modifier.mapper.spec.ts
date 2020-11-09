@@ -22,7 +22,7 @@ import {GridColumnOrder} from '../../types/grid-column-order';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {BidModifierColumnMapper} from './bid-modifier.mapper';
 import {BidModifierGridCellComponent} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
-import {BidModifierRendererParams} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/type/bid-modifier.renderer-params';
+import {BidModifierRendererParams} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/types/bid-modifier.renderer-params';
 import {BidModifier} from '../../../../../../../core/bid-modifiers/types/bid-modifier';
 
 describe('BidModifierColumnMapper', () => {

@@ -1,11 +1,13 @@
+import {Grid} from 'ag-grid-community';
 import {
     Breakdown,
     SettingsState,
     PublisherTargetingStatus,
+    Level,
 } from '../../../../../app.constants';
 import {LinkCellIcon} from '../../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component.constants';
 import {GridColumnTypes} from '../../../analytics.constants';
-import {EntityStatus} from './grid-bridge.component.constants';
+import {EntityStatus, GridColumnField} from './grid-bridge.component.constants';
 
 export const RESIZABLE_GRID_COLUMN_TYPES: GridColumnTypes[] = [
     GridColumnTypes.BREAKDOWN,
@@ -117,4 +119,23 @@ export const EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_LINK_CELL_ICON: {
     [GridColumnTypes.TEXT]: null,
 };
 
+// TODO (msuber): remove after migration to RTA completed
 export const AUTOPILOT_BREAKDOWNS: Breakdown[] = [Breakdown.MEDIA_SOURCE];
+
+export const REFUND_ROW_CELL_BREAKDOWNS: Breakdown[] = [Breakdown.ACCOUNT];
+export const REFUND_PINNED_ROW_CELL_BREAKDOWNS: Breakdown[] = [
+    Breakdown.ACCOUNT,
+    Breakdown.CAMPAIGN,
+];
+
+export const REFUND_FIELDS: string[] = [
+    GridColumnField.MEDIA_SPEND_REFUND,
+    GridColumnField.ACTUAL_BASE_MEDIA_SPEND_REFUND,
+    GridColumnField.PLATFORM_SPEND_REFUND,
+    GridColumnField.ACTUAL_BASE_PLATFORM_SPEND_REFUND,
+    GridColumnField.SERVICE_FEE_REFUND,
+    GridColumnField.LICENSE_FEE_REFUND,
+    GridColumnField.MARGIN_REFUND,
+    GridColumnField.AGENCY_SPEND_REFUND,
+    GridColumnField.YESTERDAY_SPEND_REFUND,
+];

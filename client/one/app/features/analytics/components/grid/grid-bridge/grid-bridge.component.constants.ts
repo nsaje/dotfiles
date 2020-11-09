@@ -25,6 +25,8 @@ export const SMART_GRID_CELL_BID_MODIFIER_CLASS =
     'zem-grid-bridge__ag-cell--bid-modifier';
 export const SMART_GRID_CELL_CURRENCY_CLASS =
     'zem-grid-bridge__ag-cell--currency';
+export const SMART_GRID_CELL_CURRENCY_REFUND_CLASS =
+    'zem-grid-bridge__ag-cell--currency-refund';
 
 export enum EntityStatus {
     ACTIVE = 'Active',
@@ -32,4 +34,16 @@ export enum EntityStatus {
     BLACKLISTED = 'Blacklisted',
     WHITELISTED = 'Whitelisted',
     ARCHIVED = 'Archived',
+}
+
+export enum GridColumnField {
+    MEDIA_SPEND_REFUND = 'e_media_cost_refund',
+    ACTUAL_BASE_MEDIA_SPEND_REFUND = 'media_cost_refund',
+    PLATFORM_SPEND_REFUND = 'et_cost_refund',
+    ACTUAL_BASE_PLATFORM_SPEND_REFUND = 'at_cost_refund',
+    SERVICE_FEE_REFUND = 'service_fee_refund',
+    LICENSE_FEE_REFUND = 'license_fee_refund',
+    MARGIN_REFUND = 'margin_refund',
+    AGENCY_SPEND_REFUND = 'etf_cost_refund',
+    YESTERDAY_SPEND_REFUND = 'etfm_cost_refund',
 }

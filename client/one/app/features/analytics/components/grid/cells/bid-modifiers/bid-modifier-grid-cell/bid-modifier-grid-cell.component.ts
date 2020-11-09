@@ -11,7 +11,7 @@ import {
 } from '../../../../../../../app.constants';
 import {BidModifierTypeSummary} from '../../../../../../../core/bid-modifiers/types/bid-modifier-type-summary';
 import {Grid} from '../../../grid-bridge/types/grid';
-import {BidModifierRendererParams} from './type/bid-modifier.renderer-params';
+import {BidModifierRendererParams} from './types/bid-modifier.renderer-params';
 import {GridRowDataStatsValue} from '../../../grid-bridge/types/grid-row-data';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {GridRow} from '../../../grid-bridge/types/grid-row';

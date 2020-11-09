@@ -19,7 +19,7 @@ import {EditableCellComponent} from '../../editable-cell/editable-cell.component
 import {BidModifierCellComponent} from '../bid-modifier-cell/bid-modifier-cell.component';
 import {BidRangeInfoComponent} from '../bid-range-info/bid-range-info.component';
 import {BidModifierGridCellComponent} from './bid-modifier-grid-cell.component';
-import {BidModifierRendererParams} from './type/bid-modifier.renderer-params';
+import {BidModifierRendererParams} from './types/bid-modifier.renderer-params';
 
 describe('BidModifierGridCellComponent', () => {
     let component: BidModifierGridCellComponent;

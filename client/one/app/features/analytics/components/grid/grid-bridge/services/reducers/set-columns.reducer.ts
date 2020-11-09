@@ -17,7 +17,7 @@ import {SubmissionStatusColumnMapper} from '../mappers/submission-status.mapper'
 import {ExternalLinkColumnMapper} from '../mappers/external-link.mapper';
 import {ThumbnailColumnMapper} from '../mappers/thumbnail.mapper';
 import {BidModifierColumnMapper} from '../mappers/bid-modifier.mapper';
-import {CurrencyDataColumnMapper} from '../mappers/currency-data.mapper';
+import {CurrencyColumnMapper} from '../mappers/currency.mapper';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -84,7 +84,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         },
         {
             provide: GridColumnTypes.CURRENCY,
-            useClass: CurrencyDataColumnMapper,
+            useClass: CurrencyColumnMapper,
         },
         {
             provide: GridColumnTypes.SECONDS,

@@ -34,6 +34,7 @@ import {SubmissionStatusItemComponent} from './components/grid/cells/submission-
 import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thumbnail-cell.component';
 import {BidModifierGridCellComponent} from './components/grid/cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
 import {CurrencyDataCellComponent} from './components/grid/cells/currency-data-cell/currency-data-cell.component';
+import {CurrencyRefundCellComponent} from './components/grid/cells/currency-refund-cell/currency-refund-cell.component';
 
 @NgModule({
     declarations: [
@@ -67,6 +68,7 @@ import {CurrencyDataCellComponent} from './components/grid/cells/currency-data-c
         ThumbnailCellComponent,
         BidModifierGridCellComponent,
         CurrencyDataCellComponent,
+        CurrencyRefundCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -90,6 +92,7 @@ import {CurrencyDataCellComponent} from './components/grid/cells/currency-data-c
         ThumbnailCellComponent,
         BidModifierGridCellComponent,
         CurrencyDataCellComponent,
+        CurrencyRefundCellComponent,
     ],
 })
 export class AnalyticsModule {}

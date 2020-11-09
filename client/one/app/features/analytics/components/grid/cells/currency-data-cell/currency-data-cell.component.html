@@ -13,7 +13,7 @@
     >
         <ng-container readMode>
             <span
-                [zemPopover]="editMessageTemplate"
+                [zemPopover]="editMessageTemplate ? editMessage : null"
                 triggers="mouseenter:mouseleave"
                 [popoverOpenDelay]="500"
                 container="body"

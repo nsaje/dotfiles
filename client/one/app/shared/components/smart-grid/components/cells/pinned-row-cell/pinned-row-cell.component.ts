@@ -10,6 +10,7 @@ import {CellRole} from '../../../smart-grid.component.constants';
 })
 export class PinnedRowCellComponent implements ICellRendererAngularComp {
     params: PinnedRowRendererParams;
+    valueFormatted: string;
     CellRole = CellRole;
 
     agInit(params: PinnedRowRendererParams): void {
@@ -17,9 +18,14 @@ export class PinnedRowCellComponent implements ICellRendererAngularComp {
             ...DEFAULT_PINNED_ROW_PARAMS,
             ...params,
         };
+        this.valueFormatted = this.params.valueFormatted;
     }
 
-    refresh(): boolean {
-        return false;
+    refresh(params: PinnedRowRendererParams): boolean {
+        const valueFormatted = params.valueFormatted;
+        if (this.valueFormatted !== valueFormatted) {
+            return false;
+        }
+        return true;
     }
 }

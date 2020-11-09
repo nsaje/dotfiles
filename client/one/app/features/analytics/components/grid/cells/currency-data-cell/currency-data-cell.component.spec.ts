@@ -18,7 +18,7 @@ import {
     EditableCellPlacement,
 } from '../editable-cell/editable-cell.constants';
 import {CurrencyDataCellComponent} from './currency-data-cell.component';
-import {CurrencyDataRendererParams} from './type/currency-data.renderer-params';
+import {CurrencyDataRendererParams} from './types/currency-data.renderer-params';
 
 describe('CurrencyDataCellComponent', () => {
     let component: CurrencyDataCellComponent;
