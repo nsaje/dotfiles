@@ -4,7 +4,6 @@ import textwrap
 
 import mock
 from django.http.request import HttpRequest
-from django.test import override_settings
 
 import zemauth.models
 from core.common.base_test_case import CoreTestCase
@@ -365,23 +364,6 @@ class PublisherGroupHelpersTestCase(CoreTestCase):
 
     @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_global(self, mock_email, mock_k1_ping):
-        global_group = models.PublisherGroup(name="imglobal")
-        global_group.save(self.request)
-
-        with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
-            service.blacklist_publishers(
-                self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
-            )
-
-            self.assertEntriesEqual(
-                global_group, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
-            )
-        self.assertFalse(mock_email.called)
-        mock_k1_ping.assert_not_called()
-
-    @mock.patch("core.features.publisher_groups.service._ping_k1")
-    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_global(self, mock_email, mock_k1_ping):
         with self.assertRaises(exceptions.PublisherGroupTargetingException):
             # not available
@@ -390,23 +372,6 @@ class PublisherGroupHelpersTestCase(CoreTestCase):
             )
             self.assertFalse(mock_email.called)
             mock_k1_ping.assert_not_called()
-
-    @mock.patch("core.features.publisher_groups.service._ping_k1")
-    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_publisher_global(self, mock_email, mock_k1_ping):
-        global_group = models.PublisherGroup(name="imglobal")
-        global_group.save(self.request)
-
-        models.PublisherGroupEntry.objects.create(publisher_group=global_group, source=None, publisher="cnn.com")
-
-        with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
-            service.unlist_publishers(
-                self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
-            )
-
-            self.assertEntriesEqual(global_group, [])
-        self.assertFalse(mock_email.called)
-        mock_k1_ping.assert_not_called()
 
     def test_concat_publisher_targeting(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -418,37 +383,29 @@ class PublisherGroupHelpersTestCase(CoreTestCase):
         agency = models.Agency.objects.get(pk=1)
         agency_settings = agency.get_current_settings()
 
-        with override_settings(GLOBAL_BLACKLIST_ID=1):
-            ad_group.default_blacklist_id = 2
-            ad_group_settings.blacklist_publisher_groups = [3]
-            campaign.default_blacklist_id = 4
-            campaign_settings.blacklist_publisher_groups = [5]
-            account.default_blacklist_id = 6
-            account_settings.blacklist_publisher_groups = [7]
-            agency.default_blacklist_id = 8
-            agency_settings.blacklist_publisher_groups = [9]
+        ad_group.default_blacklist_id = 2
+        ad_group_settings.blacklist_publisher_groups = [3]
+        campaign.default_blacklist_id = 4
+        campaign_settings.blacklist_publisher_groups = [5]
+        account.default_blacklist_id = 6
+        account_settings.blacklist_publisher_groups = [7]
+        agency.default_blacklist_id = 8
+        agency_settings.blacklist_publisher_groups = [9]
 
-            ad_group.default_whitelist_id = 11
-            ad_group_settings.whitelist_publisher_groups = [12]
-            campaign.default_whitelist_id = 13
-            campaign_settings.whitelist_publisher_groups = [14]
-            account.default_whitelist_id = 15
-            account_settings.whitelist_publisher_groups = [16]
-            agency.default_whitelist_id = 17
-            agency_settings.whitelist_publisher_groups = [18]
+        ad_group.default_whitelist_id = 11
+        ad_group_settings.whitelist_publisher_groups = [12]
+        campaign.default_whitelist_id = 13
+        campaign_settings.whitelist_publisher_groups = [14]
+        account.default_whitelist_id = 15
+        account_settings.whitelist_publisher_groups = [16]
+        agency.default_whitelist_id = 17
+        agency_settings.whitelist_publisher_groups = [18]
 
-            blacklist, whitelist = service.concat_publisher_group_targeting(
-                ad_group,
-                ad_group_settings,
-                campaign,
-                campaign_settings,
-                account,
-                account_settings,
-                agency,
-                agency_settings,
-            )
+        blacklist, whitelist = service.concat_publisher_group_targeting(
+            ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings, agency, agency_settings
+        )
 
-        self.assertEqual(blacklist, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(blacklist, [2, 3, 4, 5, 6, 7, 8, 9])
         self.assertEqual(whitelist, [11, 12, 13, 14, 15, 16, 17, 18])
 
     def test_blacklist_outbrain_validation(self):
@@ -465,7 +422,7 @@ class PublisherGroupHelpersTestCase(CoreTestCase):
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
             service.blacklist_publishers(self.request, entries, models.AdGroup.objects.get(pk=1))
 
-        with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
+        with self.assertRaisesMessage(Exception, "Entity is missing for blacklisting"):
             service.blacklist_publishers(self.request, entries, None)
 
     def test_upsert_publisher_group_update(self):

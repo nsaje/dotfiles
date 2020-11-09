@@ -7,7 +7,6 @@ from typing import List
 from typing import Type
 from typing import Union
 
-from django.conf import settings
 from django.db import transaction
 from django.db.models import BooleanField
 from django.db.models import CharField
@@ -50,18 +49,13 @@ OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
 OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal("0.65")
 
 
-def get_global_blacklist():
-    # Publisher group with this id should always exist
-    return models.PublisherGroup.objects.get(pk=settings.GLOBAL_BLACKLIST_ID)
-
-
 def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
     """
     Gets default blacklist publisher group or (optionally) creates a new one.
     """
 
     if obj is None:
-        return get_global_blacklist(), False
+        raise exceptions.PublisherGroupTargetingException("Entity is missing for blacklisting")
 
     publisher_group = obj.default_blacklist
     if publisher_group is None and create_if_none:
@@ -120,7 +114,6 @@ def concat_publisher_group_targeting(
     account_settings,
     agency=None,
     agency_settings=None,
-    include_global=True,
 ):
 
     blacklist = set()
@@ -139,16 +132,13 @@ def concat_publisher_group_targeting(
         blacklist |= _get_blacklists(agency, agency_settings)
         whitelist |= _get_whitelists(agency, agency_settings)
 
-    if include_global:
-        blacklist |= set([get_global_blacklist().id])
-
     blacklist = sorted([x for x in blacklist if x])
     whitelist = sorted([x for x in whitelist if x])
 
     return blacklist, whitelist
 
 
-def get_publisher_group_targeting_multiple_entities(accounts, campaigns, ad_groups, include_global=True):
+def get_publisher_group_targeting_multiple_entities(accounts, campaigns, ad_groups):
     whitelist = set()
     blacklist = set()
 
@@ -159,10 +149,8 @@ def get_publisher_group_targeting_multiple_entities(accounts, campaigns, ad_grou
         "ad_group": defaultdict(gettargeting),
         "campaign": defaultdict(gettargeting),
         "account": defaultdict(gettargeting),
-        "global": {"excluded": set([get_global_blacklist().id]) if include_global else set()},
+        "global": {"excluded": set()},
     }
-    if include_global:
-        blacklist = set([get_global_blacklist().id])
 
     def fill_up(any_settings, related_field):
         for x in any_settings:
@@ -205,19 +193,19 @@ def get_publisher_group_targeting_multiple_entities(accounts, campaigns, ad_grou
     return blacklist, whitelist, targeting
 
 
-def get_default_publisher_group_targeting_dict(include_global=True):
+def get_default_publisher_group_targeting_dict():
     return {
         "ad_group": {"included": set(), "excluded": set()},
         "campaign": {"included": set(), "excluded": set()},
         "account": {"included": set(), "excluded": set()},
-        "global": {"excluded": set([get_global_blacklist().id]) if include_global else set()},
+        "global": {"excluded": set()},
     }
 
 
 def get_publisher_group_targeting_dict(
-    ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings, include_global=True
+    ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings
 ):
-    d = get_default_publisher_group_targeting_dict(include_global)
+    d = get_default_publisher_group_targeting_dict()
     if ad_group is not None:
         d.update(
             {
@@ -246,20 +234,6 @@ def get_publisher_group_targeting_dict(
             }
         )
     return d
-
-
-def get_publisher_entry_list_level(entry, targeting):
-    if entry.publisher_group_id in targeting["ad_group"]["included"] | targeting["ad_group"]["excluded"]:
-        return constants.PublisherBlacklistLevel.ADGROUP
-    elif entry.publisher_group_id in targeting["campaign"]["included"] | targeting["campaign"]["excluded"]:
-        return constants.PublisherBlacklistLevel.CAMPAIGN
-    elif entry.publisher_group_id in targeting["account"]["included"] | targeting["account"]["excluded"]:
-        return constants.PublisherBlacklistLevel.ACCOUNT
-    elif entry.publisher_group_id in targeting["global"]["excluded"]:
-        return constants.PublisherBlacklistLevel.GLOBAL
-    raise exceptions.PublisherGroupTargetingException(
-        "Publisher entry does not belong to specified targeting configuration"
-    )
 
 
 def _get_blacklists(obj, obj_settings):

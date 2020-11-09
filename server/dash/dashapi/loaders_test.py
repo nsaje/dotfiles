@@ -856,20 +856,6 @@ class PublisherBlacklistLoaderTest(TestCase):
             {"status": constants.PublisherTargetingStatus.UNLISTED},
         )
 
-    def test_status_global_blacklist(self):
-        row = {"publisher_id": "pub1.com__1"}
-        self.assertEqual(
-            self.loader.find_blacklisted_status_by_subdomain(row),
-            {"blacklisted_level": "global", "status": constants.PublisherTargetingStatus.BLACKLISTED},
-        )
-
-    def test_status_global_blacklist_subdomain(self):
-        row = {"publisher_id": "test.pub1.com__1"}
-        self.assertEqual(
-            self.loader.find_blacklisted_status_by_subdomain(row),
-            {"blacklisted_level": "global", "status": constants.PublisherTargetingStatus.BLACKLISTED},
-        )
-
     def _subdomain_id_test(self, row, status, id_field):
         self.assertEqual(self.loader.find_blacklisted_status_by_subdomain(row), status)
 

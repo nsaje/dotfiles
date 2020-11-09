@@ -1670,9 +1670,6 @@ class PublisherGroupListFilter(SimpleListFilter):
         return (("global", "Global"),)
 
     def queryset(self, request, queryset):
-        val = self.value()
-        if val == "global":
-            return queryset.filter(publisher_group_id=settings.GLOBAL_BLACKLIST_ID)
         return queryset
 
 

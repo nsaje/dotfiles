@@ -100,7 +100,6 @@ class Command(Z1Command):
                 account_settings_map[ad_group.campaign.account_id],
                 ad_group.campaign.account.agency,
                 agency_settings_map.get(ad_group.campaign.account.agency_id),
-                include_global=True,
             )
 
             blacklisted_publishers = _extract_publishers_from_map(publishers_map, blacklist)

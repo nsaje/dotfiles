@@ -1,5 +1,4 @@
 import gzip
-import json
 import os
 from collections import defaultdict
 from dataclasses import dataclass
@@ -26,18 +25,15 @@ class SyncBlacklistTest(TestCase):
             "publisherGroupsLookupTree": {"groups": {"domain": {"plac1": ["id"]}}},
             "subdomainPublisherGroupsLookupTree": {"subdomain_groups": {"domain": {"": ["id"]}}},
             "annotationsLookupTree": {"annotations": {"domain": {"group": "lookup_tree"}}},
-            "globalBlacklist": {"global": "blacklist"},
             "syncedPublisherGroupIds": [1, 2, 3],
         }
         timestamp = self.utc_now.strftime(sync.FILENAME_SAFE_TIME_FORMAT)
         path = os.path.join(sync.B1_S3_PUBLISHER_GROUPS_PREFIX, timestamp, "full", timestamp + ".gz")
         content = '''annotationsLookupTree:1
-globalBlacklist:1
 publisherGroupsLookupTree:1
 subdomainPublisherGroupsLookupTree:1
 syncedPublisherGroupIds:3
 "annotations","domain","group","""lookup_tree"""
-"global","""blacklist"""
 "groups","domain","plac1","[""id""]"
 "subdomain_groups","domain","","[""id""]"
 "1"
@@ -188,50 +184,6 @@ syncedPublisherGroupIds:3
 
         self.assertEqual(expected, annotations_lookup_tree)
 
-    def test_global_blacklist(self):
-        publisher_group_entries = [
-            {
-                "account_id": 1,
-                "source_slug": "",
-                "publisher": "pub1",
-                "publisher_group_id": 1,
-                "include_subdomains": True,
-            },
-            {
-                "account_id": 1,
-                "source_slug": "",
-                "publisher": "pub5",
-                "publisher_group_id": 1,
-                "include_subdomains": True,
-            },
-            {
-                "account_id": 1,
-                "source_slug": "avocarrot",
-                "publisher": "pub2",
-                "publisher_group_id": 1,
-                "include_subdomains": False,
-            },
-            {
-                "account_id": 1,
-                "source_slug": "mopub",
-                "publisher": "pub3",
-                "publisher_group_id": 1,
-                "include_subdomains": False,
-            },
-            {
-                "account_id": 1,
-                "source_slug": "",
-                "publisher": "pub1",
-                "publisher_group_id": 2,
-                "include_subdomains": False,
-            },
-        ]
-        global_blacklist = defaultdict(list)
-        for entry in publisher_group_entries:
-            sync._insert_into_global_blacklist(entry, global_blacklist)
-        expected = {"": ["pub1", "pub5"], "avocarrot": ["pub2"], "mopub": ["pub3"]}
-        self.assertEqual(json.dumps(expected), json.dumps(global_blacklist))
-
     def test_sanitize_names(self):
         entries = [{"publisher": " Pub1", "publisher_group_id": 1}, {"publisher": "Abc.com ", "publisher_group_id": 2}]
         entries_expected = [
@@ -263,17 +215,14 @@ syncedPublisherGroupIds:3
                     }
                 }
             },
-            "globalBlacklist": {"yieldmo": ["oola.com", "minq.com"]},
             "syncedPublisherGroupIds": ["330229", "330230"],
         }
 
         expected_content = """annotationsLookupTree:1
-globalBlacklist:1
 publisherGroupsLookupTree:3
 subdomainPublisherGroupsLookupTree:2
 syncedPublisherGroupIds:2
 "305","shoryuken.com","adsnative","{""outbrainSectionID"": ""6685490"", ""outbrainAmplifyPublisherID"": ""30956"", ""outbrainEngagePublisherID"": ""11536""}"
-"yieldmo","[""oola.com"", ""minq.com""]"
 "","guiadelocio.com","plac1","[""233506"", ""234798""]"
 "yieldmo","m.guiadelocio.com","","[""233507""]"
 "yieldmo","m.guiadelocio.com","plac2","[""234799""]"

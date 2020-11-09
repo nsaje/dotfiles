@@ -1,7 +1,5 @@
 import datetime
 
-from django.conf import settings
-
 import dash.constants
 import dash.models
 from stats import constraints_helper
@@ -30,15 +28,13 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 "filtered_sources": test_helper.QuerySetMatcher(sources),
                 "allowed_accounts": test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 "allowed_campaigns": test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
-                "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])
-                ),
+                "publisher_blacklist": test_helper.QuerySetMatcher([]),
                 "publisher_whitelist": test_helper.QuerySetMatcher([]),
                 "publisher_group_targeting": {
                     "account": {"excluded": set(), "included": set()},
                     "campaign": {"excluded": set(), "included": set()},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -53,15 +49,13 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 "filtered_sources": test_helper.QuerySetMatcher(sources),
                 "allowed_accounts": test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 "allowed_campaigns": test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
-                "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])
-                ),
+                "publisher_blacklist": test_helper.QuerySetMatcher([]),
                 "publisher_whitelist": test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
                 "publisher_group_targeting": {
                     "account": {"excluded": set(), "included": set()},
                     "campaign": {"excluded": set(), "included": set()},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -76,15 +70,13 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 "filtered_sources": test_helper.QuerySetMatcher(sources),
                 "allowed_accounts": test_helper.QuerySetMatcher(dash.models.Account.objects.all()),
                 "allowed_campaigns": test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
-                "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])
-                ),
+                "publisher_blacklist": test_helper.QuerySetMatcher([]),
                 "publisher_whitelist": test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
                 "publisher_group_targeting": {
                     "account": {"excluded": set(), "included": set()},
                     "campaign": {"excluded": set(), "included": set()},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -109,14 +101,14 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 "allowed_campaigns": test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1])),
                 "allowed_ad_groups": test_helper.QuerySetMatcher(dash.models.AdGroup.objects.filter(pk__in=[1, 2])),
                 "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[5])
                 ),
                 "publisher_whitelist": test_helper.QuerySetMatcher(dash.models.PublisherGroupEntry.objects.none()),
                 "publisher_group_targeting": {
                     "account": {"excluded": set([5]), "included": set()},
                     "campaign": {"excluded": set(), "included": set()},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -143,7 +135,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     dash.models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()
                 ),
                 "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[5])
                 ),
                 "publisher_whitelist": test_helper.QuerySetMatcher(
                     dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[4])
@@ -152,7 +144,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     "account": {"excluded": set([5]), "included": set()},
                     "campaign": {"excluded": set(), "included": set([4])},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -172,7 +164,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     dash.models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()
                 ),
                 "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 5])
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[5])
                 ),
                 "publisher_whitelist": test_helper.QuerySetMatcher(
                     dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[4])
@@ -181,7 +173,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     "account": {"excluded": set([5]), "included": set()},
                     "campaign": {"excluded": set(), "included": set([4])},
                     "ad_group": {"excluded": set(), "included": set()},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
                 "publisher_blacklist_filter": "all",
             },
@@ -209,7 +201,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 ),
                 "publisher_blacklist_filter": dash.constants.PublisherBlacklistFilter.SHOW_ALL,
                 "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5])
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[3, 5])
                 ),
                 "publisher_whitelist": test_helper.QuerySetMatcher(
                     dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4])
@@ -218,7 +210,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     "ad_group": {"included": set([2]), "excluded": set([3])},
                     "campaign": {"included": set([4]), "excluded": set()},
                     "account": {"included": set(), "excluded": set([5])},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
             },
         )
@@ -253,7 +245,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                 ),
                 "publisher_blacklist_filter": dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 "publisher_blacklist": test_helper.QuerySetMatcher(
-                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5])
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[3, 5])
                 ),
                 "publisher_whitelist": test_helper.QuerySetMatcher(
                     dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4])
@@ -262,7 +254,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
                     "ad_group": {"included": set([2]), "excluded": set([3])},
                     "campaign": {"included": set([4]), "excluded": set()},
                     "account": {"included": set(), "excluded": set([5])},
-                    "global": {"excluded": set([1])},
+                    "global": {"excluded": set()},
                 },
             },
         )
@@ -283,7 +275,6 @@ class NarrowFilteredSourcesTestCase(StatsTestCase):
             source=(sc.source for sc in self.source_credentials),
             source_credentials=(sc for sc in self.source_credentials),
         )
-        magic_mixer.blend(dash.models.PublisherGroup, pk=settings.GLOBAL_BLACKLIST_ID)
 
         self.start_date = datetime.date(2018, 5, 1)
         self.end_date = datetime.date(2018, 6, 1)

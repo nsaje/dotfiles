@@ -93,7 +93,6 @@ class AdGroupsView(K1APIView):
                 ad_group.campaign.account.settings,
                 ad_group.campaign.account.agency,
                 agency_settings,
-                include_global=False,  # global blacklist is handled separately by the bidder, no need to duplicate work
             )
 
             service_fee = None

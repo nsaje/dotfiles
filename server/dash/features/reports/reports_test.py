@@ -273,7 +273,6 @@ class ReportsExecuteTestCase(DASHAPITestCase):
 class ReportsGetReportCSVTestCase(DASHAPITestCase):
     def setUp(self):
         super().setUp()
-        magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
         self.reportJob.user = self.user
         self.reportJob.save()
@@ -534,7 +533,6 @@ class IncludeEntityTagsReportTestCase(DASHAPITestCase):
         self.source.entity_tags.add("some/source", "another/source")
 
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
-        magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
         self.reportJob.user = self.user
         self.reportJob.save()

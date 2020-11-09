@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django.db.models import Count
 
@@ -52,7 +51,6 @@ class PublisherGroupQuerySet(
         )
 
         ids = set()
-        ids.add(settings.GLOBAL_BLACKLIST_ID)
         ids.update(ANNOTATION_QUALIFIED_PUBLISHER_GROUPS)
 
         self._all_ids_from_values_list_to_set(data, ids)

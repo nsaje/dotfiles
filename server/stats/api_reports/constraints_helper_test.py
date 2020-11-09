@@ -14,7 +14,6 @@ class ReportsConstraintsTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.global_blacklist = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=1)
         magic_mixer.blend_source_w_defaults(), magic_mixer.blend_source_w_defaults()
 
     def test_filter_by_user(self):

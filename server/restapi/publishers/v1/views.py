@@ -33,7 +33,6 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             ad_group.campaign.get_current_settings(),
             ad_group.campaign.account,
             ad_group.campaign.account.get_current_settings(),
-            include_global=False,
         )
 
         publishers = []

@@ -2,9 +2,7 @@ import csv
 import io
 import json
 
-from django.http.request import HttpRequest
 from django.test import Client
-from django.test import override_settings
 from django.urls import reverse
 from mock import patch
 
@@ -79,22 +77,6 @@ class PublisherTargetingViewTestCase(DASHAPITestCase):
             reverse("publisher_targeting"), data=json.dumps(payload), content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
-
-    def test_post_global(self):
-        global_group = models.PublisherGroup(name="imglobal")
-        request = HttpRequest()
-        request.user = self.user
-        global_group.save(request)
-
-        test_helper.add_permissions(self.user, ["can_access_global_publisher_blacklist_status"])
-        payload = self.get_payload()
-
-        with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
-            response = self.client.post(
-                reverse("publisher_targeting"), data=json.dumps(payload), content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            self.assertEntriesInserted(global_group)
 
     def test_post_placement_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)

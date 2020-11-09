@@ -237,12 +237,9 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
         # create fake credit so each account has at least some
         fake_credit = _create_fake_credit(account, demo_mapping_index)
 
-        # create fake global blacklist
-        fake_global_blacklist = _create_global_blacklist()
-
         # extract dependencies and anonymize
         _add_explicit_object_dependents(serialize_list, account, ACCOUNT_DUMP_SETTINGS["dependents"])
-        _add_to_serialize_list(serialize_list, [fake_credit, fake_global_blacklist])
+        _add_to_serialize_list(serialize_list, [fake_credit])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
         # TODO optimize somehow so we don't need to rescan the whole list for every account.
         # The reason we run _extract_dependencies_and_anonymize for every account is that
@@ -280,15 +277,6 @@ def _create_fake_credit(account, demo_mapping_index):
         status=constants.CreditLineItemStatus.SIGNED,
         created_dt=datetime.datetime.utcnow(),
         modified_dt=datetime.datetime.utcnow(),
-    )
-
-
-def _create_global_blacklist():
-    return dash.models.PublisherGroup(
-        id=settings.GLOBAL_BLACKLIST_ID,
-        name="Global blacklist",
-        created_dt=datetime.datetime.now(),
-        modified_dt=datetime.datetime.now(),
     )
 
 

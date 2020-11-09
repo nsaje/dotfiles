@@ -17,7 +17,6 @@ logger = zlogging.getLogger(__name__)
 
 
 STATUS_BLACKLISTED = 2
-GLOBAL_BLACKLIST_PUBLISHER_GROUP_ID = 1
 FILENAME_SAFE_TIME_FORMAT = "%Y-%m-%dT%H-%M-%S.%fZ"
 KEEP_LAST_UPDATES = 3
 
@@ -74,7 +73,6 @@ def _get_data():
         )
     )
 
-    global_blacklist = defaultdict(list)
     annotations_lookup_tree = tree()
     groups_lookup_tree = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     subdomain_groups_lookup_tree = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -83,14 +81,12 @@ def _get_data():
         entry["account_id"] = publisher_group_accounts[entry["publisher_group_id"]]
         _sanitize_names(entry)
         _insert_into_lookup_trees(entry, groups_lookup_tree, subdomain_groups_lookup_tree)
-        _insert_into_global_blacklist(entry, global_blacklist)
         _insert_into_annotations_lookup_tree(entry, annotations_lookup_tree)
 
     return {
         "publisherGroupsLookupTree": groups_lookup_tree,
         "subdomainPublisherGroupsLookupTree": subdomain_groups_lookup_tree,
         "annotationsLookupTree": annotations_lookup_tree,
-        "globalBlacklist": global_blacklist,
         "syncedPublisherGroupIds": list(publisher_group_accounts.keys()),
     }
 
@@ -108,15 +104,6 @@ def _insert_into_lookup_trees(entry, groups_lookup_tree, subdomain_groups_lookup
     groups_lookup_tree[source_slug][publisher][placement].append(publisher_group_id)
     if entry.get("include_subdomains"):
         subdomain_groups_lookup_tree[source_slug][publisher][placement].append(publisher_group_id)
-
-
-def _insert_into_global_blacklist(entry, global_blacklist):
-    if entry["publisher_group_id"] != GLOBAL_BLACKLIST_PUBLISHER_GROUP_ID:
-        return
-    source_slug = entry["source_slug"] or ""
-    publisher = entry["publisher"]
-
-    global_blacklist[source_slug].append(publisher)
 
 
 def _insert_into_annotations_lookup_tree(entry, annotations_lookup_tree):
@@ -166,11 +153,6 @@ def _marshal(data):
         elif group_key == "syncedPublisherGroupIds":
             for syncedPublisherGroupId in sorted(data[group_key]):
                 writer.writerow([syncedPublisherGroupId])
-                num_of_rows += 1
-
-        elif group_key == "globalBlacklist":
-            for exchange_key, exchange_value in data[group_key].items():
-                writer.writerow([exchange_key, json.dumps(exchange_value)])
                 num_of_rows += 1
 
         elif group_key == "annotationsLookupTree":
