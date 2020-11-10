@@ -123,7 +123,7 @@ function formatGridColumnValueAsDateTime(
     if (!commonHelpers.isDefined(columnValue)) {
         return commonHelpers.getValueOrDefault(defaultValue, 'N/A');
     }
-    return moment(columnValue).format('M/d/yyyy h:mm');
+    return moment(columnValue).format('M/D/YYYY h:mm A');
 }
 
 function formatGridColumnValueAsNumber(

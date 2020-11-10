@@ -128,6 +128,46 @@ describe('GridBridgeHelpers', () => {
         ).toEqual('10.0s');
     });
 
+    it('should correctly format grid column date time value', () => {
+        expect(
+            gridBridgeHelpers.formatGridColumnValue(undefined, {
+                type: GridColumnTypes.DATE_TIME,
+            })
+        ).toEqual('N/A');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue(null, {
+                type: GridColumnTypes.DATE_TIME,
+            })
+        ).toEqual('N/A');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue(undefined, {
+                type: GridColumnTypes.DATE_TIME,
+                defaultValue: '',
+            })
+        ).toEqual('');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue(null, {
+                type: GridColumnTypes.DATE_TIME,
+                defaultValue: '',
+            })
+        ).toEqual('');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue('2020-03-30T11:27:12', {
+                type: GridColumnTypes.DATE_TIME,
+            })
+        ).toEqual('3/30/2020 11:27 AM');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue('2020-06-08T14:26:12', {
+                type: GridColumnTypes.DATE_TIME,
+            })
+        ).toEqual('6/8/2020 2:26 PM');
+        expect(
+            gridBridgeHelpers.formatGridColumnValue('2020-06-08T23:26:12', {
+                type: GridColumnTypes.DATE_TIME,
+            })
+        ).toEqual('6/8/2020 11:26 PM');
+    });
+
     it('should correctly format grid column number value', () => {
         expect(
             gridBridgeHelpers.formatGridColumnValue(undefined, {
