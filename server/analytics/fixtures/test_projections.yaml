@@ -31,7 +31,6 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
-        users: [1]
         settings: 1
     model: dash.account
     pk: 1

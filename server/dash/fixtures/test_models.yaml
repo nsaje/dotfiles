@@ -104,7 +104,6 @@
         name: 'test account 1'
         currency: 'USD'
         allowed_sources: [1, 2]
-        users: [1, 2, 3]
         settings: 1
         agency: 1
     model: dash.account
@@ -117,7 +116,6 @@
         name: 'test account 2'
         currency: 'USD'
         allowed_sources: [1, 2]
-        users: [1, 2, 3]
         settings: 2
     model: dash.account
     pk: 2
@@ -728,3 +726,101 @@
     modified_dt: '2019-08-01T00:00:00'
   model: dash.bidmodifier
   pk: 3
+
+# entity permissions
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 6
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 2
+      permission: read
+  model: zemauth.entitypermission
+  pk: 7
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 2
+      permission: read
+  model: zemauth.entitypermission
+  pk: 8
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 2
+      permission: read
+  model: zemauth.entitypermission
+  pk: 9
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 2
+      permission: write
+  model: zemauth.entitypermission
+  pk: 10
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 2
+      permission: write
+  model: zemauth.entitypermission
+  pk: 11
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 2
+      permission: write
+  model: zemauth.entitypermission
+  pk: 12

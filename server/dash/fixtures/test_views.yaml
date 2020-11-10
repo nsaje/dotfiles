@@ -89,7 +89,6 @@
         modified_by: 1
         name: 'test account 1'
         outbrain_marketer_id: 'omid_1'
-        users: [1, 2, 3]
         currency: 'USD'
         agency: 1
         settings: 1
@@ -102,7 +101,6 @@
         modified_by: 1
         name: 'test account 2'
         outbrain_marketer_id: 'omid_10'
-        users: [1, 2, 3]
         currency: 'EUR'
         settings: 2
     model: dash.account
@@ -522,3 +520,101 @@
         modified_by: 1
     model: dash.publishergroup
     pk: 3
+
+# entity permissions
+
+- fields:
+    user: 1
+    agency: !!null
+    account: 1
+    permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+    user: 2
+    agency: !!null
+    account: 1
+    permission: read
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+    user: 3
+    agency: !!null
+    account: 1
+    permission: read
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+    user: 1
+    agency: !!null
+    account: 1
+    permission: write
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+    user: 2
+    agency: !!null
+    account: 1
+    permission: write
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+    user: 3
+    agency: !!null
+    account: 1
+    permission: write
+  model: zemauth.entitypermission
+  pk: 6
+
+- fields:
+    user: 1
+    agency: !!null
+    account: 2
+    permission: read
+  model: zemauth.entitypermission
+  pk: 7
+
+- fields:
+    user: 2
+    agency: !!null
+    account: 2
+    permission: read
+  model: zemauth.entitypermission
+  pk: 8
+
+- fields:
+    user: 3
+    agency: !!null
+    account: 2
+    permission: read
+  model: zemauth.entitypermission
+  pk: 9
+
+- fields:
+    user: 1
+    agency: !!null
+    account: 2
+    permission: write
+  model: zemauth.entitypermission
+  pk: 10
+
+- fields:
+    user: 2
+    agency: !!null
+    account: 2
+    permission: write
+  model: zemauth.entitypermission
+  pk: 11
+
+- fields:
+    user: 3
+    agency: !!null
+    account: 2
+    permission: write
+  model: zemauth.entitypermission
+  pk: 12

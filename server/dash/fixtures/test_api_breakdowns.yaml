@@ -125,7 +125,6 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        users: [1, 2, 3]
         allowed_sources: [1,2]
         settings: 1
         name: 'test account 1'
@@ -781,5 +780,55 @@
     agency: !!null
     account: !!null
     permission: write
+  model: zemauth.entitypermission
+  pk: 6
+
+# entity permissions
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 1
+      permission: write
   model: zemauth.entitypermission
   pk: 6

@@ -268,7 +268,6 @@
     created_dt: "2019-08-20T00:00:00"
     modified_dt: "2019-08-20T00:00:00"
     modified_by: 1
-    users: []
   model: dash.agency
   pk: 1
 
@@ -278,7 +277,6 @@
     created_dt: "2019-08-20T00:00:00"
     modified_dt: "2019-08-20T00:00:00"
     modified_by: 1
-    users: []
     allowed_sources: [1, 2, 3, 4]
     agency: 1
     settings: 1
@@ -290,7 +288,6 @@
     created_dt: "2019-08-20T00:00:00"
     modified_dt: "2019-08-20T00:00:00"
     modified_by: 1
-    users: []
     allowed_sources: [1, 2, 3, 4]
     agency: 1
     settings: 2

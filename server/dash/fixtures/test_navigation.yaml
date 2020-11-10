@@ -184,7 +184,6 @@
         modified_dt: '2014-06-04T09:58:11'
         modified_by: 1
         name: 'test account 1'
-        users: [1,5]
         agency: 1
         archived: False
         settings: 1
@@ -196,7 +195,6 @@
         modified_dt: '2014-06-04T09:58:22'
         modified_by: 2
         name: 'test account 2'
-        users: [2,5]
         archived: False
         settings: 2
     model: dash.account
@@ -207,7 +205,6 @@
         modified_dt: '2014-06-04T09:58:33'
         modified_by: 2
         name: 'test account 3'
-        users: [3,5]
         archived: True
         settings: 3
     model: dash.account
@@ -218,7 +215,6 @@
         modified_dt: '2014-06-04T09:58:33'
         modified_by: 2
         name: 'test account 4'
-        users: [7]
         archived: False
         settings: 4
     model: dash.account
@@ -459,3 +455,117 @@
         state: 1
     model: dash.adgroupsourcesettings
     pk: 4
+
+# entity permissions
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 1
+
+- fields:
+      user: 1
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 2
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 1
+      permission: read
+  model: zemauth.entitypermission
+  pk: 3
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 1
+      permission: write
+  model: zemauth.entitypermission
+  pk: 4
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 2
+      permission: read
+  model: zemauth.entitypermission
+  pk: 5
+
+- fields:
+      user: 2
+      agency: !!null
+      account: 2
+      permission: write
+  model: zemauth.entitypermission
+  pk: 6
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 2
+      permission: read
+  model: zemauth.entitypermission
+  pk: 7
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 2
+      permission: write
+  model: zemauth.entitypermission
+  pk: 8
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 3
+      permission: read
+  model: zemauth.entitypermission
+  pk: 9
+
+- fields:
+      user: 3
+      agency: !!null
+      account: 3
+      permission: write
+  model: zemauth.entitypermission
+  pk: 10
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 3
+      permission: read
+  model: zemauth.entitypermission
+  pk: 11
+
+- fields:
+      user: 5
+      agency: !!null
+      account: 3
+      permission: write
+  model: zemauth.entitypermission
+  pk: 12
+
+- fields:
+      user: 7
+      agency: !!null
+      account: 4
+      permission: read
+  model: zemauth.entitypermission
+  pk: 13
+
+- fields:
+      user: 7
+      agency: !!null
+      account: 4
+      permission: write
+  model: zemauth.entitypermission
+  pk: 14

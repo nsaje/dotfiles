@@ -15,6 +15,9 @@ EXTERNAL_REST_API_GROUP_ID = 33
 
 @transaction.atomic
 def refresh_entity_permissions_for_user(user):
+    if len(user.entitypermission_set.all()) > 0:
+        return
+
     user.entitypermission_set.all().delete()
     if _handle_internal_user(user):
         return

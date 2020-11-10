@@ -49,7 +49,6 @@
         name: 'test account 1'
         allowed_sources: [1, 2]
         agency: 1
-        users: [1]
         settings: 1
         currency: 'USD'
     model: dash.account
