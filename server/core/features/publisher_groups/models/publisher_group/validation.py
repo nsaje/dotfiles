@@ -31,9 +31,11 @@ class PublisherGroupValidatorMixin(object):
         if len(account_qs) == 1 and account_qs.get().id != self.account.id:
             raise ValidationError(
                 errors={
-                    "account_id": "Publisher group is used outside of the scope of {account_name} account. To change the scope of the publisher group to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
-                        account_name=self.account
-                    )
+                    "account_id": [
+                        "Publisher group is used outside of the scope of {account_name} account. To change the scope of the publisher group to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
+                            account_name=self.account
+                        )
+                    ]
                 }
             )
 
@@ -64,9 +66,11 @@ class PublisherGroupValidatorMixin(object):
         ):
             raise ValidationError(
                 errors={
-                    "account_id": "Publisher group is used outside of the scope of {account_name} account. To change the scope of the publisher group to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
-                        account_name=self.account
-                    )
+                    "account_id": [
+                        "Publisher group is used outside of the scope of {account_name} account. To change the scope of the publisher group to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
+                            account_name=self.account
+                        )
+                    ]
                 }
             )
 
@@ -105,8 +109,10 @@ class PublisherGroupValidatorMixin(object):
         ):
             raise ValidationError(
                 errors={
-                    "agency_id": "Publisher group is used outside of the scope of {agency_name} agency. To change the scope of publisher group to {agency_name} stop using it on other agencies (and their accounts, campaigns and ad groups) and try again.".format(
-                        agency_name=self.agency
-                    )
+                    "agency_id": [
+                        "Publisher group is used outside of the scope of {agency_name} agency. To change the scope of publisher group to {agency_name} stop using it on other agencies (and their accounts, campaigns and ad groups) and try again.".format(
+                            agency_name=self.agency
+                        )
+                    ]
                 }
             )
