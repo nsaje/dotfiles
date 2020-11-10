@@ -90,6 +90,7 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         "ob-eyeota",
         "ob-nielsen",
         "neodata",
+        "ifa",
     )
 
     def __init__(self, *args, **kwargs):
