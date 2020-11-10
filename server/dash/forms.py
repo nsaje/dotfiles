@@ -140,15 +140,19 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     )
     redirect_pixel_urls = postgres_forms.SimpleArrayField(
         PlainCharField(),
+        label="[Deprecated] Redirect pixel urls:",
         required=False,
         delimiter="\n",
         widget=forms.Textarea,
         help_text="Put every entry in a separate line. Example: https://www.facebook.com/tr?id=531027177051024&ev=PageView&noscript=1.",
+        disabled=True,
     )
     redirect_javascript = forms.CharField(
+        label="[Deprecated] Redirect javascript:",
         required=False,
         widget=forms.Textarea,
         help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT),
+        disabled=True,
     )
 
     def __init__(self, *args, **kwargs):
