@@ -6,11 +6,11 @@ import mock
 from django.http.request import HttpRequest
 
 import zemauth.models
-from core.common.base_test_case import CoreTestCase
 from dash import constants
 from dash import history_helpers
 from dash import models
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -21,7 +21,7 @@ from . import exceptions
 from . import service
 
 
-class PublisherGroupHelpersTestCase(CoreTestCase):
+class PublisherGroupHelpersTestCase(BaseTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
@@ -458,7 +458,7 @@ class PublisherGroupHelpersTestCase(CoreTestCase):
         )
 
 
-class PublisherGroupCSVHelpersTestCase(CoreTestCase):
+class PublisherGroupCSVHelpersTestCase(BaseTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def test_get_csv_content(self):
@@ -693,7 +693,7 @@ class PublisherGroupCSVHelpersTestCase(CoreTestCase):
         )
 
 
-class GetOrCreatePublisherGroupTestCase(CoreTestCase):
+class GetOrCreatePublisherGroupTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -753,7 +753,7 @@ class GetOrCreatePublisherGroupTestCase(CoreTestCase):
             )
 
 
-class AddPublisherGroupEntriesTestCase(CoreTestCase):
+class AddPublisherGroupEntriesTestCase(BaseTestCase):
     def setUp(self):
         self.source = magic_mixer.blend(models.Source)
         self.request = magic_mixer.blend_request_user()
@@ -851,7 +851,7 @@ class AddPublisherGroupEntriesTestCase(CoreTestCase):
         self.assertTrue(self.publisher_group_2.entries.filter(id=self.pge_3.id).exists())
 
 
-class PublisherGroupConnectionsTestCase(CoreTestCase):
+class PublisherGroupConnectionsTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)

@@ -269,13 +269,6 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         super().setUp()
         self.user = User.objects.get(pk=1)
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        users = User.objects.all()
-        for user in users:
-            user.refresh_entity_permissions()
-
     def test_get_editable_fields_status_setting_enabled(self):
         req = RequestFactory().get("/")
         req.user = self.user

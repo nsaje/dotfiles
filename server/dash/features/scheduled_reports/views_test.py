@@ -6,13 +6,13 @@ from django.urls import reverse
 import zemauth.features.entity_permission
 import zemauth.models
 from dash import constants
-from dash.common.views_base_test_case import DASHAPITestCase
 from dash.features.scheduled_reports import models
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 
-class ScheduledReportsTestCase(DASHAPITestCase):
+class ScheduledReportsTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.user.set_password("secret")

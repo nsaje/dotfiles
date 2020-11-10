@@ -9,12 +9,12 @@ from mock import patch
 
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
+from utils.base_test_case import BaseTestCase
 from utils.test_helper import fake_request
 from zemauth.models import User
 
 
-class BaseDailyStatsTestCase(DASHAPITestCase):
+class BaseDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_api.yaml", "test_views.yaml"]
 
     def setUp(self):
@@ -941,7 +941,7 @@ class AdGroupDailyStatsTestCase(BaseDailyStatsTestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
+class AdGroupPublishersDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1085,7 +1085,7 @@ class AdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AdGroupPlacementsDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1230,7 +1230,7 @@ class AdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class CampaignPublishersDailyStatsTestCase(DASHAPITestCase):
+class CampaignPublishersDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1375,7 +1375,7 @@ class CampaignPublishersDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class CampaignPlacementDailyStatsTestCase(DASHAPITestCase):
+class CampaignPlacementDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1520,7 +1520,7 @@ class CampaignPlacementDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AccountPublishersDailyStatsTestCase(DASHAPITestCase):
+class AccountPublishersDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1598,7 +1598,7 @@ class AccountPublishersDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AccountPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AccountPlacementsDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1676,7 +1676,7 @@ class AccountPlacementsDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
+class AllAccountsPublishersDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
@@ -1727,7 +1727,7 @@ class AllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_dailystats.query")
-class AllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
+class AllAccountsPlacementsDailyStatsTestCase(BaseTestCase):
     fixtures = ["test_views"]
 
     def setUp(self):

@@ -7,8 +7,8 @@ from mock import patch
 
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from zemauth.models import User
 
 
@@ -22,7 +22,7 @@ def _configure_datetime_utcnow_mock(mock_datetime, utcnow_value):
     mock_datetime.timedelta = datetime.timedelta
 
 
-class NavigationAllAccountsDataViewTestCase(DASHAPITestCase):
+class NavigationAllAccountsDataViewTestCase(BaseTestCase):
     fixtures = ["test_navigation.yaml"]
 
     def _get(self, user_id, filtered_sources=None):
@@ -54,7 +54,7 @@ class NavigationAllAccountsDataViewTestCase(DASHAPITestCase):
         self.assertDictEqual(response, {"accounts_count": 0})
 
 
-class NavigationDataViewTestCase(DASHAPITestCase):
+class NavigationDataViewTestCase(BaseTestCase):
     fixtures = ["test_navigation.yaml"]
 
     def setUp(self):
@@ -282,7 +282,7 @@ class NavigationDataViewTestCase(DASHAPITestCase):
         )
 
 
-class NavigationTreeViewTestCase(DASHAPITestCase):
+class NavigationTreeViewTestCase(BaseTestCase):
     fixtures = ["test_navigation.yaml"]
 
     def setUp(self):

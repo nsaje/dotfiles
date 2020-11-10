@@ -80,9 +80,6 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
             entity = entity_permission.agency or entity_permission.account
             return self._has_perm_on(entity_permission.permission, entity)
 
-    def refresh_entity_permissions(self):
-        zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
-
     def get_entity_permissions(
         self, request, account, agency, show_hidden_reporting_permissions=False
     ) -> Iterable[EntityPermission]:

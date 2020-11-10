@@ -8,15 +8,15 @@ from mock import patch
 
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
 from utils import s3helpers
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class PublisherTargetingViewTestCase(DASHAPITestCase):
+class PublisherTargetingViewTestCase(BaseTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
@@ -92,7 +92,7 @@ class PublisherTargetingViewTestCase(DASHAPITestCase):
         )
 
 
-class PublisherGroupsViewTestCase(DASHAPITestCase):
+class PublisherGroupsViewTestCase(BaseTestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -155,7 +155,7 @@ class PublisherGroupsViewTestCase(DASHAPITestCase):
             self.assertFalse(pgs.first().implicit)
 
 
-class PublisherGroupsUploadTestCase(DASHAPITestCase):
+class PublisherGroupsUploadTestCase(BaseTestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -411,7 +411,7 @@ class PublisherGroupsUploadTestCase(DASHAPITestCase):
         )
 
 
-class PublisherGroupsDownloadTestCase(DASHAPITestCase):
+class PublisherGroupsDownloadTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.user.set_password("secret")
@@ -489,7 +489,7 @@ class PublisherGroupsDownloadTestCase(DASHAPITestCase):
         )
 
 
-class PublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
+class PublisherGroupsExampleDownloadTestCase(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
         self.client = Client()

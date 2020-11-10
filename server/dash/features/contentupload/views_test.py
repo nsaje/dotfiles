@@ -9,13 +9,13 @@ from mock import patch
 
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class UploadCsvTestCase(DASHAPITestCase):
+class UploadCsvTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -383,7 +383,7 @@ class UploadCsvTestCase(DASHAPITestCase):
         )
 
 
-class UploadStatusTestCase(DASHAPITestCase):
+class UploadStatusTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -451,7 +451,7 @@ class UploadStatusTestCase(DASHAPITestCase):
         self.assertIsNone(response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"])
 
 
-class UploadSaveTestCase(DASHAPITestCase):
+class UploadSaveTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -687,7 +687,7 @@ class UploadSaveTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class CandidatesDownloadTestCase(DASHAPITestCase):
+class CandidatesDownloadTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -764,7 +764,7 @@ class CandidatesDownloadTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadCancelTestCase(DASHAPITestCase):
+class UploadCancelTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -829,7 +829,7 @@ class UploadCancelTestCase(DASHAPITestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadBatchTestCase(DASHAPITestCase):
+class UploadBatchTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -872,7 +872,7 @@ class UploadBatchTestCase(DASHAPITestCase):
         self.assertEqual(400, response.status_code)
 
 
-class CandidateTestCase(DASHAPITestCase):
+class CandidateTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 
@@ -1064,7 +1064,7 @@ class CandidateTestCase(DASHAPITestCase):
         )
 
 
-class CandidateUpdateTestCase(DASHAPITestCase):
+class CandidateUpdateTestCase(BaseTestCase):
 
     fixtures = ["test_upload.yaml"]
 

@@ -7,12 +7,12 @@ from django.urls import reverse
 
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth import models as zmodels
 
 
-class AudiencesTestCase(DASHAPITestCase):
+class AudiencesTestCase(BaseTestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
@@ -316,7 +316,7 @@ class AudiencesTestCase(DASHAPITestCase):
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.update")
 
 
-class AudienceArchiveTestCase(DASHAPITestCase):
+class AudienceArchiveTestCase(BaseTestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
@@ -405,7 +405,7 @@ class AudienceArchiveTestCase(DASHAPITestCase):
         redirector_upsert_audience_mock.assert_not_called()
 
 
-class AudienceRestoreTestCase(DASHAPITestCase):
+class AudienceRestoreTestCase(BaseTestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):

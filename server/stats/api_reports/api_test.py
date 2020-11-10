@@ -8,8 +8,8 @@ from core.features import bid_modifiers
 from dash import publisher_helpers
 from stats import api_reports
 from stats.api_reports import constraints_helper
-from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from zemauth.models import User
 
 
@@ -185,7 +185,7 @@ class CampaignGoalTest(TestCase):
         )
 
 
-class PlacementBreakdownQueryTestCase(StatsTestCase):
+class PlacementBreakdownQueryTestCase(BaseTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):

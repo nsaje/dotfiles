@@ -2,27 +2,8 @@
 from django.db import transaction
 
 from .constants import AccessLevel
-from .constants import Permission
 from .exceptions import EntityPermissionChangeNotAllowed
 from .model import EntityPermission
-
-CAN_SEE_BASIC_COST_BREAKDOWN_GROUP_ID = 58
-DISABLE_MARGINS_AND_BUDGETS_GROUP_ID = 39
-ENABLE_MARGINS_AND_BUDGETS_GROUP_ID = 55
-ENABLE_MARGIN_AND_BUDGETS_AND_HIDE_LICENCE_FEE_GROUP_ID = 59
-EXTERNAL_REST_API_GROUP_ID = 33
-
-
-@transaction.atomic
-def refresh_entity_permissions_for_user(user):
-    if len(user.entitypermission_set.all()) > 0:
-        return
-
-    user.entitypermission_set.all().delete()
-    if _handle_internal_user(user):
-        return
-    _handle_agency_manager(user)
-    _handle_account_manager(user)
 
 
 @transaction.atomic
@@ -154,73 +135,6 @@ def _remove_and_add_permissions(calling_user, requested_user, removed_permission
         _remove_permission(calling_user, requested_user, removed_permission)
     for added_permission in added_permissions:
         _add_permission(calling_user, requested_user, added_permission)
-
-
-def _handle_account_manager(user):
-    agencies = user.agency_set.all().values_list("id", flat=True)
-    accounts = user.account_set.all().exclude(agency_id__in=agencies)
-    if len(accounts) == 0:
-        return False
-
-    for account in accounts:
-        _add_entity_permission(user, None, account, Permission.READ)
-        _add_entity_permission(user, None, account, Permission.WRITE)
-
-        if not user.groups.filter(pk=DISABLE_MARGINS_AND_BUDGETS_GROUP_ID).exists():
-            _add_entity_permission(user, None, account, Permission.BUDGET)
-            if user.groups.filter(pk=ENABLE_MARGINS_AND_BUDGETS_GROUP_ID).exists():
-                _add_entity_permission(user, None, account, Permission.BUDGET_MARGIN)
-
-        if user.groups.filter(
-            pk__in=[ENABLE_MARGINS_AND_BUDGETS_GROUP_ID, CAN_SEE_BASIC_COST_BREAKDOWN_GROUP_ID]
-        ).exists():
-            _add_entity_permission(user, None, account, Permission.AGENCY_SPEND_MARGIN)
-            if not user.groups.filter(pk=ENABLE_MARGIN_AND_BUDGETS_AND_HIDE_LICENCE_FEE_GROUP_ID).exists():
-                _add_entity_permission(user, None, account, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE)
-
-        if user.groups.filter(pk=EXTERNAL_REST_API_GROUP_ID).exists():
-            _add_entity_permission(user, None, account, Permission.RESTAPI)
-
-    return True
-
-
-def _handle_agency_manager(user):
-    agencies = user.agency_set.all()
-    if len(agencies) == 0:
-        return False
-
-    for agency in agencies:
-        _add_entity_permission(user, agency, None, Permission.READ)
-        _add_entity_permission(user, agency, None, Permission.WRITE)
-        _add_entity_permission(user, agency, None, Permission.USER)
-
-        if not user.groups.filter(pk=DISABLE_MARGINS_AND_BUDGETS_GROUP_ID).exists():
-            _add_entity_permission(user, agency, None, Permission.BUDGET)
-            _add_entity_permission(user, agency, None, Permission.BUDGET_MARGIN)
-            _add_entity_permission(user, agency, None, Permission.AGENCY_SPEND_MARGIN)
-            _add_entity_permission(user, agency, None, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE)
-
-        if user.groups.filter(pk=EXTERNAL_REST_API_GROUP_ID).exists():
-            _add_entity_permission(user, agency, None, Permission.RESTAPI)
-
-    return True
-
-
-def _handle_internal_user(user):
-    if not user.is_superuser:
-        return False
-
-    _add_entity_permission(user, None, None, Permission.READ)
-    _add_entity_permission(user, None, None, Permission.WRITE)
-    _add_entity_permission(user, None, None, Permission.USER)
-    _add_entity_permission(user, None, None, Permission.BUDGET)
-    _add_entity_permission(user, None, None, Permission.BUDGET_MARGIN)
-    _add_entity_permission(user, None, None, Permission.AGENCY_SPEND_MARGIN)
-    _add_entity_permission(user, None, None, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE)
-    _add_entity_permission(user, None, None, Permission.BASE_COSTS_SERVICE_FEE)
-    _add_entity_permission(user, None, None, Permission.RESTAPI)
-
-    return True
 
 
 def _add_entity_permission(user, agency, account, permission):

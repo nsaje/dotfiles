@@ -10,16 +10,16 @@ from dash import models
 from dash import publisher_helpers
 from stats import api_breakdowns
 from stats import constants
-from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from utils import threads
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-class ApiBreakdownQueryTest(StatsTestCase):
+class ApiBreakdownQueryTest(BaseTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
     permissions = ["can_see_sspd_url", "can_view_platform_cost_breakdown", "can_see_managers_in_campaigns_table"]
 

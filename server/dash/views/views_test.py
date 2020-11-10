@@ -21,12 +21,12 @@ import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 
-class AdGroupSourceSettingsTestCase(DASHAPITestCase):
+class AdGroupSourceSettingsTestCase(BaseTestCase):
     fixtures = ["test_models.yaml", "test_views.yaml"]
 
     def setUp(self):
@@ -182,7 +182,7 @@ class AdGroupSourceSettingsTestCase(DASHAPITestCase):
         self.assertTrue("0.13" in json_data["errors"]["cpm"][0])
 
 
-class AdGroupSourcesTestCase(DASHAPITestCase):
+class AdGroupSourcesTestCase(BaseTestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
@@ -331,7 +331,7 @@ class AdGroupSourcesTestCase(DASHAPITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class AdGroupOverviewTestCase(DASHAPITestCase):
+class AdGroupOverviewTestCase(BaseTestCase):
     fixtures = ["test_api.yaml", "users"]
 
     def setUp(self):
@@ -510,7 +510,7 @@ class AdGroupOverviewTestCase(DASHAPITestCase):
         self.assertEqual("Complete", yesterday_data_setting["flag"])
 
 
-class CampaignOverviewTestCase(DASHAPITestCase):
+class CampaignOverviewTestCase(BaseTestCase):
     fixtures = ["test_api", "users"]
 
     def setUp(self):
@@ -606,7 +606,7 @@ class CampaignOverviewTestCase(DASHAPITestCase):
             self.assertEqual("0.00% on plan", pacing_setting["description"])
 
 
-class AccountOverviewTestCase(DASHAPITestCase):
+class AccountOverviewTestCase(BaseTestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -700,7 +700,7 @@ class AccountOverviewTestCase(DASHAPITestCase):
         settings = response["data"]["basic_settings"]
 
 
-class AllAccountsOverviewTestCase(DASHAPITestCase):
+class AllAccountsOverviewTestCase(BaseTestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):

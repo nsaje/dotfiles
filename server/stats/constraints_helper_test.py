@@ -3,14 +3,14 @@ import datetime
 import dash.constants
 import dash.models
 from stats import constraints_helper
-from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class PrepareConstraintsTestCase(StatsTestCase):
+class PrepareConstraintsTestCase(BaseTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_prepare_all_accounts_constraints(self):
@@ -260,7 +260,7 @@ class PrepareConstraintsTestCase(StatsTestCase):
         )
 
 
-class NarrowFilteredSourcesTestCase(StatsTestCase):
+class NarrowFilteredSourcesTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ])

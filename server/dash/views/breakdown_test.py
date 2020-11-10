@@ -10,12 +10,12 @@ from mock import patch
 import core.features.publisher_groups
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
 from dash.constants import Level
 from dash.views import breakdown_helpers
 from stats.helpers import Goals
 from utils import test_helper
 from utils import threads
+from utils.base_test_case import BaseTestCase
 from zemauth.models import User
 
 
@@ -29,7 +29,7 @@ def get_publisher_group_targeting_dict():
 
 
 @patch("stats.api_breakdowns.query")
-class AllAccountsBreakdownTestCase(DASHAPITestCase):
+class AllAccountsBreakdownTestCase(BaseTestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -212,7 +212,7 @@ class AllAccountsBreakdownTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_breakdowns.query")
-class AccountBreakdownTestCase(DASHAPITestCase):
+class AccountBreakdownTestCase(BaseTestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -487,7 +487,7 @@ class AccountBreakdownTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_breakdowns.query")
-class CampaignBreakdownTestCase(DASHAPITestCase):
+class CampaignBreakdownTestCase(BaseTestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -620,7 +620,7 @@ class CampaignBreakdownTestCase(DASHAPITestCase):
 
 
 @patch("stats.api_breakdowns.query")
-class AdGroupBreakdownTestCase(DASHAPITestCase):
+class AdGroupBreakdownTestCase(BaseTestCase):
     fixtures = ["test_api", "test_views", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -1059,7 +1059,7 @@ class AdGroupBreakdownTestCase(DASHAPITestCase):
         )
 
 
-class BreakdownHelperTest(DASHAPITestCase):
+class BreakdownHelperTest(BaseTestCase):
     fixtures = ["test_augmenter.yaml"]
 
     def test_add_performance_indicators(self):

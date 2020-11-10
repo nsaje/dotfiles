@@ -15,15 +15,15 @@ from core.features import history
 from dash import constants
 from dash import history_helpers
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
 from dash.views import agency
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
 from zemauth.models import User
 
 
-class AdGroupSettingsStateTestCase(DASHAPITestCase):
+class AdGroupSettingsStateTestCase(BaseTestCase):
     fixtures = ["test_models.yaml", "test_adgroup_settings_state.yaml", "test_non_superuser.yaml", "test_geolocations"]
 
     def setUp(self):
@@ -131,7 +131,7 @@ class AdGroupSettingsStateTestCase(DASHAPITestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class ConversionPixelTestCase(DASHAPITestCase):
+class ConversionPixelTestCase(BaseTestCase):
     fixtures = ["test_api.yaml", "test_views.yaml", "test_non_superuser.yaml", "test_conversion_pixel.yaml"]
 
     def setUp(self):
@@ -607,7 +607,7 @@ class ConversionPixelTestCase(DASHAPITestCase):
         self.assertEqual(update_pixel_mock.call_count, 0)
 
 
-class CampaignContentInsightsTestCase(DASHAPITestCase):
+class CampaignContentInsightsTestCase(BaseTestCase):
     fixtures = ["test_views.yaml"]
 
     def setUp(self):
@@ -750,7 +750,7 @@ class CampaignContentInsightsTestCase(DASHAPITestCase):
         )
 
 
-class HistoryTest(DASHAPITestCase):
+class HistoryTest(BaseTestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -861,7 +861,7 @@ class HistoryTest(DASHAPITestCase):
         self.assertEqual("Account manager changed to 'Janez Novak'", history["changes_text"])
 
 
-class AgenciesTestCase(DASHAPITestCase):
+class AgenciesTestCase(BaseTestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):

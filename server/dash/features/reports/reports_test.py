@@ -9,10 +9,10 @@ import core.models
 import dash.constants
 import utils.dates_helper
 import utils.test_helper
-from dash.common.views_base_test_case import DASHAPITestCase
 from dash.features import geolocation
 from dash.features import scheduled_reports
 from utils import dates_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -34,7 +34,7 @@ TEST_FTP_REPORTS = {
 }
 
 
-class ReportsExecuteTestCase(DASHAPITestCase):
+class ReportsExecuteTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -270,7 +270,7 @@ class ReportsExecuteTestCase(DASHAPITestCase):
         self.assertEqual(ReportJobExecutor._get_csv_separators(self.reportJob), ("\t", "."))
 
 
-class ReportsGetReportCSVTestCase(DASHAPITestCase):
+class ReportsGetReportCSVTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -510,7 +510,7 @@ class ReportsGetReportCSVTestCase(DASHAPITestCase):
         self.assertEqual(expected, output)
 
 
-class IncludeEntityTagsReportTestCase(DASHAPITestCase):
+class IncludeEntityTagsReportTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -647,7 +647,7 @@ class IncludeEntityTagsReportTestCase(DASHAPITestCase):
         self.assertEqual(expected, output)
 
 
-class ReportsImplementationTestCase(DASHAPITestCase):
+class ReportsImplementationTestCase(BaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.report_job = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)

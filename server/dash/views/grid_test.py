@@ -7,11 +7,11 @@ from mock import patch
 from core.models import all_rtb
 from dash import constants
 from dash import models
-from dash.common.views_base_test_case import DASHAPITestCase
+from utils.base_test_case import BaseTestCase
 from zemauth.models import User
 
 
-class RTBSourceSettingsTestCase(DASHAPITestCase):
+class RTBSourceSettingsTestCase(BaseTestCase):
 
     fixtures = ["test_api", "test_views", "test_non_superuser", "test_geolocations"]
 
