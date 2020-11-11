@@ -1,6 +1,7 @@
 import rest_framework.serializers
 from django.conf import settings
 
+import core.features.ad_review
 import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
 import dash.constants
@@ -21,15 +22,22 @@ ACCOUNTS_CAN_EDIT_BRAND_NAME = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 class ContentAdViewSet(RESTAPIBaseViewSet):
     def get(self, request, content_ad_id):
+        qpe = serializers.ContentAdQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        include_approval_status = qpe.validated_data.get("include_approval_status")
         content_ad = zemauth.access.get_content_ad(request.user, Permission.READ, content_ad_id)
+        if include_approval_status:
+            approval_status_map = core.features.ad_review.get_per_source_submission_status_map([content_ad])
+            content_ad.approval_status = approval_status_map.get(content_ad.id, {}).values()
         serializer = serializers.ContentAdSerializer(content_ad, context={"request": request})
         return self.response_ok(serializer.data)
 
     def list(self, request):
-        qpe = serializers.ContentAdQueryParams(data=request.query_params)
+        qpe = serializers.ContentAdListQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
+
         content_ads = (
             dash.models.ContentAd.objects.filter(ad_group=ad_group)
             .exclude_archived()
@@ -38,6 +46,13 @@ class ContentAdViewSet(RESTAPIBaseViewSet):
         )
         paginator = StandardPagination(default_limit=500)
         content_ads_paginated = paginator.paginate_queryset(content_ads, request)
+
+        include_approval_status = qpe.validated_data.get("include_approval_status")
+        if include_approval_status:
+            approval_status_map = core.features.ad_review.get_per_source_submission_status_map(content_ads_paginated)
+            for content_ad in content_ads_paginated:
+                content_ad.approval_status = approval_status_map.get(content_ad.id, {}).values()
+
         return self.response_ok(
             serializers.ContentAdSerializer(content_ads_paginated, many=True, context={"request": request}).data
         )
@@ -66,7 +81,7 @@ class ContentAdViewSet(RESTAPIBaseViewSet):
 
 class ContentAdBatchViewList(RESTAPIBaseView):
     def post(self, request):
-        qpe = serializers.ContentAdQueryParams(data=request.query_params)
+        qpe = serializers.ContentAdListQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
 

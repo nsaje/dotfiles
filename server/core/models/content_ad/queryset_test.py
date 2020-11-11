@@ -2,7 +2,7 @@ from typing import Any
 
 from django.test import TestCase
 
-import core
+import core.models
 import zemauth.features.entity_permission.shortcuts
 import zemauth.models
 from utils.magic_mixer import magic_mixer

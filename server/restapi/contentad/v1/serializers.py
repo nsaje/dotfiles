@@ -3,8 +3,17 @@ import rest_framework.serializers
 import dash.constants
 import dash.features.contentupload
 import dash.models
+import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+
+
+class ApprovalStatusSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    slug = rest_framework.serializers.CharField(source="bidder_slug", required=True)
+    status = restapi.serializers.fields.DashConstantField(
+        dash.constants.ContentAdSubmissionStatus, required=True, source="submission_status"
+    )
+    reason = rest_framework.serializers.CharField(required=True, allow_null=True, source="submission_errors")
 
 
 class ContentAdSerializer(
@@ -33,6 +42,7 @@ class ContentAdSerializer(
             "ad_height",
             "ad_tag",
             "video_asset_id",
+            "approval_status",
         )
         read_only_fields = tuple(
             set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data", "brand_name"))
@@ -72,6 +82,7 @@ class ContentAdSerializer(
     ad_height = rest_framework.serializers.IntegerField(source="image_height", required=False)
     ad_tag = rest_framework.serializers.CharField(required=False)
     video_asset_id = rest_framework.serializers.UUIDField(source="video_asset.id", required=False)
+    approval_status = ApprovalStatusSerializer(read_only=True, many=True, required=False)
 
 
 class ContentAdCandidateSerializer(
@@ -186,5 +197,13 @@ class UploadBatchSerializer(rest_framework.serializers.Serializer):
 
 class ContentAdQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    include_approval_status = rest_framework.serializers.BooleanField(default=False)
+
+
+class ContentAdListQueryParams(
+    ContentAdQueryParams,
+    restapi.serializers.serializers.QueryParamsExpectations,
+    restapi.serializers.serializers.PaginationParametersMixin,
 ):
     ad_group_id = restapi.serializers.fields.IdField(required=True)

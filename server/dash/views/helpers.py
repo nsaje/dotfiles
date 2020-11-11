@@ -223,38 +223,6 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     return content_ad_sources.aggregate(Max("modified_dt"))["modified_dt__max"]
 
 
-def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
-    submission_status = []
-    for content_ad_source in content_ad_sources:
-        cas_submission_status = content_ad_source.get_submission_status()
-
-        status = {"name": content_ad_source.source.name, "status": cas_submission_status}
-
-        cas_source = content_ad_source.source
-
-        ad_group_source_state_text = ""
-
-        cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
-
-        if cas_ad_group_source_state is not None:
-            if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
-                ad_group_source_state_text = "(paused)"
-
-        status["source_state"] = ad_group_source_state_text
-
-        text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
-        if (
-            cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED
-            and content_ad_source.submission_errors is not None
-        ):
-            text = "{} ({})".format(text, content_ad_source.submission_errors)
-
-        status["text"] = text
-        submission_status.append(status)
-
-    return submission_status
-
-
 def get_data_status(objects):
     data_status = {}
     for obj in objects:

@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 
 import automation.campaignstop
+import core.features.ad_review
 import core.features.bcm.calculations
 import core.features.bid_modifiers.constants
 import core.features.entity_status
@@ -19,7 +20,6 @@ from dash import publisher_helpers
 from dash.dashapi import data_helper
 from dash.views import helpers as view_helpers
 from utils import outbrain_internal_helper
-from utils import sspd_client
 from utils import zlogging
 from zemauth.models import User as ZemUser
 
@@ -39,7 +39,6 @@ Notes on implementation:
 """
 
 OUTBRAIN_SOURCE_ID = 3
-SOURCES_SSPD_REQUIRED = (120, 170)  # MSN
 
 # In case the target_dimension is publisher_id or
 # placement_id or is a delivery dimension we can't
@@ -458,20 +457,17 @@ class ContentAdsLoader(Loader):
         per_source_map = collections.defaultdict(dict)
         sources = {x.id: x.name for x in self.filtered_sources_qs}
         source_map = self._get_per_ad_group_source_map()
+        submission_status_map = core.features.ad_review.get_per_source_submission_status_map(self.objs_qs)
 
         for content_ad_id, content_ad in self.objs_map.items():
             for content_ad_source in self.content_ads_sources_map[content_ad_id]:
                 source_id = content_ad_source.source_id
+                content_ad_source_submission_status = submission_status_map.get(content_ad_id, {}).get(source_id, {})
 
                 source_status = source_map[content_ad.ad_group_id][source_id]["state"]
                 if source_status is None:
                     source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
-                submission_status, submission_errors = self._get_submission_status(
-                    content_ad,
-                    content_ad_source,
-                    source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"],
-                )
                 source_link = self._get_source_link(
                     content_ad, source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"]
                 )
@@ -479,8 +475,8 @@ class ContentAdsLoader(Loader):
                     "source_id": source_id,
                     "source_name": sources.get(source_id),
                     "source_status": source_status,
-                    "submission_status": submission_status,
-                    "submission_errors": submission_errors,
+                    "submission_status": content_ad_source_submission_status.get("submission_status"),
+                    "submission_errors": content_ad_source_submission_status.get("submission_errors"),
                 }
                 if source_link:
                     content_ad_source_dict["source_link"] = source_link
@@ -510,28 +506,6 @@ class ContentAdsLoader(Loader):
             }
         return settings_map
 
-    def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
-        if content_ad.ad_group.campaign.type == constants.CampaignType.DISPLAY:
-            return content_ad_source.get_submission_status(), content_ad_source.submission_errors
-        else:
-            return self._get_submission_status_for_native_ads(
-                content_ad, content_ad_source, content_ad_submission_policy
-            )
-
-    def _get_submission_status_for_native_ads(self, content_ad, content_ad_source, content_ad_submission_policy):
-        sspd_status = None
-        if self.sspd_status_map:
-            sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
-
-        if sspd_status is None and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
-            return constants.ContentAdSubmissionStatus.NOT_AVAILABLE, ""
-        if sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
-            return sspd_status["status"], sspd_status["reason"]
-        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
-            outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
-            return outbrain_content_ad_source.get_submission_status(), outbrain_content_ad_source.submission_errors
-        return content_ad_source.get_submission_status(), content_ad_source.submission_errors
-
     def _get_source_link(self, content_ad, content_ad_submission_policy):
         if self.user.has_perm("zemauth.can_see_amplify_review_link") and self._should_use_amplify_review(
             content_ad, content_ad_submission_policy
@@ -549,6 +523,15 @@ class ContentAdsLoader(Loader):
         )
 
     @cached_property
+    def amplify_reviews_map(self):
+        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids, source_id=OUTBRAIN_SOURCE_ID)
+
+        amplify_reviews_map = {}
+        for content_ad_source in qs:
+            amplify_reviews_map[content_ad_source.content_ad_id] = content_ad_source
+        return amplify_reviews_map
+
+    @cached_property
     def content_ads_sources_map(self):
         qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids).filter_by_sources(
             self.filtered_sources_qs
@@ -559,15 +542,6 @@ class ContentAdsLoader(Loader):
             content_ads_sources_map[content_ad_source.content_ad_id].append(content_ad_source)
 
         return content_ads_sources_map
-
-    @cached_property
-    def amplify_reviews_map(self):
-        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids, source_id=OUTBRAIN_SOURCE_ID)
-
-        amplify_reviews_map = {}
-        for content_ad_source in qs:
-            amplify_reviews_map[content_ad_source.content_ad_id] = content_ad_source
-        return amplify_reviews_map
 
     @cached_property
     def amplify_internal_ids_map(self):
@@ -584,14 +558,6 @@ class ContentAdsLoader(Loader):
             return dict(zip(content_ad_ids, ob_internal_ids))
         except Exception:
             return {}
-
-    @cached_property
-    def sspd_status_map(self):
-        try:
-            return sspd_client.get_content_ad_status(self.objs_ids)
-        except sspd_client.SSPDApiException:
-            logger.exception("Failed to fetch sspd status")
-            return None
 
 
 class ContentAdsOnAdGroupLevelLoader(ContentAdsLoader):

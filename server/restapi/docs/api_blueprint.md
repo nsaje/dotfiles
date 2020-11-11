@@ -1898,10 +1898,12 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 
 ## Manage content ads [/rest/v1/contentads/]
 
-### List content ads [GET /rest/v1/contentads/{?adGroupId}]
+### List content ads [GET /rest/v1/contentads/{?adGroupId,includeApprovalStatus}]
 
 + Parameters
     + adGroupId: 2040 (number, required) - Ad group ID
+    + includeApprovalStatus: true (bool, optional)
+        + default: false
 
 + Response 200 (application/json)
 
@@ -1920,16 +1922,19 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                     "brandName": "My Company",
                     "description": "My description",
                     "callToAction": "Read more",
-                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"],
+                    "approvalStatus": [{"slug": "source_slug", "status": "REJECTED", "reason": ""}]
                 }
             ]
         }
 
 
-### Get content ad details [GET /rest/v1/contentads/{contentAdId}]
+### Get content ad details [GET /rest/v1/contentads/{contentAdId}{?includeApprovalStatus}]
 
 + Parameters
     + contentAdId: 16805 (required)
+    + includeApprovalStatus: true (bool, optional)
+        + default: false
 
 + Response 200 (application/json)
 
@@ -1947,7 +1952,8 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"],
+                "approvalStatus": [{"slug": "source_slug", "status": "REJECTED", "reason": ""}]
             }
         }
 

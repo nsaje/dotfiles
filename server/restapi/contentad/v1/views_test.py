@@ -87,6 +87,21 @@ class ContentAdsTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_contentads_list_approval_status(self):
+        source = magic_mixer.blend(core.models.Source)
+        content_ads = magic_mixer.cycle(4).blend(core.models.ContentAd, ad_group=self.ad_group)
+        for content_ad in content_ads:
+            magic_mixer.blend(core.models.ContentAdSource, content_ad=content_ad, source=source)
+
+        r = self.client.get(
+            reverse("restapi.contentad.v1:contentads_list"),
+            data={"adGroupId": self.ad_group.id, "includeApprovalStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(4, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.assertTrue(item["approvalStatus"])
+
     def test_contentads_list_pagination(self):
         magic_mixer.cycle(10).blend(core.models.ContentAd, ad_group=self.ad_group)
         r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": self.ad_group.id})
@@ -108,6 +123,17 @@ class ContentAdsTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertNotIn("videoAssetId", resp_json["data"])
+
+    def test_contentads_get_with_approval_status(self):
+        source = magic_mixer.blend(core.models.Source)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        magic_mixer.blend(core.models.ContentAdSource, content_ad=content_ad, source=source)
+        r = self.client.get(
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
+            {"includeApprovalStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertIn("approvalStatus", resp_json["data"])
 
     def test_contentads_get_video_ad(self):
         video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
