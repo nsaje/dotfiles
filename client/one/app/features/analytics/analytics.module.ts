@@ -35,6 +35,7 @@ import {ThumbnailCellComponent} from './components/grid/cells/thumbnail-cell/thu
 import {BidModifierGridCellComponent} from './components/grid/cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
 import {CurrencyDataCellComponent} from './components/grid/cells/currency-data-cell/currency-data-cell.component';
 import {CurrencyRefundCellComponent} from './components/grid/cells/currency-refund-cell/currency-refund-cell.component';
+import {CheckboxFilterHeaderCellComponent} from './components/grid/cells/checkbox-filter-header-cell/checkbox-filter-header-cell.component';
 
 @NgModule({
     declarations: [
@@ -69,6 +70,7 @@ import {CurrencyRefundCellComponent} from './components/grid/cells/currency-refu
         BidModifierGridCellComponent,
         CurrencyDataCellComponent,
         CurrencyRefundCellComponent,
+        CheckboxFilterHeaderCellComponent,
     ],
     imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
@@ -93,6 +95,7 @@ import {CurrencyRefundCellComponent} from './components/grid/cells/currency-refu
         BidModifierGridCellComponent,
         CurrencyDataCellComponent,
         CurrencyRefundCellComponent,
+        CheckboxFilterHeaderCellComponent,
     ],
 })
 export class AnalyticsModule {}

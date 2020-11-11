@@ -11,11 +11,18 @@ import {ColumnMapper} from './column.mapper';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {CheckboxRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/types/checkbox.renderer-params';
 import {GridRow} from '../../types/grid-row';
-import {CHECKBOX_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {
+    CHECKBOX_COLUMN_WIDTH,
+    CHECKBOX_WITH_FILTERS_COLUMN_WIDTH,
+} from '../../grid-bridge.component.constants';
+import {CheckboxFilterHeaderCellComponent} from '../../../cells/checkbox-filter-header-cell/checkbox-filter-header-cell.component';
+import {CheckboxFilterHeaderParams} from '../../../cells/checkbox-filter-header-cell/types/checkbox-filter-header-params';
+import {GridSelectionCustomFilter} from '../../types/grid-selection-custom-filter';
+import {HEADER_CHECKBOX_WITH_FILTERS_BREAKDOWNS} from '../../grid-bridge.component.config';
 
 export class CheckboxColumnMapper extends ColumnMapper {
     getColDef(grid: Grid, column: GridColumn): ColDef | null {
-        return {
+        let colDef: ColDef = {
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
             minWidth: CHECKBOX_COLUMN_WIDTH,
@@ -96,5 +103,57 @@ export class CheckboxColumnMapper extends ColumnMapper {
             } as CheckboxRendererParams,
             pinnedRowValueFormatter: '',
         };
+
+        if (
+            HEADER_CHECKBOX_WITH_FILTERS_BREAKDOWNS.includes(
+                grid.meta.data.breakdown
+            )
+        ) {
+            colDef = {
+                ...colDef,
+                minWidth: CHECKBOX_WITH_FILTERS_COLUMN_WIDTH,
+                width: CHECKBOX_WITH_FILTERS_COLUMN_WIDTH,
+                headerComponentFramework: CheckboxFilterHeaderCellComponent,
+                headerComponentParams: {
+                    isChecked: (params: CheckboxFilterHeaderParams) => {
+                        const selection: any = grid.meta.api.getSelection();
+                        if (commonHelpers.isDefined(selection)) {
+                            return (
+                                selection.type === GridSelectionFilterType.ALL
+                            );
+                        }
+                        return false;
+                    },
+                    setChecked: (
+                        value: boolean,
+                        params: CheckboxFilterHeaderParams
+                    ) => {
+                        if (!value) {
+                            grid.meta.api.setSelectionFilter(
+                                GridSelectionFilterType.NONE
+                            );
+                        } else {
+                            grid.meta.api.setSelectionFilter(
+                                GridSelectionFilterType.ALL
+                            );
+                        }
+                    },
+                    getCustomFilters: (params: CheckboxFilterHeaderParams) => {
+                        return grid.meta.api.getCustomFilters();
+                    },
+                    setCustomFilter: (
+                        value: GridSelectionCustomFilter,
+                        params: CheckboxFilterHeaderParams
+                    ) => {
+                        grid.meta.api.setSelectionFilter(
+                            GridSelectionFilterType.CUSTOM,
+                            value
+                        );
+                    },
+                } as CheckboxFilterHeaderParams,
+            };
+        }
+
+        return colDef;
     }
 }
