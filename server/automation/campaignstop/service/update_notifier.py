@@ -1,9 +1,9 @@
-from django.conf import settings
+import time
 
-from utils import sqs_helper
 from utils import zlogging
 
 from .. import constants
+from .update_handler import handle_updates
 
 logger = zlogging.getLogger(__name__)
 
@@ -51,6 +51,8 @@ def notify(campaign, type_):
     if not campaign.real_time_campaign_stop:
         return
     logger.debug("Notify campaign update", campaign_id=campaign.id, type=type_)
-    sqs_helper.write_message_json(
-        settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, {"campaign_id": campaign.id, "type": type_}
-    )
+    handle_updates.delay(campaign.id, type_, _time())
+
+
+def _time():
+    return time.time()

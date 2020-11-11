@@ -9,7 +9,6 @@
 */15 * * * *     /home/ubuntu/docker-manage-py.sh monitor_demo
 */2 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_main
 */20 * * * *     /home/ubuntu/docker-manage-py.sh campaignstop_simple
-*/5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
 */5 * * * *      /home/ubuntu/docker-manage-py.sh refresh_entity_status_cache
 */5 * * * *      /home/ubuntu/docker-manage-py.sh refresh_etl 1
 45 * * * *       /home/ubuntu/docker-manage-py.sh refresh_partnerstats

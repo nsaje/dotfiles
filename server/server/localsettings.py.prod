@@ -416,6 +416,7 @@ CELERY_ROUTES = {
     "redshift_background_cache": {"queue": "redshift-background-cache"},
     "campaign_cloning": {"queue": "z1-campaign-cloning"},
     "ad_group_cloning": {"queue": "z1-ad-group-cloning"},
+    "campaignstop_update_handler": {"queue": "z1-campaign-updates"},
 }
 
 # must be empty otherwise k1 queues get prefixed as well

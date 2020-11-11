@@ -6,8 +6,6 @@ from .start_date_check import update_campaigns_start_date
 from .api import get_campaignstop_state, get_campaignstop_states
 from .calculation import calculate_minimum_budget_amount
 from .selection import mark_almost_depleted_campaigns
-from .update_handler import handle_updates
-from .update_handler import handle_updates_parallel
 from .monitor import audit_stopped_campaigns
 from .update_notifier import notify_initialize, notify
 from .simple import notify_depleting_budget_campaigns, stop_and_notify_depleted_budget_campaigns

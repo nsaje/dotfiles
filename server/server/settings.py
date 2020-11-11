@@ -424,7 +424,6 @@ DCRON = {
     "warning_waits": {
         "monitor_adgroup_propagation": 3900,  # 1 h 5 min
         "campaignstop_simple": 1500,  # 25 min
-        "campaignstop_handle_updates": 600,  # 10 min
         "refresh_etl": 600,  # 10 min
         "cross_check": 1800,  # 30 min
     },
@@ -434,7 +433,6 @@ DCRON = {
     "max_durations": {
         "campaignstop_main": 1800,  # 30 min
         "campaignstop_selection": 7200,  # 120 min
-        "campaignstop_handle_updates": 1800,  # 30 min
         "clean_up_postgres_stats": 7200,  # 2h
         "create_demand_report": 7200,  # 2 h
         "monitor_adgroup_propagation": 86400,  # 24 h
