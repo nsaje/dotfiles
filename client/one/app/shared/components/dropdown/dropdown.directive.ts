@@ -19,6 +19,7 @@ import {Placement} from '../../types/placement';
     exportAs: 'zemDropdown',
     host: {
         class: 'zem-dropdown',
+        '[class.zem-dropdown--open]': 'isOpen()',
         '[class.zem-dropdown--disabled]': 'isDropdownDisabled',
         '[class.zem-dropdown--suppress-mobile-style]':
             'suppressDropdownMobileStyle',
