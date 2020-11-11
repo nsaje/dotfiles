@@ -35,9 +35,10 @@ def _get_campaigns(campaigns: Optional[List[core.models.Campaign]] = None) -> It
 
 
 def _process_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
-    with concurrent.futures.ProcessPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+    campaigns = list(campaigns)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
         executor.map(
-            partial(_process_campaign_thread_logging_wrapper, Lock(), {"total": len(list(campaigns)), "current": 0}),
+            partial(_process_campaign_thread_logging_wrapper, Lock(), {"total": len(campaigns), "current": 0}),
             campaigns,
         )
 
