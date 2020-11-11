@@ -177,7 +177,6 @@ services:
     einsworker_campaign_stop_update_handler:
       extends: eins-base
       scale: 1
-      mem_limit: 256m
       environment:
         NEW_RELIC_APP_NAME: "Zemanta One (Campaign stop Update Handler)"
       labels:
