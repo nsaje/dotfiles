@@ -12,8 +12,8 @@
         [stayOpenOnHover]="true"
         [popoverOpenDelay]="500"
         triggers="mouseenter:mouseleave"
-        [placement]="['left', 'auto']"
-        container="body"
+        [popoverPlacement]="['left', 'auto']"
+        popoverContainer="body"
     >
         <span
             *ngIf="approvedItems.length > 0"

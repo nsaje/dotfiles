@@ -1,9 +1,9 @@
 <span
     class="zem-help-popover__trigger"
     [zemPopover]="contentTooltip"
-    [placement]="[placement, 'auto']"
+    [popoverPlacement]="[placement, 'auto']"
     triggers="mouseenter:mouseleave"
-    container="body"
+    popoverContainer="body"
 ></span>
 
 <ng-template #contentTooltip>

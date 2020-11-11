@@ -1,7 +1,7 @@
 import './help-popover.component.less';
 
 import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
-import {PopoverPlacement} from '../popover/types/popover-placement';
+import {Placement} from '../../types/placement';
 
 @Component({
     selector: 'zem-help-popover',
@@ -12,7 +12,7 @@ export class HelpPopoverComponent {
     @Input()
     content: string;
     @Input()
-    placement: PopoverPlacement = 'top';
+    placement: Placement = 'top';
     @Input()
     helpPopoverClass: string;
 }

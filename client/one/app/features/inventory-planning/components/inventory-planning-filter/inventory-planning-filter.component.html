@@ -1,4 +1,4 @@
-<div zemDropdown class="zem-dropdown" #filterDropdown="zemDropdown">
+<div zemDropdown #filterDropdown="zemDropdown">
     <button
         zemDropdownToggle
         class="button button--highlight button--with-icon add-icon zem-inventory-planning-filter__add-filter-button"
@@ -6,7 +6,8 @@
         Add filter
     </button>
     <div
-        class="zem-dropdown__content zem-inventory-planning-filter__dropdown-content"
+        zemDropdownContent
+        class="zem-inventory-planning-filter__dropdown-content"
     >
         <zem-categorized-select
             class="zem-categorized-select zem-inventory-planning-filter__categorized-select"

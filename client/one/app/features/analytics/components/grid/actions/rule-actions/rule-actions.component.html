@@ -1,6 +1,6 @@
 <div
     zemDropdown
-    class="zem-dropdown zem-dropdown--no-mobile-style"
+    [suppressDropdownMobileStyle]="true"
     #ruleActionsDropdown="zemDropdown"
 >
     <button
@@ -10,7 +10,7 @@
     >
         Automation rules
     </button>
-    <div class="zem-dropdown__content">
+    <div zemDropdownContent>
         <ul class="zem-rule-actions__list">
             <li
                 class="zem-rule-actions__list-item"

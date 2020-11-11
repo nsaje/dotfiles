@@ -1,4 +1,4 @@
-export type PopoverPlacement =
+export type Placement =
     | 'top'
     | 'top-left'
     | 'top-right'
