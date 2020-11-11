@@ -28,7 +28,7 @@ def handle_updates(campaign_id, campaign_type, time):
 def _handle_updates(campaign_id, campaign_type, time):
     campaign = _get_campaign(campaign_id)
     with transaction.atomic():
-        campaign_processed_record, created = CampaignEventProcessedAt.objects.select_for_update().get_or_create(
+        campaign_processed_record, created = CampaignEventProcessedAt.objects.get_or_create(
             campaign=campaign, type=campaign_type
         )
         if created or campaign_processed_record.modified_dt.timestamp() < time:
