@@ -17,7 +17,7 @@ from . import update_campaigns_state
 logger = zlogging.getLogger(__name__)
 
 
-@celery.app.task(acks_late=True, name="campaignstop_update_handler", soft_time_limit=15 * 60, ignore_result=True)
+@celery.app.task(acks_late=True, name="campaignstop_update_handler", soft_time_limit=60 * 60, ignore_result=True)
 def handle_updates(campaign_id, campaign_type, time):
     try:
         _handle_updates(campaign_id, campaign_type, time)
