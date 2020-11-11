@@ -21,10 +21,7 @@ import {FocusDirective} from './directives/focus/focus.directive';
 import {CategorizedSelectComponent} from './components/categorized-select/categorized-select.component';
 import {CategorizedTagsListComponent} from './components/categorized-tags-list/categorized-tags-list.component';
 import {DropdownDirective} from './components/dropdown/dropdown.directive';
-import {
-    DropdownAnchorDirective,
-    DropdownToggleDirective,
-} from './components/dropdown/dropdown-toggle.directive';
+import {DropdownToggleDirective} from './components/dropdown/dropdown-toggle.directive';
 import {DropdownContentDirective} from './components/dropdown/dropdown-content.directive';
 import {HelpPopoverComponent} from './components/help-popover/help-popover.component';
 import {DaypartingInputComponent} from './components/dayparting-input/dayparting-input.component';
@@ -106,7 +103,6 @@ const EXPORTED_DECLARATIONS = [
     CategorizedSelectComponent,
     CategorizedTagsListComponent,
     DropdownDirective,
-    DropdownAnchorDirective,
     DropdownToggleDirective,
     DropdownContentDirective,
     DrawerComponent,

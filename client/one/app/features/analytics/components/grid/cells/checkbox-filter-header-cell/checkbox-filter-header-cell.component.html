@@ -4,43 +4,47 @@
     [dropdownContainer]="'body'"
     [suppressDropdownMobileStyle]="true"
     #filtersDropdown="zemDropdown"
-    zemDropdownToggle
 >
-    <zem-checkbox-input
-        class="zem-checkbox-input zem-checkbox-filter-header-cell__checkbox zem-checkbox-filter-header-cell__item"
-        [isChecked]="isChecked"
-        (toggle)="setChecked($event)"
-    ></zem-checkbox-input>
     <div
-        class="zem-checkbox-filter-header-cell__toggle-icon zem-checkbox-filter-header-cell__item"
-    ></div>
-    <div
-        zemDropdownContent
-        class="zem-checkbox-filter-header-cell__filters-content"
+        class="zem-checkbox-filter-header-cell__dropdown-toggle"
+        zemDropdownToggle
     >
+        <zem-checkbox-input
+            class="zem-checkbox-input zem-checkbox-filter-header-cell__checkbox zem-checkbox-filter-header-cell__item"
+            [isChecked]="isChecked"
+            (toggle)="setChecked($event)"
+        ></zem-checkbox-input>
         <div
-            *ngIf="filters.length === 0"
-            class="zem-checkbox-filter-header-cell__empty-filters"
+            class="zem-checkbox-filter-header-cell__toggle-icon zem-checkbox-filter-header-cell__item"
+        ></div>
+        <div
+            zemDropdownContent
+            class="zem-checkbox-filter-header-cell__filters-content"
         >
-            No filters
-        </div>
-        <ng-container *ngFor="let group of filters">
-            <div class="zem-checkbox-filter-header-cell__filters-title">
-                {{ group.name }}:
+            <div
+                *ngIf="filters.length === 0"
+                class="zem-checkbox-filter-header-cell__empty-filters"
+            >
+                No filters
             </div>
-            <ul class="zem-checkbox-filter-header-cell__filters">
-                <li
-                    class="zem-checkbox-filter-header-cell__filters-item"
-                    *ngFor="let filter of group.filters"
-                >
-                    <span
-                        class="zem-checkbox-filter-header-cell__filter"
-                        (click)="setCustomFilter(filter)"
+            <ng-container *ngFor="let group of filters">
+                <div class="zem-checkbox-filter-header-cell__filters-title">
+                    {{ group.name }}:
+                </div>
+                <ul class="zem-checkbox-filter-header-cell__filters">
+                    <li
+                        class="zem-checkbox-filter-header-cell__filters-item"
+                        *ngFor="let filter of group.filters"
                     >
-                        {{ filter.name }}
-                    </span>
-                </li>
-            </ul>
-        </ng-container>
+                        <span
+                            class="zem-checkbox-filter-header-cell__filter"
+                            (click)="setCustomFilter(filter)"
+                        >
+                            {{ filter.name }}
+                        </span>
+                    </li>
+                </ul>
+            </ng-container>
+        </div>
     </div>
 </div>

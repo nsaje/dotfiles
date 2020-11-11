@@ -1,9 +1,7 @@
-import {Grid} from 'ag-grid-community';
 import {
     Breakdown,
     SettingsState,
     PublisherTargetingStatus,
-    Level,
 } from '../../../../../app.constants';
 import {LinkCellIcon} from '../../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component.constants';
 import {GridColumnTypes} from '../../../analytics.constants';

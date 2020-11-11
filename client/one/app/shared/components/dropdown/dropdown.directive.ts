@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {NgbDropdown} from '@ng-bootstrap/ng-bootstrap';
 import {DropdownContentDirective} from './dropdown-content.directive';
-import {DropdownAnchorDirective} from './dropdown-toggle.directive';
+import {DropdownToggleDirective} from './dropdown-toggle.directive';
 import {Placement} from '../../types/placement';
 
 @Directive({
@@ -36,9 +36,9 @@ export class DropdownDirective extends NgbDropdown
     dropdownContainer: string;
 
     @ContentChild(DropdownContentDirective, {static: false})
-    menu: DropdownContentDirective;
-    @ContentChild(DropdownAnchorDirective, {static: false})
-    anchor: DropdownAnchorDirective;
+    contentDirective: DropdownContentDirective;
+    @ContentChild(DropdownToggleDirective, {static: false})
+    toggleDirective: DropdownToggleDirective;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.dropdownPlacement) {
@@ -61,8 +61,8 @@ export class DropdownDirective extends NgbDropdown
     }
 
     ngAfterViewInit(): void {
-        (this as any)._menu = this.menu;
-        (this as any)._anchor = this.anchor;
+        (this as any)._menu = this.contentDirective;
+        (this as any)._anchor = this.toggleDirective;
     }
 
     open(): void {
