@@ -2,6 +2,7 @@ from django.db import transaction
 
 import core.models
 from server import celery
+from utils import metrics_compat
 from utils import zlogging
 
 from .. import CampaignStopState
@@ -23,7 +24,8 @@ def handle_updates(campaign_id, campaign_type, time):
             campaign=campaign, type=campaign_type
         )
         if created or campaign_processed_record.modified_dt.timestamp() < time:
-            _process_campaign(campaign, campaign_type)
+            with metrics_compat.block_timer("campaignstop.update_handler.process_campaign", type=campaign_type):
+                _process_campaign(campaign, campaign_type)
         campaign_processed_record.update_modified_dt()
 
 
