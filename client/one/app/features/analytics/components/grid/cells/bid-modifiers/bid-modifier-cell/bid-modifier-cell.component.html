@@ -28,10 +28,10 @@
                 [zemPopover]="bidRangeInfoTemplate"
                 [popoverOpenDelay]="500"
                 [stayOpenOnHover]="true"
-                [disablePopover]="false"
+                [isPopoverDisabled]="false"
                 triggers="mouseenter:mouseleave"
-                container="body"
-                placement="top"
+                popoverContainer="body"
+                popoverPlacement="top"
             >
                 {{ state.previousModifierPercent }}%
             </span>

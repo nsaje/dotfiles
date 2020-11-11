@@ -1,125 +1,74 @@
 import './dropdown.directive.less';
 
 import {
+    AfterViewInit,
+    ContentChild,
     Directive,
-    Output,
-    EventEmitter,
-    OnDestroy,
-    ElementRef,
-    ChangeDetectorRef,
     Input,
     OnChanges,
+    SimpleChange,
     SimpleChanges,
 } from '@angular/core';
-
-const KEY_ESC = 27;
+import {NgbDropdown} from '@ng-bootstrap/ng-bootstrap';
+import {DropdownContentDirective} from './dropdown-content.directive';
+import {DropdownAnchorDirective} from './dropdown-toggle.directive';
+import {Placement} from '../../types/placement';
 
 @Directive({
     selector: '[zemDropdown]',
     exportAs: 'zemDropdown',
+    host: {
+        class: 'zem-dropdown',
+        '[class.zem-dropdown--disabled]': 'isDropdownDisabled',
+        '[class.zem-dropdown--suppress-mobile-style]':
+            'suppressDropdownMobileStyle',
+    },
 })
-export class DropdownDirective implements OnChanges, OnDestroy {
+export class DropdownDirective extends NgbDropdown
+    implements OnChanges, AfterViewInit {
     @Input()
-    disabled: boolean = false;
-    @Output()
-    onOpen = new EventEmitter();
-    @Output()
-    onClose = new EventEmitter();
+    isDropdownDisabled: boolean = false;
+    @Input()
+    dropdownPlacement: Placement;
+    @Input()
+    suppressDropdownMobileStyle: boolean = false;
+    @Input()
+    dropdownContainer: string;
 
-    element: HTMLElement;
-    private closeOnOutsideClickHandler: (event: MouseEvent) => void;
-    private closeOnEscapeKeyHandler: (event: KeyboardEvent) => void;
-    private readonly DISABLED_CSS_CLASS: string = 'zem-dropdown--disabled';
+    @ContentChild(DropdownContentDirective, {static: false})
+    menu: DropdownContentDirective;
+    @ContentChild(DropdownAnchorDirective, {static: false})
+    anchor: DropdownAnchorDirective;
 
-    constructor(
-        private elementRef: ElementRef,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {
-        this.element = this.elementRef.nativeElement;
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.disabled) {
-            if (this.disabled) {
-                this.element.classList.add(this.DISABLED_CSS_CLASS);
-            } else {
-                this.element.classList.remove(this.DISABLED_CSS_CLASS);
-            }
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.dropdownPlacement) {
+            changes.placement = new SimpleChange(
+                this.placement,
+                this.dropdownPlacement,
+                false
+            );
+            this.placement = changes.dropdownPlacement.currentValue;
         }
+        if (changes.dropdownContainer) {
+            changes.container = new SimpleChange(
+                this.container,
+                this.dropdownContainer,
+                false
+            );
+            this.container = changes.dropdownContainer.currentValue;
+        }
+        super.ngOnChanges(changes);
     }
 
-    ngOnDestroy() {
-        this.close();
+    ngAfterViewInit(): void {
+        (this as any)._menu = this.menu;
+        (this as any)._anchor = this.anchor;
     }
 
     open(): void {
-        document.addEventListener(
-            'click',
-            (this.closeOnOutsideClickHandler = this.closeOnOutsideClick.bind(
-                this
-            )),
-            true
-        );
-        document.addEventListener(
-            'keydown',
-            (this.closeOnEscapeKeyHandler = this.closeOnEscapeKey.bind(this)),
-            true
-        );
-        this.element.classList.add('zem-dropdown--open');
-        this.positionContent();
-        this.onOpen.emit(undefined);
-    }
-
-    close(): void {
-        document.removeEventListener(
-            'click',
-            this.closeOnOutsideClickHandler,
-            true
-        );
-        document.removeEventListener(
-            'keydown',
-            this.closeOnEscapeKeyHandler,
-            true
-        );
-        this.element.classList.remove(
-            'zem-dropdown--open',
-            'zem-dropdown--reversed'
-        );
-        this.onClose.emit(undefined);
-    }
-
-    isOpen(): boolean {
-        return this.element.classList.contains('zem-dropdown--open');
-    }
-
-    private closeOnOutsideClick(event: MouseEvent): void {
-        if (!this.element.contains(<Element>event.target)) {
-            event.preventDefault();
-            event.stopPropagation();
-            this.close();
-            this.changeDetectorRef.detectChanges();
+        if (this.isDropdownDisabled) {
+            return;
         }
-    }
-
-    private closeOnEscapeKey(event: KeyboardEvent): void {
-        if (event.keyCode === KEY_ESC) {
-            event.preventDefault();
-            event.stopPropagation();
-            this.close();
-            this.changeDetectorRef.detectChanges();
-        }
-    }
-
-    private positionContent(): void {
-        const contentElement = this.element.querySelector(
-            '.zem-dropdown__content'
-        );
-        const contentLeft = contentElement.getBoundingClientRect().left;
-        const contentWidth = contentElement.clientWidth;
-        const windowWidth = window.innerWidth;
-
-        if (contentLeft + contentWidth > windowWidth) {
-            this.element.classList.add('zem-dropdown--reversed');
-        }
+        super.open();
     }
 }

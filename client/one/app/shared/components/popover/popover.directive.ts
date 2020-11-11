@@ -24,7 +24,7 @@ import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
 import {DOCUMENT} from '@angular/common';
 import * as commonHelpers from '../../helpers/common.helpers';
-import {PopoverPlacement} from './types/popover-placement';
+import {Placement} from '../../types/placement';
 
 @Directive({
     selector: '[zemPopover]',
@@ -39,7 +39,11 @@ export class PopoverDirective extends NgbPopover
     @Input()
     popoverOpenDelay: number;
     @Input()
-    placement: PopoverPlacement;
+    isPopoverDisabled: boolean;
+    @Input()
+    popoverPlacement: Placement;
+    @Input()
+    popoverContainer: string;
 
     private canClosePopover: boolean = true;
 
@@ -110,6 +114,30 @@ export class PopoverDirective extends NgbPopover
                 false
             );
             this.ngbPopover = changes.zemPopover.currentValue;
+        }
+        if (changes.isPopoverDisabled) {
+            changes.isPopoverDisabled = new SimpleChange(
+                this.disablePopover,
+                this.isPopoverDisabled,
+                false
+            );
+            this.disablePopover = changes.isPopoverDisabled.currentValue;
+        }
+        if (changes.popoverPlacement) {
+            changes.placement = new SimpleChange(
+                this.placement,
+                this.popoverPlacement,
+                false
+            );
+            this.placement = changes.popoverPlacement.currentValue;
+        }
+        if (changes.popoverContainer) {
+            changes.container = new SimpleChange(
+                this.container,
+                this.popoverContainer,
+                false
+            );
+            this.container = changes.popoverContainer.currentValue;
         }
         super.ngOnChanges(changes);
     }
