@@ -1,3 +1,4 @@
+from celery.exceptions import SoftTimeLimitExceeded
 from django.db import transaction
 
 import core.models
@@ -18,6 +19,13 @@ logger = zlogging.getLogger(__name__)
 
 @celery.app.task(acks_late=True, name="campaignstop_update_handler", soft_time_limit=15 * 60, ignore_result=True)
 def handle_updates(campaign_id, campaign_type, time):
+    try:
+        _handle_updates(campaign_id, campaign_type, time)
+    except SoftTimeLimitExceeded:
+        logger.warning("Time limit exceeded", campaign_id=campaign_id, type=campaign_type)
+
+
+def _handle_updates(campaign_id, campaign_type, time):
     campaign = _get_campaign(campaign_id)
     with transaction.atomic():
         campaign_processed_record, created = CampaignEventProcessedAt.objects.select_for_update().get_or_create(
