@@ -1,5 +1,5 @@
 import {IHeaderParams} from 'ag-grid-community';
-import {Placement} from '../../../../../../types/placement';
+import {PopoverPlacement} from '../../../../../popover/types/popover-placement';
 import {CellRole} from '../../../../smart-grid.component.constants';
 import {HeaderCellIcon} from '../header-cell.component.constants';
 import {HeaderSelectionOptions} from './header-selection-options';
@@ -12,7 +12,7 @@ export interface HeaderParams extends IHeaderParams {
     enableSelection: boolean;
     selectionOptions?: HeaderSelectionOptions;
     popoverTooltip?: string;
-    popoverPlacement?: Placement;
+    popoverPlacement?: PopoverPlacement;
     icon?: HeaderCellIcon;
     role?: CellRole;
 }

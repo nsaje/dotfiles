@@ -5,10 +5,8 @@
 </span>
 <div
     zemDropdown
-    [suppressDropdownMobileStyle]="true"
-    [isDropdownDisabled]="isDisabled"
     #addOsDropdown="zemDropdown"
-    class="zem-operating-system-list__dropdown"
+    class="zem-dropdown zem-dropdown--no-mobile-style zem-operating-system-list__dropdown"
 >
     <button
         class="zem-button zem-button--with-icon zem-button--add-icon"
@@ -17,7 +15,7 @@
     >
         Add Operating System
     </button>
-    <div zemDropdownContent>
+    <div class="zem-dropdown__content">
         <ul class="zem-operating-system-list__dropdown-list">
             <li
                 *ngFor="let os of filteredOses"

@@ -1,12 +1,12 @@
 <div
     zemDropdown
-    [suppressDropdownMobileStyle]="true"
+    class="zem-dropdown zem-dropdown--no-mobile-style"
     #bidModifierActionsDropdown="zemDropdown"
 >
     <button class="button button--dropdown-toggle-icon" zemDropdownToggle>
         Bid Modifiers
     </button>
-    <div zemDropdownContent>
+    <div class="zem-dropdown__content">
         <ul class="zem-bid-modifier-actions__list">
             <li class="zem-bid-modifier-actions__list-item" (click)="export()">
                 Export

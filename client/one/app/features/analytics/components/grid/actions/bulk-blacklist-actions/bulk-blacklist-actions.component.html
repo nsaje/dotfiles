@@ -3,22 +3,21 @@
 >
     <div
         *ngFor="let blacklistAction of blacklistActions"
-        class="zem-bulk-blacklist-actions__dropdown"
         zemDropdown
-        [isDropdownDisabled]="
+        class="zem-bulk-blacklist-actions__dropdown zem-dropdown zem-dropdown--no-mobile-style"
+        [disabled]="
             dropdownsDisabled ||
             store.state.requests.updateBlacklistStatuses.inProgress
         "
-        [suppressDropdownMobileStyle]="true"
+        [disablePopover]="!dropdownsDisabled"
         [zemPopover]="
             'At least one Publisher has to be selected before using ' +
             blacklistAction.name +
             ' blacklist.'
         "
-        [isPopoverDisabled]="!dropdownsDisabled"
         triggers="mouseenter:mouseleave"
-        popoverContainer="body"
-        popoverPlacement="top"
+        container="body"
+        placement="top"
     >
         <button
             class="zem-button zem-button--dropdown-toggle-icon"
@@ -27,8 +26,7 @@
             {{ blacklistAction.name }} blacklist
         </button>
         <div
-            class="zem-bulk-blacklist-actions__dropdown-content"
-            zemDropdownContent
+            class="zem-bulk-blacklist-actions__dropdown-content zem-dropdown__content"
         >
             <ul class="zem-bulk-blacklist-actions__list">
                 <li

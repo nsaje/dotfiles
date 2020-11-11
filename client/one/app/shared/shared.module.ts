@@ -8,7 +8,6 @@ import {
     NgbDatepickerModule,
     NgbPopoverModule,
     NgbPaginationModule,
-    NgbDropdownModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {NgOptionHighlightModule} from '@ng-select/ng-option-highlight';
@@ -21,11 +20,7 @@ import {FocusDirective} from './directives/focus/focus.directive';
 import {CategorizedSelectComponent} from './components/categorized-select/categorized-select.component';
 import {CategorizedTagsListComponent} from './components/categorized-tags-list/categorized-tags-list.component';
 import {DropdownDirective} from './components/dropdown/dropdown.directive';
-import {
-    DropdownAnchorDirective,
-    DropdownToggleDirective,
-} from './components/dropdown/dropdown-toggle.directive';
-import {DropdownContentDirective} from './components/dropdown/dropdown-content.directive';
+import {DropdownToggleDirective} from './components/dropdown/dropdown-toggle.directive';
 import {HelpPopoverComponent} from './components/help-popover/help-popover.component';
 import {DaypartingInputComponent} from './components/dayparting-input/dayparting-input.component';
 import {DrawerComponent} from './components/drawer/drawer.component';
@@ -106,9 +101,7 @@ const EXPORTED_DECLARATIONS = [
     CategorizedSelectComponent,
     CategorizedTagsListComponent,
     DropdownDirective,
-    DropdownAnchorDirective,
     DropdownToggleDirective,
-    DropdownContentDirective,
     DrawerComponent,
     DaypartingInputComponent,
     CheckboxInputComponent,
@@ -177,7 +170,6 @@ const EXPORTED_DECLARATIONS = [
         NgSelectModule,
         NgOptionHighlightModule,
         NgbPopoverModule,
-        NgbDropdownModule,
         NgxFileDropModule,
         AgGridModule.withComponents([
             GridLoadingOverlayComponent,

@@ -6,9 +6,9 @@
             ? templatedTextTooltip
             : displayOptions.textTooltip
     "
-    [popoverPlacement]="displayOptions.placement"
+    [placement]="displayOptions.placement"
     triggers="mouseenter:mouseleave"
-    popoverContainer="body"
+    container="body"
     >{{ displayOptions.text }}</span
 >
 <span
@@ -19,9 +19,9 @@
             ? templatedIconTooltip
             : displayOptions.iconTooltip
     "
-    [popoverPlacement]="displayOptions.placement"
+    [placement]="displayOptions.placement"
     triggers="mouseenter:mouseleave"
-    popoverContainer="body"
+    container="body"
 ></span>
 <ng-container
     *ngIf="
