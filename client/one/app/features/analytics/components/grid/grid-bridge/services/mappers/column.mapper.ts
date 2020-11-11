@@ -27,38 +27,15 @@ import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 export abstract class ColumnMapper {
     map(grid: Grid, column: GridColumn): ColDef {
         const defaultColDef = this.getDefaultColDef(grid, column);
-        let colDef = {
+        const colDef = this.getColDef(grid, column);
+        return {
             ...defaultColDef,
-            ...(this.getColDef(grid, column) || {}),
+            ...(colDef || {}),
+            headerComponentParams: {
+                ...defaultColDef.headerComponentParams,
+                ...(colDef || {}).headerComponentParams,
+            },
         };
-
-        if (
-            defaultColDef.headerComponentFramework?.name ===
-            colDef.headerComponentFramework?.name
-        ) {
-            colDef = {
-                ...colDef,
-                headerComponentParams: {
-                    ...defaultColDef.headerComponentParams,
-                    ...colDef.headerComponentParams,
-                },
-            };
-        }
-
-        if (
-            defaultColDef.pinnedRowCellRendererFramework?.name ===
-            colDef.pinnedRowCellRendererFramework?.name
-        ) {
-            colDef = {
-                ...colDef,
-                pinnedRowCellRendererParams: {
-                    ...defaultColDef.pinnedRowCellRendererParams,
-                    ...colDef.pinnedRowCellRendererParams,
-                },
-            };
-        }
-
-        return colDef;
     }
 
     abstract getColDef(grid: Grid, column: GridColumn): ColDef;

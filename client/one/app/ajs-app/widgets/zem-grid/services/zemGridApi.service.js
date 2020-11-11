@@ -55,7 +55,6 @@ angular
             this.setSelectionFilter = grid.meta.selectionService.setFilter;
             this.getSelectionOptions = grid.meta.selectionService.getConfig;
             this.setSelectionOptions = grid.meta.selectionService.setConfig;
-            this.getCustomFilters = grid.meta.selectionService.getCustomFilters;
 
             // Columns service API
             this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;

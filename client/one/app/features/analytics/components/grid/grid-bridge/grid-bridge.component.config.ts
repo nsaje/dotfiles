@@ -139,7 +139,3 @@ export const REFUND_FIELDS: string[] = [
     GridColumnField.AGENCY_SPEND_REFUND,
     GridColumnField.YESTERDAY_SPEND_REFUND,
 ];
-
-export const HEADER_CHECKBOX_WITH_FILTERS_BREAKDOWNS: Breakdown[] = [
-    Breakdown.CONTENT_AD,
-];
