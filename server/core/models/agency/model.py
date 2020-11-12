@@ -41,7 +41,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
         "uses_realtime_autopilot",
         "entity_tags",
         "custom_attributes",
-        "users",
         "allowed_sources",
         "available_sources",
         "default_account_type",
@@ -68,7 +67,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
     white_label = models.ForeignKey(
         "Whitelabel", null=True, blank=True, related_name="agencies", on_delete=models.PROTECT
     )
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(

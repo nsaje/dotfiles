@@ -94,10 +94,6 @@ class AgencyInstanceMixin:
                 self.available_sources.clear()
                 if value:
                     self.available_sources.add(*value)
-            elif field == "users":
-                self.users.clear()
-                if value:
-                    self.users.add(*value)
             elif field == "is_disabled":
                 self.is_disabled = value
                 sub_accounts_updates["is_disabled"] = value

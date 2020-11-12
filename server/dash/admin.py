@@ -316,48 +316,14 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     credentials_.admin_order_field = "credentials"
 
 
-# Agency
-class AgencyUserInline(admin.TabularInline):
-    model = models.Agency.users.through
-    form = AgencyUserForm
-    extra = 0
-    max_num = 0
-    can_delete = False
-    readonly_fields = ("user",)
-    verbose_name = "Agency Manager"
-    verbose_name_plural = "Agency Managers"
-
-    def has_change_permission(self, *args):
-        return True
-
-    def __str__(self):
-        return self.name
-
-
 class AgencyResource(resources.ModelResource):
     agency_managers = fields.Field(column_name="agency_managers")
     accounts = fields.Field(column_name="accounts")
 
     class Meta:
         model = models.Agency
-        fields = [
-            "id",
-            "name",
-            "accounts",
-            "agency_managers",
-            "sales_representative",
-            "cs_representative",
-            "default_account_type",
-        ]
-        export_order = [
-            "id",
-            "name",
-            "accounts",
-            "agency_managers",
-            "sales_representative",
-            "cs_representative",
-            "default_account_type",
-        ]
+        fields = ["id", "name", "accounts", "sales_representative", "cs_representative", "default_account_type"]
+        export_order = ["id", "name", "accounts", "sales_representative", "cs_representative", "default_account_type"]
 
     def dehydrate_sales_representative(self, obj):
         return obj.sales_representative and obj.sales_representative.get_full_name() or ""
@@ -368,12 +334,6 @@ class AgencyResource(resources.ModelResource):
     def dehydrate_accounts(self, obj):
         return ", ".join([str(account) for account in obj.account_set.all()])
 
-    def dehydrate_agency_managers(self, obj):
-        names = []
-        for user in obj.users.all():
-            names.append(user.get_full_name())
-        return ", ".join(names)
-
     def dehydrate_default_account_type(self, obj):
         return constants.AccountType.get_text(obj.default_account_type)
 
@@ -383,7 +343,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "id",
-        "_users",
         "_accounts",
         "sales_representative",
         "cs_representative",
@@ -391,7 +350,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         "created_dt",
         "modified_dt",
     )
-    exclude = ("users",)
     raw_id_fields = ("default_whitelist", "default_blacklist")
     readonly_fields = (
         "id",
@@ -402,7 +360,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         "_accounts_cs",
         "custom_attributes",
     )
-    inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
+    inlines = (DirectDealConnectionAgencyInline,)
     resource_class = AgencyResource
     search_fields = ("name", "id")
     autocomplete_fields = ("available_sources", "allowed_sources", "ob_sales_representative", "ob_account_manager")
@@ -420,13 +378,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         qs = super(AgencyAdmin, self).get_queryset(request)
         return qs.select_related(
             "sales_representative", "ob_sales_representative", "ob_account_manager", "cs_representative"
-        ).prefetch_related("users", "account_set")
-
-    def _users(self, obj):
-        names = []
-        for user in obj.users.all():
-            names.append(user.get_full_name())
-        return ", ".join(names)
+        ).prefetch_related("account_set")
 
     def _accounts(self, obj):
         return ", ".join([str(account) for account in obj.account_set.all()])
@@ -444,7 +396,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             ]
         )
 
-    _users.short_description = "Agency Managers"
     _accounts.short_description = "Accounts"
 
     def save_model(self, request, obj, form, change):
@@ -489,22 +440,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         return super(AgencyAdmin, self).render_change_form(request, context, args, kwargs)
 
 
-# Account
-class AccountUserInline(admin.TabularInline):
-    model = models.Account.users.through
-    form = AbstractUserForm
-    extra = 0
-    max_num = 0
-    can_delete = False
-    readonly_fields = ("user",)
-
-    def has_change_permission(self, *args):
-        return True
-
-    def __str__(self):
-        return self.name
-
-
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ("name", "id")
@@ -529,9 +464,9 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         "is_externally_managed",
         "amplify_account_name",
     )
-    exclude = ("users", "settings")
+    exclude = ("settings",)
     filter_horizontal = ("allowed_sources",)
-    inlines = (AccountUserInline, DirectDealConnectionAccountInline)
+    inlines = (DirectDealConnectionAccountInline,)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(AccountAdmin, self).get_form(request, obj=obj, **kwargs)

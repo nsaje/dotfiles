@@ -31,8 +31,6 @@ class AdGroupSettingsStateTestCase(BaseTestCase):
 
         self.assertFalse(self.user.is_superuser)
 
-        account = models.Account.objects.get(pk=1)
-        account.users.add(self.user)
         self.client.login(username=self.user.email, password="secret")
 
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")

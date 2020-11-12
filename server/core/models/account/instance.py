@@ -161,10 +161,6 @@ class AccountInstanceMixin:
                 self.allowed_sources.clear()
                 if value:
                     self.allowed_sources.add(*value)
-            elif field == "users":
-                self.users.clear()
-                if value:
-                    self.users.add(*value)
             else:
                 setattr(self, field, value)
         self.save(request)

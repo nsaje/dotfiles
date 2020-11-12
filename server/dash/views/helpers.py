@@ -105,17 +105,6 @@ def get_additional_columns(additional_columns):
     return []
 
 
-def is_agency_manager(user, account):
-    """
-    @deprecated
-    TODO (msuber): deleted after User Roles will be released.
-    """
-    if account.agency is None:
-        return False
-
-    return user.agency_set.filter(id=account.agency.id).exists()
-
-
 def _get_adgroups_for(modelcls, modelobjects):
     if modelcls is models.Account:
         return models.AdGroup.objects.filter(campaign__account__in=modelobjects)

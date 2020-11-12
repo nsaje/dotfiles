@@ -11,7 +11,6 @@ from dash import models
 from dash import publisher_helpers
 from dash.views import helpers
 from utils import exc
-from utils.test_helper import fake_request
 from zemauth.models import User
 
 
@@ -1101,52 +1100,6 @@ class UtilityHelpersTestCase(TestCase):
     """
 
     fixtures = ["test_views.yaml", "test_agency.yaml"]
-
-    def test_get_user_agency(self):
-        u = User.objects.get(pk=1000)
-        self.assertQuerysetEqual(u.agency_set.all(), [])
-        # add user to agency
-        agency = models.Agency.objects.get(pk=1)
-        agency.users.add(u)
-
-        self.assertEqual([agency], list(u.agency_set.all()))
-
-        other_agency = models.Agency(name="Random agency")
-        other_agency.save(fake_request(u))
-        other_agency.users.add(u)
-        self.assertListEqual([other_agency, agency], list(u.agency_set.all()))
-
-    def test_is_agency_manager(self):
-        acc = models.Account.objects.get(pk=1000)
-        u = User.objects.get(pk=1000)
-
-        acc.agency = None
-        acc.save(fake_request(u))
-
-        self.assertFalse(helpers.is_agency_manager(u, acc))
-
-        agency = models.Agency.objects.get(pk=1)
-        acc.agency = agency
-        acc.save(fake_request(u))
-
-        self.assertFalse(helpers.is_agency_manager(u, acc))
-
-        agency.users.add(u)
-        self.assertTrue(helpers.is_agency_manager(u, acc))
-
-    def test_is_agency_manager_fail(self):
-        acc = models.Account.objects.get(pk=1000)
-        u = User.objects.get(pk=1000)
-
-        agency = models.Agency.objects.get(pk=1)
-        acc.agency = agency
-        acc.save(fake_request(u))
-
-        other_agency = models.Agency(name="Random agency")
-        other_agency.save(fake_request(u))
-        other_agency.users.add(u)
-
-        self.assertFalse(helpers.is_agency_manager(u, acc), msg="account and user agency differ")
 
 
 class ValidateAdGroupsStateTestCase(TestCase):

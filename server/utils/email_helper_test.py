@@ -27,13 +27,15 @@ class EmailAPITestCase(TestCase):
 
         self.agency = dash_models.Agency(name="Agency 1")
         self.agency.save(self.request)
-        self.agency.users.add(self.normal_user)
+        test_helper.add_entity_permissions(self.normal_user, [Permission.READ, Permission.WRITE], self.agency)
         self.white_label = dash_models.WhiteLabel.objects.create(
             theme="greenpark", dashboard_title="greenpark", favicon_url="http://icon.cm"
         )
         self.whitelabel_agency = dash_models.Agency(name="Agency 2", white_label=self.white_label)
         self.whitelabel_agency.save(self.request)
-        self.whitelabel_agency.users.add(self.whitelabel_agency_user)
+        test_helper.add_entity_permissions(
+            self.whitelabel_agency_user, [Permission.READ, Permission.WRITE], self.whitelabel_agency
+        )
 
     @patch("utils.email_helper.render_to_string")
     def test_basic(self, mock_render):

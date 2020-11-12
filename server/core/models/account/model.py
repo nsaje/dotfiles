@@ -44,7 +44,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
         "custom_attributes",
         "salesforce_id",
         "allowed_sources",
-        "users",
         "amplify_review",
     )
     _externally_managed_fields = (
@@ -61,7 +60,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, unique=False, blank=False, null=False)
     agency = models.ForeignKey("Agency", on_delete=models.PROTECT, null=True, blank=True)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     auto_archiving_enabled = models.BooleanField(null=False, blank=False, default=True)
     archived = models.BooleanField(default=False)  # materialized field
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
