@@ -1,5 +1,4 @@
 from celery.exceptions import SoftTimeLimitExceeded
-from django.db import transaction
 
 import core.models
 from server import celery
@@ -27,18 +26,17 @@ def handle_updates(campaign_id, campaign_type, time):
 
 def _handle_updates(campaign_id, campaign_type, time):
     campaign = _get_campaign(campaign_id)
-    with transaction.atomic():
-        campaign_processed_record, created = CampaignEventProcessedAt.objects.get_or_create(
-            campaign=campaign, type=campaign_type
-        )
-        if created or campaign_processed_record.modified_dt.timestamp() < time:
-            with metrics_compat.block_timer("campaignstop.update_handler.process_campaign", type=campaign_type):
-                _process_campaign(campaign, campaign_type)
-        campaign_processed_record.update_modified_dt()
+    campaign_processed_record, created = CampaignEventProcessedAt.objects.get_or_create(
+        campaign=campaign, type=campaign_type
+    )
+    if created or campaign_processed_record.modified_dt.timestamp() < time:
+        with metrics_compat.block_timer("campaignstop.update_handler.process_campaign", type=campaign_type):
+            _process_campaign(campaign, campaign_type)
+    campaign_processed_record.update_modified_dt()
 
 
 def _get_campaign(campaign_id):
-    campaign = core.models.Campaign.objects.filter(id=campaign_id).first()
+    campaign = core.models.Campaign.objects.get(id=campaign_id)
     return campaign
 
 
