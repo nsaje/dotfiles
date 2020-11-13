@@ -77,9 +77,11 @@ export abstract class ColumnMapper {
             flex: 0,
             suppressSizeToFit: true,
             resizable: RESIZABLE_GRID_COLUMN_TYPES.includes(column.type),
+            suppressMovable: false,
             pinned: PINNED_GRID_COLUMN_TYPES.includes(column.type)
                 ? 'left'
                 : null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: commonHelpers.getValueOrDefault(

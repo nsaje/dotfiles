@@ -79,7 +79,9 @@ describe('StatusColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
+            suppressMovable: false,
             pinned: null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,

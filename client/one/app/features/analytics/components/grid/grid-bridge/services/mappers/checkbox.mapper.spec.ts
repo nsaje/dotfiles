@@ -69,7 +69,9 @@ describe('CheckboxColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
+            suppressMovable: true,
             pinned: 'left',
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: false,
@@ -102,6 +104,7 @@ describe('CheckboxColumnMapper', () => {
                 ) => {},
             } as CheckboxRendererParams,
             pinnedRowValueFormatter: '',
+            lockPosition: true,
             cellRendererFramework: CheckboxCellComponent,
             cellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {},
@@ -142,7 +145,9 @@ describe('CheckboxColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
+            suppressMovable: true,
             pinned: 'left',
+            lockPinned: true,
             headerComponentFramework: CheckboxFilterHeaderCellComponent,
             headerComponentParams: {
                 isChecked: (params: CheckboxFilterHeaderParams) => {},
@@ -168,6 +173,7 @@ describe('CheckboxColumnMapper', () => {
                 ) => {},
             } as CheckboxRendererParams,
             pinnedRowValueFormatter: '',
+            lockPosition: true,
             cellRendererFramework: CheckboxCellComponent,
             cellRendererParams: {
                 isChecked: (params: CheckboxRendererParams) => {},

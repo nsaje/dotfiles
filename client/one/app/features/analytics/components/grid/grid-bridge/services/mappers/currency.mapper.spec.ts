@@ -98,7 +98,9 @@ describe('CurrencyColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: true,
+            suppressMovable: false,
             pinned: null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,
@@ -167,7 +169,9 @@ describe('CurrencyColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: true,
+            suppressMovable: false,
             pinned: null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,
@@ -257,7 +261,9 @@ describe('CurrencyColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: true,
+            suppressMovable: false,
             pinned: null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,

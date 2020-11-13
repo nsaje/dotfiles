@@ -51,6 +51,23 @@
 }
 
 //
+// ag-dnd-ghost (drag and drop)
+//
+
+.ag-dnd-ghost {
+    display: flex;
+    align-items: center;
+    padding: @spacing--small;
+    height: @smart-grid__header-height !important;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
+    box-shadow: 0px 0px 6px 0px fade(@color--secondary, 10%);
+    color: @color--secondary;
+    font-weight: 500;
+    font-size: @font-size--default;
+}
+
+//
 // ag-floating-top
 //
 .zem-smart-grid__table .ag-floating-top {

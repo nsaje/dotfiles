@@ -27,6 +27,8 @@ export class CheckboxColumnMapper extends ColumnMapper {
             colId: GridColumnTypes.CHECKBOX,
             minWidth: CHECKBOX_COLUMN_WIDTH,
             width: CHECKBOX_COLUMN_WIDTH,
+            suppressMovable: true,
+            lockPosition: true,
             headerComponentParams: {
                 enableSelection: true,
                 selectionOptions: {

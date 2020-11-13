@@ -25,6 +25,8 @@ export class BreakdownColumnMapper extends ColumnMapper {
             width: BREAKDOWN_COLUMN_WIDTH,
             flex: 1,
             suppressSizeToFit: false,
+            suppressMovable: true,
+            lockPosition: true,
             cellRendererFramework: BreakdownCellComponent,
             cellRendererParams: {
                 getEntity: (params: BreakdownRendererParams) => {

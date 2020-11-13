@@ -73,7 +73,9 @@ describe('ActionsColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
+            suppressMovable: true,
             pinned: 'left',
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: false,
@@ -97,6 +99,7 @@ describe('ActionsColumnMapper', () => {
                 popoverPlacement: 'top',
             } as PinnedRowRendererParams,
             pinnedRowValueFormatter: '',
+            lockPosition: true,
             cellRendererFramework: ActionsCellComponent,
             cellRendererParams: {
                 getGrid: (params: BreakdownRendererParams) => {

@@ -85,7 +85,9 @@ describe('BreakdownColumnMapper', () => {
             flex: 1,
             suppressSizeToFit: false,
             resizable: true,
+            suppressMovable: true,
             pinned: 'left',
+            lockPinned: true,
             headerComponentParams: {
                 icon: null,
                 internalFeature: true,
@@ -115,6 +117,7 @@ describe('BreakdownColumnMapper', () => {
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return '';
             },
+            lockPosition: true,
             cellRendererFramework: BreakdownCellComponent,
             cellRendererParams: {
                 getEntity: (params: BreakdownRendererParams) => {},

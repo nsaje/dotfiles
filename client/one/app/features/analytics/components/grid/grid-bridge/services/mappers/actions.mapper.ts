@@ -18,6 +18,8 @@ export class ActionsColumnMapper extends ColumnMapper {
             colId: GridColumnTypes.ACTIONS,
             minWidth: columnWidth,
             width: columnWidth,
+            suppressMovable: true,
+            lockPosition: true,
             cellRendererFramework: ActionsCellComponent,
             cellRendererParams: {
                 getGrid: (params: ActionsRendererParams) => {

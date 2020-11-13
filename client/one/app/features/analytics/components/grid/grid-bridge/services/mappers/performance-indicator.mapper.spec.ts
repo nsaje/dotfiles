@@ -82,7 +82,9 @@ describe('PerformanceIndicatorColumnMapper', () => {
             flex: 0,
             suppressSizeToFit: true,
             resizable: false,
+            suppressMovable: false,
             pinned: null,
+            lockPinned: true,
             headerComponentParams: {
                 icon: HeaderCellIcon.EmoticonHappy,
                 internalFeature: true,
