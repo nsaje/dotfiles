@@ -13,6 +13,7 @@ import core.features.bcm
 import core.models
 import dash.constants
 from utils import dates_helper
+from utils import decimal_helpers
 from utils import zlogging
 
 from .. import CampaignStopState
@@ -92,7 +93,7 @@ def _calculate_max_campaign_spend(campaign):
     adg_sources_qs = _get_adgroup_sources_qs(campaign)
     spend_calculated_by_adg_source = _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends)
     spend_calculated_by_adg = _get_max_spend_grouped_by_adg(ad_groups_map, adg_spends)
-    if spend_calculated_by_adg_source != spend_calculated_by_adg:
+    if not decimal_helpers.equal_decimals(spend_calculated_by_adg_source, spend_calculated_by_adg):
         _log_differences(
             campaign.id,
             ad_groups_map,
