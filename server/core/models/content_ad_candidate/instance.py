@@ -41,6 +41,8 @@ class ContentAdCandidateMixin:
             "hosted_icon_url": self.get_hosted_icon_url(300) if can_use_icon else None,
             "primary_tracker_url": self.primary_tracker_url,
             "secondary_tracker_url": self.secondary_tracker_url,
+            "trackers": self.trackers,
+            "trackers_status": self.trackers_status,
             "additional_data": self.additional_data,
             "primary_tracker_url_status": self.primary_tracker_url_status,
             "secondary_tracker_url_status": self.secondary_tracker_url_status,

@@ -40,6 +40,7 @@ class ContentAdsTest(RESTAPITestCase):
         label="My label",
         image_crop="center",
         tracker_urls=[],
+        trackers=[],
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -56,6 +57,18 @@ class ContentAdsTest(RESTAPITestCase):
             "label": label,
             "imageCrop": image_crop,
             "trackerUrls": tracker_urls,
+            "trackers": [
+                {
+                    "eventType": constants.TrackerEventType.get_name(tracker.get("event_type")),
+                    "method": constants.TrackerMethod.get_name(tracker.get("method")),
+                    "url": tracker.get("url"),
+                    "fallbackUrl": tracker.get("fallback_url") or "",
+                    "trackerOptional": tracker.get("tracker_optional"),
+                }
+                for tracker in trackers
+            ]
+            if trackers
+            else None,
         }
         return cls.normalize(representation)
 
@@ -76,6 +89,7 @@ class ContentAdsTest(RESTAPITestCase):
             label=cad_db.label,
             image_crop=cad_db.image_crop,
             tracker_urls=cad_db.tracker_urls,
+            trackers=cad_db.trackers,
         )
         self.assertEqual(expected, cad)
 
@@ -207,14 +221,34 @@ class ContentAdsTest(RESTAPITestCase):
 
     def test_contentads_put_updates(self):
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        trackers = [
+            {
+                "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                "url": "https://t.test.com/tracker.js",
+                "trackerOptional": False,
+            }
+        ]
         r = self.client.put(
             reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.pk}),
-            data={"trackerUrls": ["test1", "test2"], "title": "newtitle"},
+            data={"trackerUrls": ["test1", "test2"], "trackers": trackers, "title": "newtitle"},
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["trackerUrls"], ["test1", "test2"])
+        self.assertEqual(
+            resp_json["data"]["trackers"],
+            [
+                {
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                    "url": "https://t.test.com/tracker.js",
+                    "fallbackUrl": "",
+                    "trackerOptional": False,
+                }
+            ],
+        )
         self.assertNotEqual(resp_json["data"]["title"], "newtitle")  # readonly
 
     def test_contentads_put_brand_name_allowed(self):
@@ -267,6 +301,14 @@ class TestBatchUpload(RESTAPITestCase):
             "label": "",
             "imageCrop": "center",
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
+            "trackers": [
+                {
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                    "url": "https://t.test.com/tracker.js",
+                    "trackerOptional": False,
+                }
+            ],
         }
 
     @staticmethod
@@ -279,6 +321,14 @@ class TestBatchUpload(RESTAPITestCase):
             "label": "",
             "displayUrl": "kuhic.com",
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
+            "trackers": [
+                {
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                    "url": "https://t.test.com/tracker.js",
+                    "trackerOptional": False,
+                }
+            ],
             "type": constants.AdType.get_name(constants.AdType.IMAGE),
         }
 
@@ -294,6 +344,14 @@ class TestBatchUpload(RESTAPITestCase):
             "adHeight": 250,
             "displayUrl": "kuhic.com",
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
+            "trackers": [
+                {
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                    "url": "https://t.test.com/tracker.js",
+                    "trackerOptional": False,
+                }
+            ],
             "type": constants.AdType.get_name(constants.AdType.AD_TAG),
         }
 
@@ -369,6 +427,18 @@ class TestBatchUpload(RESTAPITestCase):
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+            self.assertEqual(
+                [
+                    {
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                        "url": "https://t.test.com/tracker.js",
+                        "fallbackUrl": "",
+                        "trackerOptional": False,
+                    }
+                ],
+                resp_json["data"]["approvedContentAds"][i]["trackers"],
+            )
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):
@@ -429,6 +499,18 @@ class TestBatchUpload(RESTAPITestCase):
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_video_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+            self.assertEqual(
+                [
+                    {
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                        "url": "https://t.test.com/tracker.js",
+                        "fallbackUrl": "",
+                        "trackerOptional": False,
+                    }
+                ],
+                resp_json["data"]["approvedContentAds"][i]["trackers"],
+            )
 
     def test_display_batch_upload_success(self):
         self.ad_group.campaign.type = dash.constants.CampaignType.DISPLAY
@@ -471,6 +553,18 @@ class TestBatchUpload(RESTAPITestCase):
             for field in ("state", "title", "displayUrl", "label", "trackerUrls"):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+            self.assertEqual(
+                [
+                    {
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                        "url": "https://t.test.com/tracker.js",
+                        "fallbackUrl": "",
+                        "trackerOptional": False,
+                    }
+                ],
+                resp_json["data"]["approvedContentAds"][i]["trackers"],
+            )
 
     def test_display_batch_upload_ad_group_archived(self):
         self.ad_group.archived = True
