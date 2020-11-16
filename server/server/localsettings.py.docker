@@ -398,3 +398,5 @@ except ImportError:
     pass
 
 LOGGING_FORMATTER = "readable"
+
+KAFKA_BOOTSTRAP_RTB_IN = ""

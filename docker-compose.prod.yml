@@ -197,6 +197,18 @@ services:
           SERVICE_NAME: one-newscorp
           SERVICE_IGNORE: "false"
 
+    einsconsumer_adreview:
+      extends: eins-base
+      scale: 1
+      environment:
+        NEW_RELIC_APP_NAME: "Zemanta One (Ad review Kafka consumer)"
+      mem_reservation: 128m
+      mem_limit: 1g
+      labels:
+        SERVICE_IGNORE: "true"
+      entrypoint: "/entrypoint.sh"
+      command: "python manage.py adreview_updates_consumer"
+
 # created with CLI: docker network create -d bridge legacynet
 networks:
     legacynet:

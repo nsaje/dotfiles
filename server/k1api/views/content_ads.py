@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.http import Http404
 
+import core.features.ad_review
 import dash.constants
 import dash.features.submission_filters
 import dash.models
@@ -305,6 +306,13 @@ class ContentAdSourcesView(K1APIView):
 
         modified = False
         content_ad_source = content_ad_source[0]
+
+        if "source_content_ad_id" in data and content_ad_source.source_content_ad_id != data["source_content_ad_id"]:
+            if content_ad_source.source_content_ad_id:
+                return self.response_error("Cannot change existing source_content_ad_id", status=400)
+            content_ad_source.source_content_ad_id = data["source_content_ad_id"]
+            modified = True
+
         if "submission_status" in data and content_ad_source.submission_status != data["submission_status"]:
             if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING and data[
                 "submission_status"
@@ -314,6 +322,13 @@ class ContentAdSourcesView(K1APIView):
                     "content_ads_source.submission_processing_time", time_delta.total_seconds(), exchange=source_slug
                 )
 
+            if (
+                source_slug == OUTBRAIN_SOURCE_SLUG
+                and content_ad_source.submission_status == constants.ContentAdSubmissionStatus.NOT_SUBMITTED
+                and data["submission_status"] == constants.ContentAdSubmissionStatus.PENDING
+            ):
+                core.features.ad_review.mark_ad_pending(content_ad_source)
+
             content_ad_source.submission_status = data["submission_status"]
             if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
                 content_ad_source.submission_errors = None
@@ -321,12 +336,6 @@ class ContentAdSourcesView(K1APIView):
 
         if "submission_errors" in data and content_ad_source.submission_errors != data["submission_errors"]:
             content_ad_source.submission_errors = data["submission_errors"]
-            modified = True
-
-        if "source_content_ad_id" in data and content_ad_source.source_content_ad_id != data["source_content_ad_id"]:
-            if content_ad_source.source_content_ad_id:
-                return self.response_error("Cannot change existing source_content_ad_id", status=400)
-            content_ad_source.source_content_ad_id = data["source_content_ad_id"]
             modified = True
 
         if modified:

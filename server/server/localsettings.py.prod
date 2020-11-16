@@ -699,6 +699,8 @@ METRICS_PUSH_GATEWAY = "http://pushgateway:8000"
 
 LOGGING_FORMATTER = "json"
 
+KAFKA_BOOTSTRAP_RTB_IN = "kafka-rtb-in.service.consul"
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 
