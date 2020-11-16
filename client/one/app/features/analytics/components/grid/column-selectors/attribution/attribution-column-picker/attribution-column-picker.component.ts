@@ -8,6 +8,7 @@ import {
     Output,
     OnInit,
     OnDestroy,
+    OnChanges,
 } from '@angular/core';
 import {ConversionWindowConfig} from '../../../../../../../core/conversion-pixels/types/conversion-windows-config';
 import {PixelColumn} from '../../../../../types/pixel-column';
@@ -23,6 +24,10 @@ import {
     CONVERSION_PIXEL_CLICK_WINDOWS,
     CONVERSION_PIXEL_VIEW_WINDOWS,
 } from '../../../../../../../core/conversion-pixels/conversion-pixels.config';
+import {
+    METRICS_OPTIONS_CLICK,
+    METRICS_OPTIONS_VIEW,
+} from './attribution-column-picker.config';
 
 @Component({
     selector: 'zem-attribution-column-picker',
@@ -30,7 +35,8 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [AttributionColumnPickerStore],
 })
-export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
+export class AttributionColumnPickerComponent
+    implements OnInit, OnChanges, OnDestroy {
     @Input()
     pixelColumns: PixelColumn[];
     @Output()
@@ -43,13 +49,8 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
     CLICK_CONVERSION_WINDOWS: ConversionWindowConfig[] = CONVERSION_PIXEL_CLICK_WINDOWS;
     VIEW_CONVERSION_WINDOWS: ConversionWindowConfig[] = CONVERSION_PIXEL_VIEW_WINDOWS;
 
-    METRICS_OPTIONS_CLICK: PixelMetric[] = [
-        {attribution: 'Click attribution', performance: 'Conversions'},
-        {attribution: 'Click attribution', performance: 'Conversion rate'},
-        {attribution: 'Click attribution', performance: 'CPA'},
-    ];
-
-    METRICS_OPTIONS_VIEW: PixelMetric[] = [];
+    METRICS_OPTIONS_CLICK: PixelMetric[] = METRICS_OPTIONS_CLICK;
+    METRICS_OPTIONS_VIEW: PixelMetric[] = METRICS_OPTIONS_VIEW;
 
     pixelsNames: string[];
 
@@ -60,28 +61,10 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.subscribeToStateUpdates();
-        this.store.initStore(this.pixelColumns);
-        const pixelsHaveRoas = this.pixelColumns[0].columns.some(
-            column => column.data.performance === 'ROAS'
-        );
-        this.METRICS_OPTIONS_VIEW.push(
-            {attribution: 'View attribution', performance: 'Conversions'},
-            {
-                attribution: 'View attribution',
-                performance: 'Conversion rate',
-            },
-            {attribution: 'View attribution', performance: 'CPA'}
-        );
-        if (pixelsHaveRoas) {
-            this.METRICS_OPTIONS_CLICK.push({
-                attribution: 'Click attribution',
-                performance: 'ROAS',
-            });
-            this.METRICS_OPTIONS_VIEW.push({
-                attribution: 'View attribution',
-                performance: 'ROAS',
-            });
-        }
+    }
+
+    ngOnChanges() {
+        this.store.setStore(this.pixelColumns);
     }
 
     onPixelChange(pixelsNames: string[]) {

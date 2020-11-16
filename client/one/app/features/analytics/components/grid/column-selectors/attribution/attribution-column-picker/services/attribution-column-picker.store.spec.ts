@@ -301,8 +301,8 @@ describe('AttributionColumnPickerStore', () => {
         ];
     });
 
-    it('should correctly initialize store', () => {
-        store.initStore(mockedPixelColumnsWithVisible);
+    it('should correctly set store', () => {
+        store.setStore(mockedPixelColumnsWithVisible);
         const selectedPixel = mockedPixelColumnsWithVisible[1];
         expect(store.state.pixels).toEqual([selectedPixel]);
         expect(store.state.clickConversionWindow).toEqual({

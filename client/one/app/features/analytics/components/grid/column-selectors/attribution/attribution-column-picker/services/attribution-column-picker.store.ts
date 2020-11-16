@@ -20,7 +20,7 @@ export class AttributionColumnPickerStore extends Store<
         super(new AttributionColumnPickerStoreState());
     }
 
-    initStore(pixels: PixelColumn[]) {
+    setStore(pixels: PixelColumn[]) {
         const preselectedPixels = this.getPreselectedPixels(pixels);
         const preselectedViewConversionWindow = this.getPreselectedViewConversionWindow(
             preselectedPixels
