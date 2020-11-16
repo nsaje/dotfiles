@@ -1,4 +1,5 @@
 import django.db.models
+from rest_framework import fields
 from rest_framework import serializers
 
 import dash.models
@@ -184,3 +185,26 @@ class PercentToDecimalField(serializers.DecimalField):
 
     def to_internal_value(self, data):
         return dash.views.helpers.format_percent_to_decimal(data)
+
+
+class HttpsURLField(serializers.URLField):
+    default_error_messages = {"invalid": "Invalid URL.", "invalid_schema": "URL has to be HTTPS"}
+
+    def __init__(self, *args, **kwargs):
+        super(HttpsURLField, self).__init__(*args, **kwargs)
+
+    def run_validation(self, value):
+        if value == fields.empty:
+            return
+
+        super().run_validation(value)
+
+        if value.lower().startswith("http://"):
+            raise serializers.ValidationError(self.error_messages["invalid_schema"])
+
+        try:
+            value.encode("ascii")
+        except UnicodeEncodeError:
+            raise serializers.ValidationError(self.error_messages["invalid"])
+
+        return value

@@ -29,6 +29,7 @@ class RESTAPITestCase(BaseTestCase):
         "can_see_service_fee",
         "can_use_browser_targeting",
         "can_use_connection_type_targeting",
+        "can_use_3rdparty_js_trackers",
     ]
 
     def setUp(self):
