@@ -92,7 +92,7 @@
             <div ng-if="$ctrl.nullable" class="dropdown-menu__list">
                 <span
                     class="dropdown-menu__option"
-                    ng-click="$ctrl.onChanged(null)"
+                    ng-click="$ctrl.onChanged(null); $ctrl.isDropdownOpen = false"
                     ng-class="{'dropdown-menu__option--selected': !$ctrl.metric.value}"
                 >
                     None
