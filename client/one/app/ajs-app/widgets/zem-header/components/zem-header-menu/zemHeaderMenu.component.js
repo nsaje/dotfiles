@@ -1,13 +1,27 @@
 angular.module('one.widgets').component('zemHeaderMenu', {
     template: require('./zemHeaderMenu.component.html'),
-    controller: function(config, zemHeaderMenuService, zemAuthStore) {
+    controller: function(
+        config,
+        zemHeaderMenuService,
+        zemNavigationNewService,
+        zemAuthStore
+    ) {
+        var activeEntityUpdateHandler;
+
         var $ctrl = this;
         $ctrl.config = config;
-        $ctrl.getActions = zemHeaderMenuService.getAvailableActions;
-        $ctrl.execute = execute;
+        $ctrl.menuStructure = {};
+        $ctrl.executeAction = executeAction;
 
         $ctrl.$onInit = function() {
             setUserInfo();
+            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
+                refreshMenu
+            );
+        };
+
+        $ctrl.$onDestroy = function() {
+            if (activeEntityUpdateHandler) activeEntityUpdateHandler();
         };
 
         function setUserInfo() {
@@ -16,8 +30,15 @@ angular.module('one.widgets').component('zemHeaderMenu', {
             $ctrl.userEmail = user ? user.email : null;
         }
 
-        function execute(action) {
-            action.callback(action.params);
+        function executeAction(action, $event) {
+            if (action.callback) {
+                $event.preventDefault();
+                action.callback(action.params);
+            }
+        }
+
+        function refreshMenu() {
+            $ctrl.menuStructure = zemHeaderMenuService.getMenuStructure();
         }
     },
 });

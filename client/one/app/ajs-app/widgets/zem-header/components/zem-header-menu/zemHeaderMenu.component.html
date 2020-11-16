@@ -26,69 +26,19 @@
         </div>
         <ul
             class="zem-header-menu__group"
-            ng-if="$ctrl.getActions('account').length"
+            ng-repeat="menuGroup in $ctrl.menuStructure"
+            ng-if="menuGroup.actions && menuGroup.actions.length>0"
         >
-            <li class="zem-header-menu__group-title">Account settings:</li>
-            <li ng-repeat="action in $ctrl.getActions('account')">
+            <li class="zem-header-menu__group-title">{{ menuGroup.name }}:</li>
+            <li ng-repeat="action in menuGroup.actions">
                 <a
                     class="zem-header-menu__link"
-                    href
-                    ng-click="$ctrl.execute(action)"
+                    ng-attr-href="{{ action.url }}"
+                    ng-click="$ctrl.executeAction(action, $event)"
                     is-internal="{{ action.isInternalFeature }}"
                     zem-new-feature="{{ action.isNewFeature }}"
                 >
-                    {{ action.text }}
-                </a>
-            </li>
-        </ul>
-        <ul
-            class="zem-header-menu__group"
-            ng-if="$ctrl.getActions('managementConsole').length"
-        >
-            <li class="zem-header-menu__group-title">Management console:</li>
-            <li ng-repeat="action in $ctrl.getActions('managementConsole')">
-                <a
-                    class="zem-header-menu__link"
-                    href
-                    ng-click="$ctrl.execute(action)"
-                    is-internal="{{ action.isInternalFeature }}"
-                    zem-new-feature="{{ action.isNewFeature }}"
-                >
-                    {{ action.text }}
-                </a>
-            </li>
-        </ul>
-        <ul
-            class="zem-header-menu__group"
-            ng-if="$ctrl.getActions('utility').length"
-        >
-            <li class="zem-header-menu__group-title">Utilities:</li>
-            <li ng-repeat="action in $ctrl.getActions('utility')">
-                <a
-                    class="zem-header-menu__link"
-                    href
-                    ng-click="$ctrl.execute(action)"
-                    is-internal="{{ action.isInternalFeature }}"
-                    zem-new-feature="{{ action.isNewFeature }}"
-                >
-                    {{ action.text }}
-                </a>
-            </li>
-        </ul>
-        <ul
-            class="zem-header-menu__group"
-            ng-if="$ctrl.getActions('user').length"
-        >
-            <li class="zem-header-menu__group-title">User settings:</li>
-            <li ng-repeat="action in $ctrl.getActions('user')">
-                <a
-                    class="zem-header-menu__link"
-                    href
-                    ng-click="$ctrl.execute(action)"
-                    is-internal="{{ action.isInternalFeature }}"
-                    zem-new-feature="{{ action.isNewFeature }}"
-                >
-                    {{ action.text }}
+                    {{ action.name }}
                 </a>
             </li>
         </ul>
