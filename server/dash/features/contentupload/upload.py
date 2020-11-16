@@ -6,7 +6,6 @@ from django.db import transaction
 from django.template.defaultfilters import pluralize
 
 import core.features.videoassets
-import dash.features.contentupload
 from dash import constants
 from dash import forms
 from dash import image_helper
@@ -38,7 +37,6 @@ VALID_UPDATE_FIELDS = set(
         "secondary_tracker_url",
         "call_to_action",
         "ad_tag",
-        "trackers",
     ]
 )
 
@@ -113,19 +111,6 @@ def _reset_candidate_async_status(candidate):
         candidate.primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     if candidate.secondary_tracker_url:
         candidate.secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    if candidate.trackers:
-        trackers_status = {}
-        for tracker in candidate.trackers:
-            tracker_status_key = dash.features.contentupload.get_tracker_status_key(
-                tracker.get("url"), tracker.get("method")
-            )
-            trackers_status[tracker_status_key] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-            if tracker.get("fallback_url"):
-                fallback_tracker_status_key = dash.features.contentupload.get_tracker_status_key(
-                    tracker.get("fallback_url"), constants.TrackerMethod.IMG
-                )
-                trackers_status[fallback_tracker_status_key] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        candidate.trackers_status = trackers_status
     if candidate.type != constants.AdType.AD_TAG and candidate.image_url:
         candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidate.image_id = None
@@ -166,7 +151,6 @@ def _invoke_external_validation(candidate, batch):
         "skipUrlValidation": skip_url_validation,
         "normalize": candidate.type not in DISPLAY_AD_TYPES,
         "impressionTrackers": [it for it in [candidate.primary_tracker_url, candidate.secondary_tracker_url] if it],
-        "trackers": candidate.trackers,
     }
 
     if cleaned_urls["image_url"]:
@@ -431,11 +415,6 @@ def _update_candidate(data, batch, files):
     candidate = batch.contentadcandidate_set.get(id=data.pop("id"))
     campaign = candidate.ad_group.campaign if candidate.ad_group else None
 
-    if "primary_tracker_url" in data and "secondary_tracker_url" not in data:
-        data["secondary_tracker_url"] = candidate.secondary_tracker_url
-    elif "secondary_tracker_url" in data and "primary_tracker_url" not in data:
-        data["primary_tracker_url"] = candidate.primary_tracker_url
-
     form = forms.ContentAdCandidateForm(campaign, data, files)
     form.is_valid()  # used only to clean data of any possible unsupported fields
 
@@ -449,9 +428,6 @@ def _update_candidate(data, batch, files):
 
         updated_fields[field] = form.cleaned_data[field]
         setattr(candidate, field, form.cleaned_data[field])
-
-    if "primary_tracker_url" in data or "secondary_tracker_url" in data:
-        setattr(candidate, "trackers", form.cleaned_data["trackers"])
 
     if form.cleaned_data.get("image"):
         image_url = image_helper.upload_image_to_s3(form.cleaned_data["image"], batch.id)
@@ -475,7 +451,6 @@ def _update_candidate(data, batch, files):
         or candidate.has_changed("icon_url")
         or candidate.has_changed("primary_tracker_url")
         or candidate.has_changed("secondary_tracker_url")
-        or candidate.has_changed("trackers")
     ):
         _invoke_external_validation(candidate, batch)
 
@@ -621,7 +596,7 @@ def _process_trackers_url(candidate, tracker_attr, tracker_data):
     setattr(candidate, status_attr, new_status)
 
 
-def _process_impression_trackers_legacy(candidate, cleaned_urls, callback_data):
+def _process_impression_trackers(candidate, cleaned_urls, callback_data):
 
     if not callback_data["impressionTrackers"]:
         return
@@ -631,26 +606,6 @@ def _process_impression_trackers_legacy(candidate, cleaned_urls, callback_data):
             _process_trackers_url(candidate, "primary_tracker_url", imp_tracker)
         if imp_tracker["originUrl"] == cleaned_urls["secondary_tracker_url"]:
             _process_trackers_url(candidate, "secondary_tracker_url", imp_tracker)
-
-
-def _process_trackers(candidate, callback_data):
-    if not callback_data["trackers"]:
-        return
-
-    trackers_status = candidate.trackers_status
-    for tracker_data_callback in callback_data["trackers"]:
-        tracker_status_key = dash.features.contentupload.get_tracker_status_key(
-            tracker_data_callback.get("originUrl"), tracker_data_callback.get("method")
-        )
-        status = trackers_status.get(tracker_status_key)
-        if status and status != constants.AsyncUploadJobStatus.PENDING_START:
-            trackers_status[tracker_status_key] = (
-                constants.AsyncUploadJobStatus.OK
-                if tracker_data_callback["valid"]
-                else constants.AsyncUploadJobStatus.FAILED
-            )
-
-    candidate.trackers_status = trackers_status
 
 
 def _handle_auto_save(batch):
@@ -698,8 +653,7 @@ def process_callback(callback_data):
         _process_url_update(candidate, cleaned_urls["url"], callback_data)
         _process_image_url_update(candidate, cleaned_urls["image_url"], callback_data)
         _process_icon_url_update(candidate, cleaned_urls["icon_url"], callback_data)
-        _process_impression_trackers_legacy(candidate, cleaned_urls, callback_data)
-        _process_trackers(candidate, callback_data)
+        _process_impression_trackers(candidate, cleaned_urls, callback_data)
         candidate.save()
 
     # HACK(nsaje): mark all ads with same image as having image present, if not already

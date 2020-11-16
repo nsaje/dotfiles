@@ -101,7 +101,6 @@ class ContentAdsView(K1APIView):
                 "display_url": item.display_url,
                 "call_to_action": item.call_to_action,
                 "tracker_urls": item.tracker_urls,
-                "trackers": item.trackers,
                 "video_asset": video_asset,
                 "label": item.label,
                 "additional_data": item.additional_data,

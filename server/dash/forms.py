@@ -4,7 +4,6 @@ import dash.features.bluekai.service
 import magic
 import mimetypes
 import re
-import json
 
 import unicodecsv
 import dateutil.parser
@@ -25,7 +24,6 @@ import core.features.multicurrency
 import core.features.deals.direct_deal_connection.exceptions
 import core.features.bcm
 import core.features.publisher_groups
-import dash.features.contentupload
 import utils.exc
 from dash import constants
 from dash import models
@@ -696,15 +694,6 @@ class ContentAdCandidateForm(forms.ModelForm):
         self.campaign = campaign
         self.original_content_ad = original_content_ad
 
-    def _set_trackers(self):
-        trackers = self.cleaned_data.get("trackers")
-        if trackers is None:
-            self.cleaned_data["trackers"] = dash.features.contentupload.convert_legacy_trackers(
-                [self.cleaned_data.get("primary_tracker_url"), self.cleaned_data.get("secondary_tracker_url")]
-            )
-        else:
-            self.cleaned_data["trackers"] = [dash.features.contentupload.get_tracker(**tracker) for tracker in trackers]
-
     def clean_image_crop(self):
         image_crop = self.cleaned_data.get("image_crop")
         if not image_crop:
@@ -731,8 +720,6 @@ class ContentAdCandidateForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        self._set_trackers()
-
         if cleaned_data.get("type"):
             return cleaned_data
 
@@ -767,7 +754,6 @@ class ContentAdCandidateForm(forms.ModelForm):
             "secondary_tracker_url",
             "additional_data",
             "ad_tag",
-            "trackers",
         ]
 
 
@@ -850,43 +836,6 @@ class ContentAdForm(ContentAdCandidateForm):
     def __init__(self, campaign, *args, **kwargs):
         super(ContentAdForm, self).__init__(campaign, *args, **kwargs)
         self.campaign = campaign
-
-    def _validate_trackers(self, trackers):
-        tracker_errors = []
-        has_errors = False
-        for tracker in trackers:
-            tracker_error = {}
-            if (
-                tracker.get("event_type") is None
-                or tracker.get("event_type") not in dash.constants.TrackerEventType.get_all()
-            ):
-                has_errors = True
-                tracker_error["event_type"] = "Valid Event type is required."
-
-            if tracker.get("method") is None or tracker.get("method") not in dash.constants.TrackerMethod.get_all():
-                has_errors = True
-                tracker_error["method"] = "Valid Method is required."
-
-            try:
-                if tracker.get("url") is None:
-                    raise forms.ValidationError("URL is required.")
-                self._validate_tracker_url(tracker.get("url"))
-            except forms.ValidationError as e:
-                has_errors = True
-                tracker_error["url"] = e.message
-            try:
-                if tracker.get("fallback_url"):
-                    self._validate_tracker_url(tracker.get("fallback_url"))
-            except forms.ValidationError as e:
-                has_errors = True
-                tracker_error["fallback_url"] = e.message
-
-            tracker_errors.append(tracker_error)
-
-        if has_errors:
-            return json.dumps(tracker_errors)
-
-        return None
 
     def _validate_url(self, url):
         validate_url = validators.URLValidator(schemes=["http", "https"])
@@ -1086,43 +1035,6 @@ class ContentAdForm(ContentAdCandidateForm):
         if tracker_status == constants.AsyncUploadJobStatus.FAILED:
             return "Invalid or unreachable tracker URL"
 
-    def _get_trackers_error_msg(self, cleaned_data):
-        trackers = cleaned_data.get("trackers", [])
-
-        if len(trackers) > 3:
-            return "A maximum of three trackers are supported."
-
-        trackers_status_errors = []
-        has_status_error = False
-        for tracker in trackers:
-            trackers_status = cleaned_data.get("trackers_status")
-            tracker_status_error = {}
-            tracker_status_key = dash.features.contentupload.get_tracker_status_key(
-                tracker.get("url"), tracker.get("method")
-            )
-            if trackers_status and trackers_status[tracker_status_key] == constants.AsyncUploadJobStatus.FAILED:
-                has_status_error = True
-                tracker_status_error["url"] = "Invalid or unreachable tracker URL"
-
-            fallback_url = tracker.get("fallback_url")
-            fallback_tracker_status_key = dash.features.contentupload.get_tracker_status_key(
-                fallback_url, dash.constants.TrackerMethod.IMG
-            )
-            if (
-                fallback_url
-                and trackers_status
-                and trackers_status[fallback_tracker_status_key] == constants.AsyncUploadJobStatus.FAILED
-            ):
-                has_status_error = True
-                tracker_status_error["fallback_url"] = "Invalid or unreachable tracker URL"
-
-            trackers_status_errors.append(tracker_status_error)
-
-        if has_status_error:
-            return json.dumps(trackers_status_errors)
-
-        return self._validate_trackers(trackers)
-
     def _set_tracker_urls(self, cleaned_data):
         cleaned_data["tracker_urls"] = []
         primary_tracker_url = cleaned_data.get("primary_tracker_url")
@@ -1172,10 +1084,6 @@ class ContentAdForm(ContentAdCandidateForm):
             and secondary_tracker_url_error_msg
         ):
             self.add_error("secondary_tracker_url", secondary_tracker_url_error_msg)
-
-        trackers_error_msg = self._get_trackers_error_msg(cleaned_data)
-        if "trackers" in cleaned_data and trackers_error_msg:
-            self.add_error("trackers", trackers_error_msg)
 
         if self.original_content_ad:
             cleaned_data["original_content_ad_id"] = self.original_content_ad.id

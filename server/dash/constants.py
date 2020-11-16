@@ -137,27 +137,6 @@ class ContentAdSourceState(ConstantBase):
     _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
-class TrackerMethod(ConstantBase):
-    IMG = "img"
-    JS = "js"
-
-    _VALUES = {IMG: "Image-pixel tracking", JS: "Javascript-based tracking"}
-
-
-class TrackerEventType(ConstantBase):
-    IMPRESSION = "impression"
-    VIEWABILITY = "viewability"
-
-    _VALUES = {IMPRESSION: "Impression", VIEWABILITY: "Viewability"}
-
-
-class TrackerPrivacyFramework(ConstantBase):
-    GDPR = "gdpr"
-    CCPA = "ccpa"
-
-    _VALUES = {GDPR: "GDPR", CCPA: "CCPA"}
-
-
 class AdType(ConstantBase):
     CONTENT = 1
     VIDEO = 2
