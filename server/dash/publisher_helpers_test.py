@@ -128,6 +128,12 @@ class PublisherIdVsPlacementLookupMapTest(TestCase):
             placement="someplacement",
             source=self.source,
         )
+        self.pge_9 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement="someplacement__with_double_underscore",
+            source=self.source,
+        )
 
     def test_filter_publisher(self):
         blacklist = core.features.publisher_groups.PublisherGroupEntry.objects.filter(
@@ -140,6 +146,7 @@ class PublisherIdVsPlacementLookupMapTest(TestCase):
                 self.pge_6.id,
                 self.pge_7.id,
                 self.pge_8.id,
+                self.pge_9.id,
             ]
         )
         lookup_map = publisher_helpers.PublisherIdLookupMap(blacklist)
@@ -175,6 +182,7 @@ class PublisherIdVsPlacementLookupMapTest(TestCase):
                 self.pge_6.id,
                 self.pge_7.id,
                 self.pge_8.id,
+                self.pge_9.id,
             ]
         )
         lookup_map = publisher_helpers.PublisherPlacementLookupMap(blacklist)
@@ -204,7 +212,16 @@ class PublisherIdVsPlacementLookupMapTest(TestCase):
             ],
             self.pge_8,
         )
+        self.assertEquals(
+            lookup_map[
+                "sub.example.com__{}{}someplacement__with_double_underscore".format(
+                    self.source.id, publisher_helpers.PLACEMENT_SEPARATOR
+                )
+            ],
+            self.pge_9,
+        )
 
         self.assertEquals(
-            {e.id for e in lookup_map._map.values()}, {self.pge_5.id, self.pge_6.id, self.pge_7.id, self.pge_8.id}
+            {e.id for e in lookup_map._map.values()},
+            {self.pge_5.id, self.pge_6.id, self.pge_7.id, self.pge_8.id, self.pge_9.id},
         )

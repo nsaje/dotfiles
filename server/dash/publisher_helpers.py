@@ -4,6 +4,7 @@ from django.db.models import QuerySet
 
 OUTBRAIN_SOURCE_ID = 3
 PLACEMENT_SEPARATOR = "__"
+PLACEMENT_ID_REGEX = re.compile(r"(?P<publisher_source_id>.+__(-?\d+|all)?)__(?P<placement>.*)")
 
 
 class InvalidLookupKeyFormat(ValueError):
@@ -65,7 +66,12 @@ def dissect_placement_id(publisher_source_placement_id):
     if PLACEMENT_SEPARATOR not in publisher_source_placement_id:
         raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
 
-    publisher_source_id, placement = publisher_source_placement_id.rsplit(PLACEMENT_SEPARATOR, 1)
+    m = PLACEMENT_ID_REGEX.match(publisher_source_placement_id)
+    if not m:
+        raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
+
+    publisher_source_id = m["publisher_source_id"]
+    placement = m["placement"]
 
     if "__" not in publisher_source_id:
         raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
