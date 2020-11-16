@@ -46,6 +46,22 @@ class EntityPermissionManagerTestCase(TestCase):
         entity_permission_duplicate = EntityPermission.objects.create(user, permission, account=account)
         self.assertEqual(entity_permission.id, entity_permission_duplicate.id)
 
-        entity_permission = EntityPermission.objects.create(user, permission, agency=None, account=None)
-        entity_permission_duplicate = EntityPermission.objects.create(user, permission, agency=None, account=None)
+        entity_permission = EntityPermission.objects.create(user, Permission.READ, agency=None, account=None)
+        entity_permission_duplicate = EntityPermission.objects.create(user, Permission.READ, agency=None, account=None)
         self.assertEqual(entity_permission.id, entity_permission_duplicate.id)
+
+    def test_create_internal(self):
+        with self.settings(INTERNAL_EMAIL_POSTFIXES=["@outbrain.com"]):
+            user = magic_mixer.blend_user()
+            user.email = "internal+alias@outbrain.com"
+            user.save()
+            EntityPermission.objects.create(user, Permission.READ, agency=None, account=None)
+
+    def test_create_internal_with_wrong_email(self):
+        with self.settings(INTERNAL_EMAIL_POSTFIXES=["@outbrain.com"]):
+            user = magic_mixer.blend_user()
+            user.email = "external@email.com"
+            user.save()
+
+            with self.assertRaises(ValidationError):
+                EntityPermission.objects.create(user, Permission.READ, agency=None, account=None)

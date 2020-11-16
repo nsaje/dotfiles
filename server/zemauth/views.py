@@ -115,7 +115,7 @@ def set_password(request, uidb64=None, token=None, template_name=None):
             if form.is_valid():
                 form.save()
 
-                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
+                if not any(user.email.endswith(postfix) for postfix in settings.INTERNAL_EMAIL_POSTFIXES):
                     # login user
                     user = auth.authenticate(username=user.email, password=request.POST["new_password"])
                     auth.login(request, user)
@@ -150,7 +150,7 @@ def set_new_user(request, uidb64=None, token=None, template_name=None):
             if form.is_valid():
                 form.save()
 
-                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
+                if not any(user.email.endswith(postfix) for postfix in settings.INTERNAL_EMAIL_POSTFIXES):
                     # login user
                     user = auth.authenticate(username=user.email, password=request.POST["new_password"])
                     auth.login(request, user)

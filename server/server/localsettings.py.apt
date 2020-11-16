@@ -84,6 +84,7 @@ EMAIL_HOST_PASSWORD = ""
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
 SUPPLY_REPORTS_FROM_EMAIL = "supplyreports@zemanta.com"
 FROM_EMAIL = "help@zemanta.com"
+INTERNAL_EMAIL_POSTFIXES = ["@outbrain.com", "@zemanta.com"]
 
 # Path to log file
 LOG_FILE = "/app/logs/zemanta-eins.server.log"

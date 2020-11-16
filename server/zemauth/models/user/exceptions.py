@@ -27,7 +27,3 @@ class InvalidCompanyType(ValidationError):
 
 class InvalidStartYearOfExperience(ValidationError):
     pass
-
-
-class InvalidUser(ValidationError):
-    pass

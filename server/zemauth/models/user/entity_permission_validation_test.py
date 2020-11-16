@@ -4,7 +4,6 @@ import core
 import zemauth
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
-from zemauth.models.user.exceptions import InvalidUser
 from zemauth.models.user.exceptions import MissingReadPermission
 from zemauth.models.user.exceptions import MissingRequiredPermission
 from zemauth.models.user.exceptions import MixedPermissionLevels
@@ -32,15 +31,6 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         ]
 
         requested_user.validate_entity_permissions(entity_permissions)
-
-    def test_validate_entity_permissions_internal_nonoutbrain(self):
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
-
-        entity_permissions = [self._prepare_entity_permission(None, None, Permission.READ)]
-
-        self.assertRaises(
-            InvalidUser, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
-        )
 
     def test_validate_entity_permissions_agency_and_account(self):
         agency = magic_mixer.blend(core.models.Agency)

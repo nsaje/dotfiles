@@ -30,7 +30,7 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
             if (
                 settings.GOOGLE_OAUTH_ENABLED
                 and "+" not in user.email
-                and (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com"))
+                and any(user.email.endswith(postfix) for postfix in settings.INTERNAL_EMAIL_POSTFIXES)
             ):
                 if oauth_data and oauth_data["verified_email"]:
                     metrics_compat.incr("signin_request", 1, stage="success")
