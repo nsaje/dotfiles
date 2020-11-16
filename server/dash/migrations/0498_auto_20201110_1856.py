@@ -8,24 +8,9 @@ from django.db import models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0494_clone_email_templates")]
+    dependencies = [("dash", "0497_merge_20201112_1214")]
 
     operations = [
-        migrations.AlterField(
-            model_name="adgroupsettings",
-            name="autopilot_state",
-            field=models.IntegerField(
-                blank=True,
-                choices=[
-                    (1, "Optimize Bids and Daily Spend Caps"),
-                    (2, "Disabled"),
-                    (3, "Optimize Bids"),
-                    (4, "Optimal Bid Bidding Strategy"),
-                ],
-                default=2,
-                null=True,
-            ),
-        ),
         migrations.AlterField(
             model_name="adgroupsettings",
             name="b1_sources_group_cpc_cc",
