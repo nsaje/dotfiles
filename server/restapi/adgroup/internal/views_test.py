@@ -57,7 +57,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
@@ -139,7 +139,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -224,7 +224,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -262,7 +262,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -279,7 +279,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
     @mock.patch.object(core.models.settings.AdGroupSettings, "update")
     def test_ad_group_state_set_to_inactive_on_b1_sources_group_enabled_update(self, mock_ad_group_settings_update):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -299,7 +299,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)
 
     def test_put_deals(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
@@ -367,7 +367,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["deals"][1]["accountId"], str(account.id))
 
     def test_get_bid_modifier_type_summaries(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
@@ -419,7 +419,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         )
 
     def test_get_default_bid_modifier_type_summaries(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
@@ -433,7 +433,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
     def test_get_alerts(self, mock_get_ad_group_alerts):
         mock_get_ad_group_alerts.return_value = []
 
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
 
         r = self.client.get(
@@ -451,7 +451,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         )
 
     def test_get_alerts_invalid_params(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
 
         r = self.client.get(
@@ -465,7 +465,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         )
 
     def test_get_alerts_no_access(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
 
         r = self.client.get(
             reverse("restapi.adgroup.internal:adgroups_alerts", kwargs={"ad_group_id": ad_group.id}),
@@ -474,7 +474,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_put_adgroups_invalid_target_browsers(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -497,7 +497,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_put_adgroups_invalid_target_browser_device_type(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -518,7 +518,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_put_adgroups_valid_target_browsers(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -562,7 +562,9 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 class CloneAdGroupViewTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
 
@@ -579,7 +581,9 @@ class CloneAdGroupViewTestCase(RESTAPITestCase):
 
     @mock.patch.object(dash.features.cloneadgroup.service, "clone", autospec=True)
     def test_post(self, mock_clone):
-        cloned_ad_group = magic_mixer.blend(core.models.AdGroup)
+        cloned_ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
+        )
         mock_clone.return_value = cloned_ad_group
 
         data = self.clone_repr(self.ad_group, self.campaign)

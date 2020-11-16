@@ -48,6 +48,7 @@ class AdGroupSettings(
 
     DEFAULT_CPC_VALUE = Decimal("0.4500")
     DEFAULT_CPM_VALUE = Decimal("1.0000")
+    DEFAULT_DAILY_BUDGET = Decimal("50.0000")
 
     MIN_CPC_VALUE = Decimal("0.005")
     MAX_CPC_VALUE = Decimal("20.0")
@@ -124,18 +125,10 @@ class AdGroupSettings(
         "additional_data",
     ]
     _permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
-    multicurrency_fields = [
-        "cpc",
-        "cpm",
-        "max_autopilot_bid",
-        "daily_budget",
-        "autopilot_daily_budget",
-        "b1_sources_group_daily_budget",
-        "b1_sources_group_cpc_cc",
-        "b1_sources_group_cpm",
-    ]
-    # TODO: RTAP: hack to disable daily_budget history on multicurrency update
-    history_fields = list(set(_settings_fields) - set(multicurrency_fields) - set(["local_daily_budget"]))
+    _multicurrency_bid_fields = ["cpc", "cpm", "max_autopilot_bid", "b1_sources_group_cpc_cc", "b1_sources_group_cpm"]
+    _multicurrency_budget_fields = ["daily_budget", "autopilot_daily_budget", "b1_sources_group_daily_budget"]
+    multicurrency_fields = _multicurrency_bid_fields + _multicurrency_budget_fields
+    history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey("dash.AdGroup", on_delete=models.PROTECT)
@@ -236,13 +229,23 @@ class AdGroupSettings(
     )
     # TODO (multicurrency): Handle fields' default values for local fields
     b1_sources_group_cpc_cc = models.DecimalField(
-        max_digits=10, decimal_places=4, default=core.models.AllRTBSourceType.min_cpc, verbose_name="Bidder's Bid CPC"
+        max_digits=10,
+        decimal_places=4,
+        default=core.models.AllRTBSourceType.min_cpc,
+        verbose_name="Bidder's Bid CPC",
+        blank=True,
+        null=True,
     )
     local_b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPC", blank=True, null=True
     )
     b1_sources_group_cpm = models.DecimalField(
-        max_digits=10, decimal_places=4, default=core.models.AllRTBSourceType.min_cpm, verbose_name="Bidder's Bid CPM"
+        max_digits=10,
+        decimal_places=4,
+        default=core.models.AllRTBSourceType.min_cpm,
+        verbose_name="Bidder's Bid CPM",
+        blank=True,
+        null=True,
     )
     local_b1_sources_group_cpm = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPM", blank=True, null=True
@@ -307,7 +310,8 @@ class AdGroupSettings(
             return self.local_max_autopilot_bid
 
     @classmethod
-    def get_defaults_dict(cls, currency=None):
+    def get_defaults_dict(cls, ad_group=None, currency=None):
+        # TODO: RTAP: correct defaults after migration
         defaults = OrderedDict(
             [
                 ("state", constants.AdGroupSettingsState.INACTIVE),
@@ -317,7 +321,7 @@ class AdGroupSettings(
                 ("max_cpm", None),
                 ("cpm", cls.DEFAULT_CPM_VALUE),
                 ("max_autopilot_bid", None),
-                ("daily_budget", Decimal("50.00")),
+                ("daily_budget", cls.DEFAULT_DAILY_BUDGET),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
                 ("target_regions", []),
@@ -326,9 +330,9 @@ class AdGroupSettings(
                 ("autopilot_daily_budget", Decimal("100.00")),
                 ("b1_sources_group_enabled", True),
                 ("b1_sources_group_state", constants.AdGroupSourceSettingsState.ACTIVE),
-                ("b1_sources_group_daily_budget", Decimal("50.00")),
-                ("b1_sources_group_cpc_cc", Decimal("0.45")),
-                ("b1_sources_group_cpm", Decimal("1.00")),
+                ("b1_sources_group_daily_budget", cls.DEFAULT_DAILY_BUDGET),
+                ("b1_sources_group_cpc_cc", cls.DEFAULT_CPC_VALUE),
+                ("b1_sources_group_cpm", cls.DEFAULT_CPM_VALUE),
             ]
         )
 
@@ -351,8 +355,8 @@ class AdGroupSettings(
             "local_cpc": "Bid CPC",
             "cpm": "Bid CPM",
             "local_cpm": "Bid CPM",
-            "max_autopilot_bid": "Maximum autopilot bid",
-            "local_max_autopilot_bid": "Maximum autopilot bid",
+            "max_autopilot_bid": "Maximum autopilot bid (deprecated)",
+            "local_max_autopilot_bid": "Maximum autopilot bid (deprecated)",
             "cpc_cc": "Max CPC bid",
             "local_cpc_cc": "Max CPC bid",
             "max_cpm": "Max CPM bid",
@@ -390,16 +394,16 @@ class AdGroupSettings(
             "call_to_action": "Call to action",
             "ad_group_name": "Ad group name",
             "autopilot_state": "Autopilot",
-            "autopilot_daily_budget": "Autopilot's Daily Spend Cap",
-            "local_autopilot_daily_budget": "Autopilot's Daily Spend Cap",
+            "autopilot_daily_budget": "Autopilot's Daily Spend Cap (deprecated)",
+            "local_autopilot_daily_budget": "Autopilot's Daily Spend Cap (deprecated)",
             "dayparting": "Dayparting",
             "b1_sources_group_enabled": "Group all RTB sources",
-            "b1_sources_group_daily_budget": "Daily budget for all RTB sources",
-            "local_b1_sources_group_daily_budget": "Daily budget for all RTB sources",
-            "b1_sources_group_cpc_cc": "Bid CPC for all RTB sources",
-            "local_b1_sources_group_cpc_cc": "Bid CPC for all RTB sources",
-            "b1_sources_group_cpm": "Bid CPM for all RTB sources",
-            "local_b1_sources_group_cpm": "Bid CPM for all RTB sources",
+            "b1_sources_group_daily_budget": "Daily budget for all RTB sources (deprecated)",
+            "local_b1_sources_group_daily_budget": "Daily budget for all RTB sources (deprecated)",
+            "b1_sources_group_cpc_cc": "Bid CPC for all RTB sources (deprecated)",
+            "local_b1_sources_group_cpc_cc": "Bid CPC for all RTB sources (deprecated)",
+            "b1_sources_group_cpm": "Bid CPM for all RTB sources (deprecated)",
+            "local_b1_sources_group_cpm": "Bid CPM for all RTB sources (deprecated)",
             "b1_sources_group_state": "State of all RTB sources",
             "delivery_type": "Delivery type",
             "click_capping_daily_ad_group_max_clicks": "Daily maximum number of clicks for ad group",

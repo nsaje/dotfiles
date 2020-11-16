@@ -73,38 +73,32 @@ class BidModifiersTest(K1APIBaseTest):
     # TODO: RTAP: remove after migration
     def test_realtime_autopilot_force_modifier(self):
         legacy_ad_group_no_agency = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=None)
-        legacy_ad_group_no_agency.campaign.settings.update_unsafe(None, autopilot=True)
+        legacy_ad_group_no_agency.settings.update_unsafe(
+            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
+        )
 
         legacy_ad_group_no_flag = magic_mixer.blend(
             core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False
         )
-        legacy_ad_group_no_flag.campaign.settings.update_unsafe(None, autopilot=True)
+        legacy_ad_group_no_flag.settings.update_unsafe(
+            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
+        )
 
         ad_group_no_autopilot = magic_mixer.blend(
             core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
         )
-        ad_group_no_autopilot.campaign.settings.update_unsafe(None, autopilot=False)
         ad_group_no_autopilot.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-        )
-
-        ad_group_campaign_autopilot = magic_mixer.blend(
-            core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
-        )
-        ad_group_campaign_autopilot.campaign.settings.update_unsafe(None, autopilot=True)
-        ad_group_campaign_autopilot.settings.update_unsafe(
             None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         )
 
         ad_group_realtime_autopilot = magic_mixer.blend(
             core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
         )
-        ad_group_realtime_autopilot.campaign.settings.update_unsafe(None, autopilot=False)
         ad_group_realtime_autopilot.settings.update_unsafe(
             None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
         )
 
-        magic_mixer.cycle(5).blend(
+        magic_mixer.cycle(4).blend(
             core.features.bid_modifiers.BidModifier,
             ad_group=(
                 ag
@@ -112,7 +106,6 @@ class BidModifiersTest(K1APIBaseTest):
                     legacy_ad_group_no_agency,
                     legacy_ad_group_no_flag,
                     ad_group_no_autopilot,
-                    ad_group_campaign_autopilot,
                     ad_group_realtime_autopilot,
                 )
             ),
@@ -121,7 +114,7 @@ class BidModifiersTest(K1APIBaseTest):
             type=core.features.bid_modifiers.constants.BidModifierType.SOURCE,
             modifier=2.0,
         )
-        magic_mixer.cycle(5).blend(
+        magic_mixer.cycle(4).blend(
             core.features.bid_modifiers.BidModifier,
             ad_group=(
                 ag
@@ -129,7 +122,6 @@ class BidModifiersTest(K1APIBaseTest):
                     legacy_ad_group_no_agency,
                     legacy_ad_group_no_flag,
                     ad_group_no_autopilot,
-                    ad_group_campaign_autopilot,
                     ad_group_realtime_autopilot,
                 )
             ),
@@ -148,7 +140,6 @@ class BidModifiersTest(K1APIBaseTest):
                         legacy_ad_group_no_agency,
                         legacy_ad_group_no_flag,
                         ad_group_no_autopilot,
-                        ad_group_campaign_autopilot,
                         ad_group_realtime_autopilot,
                     ]
                 )
@@ -157,12 +148,11 @@ class BidModifiersTest(K1APIBaseTest):
         data = json.loads(response.content)
 
         self.assert_response_ok(response, data)
-        self.assertEqual(10, len(data["response"]))
+        self.assertEqual(8, len(data["response"]))
 
         for bm in data["response"]:
             if bm["type"] == core.features.bid_modifiers.constants.BidModifierType.SOURCE and bm["ad_group_id"] in [
-                ad_group_campaign_autopilot.id,
-                ad_group_realtime_autopilot.id,
+                ad_group_realtime_autopilot.id
             ]:
                 self.assertEqual(1.0, bm["modifier"])
             else:

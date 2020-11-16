@@ -284,6 +284,11 @@ class AdGroupSettingsValidatorMixin(object):
             )
         if self.local_b1_sources_group_cpc_cc == new_settings.local_b1_sources_group_cpc_cc:
             return
+        if (
+            self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+            and new_settings.local_b1_sources_group_cpc_cc is None
+        ):
+            return
         assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpc_cc(
             new_settings.b1_sources_group_cpc_cc, new_settings, self.ad_group.campaign.get_bcm_modifiers()
@@ -296,6 +301,11 @@ class AdGroupSettingsValidatorMixin(object):
                 "Cannot set all RTB sources group CPM when ad group bidding type is CPC"
             )
         if self.local_b1_sources_group_cpm == new_settings.local_b1_sources_group_cpm:
+            return
+        if (
+            self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+            and new_settings.local_b1_sources_group_cpm is None
+        ):
             return
         assert isinstance(new_settings.local_b1_sources_group_cpm, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpm(

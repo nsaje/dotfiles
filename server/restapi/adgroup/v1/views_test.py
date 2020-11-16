@@ -14,7 +14,7 @@ import dash.models
 import restapi.serializers
 import restapi.serializers.targeting
 import utils.test_helper
-from automation import autopilot_legacy as autopilot  # TODO: RTAP: LEGACY
+from automation import autopilot
 from dash import constants
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
@@ -55,7 +55,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         demographic_targeting=[],
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget="50.00",
-        max_autopilot_bid=None,
+        max_autopilot_bid="0.600",
         dayparting={},
         whitelist_publisher_groups=[],
         blacklist_publisher_groups=[],
@@ -195,7 +195,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(expected, adgroup)
 
     def test_adgroups_get_cpc(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
@@ -213,7 +213,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertFalse(resp_json["data"]["maxCpm"])
 
     def test_adgroups_get_cpm(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
@@ -231,7 +231,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_list(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign=campaign)
 
@@ -248,8 +248,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
             self.validate_against_db(item)
 
     def test_adgroups_list_account_id(self):
-        account_one = self.mix_account(self.user, permissions=[Permission.READ])
-        account_two = self.mix_account(self.user, permissions=[Permission.READ])
+        account_one = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
+        account_two = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
 
         ad_groups_one = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account=account_one)
         magic_mixer.cycle(5).blend(core.models.AdGroup, account=account_two)
@@ -265,7 +265,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             self.assertEqual(db_item.campaign.account_id, account_one.id)
 
     def test_adgroups_list_campaign_id(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
 
         campaign_one = magic_mixer.blend(core.models.Campaign, account=account)
         ad_groups_one = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign=campaign_one)
@@ -290,7 +290,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(["Invalid format"], resp_json["details"]["campaignId"])
 
     def test_adgroups_list_pagination(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign)
 
@@ -303,7 +303,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
     def test_adgroups_list_exclude_archived(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
         magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
@@ -316,7 +316,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             self.assertFalse(item["archived"])
 
     def test_adgroups_list_include_archived(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
         magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
@@ -330,7 +330,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
             self.validate_against_db(item)
 
     def test_adgroups_post_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
@@ -351,7 +353,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertFalse(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_bid_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
@@ -372,10 +376,14 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertFalse(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_cpc_mixed(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
-        new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group", bid="9.000")
+        new_ad_group = self.adgroup_repr(
+            campaign_id=campaign.id, name="Test Group", bid="9.000", max_autopilot_bid="9.000"
+        )
 
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
@@ -393,14 +401,19 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertFalse(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(
-            campaign_id=campaign.id, name="Test Group", bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
+            campaign_id=campaign.id,
+            name="Test Group",
+            bidding_type=constants.BiddingType.CPM,
+            max_cpm="3.100",
+            max_autopilot_bid="3.100",
         )
         del new_ad_group["bid"]
-
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
@@ -415,7 +428,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_bid_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(
@@ -436,7 +451,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_campaign_archived(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account, archived=True)
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
 
@@ -454,7 +471,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_no_state(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
         del new_ad_group["id"]
@@ -472,7 +491,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_adgroups_post_no_name(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id)
 
@@ -482,7 +503,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -508,7 +531,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], test_adgroup)
 
     def test_adgroups_put_bid_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -534,7 +559,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], test_adgroup)
 
     def test_adgroups_put_cpc_mixed(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -543,7 +570,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         settings.local_cpm = Decimal("1.2000")
         settings.save(None)
 
-        test_adgroup = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, bid="9.000")
+        test_adgroup = self.adgroup_repr(
+            id=ad_group.id, campaign_id=campaign.id, bid="9.000", max_autopilot_bid="9.000"
+        )
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_adgroup,
@@ -559,7 +588,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], test_adgroup)
 
     def test_adgroups_put_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
         settings = ad_group.get_current_settings().copy_settings()
@@ -569,7 +600,11 @@ class AdGroupViewSetTest(RESTAPITestCase):
         settings.save(None)
 
         test_adgroup = self.adgroup_repr(
-            id=ad_group.id, campaign_id=campaign.id, bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
+            id=ad_group.id,
+            campaign_id=campaign.id,
+            bidding_type=constants.BiddingType.CPM,
+            max_cpm="3.100",
+            max_autopilot_bid="3.100",
         )
         del test_adgroup["bid"]
 
@@ -590,7 +625,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_put_bid_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
         settings = ad_group.get_current_settings().copy_settings()
@@ -620,7 +657,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_put_max_autopilot_bid(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -650,7 +689,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], test_adgroup)
 
     def test_adgroups_put_name(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -667,7 +708,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
 
     def test_adgroups_put_frequency_capping(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -682,7 +725,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["frequencyCapping"], 33)
 
     def test_adgroups_put_empty(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -698,7 +743,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(settings_count, dash.models.AdGroupSettings.objects.filter(ad_group_id=ad_group.id).count())
 
     def test_adgroups_put_state(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -715,7 +762,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["state"], "INACTIVE")
 
     def test_adgroups_put_invalid_state(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -727,7 +776,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_archive_restore(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -749,9 +800,11 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["archived"], False)
 
-    @mock.patch.object(autopilot, "recalculate_budgets_ad_group", autospec=True)
+    @mock.patch.object(autopilot, "recalculate_ad_group_budgets", autospec=True)
     def test_adgroups_put_autopilot_budget(self, mock_autopilot):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -780,32 +833,11 @@ class AdGroupViewSetTest(RESTAPITestCase):
         test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         self.assertEqual(resp_json["data"], test_adgroup)
 
-    def test_adgroups_put_invalid_autopilot_state(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
-        settings = ad_group.get_current_settings().copy_settings()
-        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        settings.local_cpc = Decimal("0.4500")
-        settings.local_cpm = Decimal("1.2000")
-        settings.b1_sources_group_enabled = False
-        settings.save(None)
-
-        test_adgroup = self.adgroup_repr(
-            id=ad_group.id,
-            campaign_id=campaign.id,
-            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-        )
-        r = self.client.put(
-            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=test_adgroup,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
     # TODO: PLAC: remove after legacy grace period
     def test_ad_group_put_environment_targeting_legacy(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -879,11 +911,26 @@ class AdGroupViewSetTest(RESTAPITestCase):
         ad_group.refresh_from_db()
         self.assertEqual([dash.constants.AdTargetEnvironment.SITE], ad_group.settings.target_environments)
 
-    def test_adgroups_post_high_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+    def test_adgroups_post_multiple_cpc_legacy_error(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
-        new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group", max_cpc=Decimal("9000"))
+        new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group", max_autopilot_bid=Decimal("9000"))
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"], "Bid updated with multiple values")
+
+    def test_adgroups_post_high_cpc(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+
+        new_ad_group = self.adgroup_repr(
+            campaign_id=campaign.id, name="Test Group", max_cpc=Decimal("9000"), max_autopilot_bid=Decimal("9000")
+        )
         del new_ad_group["bid"]
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseError(r, "ValidationError")
@@ -891,12 +938,15 @@ class AdGroupViewSetTest(RESTAPITestCase):
 
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group", bid=Decimal("9000"))
         del new_ad_group["id"]
+        del new_ad_group["autopilot"]
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"bid": ["CPC can't be higher than $20.00."]})
 
     def test_adgroups_put_low_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -907,6 +957,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
 
         put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, max_cpc="0.0")
         del put_data["bid"]
+        del put_data["autopilot"]
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -915,7 +966,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"maxCpc": ["CPC can't be lower than $0.005."]})
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, bid="0.0")
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, bid="0.0", max_autopilot_bid="0.0")
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -924,27 +975,52 @@ class AdGroupViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"bid": ["CPC can't be lower than $0.005."]})
 
+    def test_adgroups_post_multiple_cpm_legacy_error(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+
+        new_ad_group = self.adgroup_repr(
+            campaign_id=campaign.id,
+            name="Test Group",
+            bidding_type=constants.BiddingType.CPM,
+            max_autopilot_bid=Decimal("9000"),
+        )
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"], "Bid updated with multiple values")
+
     def test_adgroups_post_high_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(
             campaign_id=campaign.id, name="Test Group", max_cpm=Decimal("9000"), bidding_type=constants.BiddingType.CPM
         )
         del new_ad_group["bid"]
+        del new_ad_group["autopilot"]
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"maxCpm": ["CPM can't be higher than $25.00."]})
 
         new_ad_group = self.adgroup_repr(
-            campaign_id=campaign.id, name="Test Group", bid=Decimal("9000"), bidding_type=constants.BiddingType.CPM
+            campaign_id=campaign.id,
+            name="Test Group",
+            bid=Decimal("9000"),
+            max_autopilot_bid=Decimal("9000"),
+            bidding_type=constants.BiddingType.CPM,
         )
         r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"bid": ["CPM can't be higher than $25.00."]})
 
     def test_adgroups_put_low_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
         settings = ad_group.get_current_settings().copy_settings()
@@ -954,7 +1030,11 @@ class AdGroupViewSetTest(RESTAPITestCase):
         settings.save(None)
 
         ad_group_data = self.adgroup_repr(
-            id=ad_group.id, campaign_id=campaign.id, bidding_type=constants.BiddingType.CPM, max_cpm="0.0"
+            id=ad_group.id,
+            campaign_id=campaign.id,
+            bidding_type=constants.BiddingType.CPM,
+            max_cpm="0.0",
+            max_autopilot_bid="0.0",
         )
         del ad_group_data["bid"]
         r = self.client.put(
@@ -968,6 +1048,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         ad_group_data = self.adgroup_repr(
             id=ad_group.id, campaign_id=campaign.id, bidding_type=constants.BiddingType.CPM, bid="0.0"
         )
+        del ad_group_data["autopilot"]
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=ad_group_data,
@@ -977,7 +1058,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["details"], {"bid": ["CPM can't be lower than $0.01."]})
 
     def test_adgroups_put_end_date_before_start_date(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -995,7 +1078,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_end_date_in_the_past(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1014,7 +1099,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_tracking_code(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1027,7 +1114,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_no_targets(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
 
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group", target_devices=[])
@@ -1036,7 +1125,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_timezone(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1049,7 +1140,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_hour(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1062,7 +1155,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_invalid_bluekai_targeting(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1078,7 +1173,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_valid_bluekai_targeting(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         bluekai = magic_mixer.blend(
@@ -1101,7 +1198,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         )
 
     def test_adgroups_invalid_regions_targeting(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1115,7 +1214,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_valid_regions_targeting(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         country = magic_mixer.blend(dash.models.Geolocation, pk="US", type="co", name="United States")
@@ -1131,7 +1232,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(country.pk, resp_json["data"]["targeting"]["geo"]["included"]["countries"][0])
 
     def test_adgroups_get_permissioned(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1143,7 +1244,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
 
     def test_adgroups_put_blank_strings(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1153,8 +1256,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
             end_date="",
             tracking_code="",
             bid="1.5",
-            max_cpc="",
-            max_cpm="",
             interest_targeting=[],
             target_browsers=None,
             daily_budget="",
@@ -1164,6 +1265,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
             dayparting={"timezone": ""},
             frequency_capping="",
         )
+        del put_data["maxCpc"]
+        del put_data["autopilot"]["maxBid"]
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1185,7 +1288,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
 
     def test_adgroups_put_blank_cpc(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
         settings = ad_group.get_current_settings().copy_settings()
@@ -1194,7 +1299,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         settings.cpm = Decimal("3.1000")
         settings.save(None)
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, bid="1.5", max_cpc="", max_cpm="")
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, bid="1.5")
+        del put_data["autopilot"]
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1209,7 +1315,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(Decimal("3.1000"), ad_group.settings.cpm)
 
     def test_adgroups_put_blank_cpm(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
         settings = ad_group.get_current_settings().copy_settings()
@@ -1219,13 +1327,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         settings.save(None)
 
         put_data = self.adgroup_repr(
-            id=ad_group.id,
-            campaign_id=campaign.id,
-            bid="1.5",
-            max_cpc="",
-            max_cpm="",
-            bidding_type=constants.BiddingType.CPM,
+            id=ad_group.id, campaign_id=campaign.id, bid="1.5", bidding_type=constants.BiddingType.CPM
         )
+        del put_data["autopilot"]
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1240,7 +1344,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(Decimal("1.5000"), ad_group.settings.cpm)  # blank value defaults to default cpc
 
     def test_adgroups_put_none(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1281,7 +1387,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
 
     def test_adgroups_publisher_groups(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1322,7 +1430,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         request = magic_mixer.blend_request_user()
         request.user = self.user
 
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -1366,7 +1476,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_language_matching(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         settings = ad_group.get_current_settings().copy_settings()
@@ -1386,7 +1498,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
 
     def test_put_adgroups_invalid_target_connection_types(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
@@ -1406,7 +1518,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
     def test_put_adgroups_valid_target_connection_types(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)

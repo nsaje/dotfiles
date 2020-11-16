@@ -177,3 +177,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except exceptions.CannotSetBidToUndefined as err:
             raise utils.exc.ValidationError(errors={"bid": [str(err)]})
+
+        except exceptions.LegacyFieldsUpdateMismatch as err:
+            raise utils.exc.ValidationError(str(err))

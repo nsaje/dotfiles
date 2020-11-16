@@ -14,6 +14,9 @@ from .. import settings
 
 logger = zlogging.getLogger(__name__)
 
+# TODO: RTAP: BACKFILL: remove after all agencies migrated
+MIGRATING_AGENCY_IDS = []
+
 
 def get_active_ad_groups_on_autopilot():
     return dash.models.AdGroup.objects.filter(campaign__settings__autopilot=True).filter_running()
@@ -44,6 +47,9 @@ def get_autopilot_entities(campaign=None, excluded_campaign_ids=None):
         ad_groups = ad_groups.filter(campaign=campaign)
     else:
         ad_groups = ad_groups.filter_active()
+
+    if MIGRATING_AGENCY_IDS:
+        ad_groups = ad_groups.exclude(campaign__account__agency_id__in=MIGRATING_AGENCY_IDS)
 
     campaignstop_states = campaignstop.get_campaignstop_states(
         dash.models.Campaign.objects.filter(adgroup__in=ad_groups)

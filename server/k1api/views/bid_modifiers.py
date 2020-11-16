@@ -22,10 +22,7 @@ class BidModifiersView(K1APIView):
         force_source_bm_ad_group_ids = core.models.AdGroup.objects.filter(
             Q(campaign__account__agency__isnull=False)
             & Q(campaign__account__agency__uses_realtime_autopilot=True)
-            & (
-                Q(campaign__settings__autopilot=True)
-                | ~Q(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
-            )
+            & ~Q(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
         ).values_list("id", flat=True)
 
         if ad_group_ids:

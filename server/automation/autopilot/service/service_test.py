@@ -257,7 +257,8 @@ class AutopilotTestCase(test.TestCase):
 
         # TODO: RTAP: local/daily_budget deliberately removed from history until it is ok for users to see that
         self.assertCountEqual(
-            [(h.system_user, h.changes) for h in history_records], [(dash.constants.SystemUserType.AUTOPILOT, None)]
+            [(h.system_user, h.changes) for h in history_records],
+            [(dash.constants.SystemUserType.AUTOPILOT, {"local_daily_budget": "200.0000"})],
         )
 
     @patch("automation.autopilot.service.service.run_autopilot")

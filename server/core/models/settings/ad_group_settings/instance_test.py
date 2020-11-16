@@ -1,4 +1,5 @@
 from decimal import Decimal
+from itertools import combinations
 
 import mock
 from django.test import TestCase
@@ -13,12 +14,13 @@ from core.features.multicurrency import CurrencyExchangeRate
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from . import model
 
 
 class InstanceTest(TestCase):
     def setUp(self):
-        self.agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=False)
+        self.agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
 
     def test_update(self):
@@ -31,6 +33,10 @@ class InstanceTest(TestCase):
             "local_cpc": Decimal("0.5"),
             "cpc_cc": Decimal("0.5"),
             "local_cpc_cc": Decimal("0.5"),
+            "max_autopilot_bid": Decimal("0.5"),
+            "local_max_autopilot_bid": Decimal("0.5"),
+            "b1_sources_group_cpc_cc": Decimal("0.5"),
+            "local_b1_sources_group_cpc_cc": Decimal("0.5"),
         }
         self.assertEqual(applied_changes, expected_changes)
 
@@ -61,11 +67,15 @@ class InstanceTest(TestCase):
             {
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpc_cc": Decimal("0.5"),
-                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
-                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_cpc_cc": Decimal("0.5"),
+                "max_autopilot_bid": Decimal("0.5"),
+                "local_max_autopilot_bid": Decimal("0.5"),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -99,11 +109,15 @@ class InstanceTest(TestCase):
             {
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpm": Decimal("0.8"),
-                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
-                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_cpm": Decimal("0.8"),
+                "max_autopilot_bid": Decimal("0.8"),
+                "local_max_autopilot_bid": Decimal("0.8"),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -144,10 +158,8 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpc_cc": Decimal("0.211"),
                 "b1_sources_group_daily_budget": Decimal("10.0"),
-                "daily_budget": Decimal("10.0"),
                 "local_b1_sources_group_cpc_cc": Decimal("0.211"),
                 "local_b1_sources_group_daily_budget": Decimal("10.0"),
-                "local_daily_budget": Decimal("10.0"),
             },
         )
 
@@ -191,10 +203,8 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpm": Decimal("0.211"),
                 "b1_sources_group_daily_budget": Decimal("10.0"),
-                "daily_budget": Decimal("10.0"),
                 "local_b1_sources_group_cpm": Decimal("0.211"),
                 "local_b1_sources_group_daily_budget": Decimal("10.0"),
-                "local_daily_budget": Decimal("10.0"),
             },
         )
 
@@ -226,14 +236,18 @@ class InstanceTest(TestCase):
             changes_new,
             {
                 "b1_sources_group_enabled": True,
-                "b1_sources_group_cpc_cc": Decimal("0.05"),
-                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
-                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "cpc": Decimal("0.05"),
-                "local_b1_sources_group_cpc_cc": Decimal("0.05"),
-                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
-                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_cpc": Decimal("0.05"),
+                "b1_sources_group_cpc_cc": Decimal("0.05"),
+                "local_b1_sources_group_cpc_cc": Decimal("0.05"),
+                "max_autopilot_bid": Decimal("0.05"),
+                "local_max_autopilot_bid": Decimal("0.05"),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -268,14 +282,18 @@ class InstanceTest(TestCase):
             changes_new,
             {
                 "b1_sources_group_enabled": True,
-                "b1_sources_group_cpm": Decimal("0.05"),
-                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
-                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "cpm": Decimal("0.05"),
-                "local_b1_sources_group_cpm": Decimal("0.05"),
-                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_cpm": Decimal("0.05"),
+                "b1_sources_group_cpm": Decimal("0.05"),
+                "local_b1_sources_group_cpm": Decimal("0.05"),
+                "max_autopilot_bid": Decimal("0.05"),
+                "local_max_autopilot_bid": Decimal("0.05"),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_autopilot_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -297,98 +315,108 @@ class InstanceTest(TestCase):
 
             return new_settings
 
-        self.ad_group.campaign.account.agency.uses_realtime_autopilot = True
         budget_fields_values = {
             "daily_budget": Decimal("101.0"),
-            "b1_sources_group_daily_budget": Decimal("102.0"),
-            "autopilot_daily_budget": Decimal("103.0"),
+            "autopilot_daily_budget": Decimal("102.0"),
+            "b1_sources_group_daily_budget": Decimal("103.0"),
         }
         cpc_fields_values = {
             "cpc": Decimal("7.0"),
-            "b1_sources_group_cpc_cc": Decimal("8.0"),
-            "max_autopilot_bid": Decimal("9.0"),
+            "max_autopilot_bid": Decimal("8.0"),
+            "b1_sources_group_cpc_cc": Decimal("9.0"),
         }
         cpm_fields_values = {
             "cpm": Decimal("9.0"),
-            "b1_sources_group_cpm": Decimal("7.0"),
-            "max_autopilot_bid": Decimal("8.0"),
+            "max_autopilot_bid": Decimal("7.0"),
+            "b1_sources_group_cpm": Decimal("8.0"),
         }
 
-        # Budget (sources group)
+        # Budget
         _reset_test_settings()
-
         for field, value in budget_fields_values.items():
             self.ad_group.settings.update(None, **{field: value})
 
             self.assertEqual(value, self.ad_group.settings.daily_budget)
+            self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
             self.assertEqual(value, self.ad_group.settings.b1_sources_group_daily_budget)
-            self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
 
-        # Budget (sources separately)
-        _reset_test_settings(b1_sources_group_enabled=False)
-
-        for field, value in budget_fields_values.items():
-            old_b1_budget = self.ad_group.settings.b1_sources_group_daily_budget
-
-            if field == "b1_sources_group_daily_budget":
-                continue
-
-            self.ad_group.settings.update(None, **{field: value})
-
-            self.assertEqual(value, self.ad_group.settings.daily_budget)
-            self.assertEqual(old_b1_budget, self.ad_group.settings.b1_sources_group_daily_budget)
-            self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
-
-        # CPC (sources group)
+        # CPC
         _reset_test_settings()
-
         for field, value in cpc_fields_values.items():
             self.ad_group.settings.update(None, **{field: value})
 
             self.assertEqual(value, self.ad_group.settings.cpc)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
             self.assertEqual(value, self.ad_group.settings.b1_sources_group_cpc_cc)
-            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
 
-        # CPC (sources separately)
-        _reset_test_settings(b1_sources_group_enabled=False)
+        # Null CPC
+        for field in cpc_fields_values.keys():
+            _reset_test_settings()
+            self.ad_group.settings.update(None, **{field: None})
 
-        for field, value in cpc_fields_values.items():
-            old_b1_cpc = self.ad_group.settings.b1_sources_group_cpc_cc
+            self.assertIsNone(self.ad_group.settings.cpc)
+            self.assertIsNone(self.ad_group.settings.max_autopilot_bid)
+            self.assertIsNone(self.ad_group.settings.b1_sources_group_cpc_cc)
 
-            if field == "b1_sources_group_cpc_cc":
-                continue
-
-            self.ad_group.settings.update(None, **{field: value})
-
-            self.assertEqual(value, self.ad_group.settings.cpc)
-            self.assertEqual(old_b1_cpc, self.ad_group.settings.b1_sources_group_cpc_cc)
-            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
-
-        # CPM (sources group)
+        # CPM
         self.ad_group.bidding_type = constants.BiddingType.CPM
         _reset_test_settings()
-
         for field, value in cpm_fields_values.items():
             self.ad_group.settings.update(None, **{field: value})
 
             self.assertEqual(value, self.ad_group.settings.cpm)
+            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
             self.assertEqual(value, self.ad_group.settings.b1_sources_group_cpm)
-            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
 
-        # CPM (sources separately)
-        _reset_test_settings(b1_sources_group_enabled=False)
+        # Null CPM
+        for field in cpm_fields_values.keys():
+            _reset_test_settings()
+            self.ad_group.settings.update(None, **{field: None})
 
-        for field, value in cpm_fields_values.items():
-            old_b1_cpm = self.ad_group.settings.b1_sources_group_cpm
+            self.assertIsNone(self.ad_group.settings.cpm)
+            self.assertIsNone(self.ad_group.settings.max_autopilot_bid)
+            self.assertIsNone(self.ad_group.settings.b1_sources_group_cpm)
 
-            if field == "b1_sources_group_cpm":
-                continue
+    def test_validate_legacy_field_update(self):
+        self.ad_group.campaign.account.agency.uses_realtime_autopilot = True
+        cpc_fields_test_case = (list(combinations(["cpc", "b1_sources_group_cpc_cc", "max_autopilot_bid"], 2)), True)
+        cpm_fields_test_case = (list(combinations(["cpm", "b1_sources_group_cpm", "max_autopilot_bid"], 2)), False)
+        budget_fields_test_case = (list(combinations(self.ad_group.settings._multicurrency_budget_fields, 2)), True)
 
-            self.ad_group.settings.update(None, **{field: value})
+        value = Decimal("1.24")
+        for field_pairs, is_cpc_bidding in [cpc_fields_test_case, cpm_fields_test_case, budget_fields_test_case]:
+            self.ad_group.bidding_type = constants.BiddingType.CPC if is_cpc_bidding else constants.BiddingType.CPM
+            for field1, field2 in field_pairs:
+                with self.assertRaises(exceptions.LegacyFieldsUpdateMismatch):
+                    self.ad_group.settings.update(None, **{field1: value, field2: value + Decimal("0.1")})
+                with self.assertRaises(exceptions.LegacyFieldsUpdateMismatch):
+                    self.ad_group.settings.update(
+                        None, **{"local_" + field1: value, "local_" + field2: value + Decimal("0.1")}
+                    )
 
-            self.assertEqual(value, self.ad_group.settings.cpm)
-            self.assertEqual(old_b1_cpm, self.ad_group.settings.b1_sources_group_cpm)
-            self.assertEqual(value, self.ad_group.settings.max_autopilot_bid)
+                self.ad_group.settings.update(
+                    None, **{field1: getattr(self.ad_group.settings, field1), field2: value + Decimal("0.01")}
+                )
+                self.assertEqual(value + Decimal("0.01"), getattr(self.ad_group.settings, field1))
+                self.ad_group.settings.update(
+                    None,
+                    **{
+                        "local_" + field1: getattr(self.ad_group.settings, "local_" + field1),
+                        "local_" + field2: value + Decimal("0.02"),
+                    }
+                )
+                self.assertEqual(value + Decimal("0.02"), getattr(self.ad_group.settings, "local_" + field1))
+
+                self.ad_group.settings.update(
+                    None, **{field1: value + Decimal("0.03"), field2: value + Decimal("0.03")}
+                )
+                self.assertEqual(value + Decimal("0.03"), getattr(self.ad_group.settings, field1))
+                self.ad_group.settings.update(
+                    None, **{"local_" + field1: value + Decimal("0.04"), "local_" + field2: value + Decimal("0.04")}
+                )
+                self.assertEqual(value + Decimal("0.04"), getattr(self.ad_group.settings, "local_" + field1))
+
+                value += Decimal("0.1")
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_external_cpc(self, mock_insert_adgroup):
@@ -442,7 +470,6 @@ class InstanceTest(TestCase):
 
     @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_enable(self, mock_autopilot):
-        self.agency.uses_realtime_autopilot = True
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         with self.assertRaises(utils.exc.ForbiddenError):
             self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
@@ -452,52 +479,62 @@ class InstanceTest(TestCase):
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         mock_autopilot.assert_not_called()
 
+    # TODO: RTAP: remove after migration
     @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_enable_legacy(self, mock_autopilot):
+        self.agency.uses_realtime_autopilot = False
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         mock_autopilot.assert_called_once_with(self.ad_group)
 
     @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_change_budget(self, mock_autopilot):
-        self.agency.uses_realtime_autopilot = True
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.6712"))
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         with self.assertRaises(utils.exc.ForbiddenError):
-            self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
+            self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.68"))
+
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.6750"))
+        self.assertEqual(Decimal("10.6750"), self.ad_group.settings.autopilot_daily_budget)
 
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=False)
-        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
+        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.68"))
+        self.assertEqual(Decimal("10.68"), self.ad_group.settings.autopilot_daily_budget)
         mock_autopilot.assert_not_called()
 
     @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_change_budget_legacy(self, mock_autopilot):
+        self.agency.uses_realtime_autopilot = False
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
         mock_autopilot.assert_called_once_with(self.ad_group)
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_change_allrtb_state(self, mock_autopilot):
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
-        mock_autopilot.assert_called_once_with(self.ad_group)
+        mock_autopilot.assert_not_called()
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_campaign_change_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.ad_group.settings.update(None, state=constants.AdGroupSettingsState.INACTIVE)
-        mock_autopilot.assert_called_once_with(self.ad_group)
+        mock_autopilot.assert_called_once_with(self.ad_group.campaign)
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_campaign_change_allrtb_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
-        mock_autopilot.assert_called_once_with(self.ad_group)
+        mock_autopilot.assert_called_once_with(self.ad_group.campaign)
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_skip_automation(self, mock_autopilot):
-        self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"), skip_automation=True)
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(
+            None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE, skip_automation=True
+        )
         mock_autopilot.assert_not_called()
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_cpc_change_changes_source_cpcs(self, mock_get_exchange_rate, mock_autopilot):
         # setup
@@ -538,7 +575,7 @@ class InstanceTest(TestCase):
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.4"))
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_max_cpm_change_changes_source_cpms(self, mock_get_exchange_rate, mock_autopilot):
         # setup
@@ -610,36 +647,64 @@ class InstanceTest(TestCase):
         ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.5"))
         mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_change_forbidden_fields(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         with self.assertRaises(utils.exc.ForbiddenError):
             self.ad_group.settings.update(None, autopilot_state=False, autopilot_daily_budget=Decimal("10.0"))
 
 
-@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
+@patch("automation.autopilot.recalculate_ad_group_budgets", mock.MagicMock())
 class DefaultBidsTest(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         self.ad_group.settings.update_unsafe(
-            self.request, cpc="8.0000", cpm="8.0000", autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+            self.request,
+            cpc="8.0000",
+            local_cpc="8.0000",
+            cpm="8.0000",
+            local_cpm="8.0000",
+            max_autopilot_bid="8.0000",
+            local_max_autopilot_bid="8.0000",
+            b1_sources_group_cpc_cc="8.0000",
+            local_b1_sources_group_cpc_cc="8.0000",
+            b1_sources_group_cpm="8.0000",
+            local_b1_sources_group_cpm="8.0000",
+            autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         )
         self.ad_group.settings.refresh_from_db()
 
     def test_set_empty_cpc(self):
-        self.ad_group.settings.update(self.request, cpc=None)
-        self.assertEqual(core.models.settings.AdGroupSettings.DEFAULT_CPC_VALUE, self.ad_group.settings.cpc)
+        for field in ["cpc", "max_autopilot_bid", "b1_sources_group_cpc_cc"]:
+            with self.assertRaises(exceptions.CannotSetBidToUndefined):
+                self.ad_group.settings.update(self.request, **{field: None})
 
     def test_set_empty_cpm(self):
         self.ad_group.update(self.request, bidding_type=constants.BiddingType.CPM)
+        for field in ["cpm", "max_autopilot_bid", "b1_sources_group_cpm"]:
+            with self.assertRaises(exceptions.CannotSetBidToUndefined):
+                self.ad_group.settings.update(self.request, **{field: None})
+
+    def test_set_empty_cpc_realtime_autopilot(self):
+        self.ad_group.settings.update_unsafe(
+            self.request, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE
+        )
+        self.ad_group.settings.update(self.request, cpc=None)
+        self.assertIsNone(self.ad_group.settings.cpc)
+
+    def test_set_empty_cpm_realtime_autopilot(self):
+        self.ad_group.settings.update_unsafe(
+            self.request, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE
+        )
+        self.ad_group.update(self.request, bidding_type=constants.BiddingType.CPM)
         self.ad_group.settings.update(self.request, cpm=None)
-        self.assertEqual(core.models.settings.AdGroupSettings.DEFAULT_CPM_VALUE, self.ad_group.settings.cpm)
+        self.assertIsNone(self.ad_group.settings.cpm)
 
 
 class MulticurrencyTest(TestCase):
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
 
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_set_usd(self, mock_get_exchange_rate):
@@ -665,7 +730,7 @@ class MulticurrencyTest(TestCase):
 
 class AdGroupArchiveRestoreTest(TestCase):
     def test_archiving(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         ad_group.settings.update(None, archived=True)
         self.assertTrue(ad_group.is_archived())
         self.assertTrue(ad_group.archived)
@@ -678,7 +743,7 @@ class AdGroupArchiveRestoreTest(TestCase):
 
     @patch.object(core.models.AdGroup, "is_ad_group_active", return_value=True)
     def test_archive_active(self, mock_adgroup_is_active):
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         self.assertEqual(constants.AdGroupSettingsState.ACTIVE, ad_group.settings.state)
         self.assertFalse(ad_group.archived)
@@ -691,7 +756,7 @@ class AdGroupArchiveRestoreTest(TestCase):
 
     @patch.object(core.models.Campaign, "is_archived", return_value=True)
     def test_cant_restore_campaign_fail(self, mock_campaign_is_archived):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(None, archived=True)
         ad_group.archived = True
@@ -705,13 +770,13 @@ class AdGroupArchiveRestoreTest(TestCase):
 
     @patch.object(core.models.Campaign, "is_archived", return_value=True)
     def test_update_campaign_archived_fail(self, mock_campaign_is_archived):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         with self.assertRaises(utils.exc.ForbiddenError):
             ad_group.settings.update(None, ad_group_name="new name")
 
     def test_update_archived_ad_group(self):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.archive(None)
         ad_group.refresh_from_db()
@@ -731,10 +796,15 @@ class AdGroupArchiveRestoreTest(TestCase):
             date="2018-01-01", currency=dash.constants.Currency.EUR, exchange_rate="0.8"
         )
         request = magic_mixer.blend_request_user(is_superuser=True)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account_currency=dash.constants.Currency.EUR)
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup,
+            campaign__account_currency=dash.constants.Currency.EUR,
+            campaign__account__agency__uses_realtime_autopilot=True,
+        )
         ad_group.settings.update_unsafe(
             request,
             local_cpc="0.8",
+            local_daily_budget=90,
             local_autopilot_daily_budget=100,
             local_b1_sources_group_daily_budget=72,
             local_b1_sources_group_cpc_cc="0.35",
@@ -743,30 +813,35 @@ class AdGroupArchiveRestoreTest(TestCase):
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group)
         ad_group_source.settings.update_unsafe(request, local_cpc_cc="0.62", local_daily_budget_cc=28)
 
-        self.assertEqual(Decimal("28"), ad_group_source.settings.local_daily_budget_cc)
-        self.assertEqual(Decimal("100"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual(Decimal("90"), ad_group.settings.local_daily_budget)
         self.assertEqual(Decimal("72"), ad_group.settings.local_b1_sources_group_daily_budget)
-        self.assertEqual("0.35", ad_group.settings.local_b1_sources_group_cpc_cc)
-        self.assertEqual("1.3", ad_group.settings.local_cpm)
-        self.assertEqual("0.8", ad_group.settings.local_cpc)
+        self.assertEqual(Decimal("100"), ad_group.settings.local_autopilot_daily_budget)
         self.assertEqual(Decimal("0.45"), ad_group.settings.cpc)
+        self.assertEqual(Decimal("1.0"), ad_group.settings.cpm)
+        self.assertEqual("0.8", ad_group.settings.local_cpc)
+        self.assertEqual("1.3", ad_group.settings.local_cpm)
+        self.assertEqual("0.35", ad_group.settings.local_b1_sources_group_cpc_cc)
         self.assertEqual("0.62", ad_group_source.settings.local_cpc_cc)
+        self.assertEqual(Decimal("28"), ad_group_source.settings.local_daily_budget_cc)
 
         ad_group.settings.update_unsafe(None, archived=True)
         mock_get_exchange_rate.return_value = Decimal("3.0")
         ad_group.restore(None)
         ad_group.refresh_from_db()
         ad_group_source.refresh_from_db()
+
         self.assertEqual(Decimal("0.2667"), ad_group.settings.cpc)
-        self.assertEqual(Decimal("33.3333"), ad_group.settings.autopilot_daily_budget)
-        self.assertEqual(Decimal("24.0000"), ad_group.settings.b1_sources_group_daily_budget)
-        self.assertEqual(Decimal("0.1167"), ad_group.settings.b1_sources_group_cpc_cc)
         self.assertEqual(Decimal("0.4333"), ad_group.settings.cpm)
+        self.assertEqual(Decimal("0.1167"), ad_group.settings.b1_sources_group_cpc_cc)
+        self.assertIsNone(ad_group.settings.max_autopilot_bid)
+        self.assertEqual(Decimal("30"), ad_group.settings.daily_budget)
+        self.assertEqual(Decimal("24"), ad_group.settings.b1_sources_group_daily_budget)
+        self.assertEqual(Decimal("33.3333"), ad_group.settings.autopilot_daily_budget)
+        self.assertEqual(Decimal("0.62"), ad_group_source.settings.local_cpc_cc)
         self.assertEqual(Decimal("28.0000"), ad_group_source.settings.local_daily_budget_cc)
-        self.assertEqual(Decimal("0.8001"), ad_group_source.settings.local_cpc_cc)
 
     def test_update_archived_ad_group_publisher_groups(self):
-        account = magic_mixer.blend(core.models.Account)
+        account = magic_mixer.blend(core.models.Account, agency__uses_realtime_autopilot=True)
         publisher_group_1 = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, name="test publisher group", account=account
         )

@@ -10,11 +10,13 @@ import core.features.history
 import core.models
 import core.signals
 from dash import constants
+from utils import decimal_helpers
 from utils import email_helper
 from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
 
+from . import exceptions
 from . import helpers
 
 REDIRECTOR_UPDATE_FIELDS = ("tracking_code", "click_capping_daily_ad_group_max_clicks")
@@ -47,7 +49,7 @@ class AdGroupSettingsMixin(object):
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
-            self._sync_legacy_fields(new_settings)
+            self._handle_legacy_changes(new_settings, skip_validation)
             is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
             if not skip_validation and not is_pause:
                 self.clean(new_settings)
@@ -102,41 +104,56 @@ class AdGroupSettingsMixin(object):
             k1_sync=False,
         )
 
-    def _sync_legacy_fields(self, new_settings):
+    def _handle_legacy_changes(self, new_settings, skip_validation=False):
+        # TODO: RTAP: remove check after migration
         if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
             return
 
         changes = self.get_setting_changes(new_settings)
+        if not skip_validation:
+            self._validate_legacy_changes(changes, self._multicurrency_bid_fields, "bid")
+            self._validate_legacy_changes(changes, self._multicurrency_budget_fields, "budget")
 
-        # TODO: RTAP: add validation that at most one budget field is updated at once
+        self._sync_legacy_fields(new_settings, changes)
+
+    def _validate_legacy_changes(self, changes, fields, field_group_name):
+        changes_fields = changes.keys() & set(fields)
+        values = [changes[f] for f in changes_fields]
+        if values and values.count(values[0]) != len(values):
+            raise exceptions.LegacyFieldsUpdateMismatch(
+                "{} updated with multiple values".format(field_group_name.capitalize())
+            )
+
+    def _sync_legacy_fields(self, new_settings, changes):
         budget = (
-            changes.get("daily_budget")
-            or (new_settings.b1_sources_group_enabled and changes.get("b1_sources_group_daily_budget"))
-            or changes.get("autopilot_daily_budget")
+            changes.get("local_daily_budget")
+            or changes.get("local_autopilot_daily_budget")
+            or changes.get("local_b1_sources_group_daily_budget")
         )
         if budget:
-            new_settings.daily_budget = budget
-            new_settings.autopilot_daily_budget = budget
-
-            if new_settings.b1_sources_group_enabled:
-                new_settings.b1_sources_group_daily_budget = budget
+            new_settings.local_daily_budget = budget
+            new_settings.local_autopilot_daily_budget = budget
+            new_settings.local_b1_sources_group_daily_budget = budget
 
         bid_field, b1_sources_group_bid_field = (
-            ("cpc", "b1_sources_group_cpc_cc")
+            ("local_cpc", "local_b1_sources_group_cpc_cc")
             if self.ad_group.bidding_type == constants.BiddingType.CPC
-            else ("cpm", "b1_sources_group_cpm")
+            else ("local_cpm", "local_b1_sources_group_cpm")
         )
-        bid = (
-            changes.get(bid_field)
-            or (new_settings.b1_sources_group_enabled and changes.get(b1_sources_group_bid_field))
-            or changes.get("max_autopilot_bid")
+        bid_update_field = (
+            bid_field in changes
+            and bid_field
+            or "local_max_autopilot_bid" in changes
+            and "local_max_autopilot_bid"
+            or b1_sources_group_bid_field in changes
+            and b1_sources_group_bid_field
         )
-        if bid:
-            setattr(new_settings, bid_field, bid)
-            new_settings.max_autopilot_bid = bid
+        if bid_update_field:
+            bid = changes[bid_update_field]
 
-            if new_settings.b1_sources_group_enabled:
-                setattr(new_settings, b1_sources_group_bid_field, bid)
+            setattr(new_settings, bid_field, bid)
+            new_settings.local_max_autopilot_bid = bid
+            setattr(new_settings, b1_sources_group_bid_field, bid)
 
     def keep_old_and_new_bid_values_in_sync(self, update_object):
         changes = update_object.__dict__
@@ -203,15 +220,20 @@ class AdGroupSettingsMixin(object):
 
         self._remap_bid_fields(updates)
 
-        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        is_cpm_bidding = self.ad_group.bidding_type == constants.BiddingType.CPM
+
+        if is_cpm_bidding:
             self._remove_no_change_fields(updates, "cpc_cc")
             self._remove_no_change_fields(updates, "cpc")
         else:
             self._remove_no_change_fields(updates, "max_cpm")
             self._remove_no_change_fields(updates, "cpm")
 
-        self._remove_no_change_fields(updates, "b1_sources_group_cpc_cc")
-        self._remove_no_change_fields(updates, "b1_sources_group_cpm")
+        if is_cpm_bidding or not uses_realtime_autopilot:
+            self._remove_no_change_fields(updates, "b1_sources_group_cpc_cc")
+        if not is_cpm_bidding or not uses_realtime_autopilot:
+            self._remove_no_change_fields(updates, "b1_sources_group_cpm")
 
         return updates
 
@@ -316,26 +338,40 @@ class AdGroupSettingsMixin(object):
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         changes = self.get_setting_changes(new_settings)
+        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
 
         # Turning on RTB-as-one
         if "b1_sources_group_enabled" in changes and changes["b1_sources_group_enabled"]:
             new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
 
             if "b1_sources_group_cpc_cc" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPC:
-                new_settings.b1_sources_group_cpc_cc = self.cpc or core.models.AllRTBSource.default_cpc_cc
+                default_cpc = self.cpc or core.models.AllRTBSource.default_cpc_cc
+                new_settings.b1_sources_group_cpc_cc = default_cpc
+
+                # TODO: RTAP: remove check after migration
+                if uses_realtime_autopilot:
+                    new_settings.cpc = default_cpc
+                    new_settings.max_autopilot_bid = default_cpc
 
             if "b1_sources_group_cpm" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPM:
-                new_settings.b1_sources_group_cpm = self.cpm or core.models.AllRTBSource.default_cpm
+                default_cpm = self.cpm or core.models.AllRTBSource.default_cpm
+                new_settings.b1_sources_group_cpm = default_cpm
+
+                # TODO: RTAP: remove check after migration
+                if uses_realtime_autopilot:
+                    new_settings.cpm = default_cpm
+                    new_settings.max_autopilot_bid = default_cpm
 
             if "b1_sources_group_daily_budget" not in changes:
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
                 new_settings.daily_budget = core.models.AllRTBSource.default_daily_budget_cc
 
+                # TODO: RTAP: remove check after migration
+                if uses_realtime_autopilot:
+                    new_settings.autopilot_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
+
         # TODO: RTAP: remove after migration
-        if (
-            not self.ad_group.campaign.account.agency_uses_realtime_autopilot()
-            and "b1_sources_group_daily_budget" in changes
-        ):
+        if not uses_realtime_autopilot and "b1_sources_group_daily_budget" in changes:
             new_settings.daily_budget = new_settings.b1_sources_group_daily_budget
 
     def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):
@@ -432,6 +468,20 @@ class AdGroupSettingsMixin(object):
 
     def _check_if_fields_are_allowed_to_be_changed_with_autopilot_on(self, changes):
         forbidden_fields = ["autopilot_state", "local_autopilot_daily_budget", "start_date", "end_date"]
+
+        # TODO: RTAP: campaign autopilot can set budget to 4 decimals while UI only provides 2
+        if (
+            "local_autopilot_daily_budget" in changes
+            and changes["local_autopilot_daily_budget"]
+            and self.local_autopilot_daily_budget
+            and decimal_helpers.equal_decimals(
+                self.local_autopilot_daily_budget,
+                changes.get("local_autopilot_daily_budget"),
+                precision=decimal.Decimal("1.00"),
+            )
+        ):
+            forbidden_fields.remove("local_autopilot_daily_budget")
+
         if self.ad_group.campaign.settings.autopilot and any(field in changes for field in forbidden_fields):
             raise exc.ForbiddenError(
                 "The following fields can't be changed if autopilot is active: {}, {}, {}, {}".format(

@@ -178,9 +178,9 @@ class AdGroupSettingsTest(TestCase):
             'Daily spend cap set to "$50.00"',
             'Whitelist publisher groups set to "pg 1"',
             'Brand name set to "Example"',
-            'Bid CPC for all RTB sources set to "$0.100"',
-            'Bid CPM for all RTB sources set to "$1.100"',
-            'Daily budget for all RTB sources set to "$500.00"',
+            'Bid CPC for all RTB sources (deprecated) set to "$0.100"',
+            'Bid CPM for all RTB sources (deprecated) set to "$1.100"',
+            'Daily budget for all RTB sources (deprecated) set to "$500.00"',
             'Max CPC bid set to "$1.000"',
             'Max CPM bid set to "$1.600"',
             'Interest targeting set to "A, B"',
@@ -215,7 +215,7 @@ class AdGroupSettingsTest(TestCase):
             'Data targeting set to "["or", 3, 4]"',
             'Daily maximum number of clicks for ad group set to "10"',
             'Daily click budget for ad group set to "$5.00"',
-            'Autopilot\'s Daily Spend Cap set to "30.0000"',
+            'Autopilot\'s Daily Spend Cap (deprecated) set to "30.0000"',
         ]
         self.assertCountEqual(expected, actual)
 

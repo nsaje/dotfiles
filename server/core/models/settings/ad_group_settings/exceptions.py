@@ -119,3 +119,7 @@ class CannotSetBidToUndefined(ValidationError):
 
 class SeparateSourceManagementDeprecated(ValidationError):
     pass
+
+
+class LegacyFieldsUpdateMismatch(ValidationError):
+    pass
