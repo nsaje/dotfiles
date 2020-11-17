@@ -339,22 +339,6 @@ class ContentAdCandidateFormTestCase(TestCase):
             "primary_tracker_url": "https://zemanta.com/px1",
             "secondary_tracker_url": "https://zemanta.com/px2",
             "video_asset_id": "12345678-abcd-1234-abcd-123abcd12345",
-            "trackers": [
-                {
-                    "url": "https://zemanta.com/px1",
-                    "fallback_url": None,
-                    "method": constants.TrackerMethod.IMG,
-                    "event_type": constants.TrackerEventType.IMPRESSION,
-                    "tracker_optional": False,
-                },
-                {
-                    "url": "https://zemanta.com/px2",
-                    "fallback_url": None,
-                    "method": constants.TrackerMethod.IMG,
-                    "event_type": constants.TrackerEventType.IMPRESSION,
-                    "tracker_optional": False,
-                },
-            ],
         }
         files = {"image": self.valid_image}
         return data, files
@@ -397,24 +381,6 @@ class ContentAdCandidateFormTestCase(TestCase):
                 "call_to_action": "Read more",
                 "primary_tracker_url": "https://zemanta.com/px1",
                 "secondary_tracker_url": "https://zemanta.com/px2",
-                "trackers": [
-                    {
-                        "url": "https://zemanta.com/px1",
-                        "fallback_url": None,
-                        "method": "img",
-                        "event_type": "impression",
-                        "supported_privacy_frameworks": [],
-                        "tracker_optional": False,
-                    },
-                    {
-                        "url": "https://zemanta.com/px2",
-                        "fallback_url": None,
-                        "method": "img",
-                        "event_type": "impression",
-                        "supported_privacy_frameworks": [],
-                        "tracker_optional": False,
-                    },
-                ],
                 "additional_data": None,
             },
         )
@@ -477,24 +443,6 @@ class ContentAdCandidateFormTestCase(TestCase):
                 "call_to_action": "Read more",
                 "primary_tracker_url": "https://zemanta.com/px1",
                 "secondary_tracker_url": "https://zemanta.com/px2",
-                "trackers": [
-                    {
-                        "url": "https://zemanta.com/px1",
-                        "fallback_url": None,
-                        "method": "img",
-                        "event_type": "impression",
-                        "supported_privacy_frameworks": [],
-                        "tracker_optional": False,
-                    },
-                    {
-                        "url": "https://zemanta.com/px2",
-                        "fallback_url": None,
-                        "method": "img",
-                        "event_type": "impression",
-                        "supported_privacy_frameworks": [],
-                        "tracker_optional": False,
-                    },
-                ],
                 "additional_data": None,
             },
         )
@@ -536,77 +484,6 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertEqual("", f.cleaned_data["brand_name"])
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
-
-    def test_too_many_trackers(self):
-        data, files = self._get_valid_data()
-        data["trackers"] = [
-            {
-                "url": "https://zemanta.com/px1",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px2",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px3",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px4",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-        ]
-        f = forms.ContentAdForm(None, data, files)
-        self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["trackers"], ["A maximum of three trackers are supported."])
-
-    def test_invalid_url_trackers(self):
-        self.maxDiff = None
-        data, files = self._get_valid_data()
-        data["trackers"] = [
-            {
-                "url": "https://zemanta.com/px1",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "http://zemanta.com/px2",
-                "fallback_url": "http://zemanta.com/px2",
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/šš",
-                "fallback_url": "https://zemanta.com/šš",
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-        ]
-        f = forms.ContentAdForm(None, data, files)
-        self.assertFalse(f.is_valid())
-        self.assertEqual(
-            f.errors["trackers"],
-            [
-                '[{}, {"url": "Impression tracker URLs have to be HTTPS", "fallback_url": "Impression tracker URLs have to be HTTPS"}, {"url": "Invalid impression tracker URL", "fallback_url": "Invalid impression tracker URL"}]'
-            ],
-        )
 
 
 @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)

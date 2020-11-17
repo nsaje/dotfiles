@@ -30,21 +30,6 @@ valid_candidate = {
     "primary_tracker_url": "https://example.com/px1.png",
     "secondary_tracker_url": "https://example.com/px2.png",
     "additional_data": {"a": 1},
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "https://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 invalid_candidate = {
@@ -55,21 +40,6 @@ invalid_candidate = {
     "display_url": "zemanta.com" * 10,
     "primary_tracker_url": "http://example.com/px1.png",
     "secondary_tracker_url": "http://example.com/px2.png",
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "https://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 valid_display_candidate = {
@@ -81,21 +51,6 @@ valid_display_candidate = {
     "display_url": "zemanta.com",
     "primary_tracker_url": "https://example.com/px1.png",
     "secondary_tracker_url": "https://example.com/px2.png",
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "https://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 invalid_display_candidate = {
@@ -105,21 +60,6 @@ invalid_display_candidate = {
     "image_url": "file://zemanta.com/test-image.jpg",
     "primary_tracker_url": "http://example.com/px1.png",
     "secondary_tracker_url": "http://example.com/px2.png",
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "https://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 valid_display_ad_tag_candidate = {
@@ -133,21 +73,6 @@ valid_display_ad_tag_candidate = {
     "display_url": "zemanta.com",
     "primary_tracker_url": "https://example.com/px1.png",
     "secondary_tracker_url": "https://example.com/px2.png",
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "https://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 invalid_display_ad_tag_candidate = {
@@ -157,21 +82,6 @@ invalid_display_ad_tag_candidate = {
     "image_height": 100,
     "primary_tracker_url": "http://example.com/px1.png",
     "secondary_tracker_url": "http://example.com/px2.png",
-    "trackers": [
-        {
-            "event_type": constants.TrackerEventType.IMPRESSION,
-            "method": constants.TrackerMethod.JS,
-            "url": "http://t.test.com/tracker.js",
-            "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
-        },
-        {
-            "event_type": constants.TrackerEventType.VIEWABILITY,
-            "method": constants.TrackerMethod.IMG,
-            "url": "http://t.test.com/tracker.png",
-            "tracker_optional": False,
-        },
-    ],
 }
 
 
@@ -210,35 +120,6 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_candidate["call_to_action"], candidate.call_to_action)
         self.assertEqual(valid_candidate["primary_tracker_url"], candidate.primary_tracker_url)
         self.assertEqual(valid_candidate["secondary_tracker_url"], candidate.secondary_tracker_url)
-        self.assertEqual(
-            [
-                {
-                    "event_type": constants.TrackerEventType.IMPRESSION,
-                    "method": constants.TrackerMethod.JS,
-                    "url": "https://t.test.com/tracker.js",
-                    "fallback_url": "https://t.test.com/fallback.png",
-                    "tracker_optional": False,
-                    "supported_privacy_frameworks": [],
-                },
-                {
-                    "event_type": constants.TrackerEventType.VIEWABILITY,
-                    "method": constants.TrackerMethod.IMG,
-                    "url": "https://t.test.com/tracker.png",
-                    "fallback_url": None,
-                    "tracker_optional": False,
-                    "supported_privacy_frameworks": [],
-                },
-            ],
-            candidate.trackers,
-        )
-        self.assertEqual(
-            {
-                "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-            },
-            candidate.trackers_status,
-        )
         self.assertEqual(valid_candidate["additional_data"], candidate.additional_data)
         self.assertEqual(None, candidate.ad_tag)
 
@@ -1035,8 +916,6 @@ class AddCandidateTestCase(TestCase):
                 "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "can_append_tracking_codes": False,
-                "trackers": None,
-                "trackers_status": None,
             },
             candidate.to_dict(True),
         )
@@ -1095,8 +974,6 @@ class AddCandidateTestCase(TestCase):
                 "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "can_append_tracking_codes": False,
-                "trackers": None,
-                "trackers_status": None,
             },
             candidate.to_dict(True),
         )
@@ -1170,29 +1047,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "https://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "https://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -1276,29 +1130,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "https://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "https://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -1360,29 +1191,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "https://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "https://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -1454,29 +1262,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "https://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "https://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -1538,29 +1323,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "https://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "https://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "https://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -1606,9 +1368,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                         "display_url": ["Missing display URL"],
                         "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                         "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
-                        "trackers": [
-                            '[{"url": "Impression tracker URLs have to be HTTPS"}, {"url": "Impression tracker URLs have to be HTTPS"}]'
-                        ],
                     },
                     "display_url": "",
                     "brand_name": "",
@@ -1636,29 +1395,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "can_append_tracking_codes": False,
-                    "trackers": [
-                        {
-                            "event_type": constants.TrackerEventType.IMPRESSION,
-                            "method": constants.TrackerMethod.JS,
-                            "url": "http://t.test.com/tracker.js",
-                            "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                        {
-                            "event_type": constants.TrackerEventType.VIEWABILITY,
-                            "method": constants.TrackerMethod.IMG,
-                            "url": "http://t.test.com/tracker.png",
-                            "fallback_url": None,
-                            "tracker_optional": False,
-                            "supported_privacy_frameworks": [],
-                        },
-                    ],
-                    "trackers_status": {
-                        "http://t.test.com/tracker.js__js": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "https://t.test.com/fallback.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                        "http://t.test.com/tracker.png__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-                    },
                 }
             ],
             result,
@@ -2006,9 +1742,6 @@ class UploadTest(TestCase):
         candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.PENDING_START
-        candidates[0].trackers_status = {
-            "https://someImpressionTracker.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2029,13 +1762,6 @@ class UploadTest(TestCase):
                     }
                 },
                 "impressionTrackers": [{"valid": True, "originUrl": "https://someImpressionTracker.com"}],
-                "trackers": [
-                    {
-                        "valid": True,
-                        "originUrl": "https://someImpressionTracker.com",
-                        "method": constants.TrackerMethod.IMG,
-                    }
-                ],
             }
         )
 
@@ -2045,9 +1771,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
-        self.assertEqual(
-            candidate.trackers_status, {"https://someImpressionTracker.com__img": constants.AsyncUploadJobStatus.OK}
-        )
 
     def test_process_callback_icon(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2073,9 +1796,6 @@ class UploadTest(TestCase):
         candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.PENDING_START
-        candidates[0].trackers_status = {
-            "https://someImpressionTracker.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2104,13 +1824,6 @@ class UploadTest(TestCase):
                     },
                 },
                 "impressionTrackers": [{"valid": True, "originUrl": "https://someImpressionTracker.com"}],
-                "trackers": [
-                    {
-                        "valid": True,
-                        "originUrl": "https://someImpressionTracker.com",
-                        "method": constants.TrackerMethod.IMG,
-                    }
-                ],
             }
         )
 
@@ -2120,9 +1833,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
-        self.assertEqual(
-            candidate.trackers_status, {"https://someImpressionTracker.com__img": constants.AsyncUploadJobStatus.OK}
-        )
 
     def test_process_ad_tag_callback(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2152,7 +1862,6 @@ class UploadTest(TestCase):
                     "valid": True,
                 },
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2195,7 +1904,6 @@ class UploadTest(TestCase):
                     }
                 },
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2233,7 +1941,6 @@ class UploadTest(TestCase):
                 },
                 "images": {},
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2281,7 +1988,6 @@ class UploadTest(TestCase):
                     }
                 },
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2321,7 +2027,6 @@ class UploadTest(TestCase):
                 },
                 "images": {"http://static1.squarespace.com/image.jpg": {"valid": True, "width": 300, "hash": "1234"}},
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2365,7 +2070,6 @@ class UploadTest(TestCase):
                 },
                 "images": {},
                 "impressionTrackers": [],
-                "trackers": [],
             }
         )
 
@@ -2375,7 +2079,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
-        self.assertEqual(candidate.trackers_status, None)
 
     def test_process_callback_trackers_url_valid(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2401,10 +2104,6 @@ class UploadTest(TestCase):
         candidates[0].icon_status = constants.AsyncUploadJobStatus.PENDING_START
         candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        candidates[0].trackers_status = {
-            "https://primaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-            "https://secondaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2419,18 +2118,6 @@ class UploadTest(TestCase):
                     {"valid": True, "originUrl": "https://primaryTrackerUrl.com"},
                     {"valid": True, "originUrl": "https://secondaryTrackerUrl.com"},
                 ],
-                "trackers": [
-                    {
-                        "valid": True,
-                        "originUrl": "https://primaryTrackerUrl.com",
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                    {
-                        "valid": True,
-                        "originUrl": "https://secondaryTrackerUrl.com",
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                ],
             }
         )
 
@@ -2440,13 +2127,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
-        self.assertEqual(
-            candidate.trackers_status,
-            {
-                "https://primaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.OK,
-                "https://secondaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.OK,
-            },
-        )
 
     def test_process_callback_trackers_url_invalid(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2472,10 +2152,6 @@ class UploadTest(TestCase):
         candidates[0].icon_status = constants.AsyncUploadJobStatus.PENDING_START
         candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        candidates[0].trackers_status = {
-            "https://primaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-            "https://secondaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2490,18 +2166,6 @@ class UploadTest(TestCase):
                     {"valid": False, "originUrl": "https://primaryTrackerUrl.com"},
                     {"valid": False, "originUrl": "https://secondaryTrackerUrl.com"},
                 ],
-                "trackers": [
-                    {
-                        "valid": False,
-                        "originUrl": "https://primaryTrackerUrl.com",
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                    {
-                        "valid": False,
-                        "originUrl": "https://secondaryTrackerUrl.com",
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                ],
             }
         )
 
@@ -2511,13 +2175,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.FAILED)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.FAILED)
-        self.assertEqual(
-            candidate.trackers_status,
-            {
-                "https://primaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.FAILED,
-                "https://secondaryTrackerUrl.com__img": constants.AsyncUploadJobStatus.FAILED,
-            },
-        )
 
     def test_process_callback_trackers_url_pending_start(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2543,10 +2200,6 @@ class UploadTest(TestCase):
         candidates[0].icon_status = constants.AsyncUploadJobStatus.PENDING_START
         candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        candidates[0].trackers_status = {
-            "https://primaryImpressionTracker.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-            "https://secondaryImpressionTracker.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2561,18 +2214,6 @@ class UploadTest(TestCase):
                     {"originUrl": "https://primaryImpressionTracker.com", "valid": True},
                     {"originUrl": "https://secondaryImpressionTracker.com", "valid": True},
                 ],
-                "trackers": [
-                    {
-                        "originUrl": "https://primaryImpressionTracker.com",
-                        "valid": True,
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                    {
-                        "originUrl": "https://secondaryImpressionTracker.com",
-                        "valid": True,
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                ],
             }
         )
 
@@ -2582,13 +2223,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
-        self.assertEqual(
-            candidate.trackers_status,
-            {
-                "https://primaryImpressionTracker.com__img": constants.AsyncUploadJobStatus.OK,
-                "https://secondaryImpressionTracker.com__img": constants.AsyncUploadJobStatus.OK,
-            },
-        )
 
     def test_process_callback_trackers_url_differs(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -2616,9 +2250,6 @@ class UploadTest(TestCase):
         candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].primary_tracker_url = "https://AnOtherImpressionTrackerUrl.com"
         candidates[0].secondary_tracker_url = None
-        candidates[0].trackers_status = {
-            "https://AnOtherImpressionTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE
-        }
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -2633,18 +2264,6 @@ class UploadTest(TestCase):
                     {"originUrl": "https://primaryImpressionTracker.com", "valid": True},
                     {"originUrl": "https://secondaryImpressionTracker.com", "valid": True},
                 ],
-                "trackers": [
-                    {
-                        "originUrl": "https://primaryImpressionTracker.com",
-                        "valid": True,
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                    {
-                        "originUrl": "https://secondaryImpressionTracker.com",
-                        "valid": True,
-                        "method": constants.TrackerMethod.IMG,
-                    },
-                ],
             }
         )
 
@@ -2655,10 +2274,6 @@ class UploadTest(TestCase):
         self.assertEqual(candidate.icon_status, constants.AsyncUploadJobStatus.PENDING_START)
         self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
         self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
-        self.assertEqual(
-            candidate.trackers_status,
-            {"https://AnOtherImpressionTrackerUrl.com__img": constants.AsyncUploadJobStatus.WAITING_RESPONSE},
-        )
 
 
 class AutoSaveTest(TestCase):

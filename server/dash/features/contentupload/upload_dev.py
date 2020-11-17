@@ -63,12 +63,5 @@ class MockAsyncValidation(threading.Thread):
             if rand > self.fail_probability:
                 self.candidate.secondary_tracker_url_status = constants.AsyncUploadJobStatus.OK
 
-        for key in self.candidate.trackers_status:
-            self.candidate.trackers_status[key] = (
-                constants.AsyncUploadJobStatus.OK
-                if rand > self.fail_probability
-                else constants.AsyncUploadJobStatus.FAILED
-            )
-
         self.candidate.save()
         self.batch_callback(self.candidate.batch)

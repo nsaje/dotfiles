@@ -1,4 +1,3 @@
-import rest_framework.fields
 import rest_framework.serializers
 
 import dash.constants
@@ -15,40 +14,6 @@ class ApprovalStatusSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         dash.constants.ContentAdSubmissionStatus, required=True, source="submission_status"
     )
     reason = rest_framework.serializers.CharField(required=True, allow_null=True, source="submission_errors")
-
-
-class TrackerSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    event_type = restapi.serializers.fields.DashConstantField(dash.constants.TrackerEventType, required=True)
-    method = restapi.serializers.fields.DashConstantField(dash.constants.TrackerMethod, required=True)
-    url = restapi.serializers.fields.HttpsURLField(
-        required=True,
-        error_messages={"invalid": "Invalid tracker URL", "invalid_schema": "Tracker URL has to be HTTPS"},
-    )
-    fallback_url = restapi.serializers.fields.HttpsURLField(
-        required=False,
-        default=None,
-        error_messages={
-            "invalid": "Invalid fallback tracker URL",
-            "invalid_schema": "Fallback tracker URL has to be HTTPS",
-        },
-    )
-    tracker_optional = rest_framework.fields.BooleanField(required=False, default=False)
-
-    def to_internal_value(self, data):
-        value = super().to_internal_value(data)
-        value["supported_privacy_frameworks"] = dash.features.contentupload.get_privacy_frameworks(data.get("url"))
-        return value
-
-
-class TrackersSerializer(rest_framework.serializers.ListSerializer):
-    def __init__(self, *args, **kwargs):
-        self.child = TrackerSerializer()
-        super().__init__(*args, **kwargs)
-
-    def validate(self, trackers):
-        if len(trackers) > 3:
-            raise rest_framework.serializers.ValidationError("A maximum of three trackers are supported.")
-        return trackers
 
 
 class ContentAdSerializer(
@@ -78,10 +43,9 @@ class ContentAdSerializer(
             "ad_tag",
             "video_asset_id",
             "approval_status",
-            "trackers",
         )
         read_only_fields = tuple(
-            set(fields) - set(("state", "url", "tracker_urls", "trackers", "label", "additional_data", "brand_name"))
+            set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data", "brand_name"))
         )
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
@@ -89,7 +53,6 @@ class ContentAdSerializer(
             "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
-            "trackers": "zemauth.can_use_3rdparty_js_trackers",
         }
 
     def to_representation(self, ad):
@@ -120,7 +83,6 @@ class ContentAdSerializer(
     ad_tag = rest_framework.serializers.CharField(required=False)
     video_asset_id = rest_framework.serializers.UUIDField(source="video_asset.id", required=False)
     approval_status = ApprovalStatusSerializer(read_only=True, many=True, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
 
 
 class ContentAdCandidateSerializer(
@@ -142,13 +104,9 @@ class ContentAdCandidateSerializer(
             "image_crop",
             "additional_data",
             "video_asset_id",
-            "trackers",
         )
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
-        permissioned_fields = {
-            "additional_data": "zemauth.can_use_ad_additional_data",
-            "trackers": "zemauth.can_use_3rdparty_js_trackers",
-        }
+        permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
 
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)
@@ -162,7 +120,6 @@ class ContentAdCandidateSerializer(
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     video_asset_id = rest_framework.serializers.UUIDField(required=False)
     state = restapi.serializers.fields.DashConstantField(dash.constants.ContentAdSourceState, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
 
     def to_internal_value(self, external_data):
         internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)
@@ -181,11 +138,10 @@ class ContentAdCandidateSerializer(
 class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
-        fields = ("url", "title", "image_url", "display_url", "label", "type", "trackers")
+        fields = ("url", "title", "image_url", "display_url", "label", "type")
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
             "type": "zemauth.fea_can_change_campaign_type_to_display",
-            "trackers": "zemauth.can_use_3rdparty_js_trackers",
         }
 
     type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
@@ -194,13 +150,12 @@ class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     image_url = restapi.serializers.fields.PlainCharField(required=True)
     display_url = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
 
 
 class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
-        fields = ("url", "title", "display_url", "label", "type", "ad_tag", "ad_width", "ad_height", "trackers")
+        fields = ("url", "title", "display_url", "label", "type", "ad_tag", "ad_width", "ad_height")
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
@@ -208,7 +163,6 @@ class AdTagCandidateSerializer(ContentAdCandidateSerializer):
             "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
-            "trackers": "zemauth.can_use_3rdparty_js_trackers",
         }
 
     type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
@@ -219,7 +173,6 @@ class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     ad_tag = rest_framework.serializers.CharField(required=True)
     ad_width = rest_framework.serializers.IntegerField(source="image_width", required=True)
     ad_height = rest_framework.serializers.IntegerField(source="image_height", required=True)
-    trackers = TrackersSerializer(allow_null=True, required=False)
 
 
 class AdTypeSerializer(rest_framework.serializers.Serializer):

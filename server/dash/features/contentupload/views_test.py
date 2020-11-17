@@ -282,7 +282,6 @@ class UploadCsvTestCase(BaseTestCase):
             "display_url": ["Missing display URL"],
             "url": ["Invalid URL"],
             "brand_name": ["Missing brand name"],
-            "trackers": ['[{"url": "Impression tracker URLs have to be HTTPS"}, {}]'],
         }
 
         self.assertEqual(response.status_code, 200)
@@ -323,7 +322,6 @@ class UploadCsvTestCase(BaseTestCase):
             "title": ["Missing ad name"],
             "url": ["Invalid URL"],
             "display_url": ["Missing display URL"],
-            "trackers": ['[{"url": "Impression tracker URLs have to be HTTPS"}, {}]'],
         }
 
         self.assertEqual(response.status_code, 200)
@@ -373,7 +371,6 @@ class UploadCsvTestCase(BaseTestCase):
                 "180x150, 125x125"
             ],
             "display_url": ["Missing display URL"],
-            "trackers": ['[{"url": "Impression tracker URLs have to be HTTPS"}, {}]'],
         }
 
         self.assertEqual(response.status_code, 200)
@@ -944,8 +941,6 @@ class CandidateTestCase(BaseTestCase):
                             "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                             "primary_tracker_url": None,
                             "secondary_tracker_url": None,
-                            "trackers": None,
-                            "trackers_status": None,
                             "video_asset_id": None,
                             "ad_tag": None,
                             "additional_data": None,
@@ -1010,8 +1005,6 @@ class CandidateTestCase(BaseTestCase):
                         "additional_data": None,
                         "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                         "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
-                        "trackers": None,
-                        "trackers_status": None,
                         "can_append_tracking_codes": False,
                     }
                 },
