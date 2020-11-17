@@ -46,7 +46,7 @@ def _get_cpa_ad_groups(rules_map):
 def _augment_with_conversion_stats(target_type, cpa_ad_groups, stats, conversion_stats):
     target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
     conversion_stats_by_pixel_breakdown = sort_helper.group_rows_by_breakdown_key(
-        target_column_keys + ["window_key"], conversion_stats
+        target_column_keys + ["window_key", "ad_group_id"], conversion_stats
     )
     cpa_ad_groups_map = {ad_group.id: ad_group for ad_group in cpa_ad_groups}
 
@@ -54,7 +54,7 @@ def _augment_with_conversion_stats(target_type, cpa_ad_groups, stats, conversion
         ad_group_id = stats_row["ad_group_id"]
         if ad_group_id in cpa_ad_groups_map:
             pixel_rows = conversion_stats_by_pixel_breakdown.get(
-                tuple(stats_row[col] for col in target_column_keys) + (stats_row["window_key"],)
+                tuple(stats_row[col] for col in target_column_keys) + (stats_row["window_key"], ad_group_id)
             )
             stats_row["conversions"] = _aggregate_conversions(stats_row, pixel_rows)
 
