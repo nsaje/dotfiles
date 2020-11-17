@@ -431,7 +431,7 @@ DCRON = {
     "default_max_duration": 3600,  # 1h
     # Job maximum duration overrides.
     "max_durations": {
-        "campaignstop_main": 1800,  # 30 min
+        "campaignstop_main": 3600,  # 30 min
         "campaignstop_selection": 7200,  # 120 min
         "clean_up_postgres_stats": 7200,  # 2h
         "create_demand_report": 7200,  # 2 h
