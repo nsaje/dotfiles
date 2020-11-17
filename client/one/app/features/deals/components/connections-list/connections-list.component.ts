@@ -15,6 +15,7 @@ import {DealConnectionRowData} from '../../types/deal-connection-row-data';
 import {DealConnection} from 'one/app/core/deals/types/deal-connection';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
+import {DealConnectionType} from '../../types/deal-connection-type';
 
 @Component({
     selector: 'zem-connections-list',
@@ -26,7 +27,7 @@ export class ConnectionsListComponent
     @Input()
     connections: DealConnection[];
     @Input()
-    connectionType: 'account' | 'campaign' | 'adgroup';
+    connectionType: DealConnectionType;
     @Input()
     isReadOnly: boolean = true;
     @Output()

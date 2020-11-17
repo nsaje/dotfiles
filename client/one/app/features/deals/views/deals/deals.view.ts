@@ -16,31 +16,25 @@ import {
     tap,
     filter,
 } from 'rxjs/operators';
-import {
-    CellClassParams,
-    CellClickedEvent,
-    ColDef,
-    DetailGridInfo,
-    GridApi,
-} from 'ag-grid-community';
-import * as moment from 'moment';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {FieldErrors} from 'one/app/shared/types/field-errors';
 import {Deal} from '../../../../core/deals/types/deal';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {DealsStore} from '../../services/deals-store/deals.store';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
-import {DealActionsCellComponent} from '../../components/deal-actions-cell/deal-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
-import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
-import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';
-
-const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
+import {
+    DEFAULT_PAGINATION,
+    PAGINATION_URL_PARAMS,
+    DEFAULT_PAGINATION_OPTIONS,
+} from '../../deals.config';
+import {FormattedDeal} from '../../types/formatted-deal';
+import {DealConnectionType} from '../../types/deal-connection-type';
 
 @Component({
     selector: 'zem-deals-view',
@@ -59,154 +53,13 @@ export class DealsView implements OnInit, OnDestroy {
     context: any;
     isReadOnly: boolean = true;
 
-    DEFAULT_PAGINATION = {
-        page: 1,
-        pageSize: 20,
-    };
-
     keyword: string;
-    paginationOptions: PaginationOptions = {
-        type: 'server',
-        ...this.DEFAULT_PAGINATION,
-    };
-
-    columnDefs: ColDef[] = [
-        {
-            headerName: 'Id',
-            field: 'id',
-            width: 80,
-            resizable: false,
-            suppressSizeToFit: true,
-        },
-        {
-            headerName: 'Deal name',
-            field: 'name',
-            minWidth: 250,
-        },
-        {
-            headerName: 'Deal Id',
-            field: 'dealId',
-            minWidth: 150,
-        },
-        {
-            headerName: 'Source',
-            field: 'source',
-            minWidth: 90,
-        },
-        {
-            headerName: 'Floor price',
-            field: 'floorPrice',
-            width: 90,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Valid from',
-            field: 'validFromDate',
-            valueFormatter: data => {
-                return this.formatDate(data.value);
-            },
-            width: 110,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Valid to',
-            field: 'validToDate',
-            valueFormatter: data => {
-                return this.formatDate(data.value);
-            },
-            width: 110,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Scope',
-            cellRendererFramework: ItemScopeCellComponent,
-            cellRendererParams: {
-                getAgencyLink: item => {
-                    return `/v2/analytics/accounts?filtered_agencies=${item.agencyId}`;
-                },
-                getAccountLink: item => {
-                    return `/v2/analytics/account/${item.accountId}`;
-                },
-            } as ItemScopeRendererParams<Deal>,
-            minWidth: 200,
-            resizable: true,
-        },
-        {
-            headerName: 'Accounts',
-            field: 'numOfAccounts',
-            cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
-                    this
-                ),
-            },
-            onCellClicked: $event => {
-                if (this.canViewConnections($event)) {
-                    this.openConnectionsModal($event.data, 'account');
-                }
-            },
-            width: 70,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Campaigns',
-            field: 'numOfCampaigns',
-            cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
-                    this
-                ),
-            },
-            onCellClicked: $event => {
-                if (this.canViewConnections($event)) {
-                    this.openConnectionsModal($event.data, 'campaign');
-                }
-            },
-            width: 80,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Ad Groups',
-            field: 'numOfAdgroups',
-            cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
-                    this
-                ),
-            },
-            onCellClicked: $event => {
-                if ($event.value >= 1 && !this.store.isReadOnly($event.data)) {
-                    this.openConnectionsModal($event.data, 'adgroup');
-                }
-            },
-            width: 80,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-        {
-            headerName: 'Notes',
-            field: 'description',
-            minWidth: 90,
-        },
-        {
-            headerName: 'Created by',
-            field: 'createdBy',
-            minWidth: 180,
-        },
-        {
-            headerName: '',
-            cellRendererFramework: DealActionsCellComponent,
-            pinned: 'right',
-            width: 75,
-            suppressSizeToFit: true,
-            resizable: false,
-        },
-    ];
+    paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
 
     connectionType: string;
     canSaveActiveEntity = false;
+
+    formattedDeals: FormattedDeal[];
 
     private gridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
@@ -297,9 +150,11 @@ export class DealsView implements OnInit, OnDestroy {
         });
     }
 
-    openConnectionsModal(deal: Partial<Deal>, type: string) {
-        this.connectionType = type;
-        this.store.setActiveEntity(deal);
+    openConnectionsModal(dealId: string, connectionType: DealConnectionType) {
+        this.connectionType = connectionType;
+        this.store.setActiveEntity(
+            this.store.state.entities.find(deal => deal.id === dealId)
+        );
         this.store.loadActiveEntityConnections();
         this.connectionsModal.open();
     }
@@ -356,7 +211,10 @@ export class DealsView implements OnInit, OnDestroy {
     }
 
     private subscribeToStoreStateUpdates() {
-        merge(this.createActiveEntityErrorUpdater$())
+        merge(
+            this.createActiveEntityErrorUpdater$(),
+            this.createFormattedEntitesUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -375,8 +233,25 @@ export class DealsView implements OnInit, OnDestroy {
         );
     }
 
-    private getPreselectedPagination(): {page: number; pageSize: number} {
-        const pagination = this.DEFAULT_PAGINATION;
+    private createFormattedEntitesUpdater$(): Observable<any> {
+        return this.store.state$.pipe(
+            map(state => state.entities),
+            distinctUntilChanged(),
+            tap(entities => {
+                this.formattedDeals = entities.map((entity: Deal) => ({
+                    ...entity,
+                    canViewConnections: this.authStore.hasPermissionOn(
+                        this.store.state.agencyId,
+                        entity.accountId,
+                        EntityPermissionValue.READ
+                    ),
+                }));
+            })
+        );
+    }
+
+    private getPreselectedPagination(): PaginationState {
+        const pagination = {...DEFAULT_PAGINATION};
         PAGINATION_URL_PARAMS.forEach(paramName => {
             const value: string = this.route.snapshot.queryParamMap.get(
                 paramName
@@ -386,23 +261,5 @@ export class DealsView implements OnInit, OnDestroy {
             }
         });
         return pagination;
-    }
-
-    private formatDate(date: Date): string {
-        if (commonHelpers.isDefined(date)) {
-            return moment(date).format('MM/DD/YYYY');
-        }
-        return 'N/A';
-    }
-
-    private canViewConnections(cellInfo: CellClassParams | CellClickedEvent) {
-        return (
-            cellInfo.value >= 1 &&
-            this.authStore.hasPermissionOn(
-                this.store.state.agencyId,
-                cellInfo.data.accountId,
-                EntityPermissionValue.READ
-            )
-        );
     }
 }

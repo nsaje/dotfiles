@@ -11,17 +11,15 @@
             (dealCreate)="openEditDealModal({})"
         >
         </zem-deals-actions>
-        <zem-smart-grid
-            class="zem-smart-grid zem-deals-view__item"
-            [rowData]="state.entities"
-            [columnDefs]="columnDefs"
+        <zem-deals-grid
+            [deals]="formattedDeals"
             [context]="context"
+            [isLoading]="state.requests.list.inProgress"
             [paginationOptions]="paginationOptions"
             [paginationCount]="state.requests.list.count"
             (paginationChange)="onPaginationChange($event)"
-            (gridReady)="onGridReady($event)"
         >
-        </zem-smart-grid>
+        </zem-deals-grid>
     </div>
     <zem-modal
         #editDealModal

@@ -15,6 +15,7 @@ import {AccountEndpoint} from '../../../../core/entities/services/account/accoun
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {DealsGridComponent} from '../../components/deals-grid/deals-grid.component';
 
 describe('DealsView', () => {
     let component: DealsView;
@@ -32,6 +33,7 @@ describe('DealsView', () => {
                 DealsView,
                 ConnectionsListComponent,
                 DealsActionsComponent,
+                DealsGridComponent,
             ],
             imports: [
                 FormsModule,
