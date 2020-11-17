@@ -179,7 +179,6 @@ services:
       scale: 1
       environment:
         NEW_RELIC_APP_NAME: "Zemanta One (Campaign stop Update Handler)"
-        USE_PG_POOLING: 1
       labels:
         SERVICE_IGNORE: "true"
       entrypoint: ""

@@ -14,8 +14,8 @@ class CampaignEventProcessedAt(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
 
     def __str__(self):
-        return "$(campaign: {} ({}), type {}, modified_dt: {})".format(
-            self.campaign.name, self.campaign.id, self.type, self.modified_dt
+        return "$(campaign: {} ({}), type {}, created dt: {})".format(
+            self.campaign.name, self.campaign.id, self.type, self.created_dt
         )
 
     def update_modified_dt(self):
