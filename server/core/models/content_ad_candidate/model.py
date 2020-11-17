@@ -32,6 +32,8 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
 
     primary_tracker_url = models.TextField(null=True, blank=True, default=None)
     secondary_tracker_url = models.TextField(null=True, blank=True, default=None)
+    trackers = JSONField(null=True, blank=True)
+    trackers_status = JSONField(null=True, blank=True)
 
     ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT, null=True, blank=True)
     batch = models.ForeignKey("UploadBatch", on_delete=models.PROTECT)

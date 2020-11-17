@@ -19,6 +19,7 @@ VALID_UPDATE_FIELDS = set(
         "image_crop",
         "label",
         "tracker_urls",
+        "trackers",
         "call_to_action",
         "additional_data",
         "ad_tag",
