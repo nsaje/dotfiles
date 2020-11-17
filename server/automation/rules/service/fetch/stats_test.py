@@ -500,6 +500,132 @@ class AugmentTest(TestCase):
             sorted(raw_stats, key=lambda x: x["window_key"]),
         )
 
+    def test_conversions_in_multiple_ad_groups(self):
+        other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+
+        raw_stats = [
+            {
+                "ad_group_id": self.ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "local_etfm_cost": 100,
+            },
+            {
+                "ad_group_id": other_ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "local_etfm_cost": 20,
+            },
+        ]
+
+        conversion_stats = [
+            {
+                "ad_group_id": self.ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "slug": "testslug",
+                "window": dash.constants.ConversionWindows.LEQ_1_DAY,
+                "count": 100,
+                "count_view": 250,
+            },
+            {
+                "ad_group_id": self.ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "slug": "testslug",
+                "window": dash.constants.ConversionWindows.LEQ_7_DAYS,
+                "count": 25,
+                "count_view": 35,
+            },
+            {
+                "ad_group_id": self.ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "slug": "testslug",
+                "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
+                "count": 12,
+                "count_view": 16,
+            },
+            {
+                "ad_group_id": other_ad_group.id,
+                "source_id": 12,
+                "publisher": "pub1.com",
+                "window_key": constants.MetricWindow.LAST_3_DAYS,
+                "slug": "testslug",
+                "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
+                "count": 225,
+                "count_view": 333,
+            },
+        ]
+
+        stats._augment_with_conversion_stats(
+            constants.TargetType.PUBLISHER, [self.ad_group, other_ad_group], raw_stats, conversion_stats
+        )
+        self.assertEqual(
+            [
+                {
+                    "ad_group_id": self.ad_group.id,
+                    "source_id": 12,
+                    "publisher": "pub1.com",
+                    "window_key": constants.MetricWindow.LAST_3_DAYS,
+                    "local_etfm_cost": 100,
+                    "conversions": {
+                        "testslug": {
+                            24: {
+                                "conversion_count_click": 100,
+                                "conversion_count_total": 350,
+                                "conversion_count_view": 250,
+                                "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.29, 2),
+                                "local_avg_etfm_cost_per_conversion_view": 0.4,
+                                "local_avg_etfm_cost_per_conversion_click": 1.0,
+                            },
+                            168: {
+                                "conversion_count_click": 125,
+                                "conversion_count_total": 410,
+                                "conversion_count_view": 285,
+                                "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.24, 2),
+                                "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.35, 2),
+                                "local_avg_etfm_cost_per_conversion_click": 0.8,
+                            },
+                            720: {
+                                "conversion_count_click": 137,
+                                "conversion_count_total": 438,
+                                "conversion_count_view": 301,
+                                "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.23, 2),
+                                "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.33, 2),
+                                "local_avg_etfm_cost_per_conversion_click": test_helper.AlmostMatcher(0.73, 2),
+                            },
+                        }
+                    },
+                },
+                {
+                    "ad_group_id": other_ad_group.id,
+                    "source_id": 12,
+                    "publisher": "pub1.com",
+                    "window_key": constants.MetricWindow.LAST_3_DAYS,
+                    "local_etfm_cost": 20,
+                    "conversions": {
+                        "testslug": {
+                            720: {
+                                "conversion_count_click": 225,
+                                "conversion_count_total": 558,
+                                "conversion_count_view": 333,
+                                "local_avg_etfm_cost_per_conversion_click": test_helper.AlmostMatcher(0.09, 2),
+                                "local_avg_etfm_cost_per_conversion_total": test_helper.AlmostMatcher(0.04, 2),
+                                "local_avg_etfm_cost_per_conversion_view": test_helper.AlmostMatcher(0.06, 2),
+                            }
+                        }
+                    },
+                },
+            ],
+            sorted(raw_stats, key=lambda x: x["window_key"]),
+        )
+
 
 class FormatTest(TestCase):
     def test_format_publisher_stats(self):
