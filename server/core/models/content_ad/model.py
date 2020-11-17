@@ -81,6 +81,7 @@ class ContentAd(
 
     archived = models.BooleanField(default=False)
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
+    trackers = JSONField(null=True, blank=True)
 
     additional_data = JSONField(null=True, blank=True)
     amplify_review = models.NullBooleanField(default=None)
@@ -191,6 +192,7 @@ class ContentAd(
             "call_to_action": self.call_to_action,
             "primary_tracker_url": self.tracker_urls[0] if self.tracker_urls else None,
             "secondary_tracker_url": self.tracker_urls[1] if self.tracker_urls and len(self.tracker_urls) > 1 else None,
+            "trackers": self.trackers,
         }
 
     def to_cloned_candidate_dict(self):
@@ -212,6 +214,7 @@ class ContentAd(
             "image_present",
             "state",
             "tracker_urls",
+            "trackers",
             "video_asset_id",
             "ad_tag",
         )

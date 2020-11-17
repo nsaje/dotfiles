@@ -531,6 +531,21 @@
     redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
+    trackers: [{
+        'url': 'https://zemanta.com/px1',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://zemanta.com/px2',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
   model: dash.contentad
   pk: 1
 
@@ -556,6 +571,21 @@
     redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
+    trackers: [{
+        'url': 'https://zemanta.com/px1',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://zemanta.com/px2',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
   model: dash.contentad
   pk: 2
 
@@ -578,6 +608,21 @@
     redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
+    trackers: [{
+        'url': 'https://zemanta.com/px1',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://zemanta.com/px2',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     ad_tag: null
   model: dash.contentad
   pk: 3
@@ -611,7 +656,7 @@
     icon_height: null
     icon_file_size: null
     icon_hash: null
-    icon_id: null 
+    icon_id: null
   model: dash.contentadcandidate
   pk: 1
 
@@ -640,9 +685,24 @@
     icon_height: 200
     icon_file_size: 100000
     icon_hash: '54321cbb'
-    icon_id: 'abc23456'    
+    icon_id: 'abc23456'
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
   model: dash.contentadcandidate
@@ -664,6 +724,21 @@
     image_url: 'http://zemanta.com/img.jpg'
     primary_tracker_url: "https://primary.tracker.com"
     secondary_tracker_url: "https://secondary.tracker.com"
+    trackers: [{
+        'url': 'https://primary.tracker.com',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://secondary.tracker.com',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_crop: 'entropy'
     display_url: 'zemanta.com'
     brand_name: 'Zemanta'
@@ -678,7 +753,7 @@
     icon_height: null
     icon_file_size: null
     icon_hash: null
-    icon_id: null 
+    icon_id: null
   model: dash.contentadcandidate
   pk: 3
 
@@ -703,13 +778,21 @@
     image_hash: '54321cba'
     primary_tracker_url: 'https://primaryTrackerUrl.com'
     secondary_tracker_url: ''
+    trackers: [{
+        'url': 'https://primaryTrackerUrl.com',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     icon_url: 'http://zemanta.com/icon.jpg'
     icon_width: 200
     icon_height: 200
     icon_file_size: 100000
     icon_hash: '54321cbb'
-    icon_id: 'abc23456'   
+    icon_id: 'abc23456'
   model: dash.contentadcandidate
   pk: 4
 
@@ -738,7 +821,7 @@
     icon_height: null
     icon_file_size: null
     icon_hash: null
-    icon_id: null 
+    icon_id: null
   model: dash.contentadcandidate
   pk: 5
 
@@ -771,6 +854,21 @@
     icon_id: 'abc23456'
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     original_content_ad_id: 2
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
@@ -804,6 +902,21 @@
     image_hash: '54321cba'
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
     icon_url: 'http://zemanta.com/icon.jpg'
@@ -837,13 +950,28 @@
     image_hash: null
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: null
     icon_url: ''
     icon_width: null
     icon_height: null
     icon_file_size: null
     icon_hash: null
-    icon_id: null 
+    icon_id: null
     ad_tag: "<body></body>"
   model: dash.contentadcandidate
   pk: 8
@@ -871,13 +999,28 @@
     image_file_size: 120000
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     icon_url: 'http://zemanta.com/icon.jpg'
     icon_width: 200
     icon_height: 200
     icon_file_size: 100000
     icon_hash: '54321cbb'
-    icon_id: 'abc23456'   
+    icon_id: 'abc23456'
   model: dash.contentadcandidate
   pk: 9
 
@@ -911,6 +1054,21 @@
     icon_id: 'abc23456'
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    trackers: [{
+        'url': 'https://t.zemanta.com/px1.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }, {
+        'url': 'https://t.zemanta.com/px2.png',
+        'fallback_url': null,
+        'method': 'img',
+        'event_type': 'impression',
+        'supported_privacy_frameworks': [],
+        'tracker_optional': false
+    }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
   model: dash.contentadcandidate
