@@ -3,7 +3,6 @@ SHELL := /bin/bash
 ECR_BASE = 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta
 GIT_HASH := $(shell git rev-parse --verify HEAD)
 TIMESTAMP := $(shell date +"Created_%Y-%m-%d_%H.%M")
-NODE_HOSTNAME := $(shell hostname -f)
 
 ifdef HUDSON_COOKIE # Jenkins
 	# BRANCH_NAME is only available in multibranch pipeline (not used in APT tests)
@@ -28,7 +27,6 @@ export Z1_CLIENT_IMAGE
 export Z1_SERVER_IMAGE
 export ACCEPTANCE_IMAGE
 export TESTIM_TOKEN
-export NODE_HOSTNAME
 
 run:	## runs whole stack with docker-compose
 	docker-compose up --force-recreate -d

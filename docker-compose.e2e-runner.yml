@@ -41,4 +41,4 @@ services:
         working_dir: /app/z1/
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
-          - NODE_HOSTNAME=${NODE_HOSTNAME}
+          - SERVER_HOSTNAME=${JENKINS_AGENT_NAME}
