@@ -222,4 +222,5 @@ class User(
             ("can_see_connection_type_reporting", "User can see connection type reporting"),
             ("can_use_smart_grid_in_analytics_view", "User can use smart grid in analytics view"),
             ("can_use_3rdparty_js_trackers", "User can use 3rd party JS tracking"),
+            ("can_use_oen_browser_targeting", "User can use OEN browser targeting"),
         )

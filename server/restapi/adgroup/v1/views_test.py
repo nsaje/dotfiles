@@ -98,6 +98,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
                 "environments": restapi.serializers.targeting.EnvironmentsSerializer(target_environments).data,
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
                 "browsers": restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
+                "browsersOen": restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
                 "interest": {
                     "included": [constants.InterestCategory.get_name(i) for i in interest_targeting],
                     "excluded": [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],

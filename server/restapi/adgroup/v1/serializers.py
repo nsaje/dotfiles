@@ -133,6 +133,13 @@ class AdGroupTargetingSerializer(
     )
 
 
+class AdGroupTargetingOenSerializer(AdGroupTargetingSerializer):
+    class Meta:
+        permissioned_fields = {"browsers_oen": "zemauth.can_use_oen_browser_targeting"}
+
+    browsers_oen = restapi.serializers.targeting.BrowsersSerializer(source="target_browsers", required=False)
+
+
 class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     state = restapi.serializers.fields.DashConstantField(
         constants.AdGroupSettingsAutopilotState, source="autopilot_state", required=False
@@ -251,7 +258,7 @@ class AdGroupSerializer(
         max_digits=10, decimal_places=4, allow_null=True, required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     dayparting = AdGroupDaypartingSerializer(required=False, allow_null=True)
-    targeting = AdGroupTargetingSerializer(source="*", required=False)
+    targeting = AdGroupTargetingOenSerializer(source="*", required=False)
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
     frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)
     additional_data = rest_framework.fields.JSONField(allow_null=True, required=False)
