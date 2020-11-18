@@ -1,4 +1,3 @@
-import concurrent.futures
 import decimal
 import random
 
@@ -15,6 +14,7 @@ import dash.constants
 from utils import dates_helper
 from utils import decimal_helpers
 from utils import zlogging
+from utils.threads import DjangoConnectionThreadPoolExecutor
 
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
@@ -46,7 +46,7 @@ def _mark_almost_depleted_campaigns(campaigns):
 
 def _refresh_realtime_data(campaigns):
     random.shuffle(campaigns)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+    with DjangoConnectionThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
         executor.map(refresh_realtime_data, ([campaign] for campaign in campaigns))
 
 

@@ -1,4 +1,3 @@
-import concurrent.futures
 import decimal
 from functools import partial
 from threading import Lock
@@ -10,6 +9,7 @@ from typing import Optional
 from django.db import transaction
 
 import core.models
+import utils.threads
 from utils import dates_helper
 from utils import zlogging
 
@@ -36,7 +36,7 @@ def _get_campaigns(campaigns: Optional[List[core.models.Campaign]] = None) -> It
 
 def _process_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
     campaigns = list(campaigns)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+    with utils.threads.DjangoConnectionThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
         executor.map(
             partial(_process_campaign_thread_logging_wrapper, Lock(), {"total": len(campaigns), "current": 0}),
             campaigns,

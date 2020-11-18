@@ -1,11 +1,10 @@
 import decimal
 
 import mock
-from django.test import TestCase
 
 import core.models
-import utils.test_helper
 from utils import dates_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from .. import CampaignStopState
@@ -14,11 +13,11 @@ from . import config
 from . import main
 
 
-class UpdateCampaignStopStateTest(TestCase):
+class UpdateCampaignStopStateTest(BaseTestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
         self._prepare_update_notifier_mock()
-        utils.test_helper.prepare_threadpoolexecutor_mock(self)
+        self.prepare_threadpoolexecutor_mock("utils.threads.DjangoConnectionThreadPoolExecutor")
 
     def _prepare_update_notifier_mock(self):
         notify_patcher = mock.patch("automation.campaignstop.service.update_notifier.notify_campaignstopstate_change")
@@ -27,7 +26,7 @@ class UpdateCampaignStopStateTest(TestCase):
 
     @mock.patch("automation.campaignstop.service.spends_helper.get_predicted_remaining_budget")
     def test_create_campaign_state(self, mock_get_prediction):
-        utils.test_helper.prepare_threadpoolexecutor_mock(self)
+        self.prepare_threadpoolexecutor_mock("utils.threads.DjangoConnectionThreadPoolExecutor")
         mock_get_prediction.return_value = config.THRESHOLD * 2
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).exists())
 

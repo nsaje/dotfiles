@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import mock
-from django.test import TestCase
 
 import core.features.bcm
 import core.features.goals
@@ -9,7 +8,7 @@ import dash.constants
 from core.models.settings.ad_group_settings import AdGroupSettings
 from core.models.settings.ad_group_source_settings import AdGroupSourceSettings
 from utils import dates_helper
-from utils import test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from .. import CampaignStopState
@@ -20,10 +19,10 @@ from . import config
 from . import selection
 
 
-class UpdateAlmostDepletedTestCase(TestCase):
+class UpdateAlmostDepletedTestCase(BaseTestCase):
     def setUp(self):
         self._setup_initial_state()
-        test_helper.prepare_threadpoolexecutor_mock(self)
+        self.prepare_threadpoolexecutor_mock("utils.threads.DjangoConnectionThreadPoolExecutor")
 
     def mocked_afternoon_est_now():
         local_now = dates_helper.utc_to_local(datetime.utcnow()).replace(hour=20)

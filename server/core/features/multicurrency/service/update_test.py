@@ -1,19 +1,18 @@
 import decimal
 
-from django.test import TestCase
 from mock import patch
 
 import core.features.goals
 import core.models
 import dash.constants
-import utils.test_helper
+from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from .. import CurrencyExchangeRate
 from . import update
 
 
-class UpdateExchangeRatesTestCase(TestCase):
+class UpdateExchangeRatesTestCase(BaseTestCase):
     def setUp(self):
         CurrencyExchangeRate.objects.create(
             date="2018-01-01", currency=dash.constants.Currency.EUR, exchange_rate="0.8"
@@ -58,7 +57,7 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.ad_group.settings.update(
             request, skip_automation=True, skip_validation=True, local_b1_sources_group_daily_budget=72
         )
-        utils.test_helper.prepare_threadpoolexecutor_mock(self)
+        self.prepare_threadpoolexecutor_mock("concurrent.futures.ThreadPoolExecutor")
 
     def test_initial_settings(self):
         self.ad_group.settings.refresh_from_db()

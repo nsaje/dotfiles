@@ -183,16 +183,3 @@ def disable_auto_now(cls, field_name):
     field.auto_now = False
     yield
     field.auto_now = prev_auto_now
-
-
-def prepare_threadpoolexecutor_mock(object):
-    # NOTE: Code ran in a separate thread would use a separate transaction which would make testing hard. In order
-    # to avoid this we use sequential map instead of threads to produce results.
-    def _eager_map(fun, iter_):
-        return list(map(fun, iter_))
-
-    patcher = mock.patch("concurrent.futures.ThreadPoolExecutor")
-    mock_threadpoolexecutor = patcher.start()
-
-    mock_threadpoolexecutor.return_value.__enter__.return_value.map = _eager_map
-    object.addCleanup(patcher.stop)

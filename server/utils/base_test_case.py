@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from unittest import mock
 
 from django.test import TestCase
 
@@ -44,3 +45,15 @@ class BaseTestCase(TestCase):
                 raise AssertionError(f"{excs} not raised")
         else:
             raise AssertionError(f"{exceptions} not raised")
+
+    def prepare_threadpoolexecutor_mock(self, threadpoolexecutor):
+        # NOTE: Code ran in a separate thread would use a separate transaction which would make testing hard. In order
+        # to avoid this we use sequential map instead of threads to produce results.
+        def _eager_map(fun, iter_):
+            return list(map(fun, iter_))
+
+        patcher = mock.patch(threadpoolexecutor)
+        mock_threadpoolexecutor = patcher.start()
+
+        mock_threadpoolexecutor.return_value.__enter__.return_value.map = _eager_map
+        self.addCleanup(patcher.stop)
