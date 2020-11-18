@@ -136,7 +136,7 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
             ad_group_source_data_dict[ad_group_source_row["adgroup_id"]].append(ad_group_source_row)
         logger.info("Fetched %s ad group source data rows for chunk #%s", len(ad_group_source_data_dict), chunk_id)
 
-        ad_group_stats_dict = _calculate_ad_group_stats(
+        ad_group_stats_prepared = _calculate_ad_group_stats(
             ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_stats_dict, source_id_map
         )
 
@@ -147,7 +147,7 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
             row.update(campaign_data_dict[row["campaign_id"]])
             row.update(account_data_dict[campaign_data_dict[row["campaign_id"]]["account_id"]])
             row.update(remaining_budget_dict.get(row["campaign_id"], {"remaining_budget": Decimal(0.0)}))
-            row.update(ad_group_stats_dict[row["adgroup_id"]])
+            row.update(ad_group_stats_prepared[row["adgroup_id"]])
             row.update(bid_modifiers_by_ad_group_id[row["adgroup_id"]])
 
             target_regions, geo_targeting_types = _resolve_geo_targeting(row)
