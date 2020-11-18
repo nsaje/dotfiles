@@ -1,5 +1,6 @@
 import datetime
 
+import utils.exc
 from utils import dates_helper
 
 from . import models
@@ -35,3 +36,10 @@ def etl_data_complete_for_date(date) -> bool:
     if latest_date_entry is None:
         return False
     return latest_date_entry.etl_books_closed
+
+
+def get_last_books_closed_date():
+    latest_closed_entry = models.EtlBooksClosed.objects.filter(etl_books_closed=True).last()
+    if not latest_closed_entry:
+        raise utils.exc.MissingDataError("Books closed does not exist")
+    return latest_closed_entry.date if latest_closed_entry else None

@@ -2776,6 +2776,20 @@ Possible values:
         }
 
 
+## Books closed [/rest/v1/booksclosed/]
+
+### Get latest date with complete data [GET /rest/v1/booksclosed/]
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "trafficData": {
+                    "latestCompleteDate" : "2020-11-16"
+                }
+            }
+        }
+
 # Group Utilities
 
 <a name="geolocations"></a>

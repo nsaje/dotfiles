@@ -1018,3 +1018,12 @@
     permission: base_costs_service_fee
   model: zemauth.entitypermission
   pk: 7
+
+# books closed
+
+- fields:
+    date: 2020-11-06 07:56:23.411403
+    modified_dt: 2020-11-06 07:56:23.411403
+    etl_books_closed: true
+  model: etl.etlbooksclosed
+  pk: 1
