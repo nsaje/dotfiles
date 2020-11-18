@@ -4,6 +4,7 @@ import {ICellRendererAngularComp} from 'ag-grid-angular';
 import {PinnedRowRendererParams} from './types/pinned-row.renderer-params';
 import {DEFAULT_PINNED_ROW_PARAMS} from './pinned-row-cell.component.config';
 import {CellRole} from '../../../smart-grid.component.constants';
+import * as commonHelpers from '../../../../../helpers/common.helpers';
 
 @Component({
     templateUrl: './pinned-row-cell.component.html',
@@ -11,6 +12,7 @@ import {CellRole} from '../../../smart-grid.component.constants';
 export class PinnedRowCellComponent implements ICellRendererAngularComp {
     params: PinnedRowRendererParams;
     valueFormatted: string;
+    role: CellRole;
     CellRole = CellRole;
 
     agInit(params: PinnedRowRendererParams): void {
@@ -19,6 +21,10 @@ export class PinnedRowCellComponent implements ICellRendererAngularComp {
             ...params,
         };
         this.valueFormatted = this.params.valueFormatted;
+        this.role = commonHelpers.getValueOrDefault(
+            this.params.role,
+            CellRole.Dimension
+        );
     }
 
     refresh(params: PinnedRowRendererParams): boolean {

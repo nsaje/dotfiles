@@ -25,6 +25,7 @@ export class HeaderCellComponent implements IHeaderAngularComp {
     colId: string;
     field: string;
     role: CellRole;
+    suppressMovable: boolean;
 
     sort: HeaderCellSort;
     initialSort: HeaderCellSort;
@@ -43,6 +44,14 @@ export class HeaderCellComponent implements IHeaderAngularComp {
         this.colDef = this.params.column.getColDef();
         this.colId = this.params.column.getColId();
         this.field = this.colDef.field;
+        this.role = commonHelpers.getValueOrDefault(
+            this.params.role,
+            CellRole.Dimension
+        );
+        this.suppressMovable = commonHelpers.getValueOrDefault(
+            this.colDef.suppressMovable,
+            true
+        );
 
         if (this.params.enableSorting) {
             this.sort = this.params.sortOptions.sort;

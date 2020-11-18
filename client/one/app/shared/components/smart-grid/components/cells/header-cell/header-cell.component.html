@@ -1,4 +1,8 @@
-<div class="zem-header-cell" [zemInternalFeature]="params.internalFeature">
+<div
+    class="zem-header-cell"
+    [class.zem-header-cell__movable]="!suppressMovable"
+    [zemInternalFeature]="params.internalFeature"
+>
     <zem-checkbox-input
         *ngIf="params.enableSelection"
         class="zem-checkbox-input zem-header-cell__checkbox zem-header-cell__item"
@@ -8,10 +12,8 @@
     ></zem-checkbox-input>
     <div
         class="zem-header-cell__data zem-header-cell__item"
-        [class.zem-header-cell__data--dimension]="
-            params.role === CellRole.Dimension
-        "
-        [class.zem-header-cell__data--metric]="params.role === CellRole.Metric"
+        [class.zem-header-cell__data--dimension]="role === CellRole.Dimension"
+        [class.zem-header-cell__data--metric]="role === CellRole.Metric"
     >
         <span
             *ngIf="params.icon"

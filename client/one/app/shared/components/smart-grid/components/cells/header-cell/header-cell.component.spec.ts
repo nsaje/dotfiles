@@ -1,9 +1,10 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {ColDef, Column} from 'ag-grid-community';
+import {CellComp, ColDef, Column} from 'ag-grid-community';
 import {InternalFeatureDirective} from '../../../../../directives/internal-feature/internal-feature.directive';
 import {CheckboxInputComponent} from '../../../../checkbox-input/checkbox-input.component';
 import {HelpPopoverComponent} from '../../../../help-popover/help-popover.component';
 import {PopoverDirective} from '../../../../popover/popover.directive';
+import {CellRole} from '../../../smart-grid.component.constants';
 import {HeaderCellComponent} from './header-cell.component';
 import {
     DEFAULT_HEADER_CELL_SORT_ORDER,
@@ -85,6 +86,8 @@ describe('HeaderCellComponent', () => {
         expect(component.colDef).toEqual(colDef);
         expect(component.colId).toEqual(colId);
         expect(component.field).toEqual(field);
+        expect(component.role).toEqual(CellRole.Dimension);
+        expect(component.suppressMovable).toEqual(true);
         expect(component.sort).toEqual(null);
         expect(component.sortingOrder).toEqual(DEFAULT_HEADER_CELL_SORT_ORDER);
         expect(component.isChecked).toEqual(true);
