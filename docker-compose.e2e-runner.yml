@@ -33,10 +33,12 @@ services:
 
     testim-runner:
         image: zemanta/deno
+        links:
+          - "server"
         entrypoint: bash
         volumes:
           - "./scripts/run_e2e_tests.sh:/app/z1/run_e2e_tests.sh"
         working_dir: /app/z1/
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
-          - SERVER_HOSTNAME=${HOSTNAME}
+          - SERVER_EXTERNAL_HOSTNAME=${HOSTNAME}

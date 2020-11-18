@@ -2,9 +2,11 @@
 
 # Run e2e tests
 
-SERVER_HOSTNAME=${SERVER_HOSTNAME:-"server"}
+SERVER_INTERNAL_HOSTNAME=${SERVER_INTERNAL_HOSTNAME:-"server"}
 SERVER_PORT=${SERVER_PORT:-"8123"}
-SERVER_ENDPOINT="${SERVER_HOSTNAME}:${SERVER_PORT}"
+SERVER_INTERNAL_ENDPOINT="${SERVER_INTERNAL_HOSTNAME}:${SERVER_PORT}"
+SERVER_EXTERNAL_ENDPOINT="${SERVER_EXTERNAL_HOSTNAME}:${SERVER_PORT}"
+
 TESTIM_PROJECT="95qRp4zvX0ycrDY1MHRI"
 TESTIM_TEST_PLAN="Z1 Dashboard E2E"
 OWNER_TEAM="z1" # owner in dyploma
@@ -23,7 +25,7 @@ echo "Waiting for server"
 retval=1
 n=0
 while true; do
-    wget -S "$SERVER_ENDPOINT" 2> /dev/null
+    wget -S "$SERVER_INTERNAL_ENDPOINT" 2> /dev/null
     retval=$?
     case "$retval" in
         0)  # connection successful
@@ -48,7 +50,7 @@ curl -s https://bitbucket.outbrain.com/projects/FEG/repos/e2e-scripts/raw/run-te
     TESTIM_TOKEN="$TESTIM_TOKEN" \
     TESTIM_PROJECT="$TESTIM_PROJECT" \
     TESTIM_TEST_PLAN="$TESTIM_TEST_PLAN" \
-    TESTIM_BASE_URL="http://$SERVER_ENDPOINT" \
+    TESTIM_BASE_URL="http://$SERVER_EXTERNAL_ENDPOINT" \
     OWNER_TEAM="$OWNER_TEAM" \
     TESTIM_RETRIES=3 \
     PARALLEL_TESTS=4 \
