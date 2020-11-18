@@ -36,7 +36,9 @@ class TrackerSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
-        value["supported_privacy_frameworks"] = dash.features.contentupload.get_privacy_frameworks(data.get("url"))
+        value["supported_privacy_frameworks"] = dash.features.contentupload.get_privacy_frameworks(
+            data.get("url"), data.get("fallback_url")
+        )
         return value
 
 

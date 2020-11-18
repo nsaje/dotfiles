@@ -66,27 +66,54 @@ class TrackersHelpersTest(TestCase):
         tracker_url = (
             "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}&us_privacy=${us_privacy}"
         )
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = (
+            "https://www.example.com/pixel23.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}&us_privacy=${us_privacy}"
+        )
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(
             privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR, constants.TrackerPrivacyFramework.CCPA]
         )
 
+        tracker_url = (
+            "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}&us_privacy=${us_privacy}"
+        )
+        fallback_url = "https://www.example.com/pixel23.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
+        self.assertEqual(privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR])
+
+        tracker_url = "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
+        fallback_url = (
+            "https://www.example.com/pixel23.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}&us_privacy=${us_privacy}"
+        )
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
+        self.assertEqual(privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR])
+
+        tracker_url = "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
+        fallback_url = "https://www.example.com/pixel23.png"
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
+        self.assertEqual(privacy_frameworks, [])
+
         tracker_url = "https://www.example.com/pixel.png?gdpr_consent=${gdpr_consent_50}"
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = None
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR])
 
         tracker_url = "https://www.example.com/pixel.png?gdpr=${gdpr}"
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR])
 
         tracker_url = "https://www.example.com/pixel.png"
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = "https://www.example.com/pixel23.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(privacy_frameworks, [])
 
         tracker_url = None
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = None
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(privacy_frameworks, [])
 
         tracker_url = ""
-        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url)
+        fallback_url = ""
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
         self.assertEqual(privacy_frameworks, [])

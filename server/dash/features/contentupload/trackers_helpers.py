@@ -44,24 +44,31 @@ def get_tracker(
         "method": method,
         "url": url,
         "fallback_url": fallback_url,
-        "supported_privacy_frameworks": get_privacy_frameworks(url),
+        "supported_privacy_frameworks": get_privacy_frameworks(url, fallback_url),
         "tracker_optional": tracker_optional,
     }
 
 
-def get_privacy_frameworks(tracker_url: str) -> List[str]:
-    if not tracker_url:
-        return []
-
-    privacy_frameworks = []
-    if GDPR_REGEX.search(tracker_url):
-        privacy_frameworks.append(constants.TrackerPrivacyFramework.GDPR)
-
-    if "${us_privacy}" in tracker_url:
-        privacy_frameworks.append(constants.TrackerPrivacyFramework.CCPA)
-
-    return privacy_frameworks
+def get_privacy_frameworks(url: str, fallback_url: Union[None, str]) -> List[str]:
+    if fallback_url:
+        return list(set(_get_privacy_frameworks_from_url(url)) & set(_get_privacy_frameworks_from_url(fallback_url)))
+    else:
+        return _get_privacy_frameworks_from_url(url)
 
 
 def get_tracker_status_key(url: str, method: str) -> str:
     return "{}__{}".format(url, method)
+
+
+def _get_privacy_frameworks_from_url(url: str) -> List[str]:
+    if not url:
+        return []
+
+    privacy_frameworks = []
+    if GDPR_REGEX.search(url):
+        privacy_frameworks.append(constants.TrackerPrivacyFramework.GDPR)
+
+    if "${us_privacy}" in url:
+        privacy_frameworks.append(constants.TrackerPrivacyFramework.CCPA)
+
+    return privacy_frameworks
