@@ -42,3 +42,5 @@ services:
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
           - SERVER_HOSTNAME=${JENKINS_AGENT_NAME}
+          - WORKSPACE=${WORKSPACE}
+          - JOB_NAME=${JOB_NAME}
