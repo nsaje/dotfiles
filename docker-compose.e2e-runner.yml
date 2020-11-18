@@ -32,30 +32,11 @@ services:
         stdin_open: true
 
     testim-runner:
-        image: "testim/docker-cli:node-8"
-        hostname: testim-runner
-        links:
-          - "server"
-          - "zalenium"
+        image: zemanta/deno
         entrypoint: bash
         volumes:
           - "./scripts/run_e2e_tests.sh:/app/z1/run_e2e_tests.sh"
         working_dir: /app/z1/
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
-
-    zalenium:
-        image: "dosel/zalenium"
-        hostname: zalenium
-        volumes:
-          - /tmp/videos:/home/seluser/videos
-          - /var/run/docker.sock:/var/run/docker.sock
-        ports:
-          - "4444:4444"
-        command: >
-          start --desiredContainers 4
-                --maxDockerSeleniumContainers 4
-                --videoRecordingEnabled false
-        environment:
-          - PULL_SELENIUM_IMAGE=true
-        tty: true
+          - SERVER_HOSTNAME=${HOSTNAME}

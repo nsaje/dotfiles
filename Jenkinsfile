@@ -55,11 +55,10 @@ node {
 
         stage('Code checkout') {
             checkout scm
-            // make sure we don't have leftovers from previous builds
-            sh 'sudo git clean --force -d -x'
             env.GIT_AUTHOR = sh(script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
             env.GIT_COMMIT_MESSAGE = sh(script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
-
+            // make sure we don't have leftovers from previous builds
+            sh 'sudo git clean --force -d -x'
             // Remove old lingering containsers and volumes
             sh 'docker-compose kill; docker-compose rm -v -f'
         }

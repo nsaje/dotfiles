@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# Run e2e tests with testim CLI
+# Run e2e tests
 
-SERVER_ENDPOINT=${1:-"server:8123"}
-
+SERVER_HOSTNAME=${SERVER_HOSTNAME:-"server"}
+SERVER_PORT=${SERVER_PORT:-"8123"}
+SERVER_ENDPOINT="${HOST_NAME}:${SERVER_PORT}"
 TESTIM_PROJECT="95qRp4zvX0ycrDY1MHRI"
-GRID_HOST="zalenium"
-GRID_PORT="4444"
+TESTIM_TEST_PLAN="Z1 Dashboard E2E"
+OWNER_TEAM="z1" # owner in dyploma
 
 function exit_ok {
     exit 0
@@ -42,36 +43,13 @@ while true; do
 done
 echo "Server opened port"
 
-# Launch testim CLI for Chrome
-testim \
-    --name "Automations Rules (Account Manager)" \
-    --name "Automations Rules (Agency Manager)" \
-    --name "Automations Rules (Internal User)" \
-    --name "Create account" \
-    --name "Create ad group" \
-    --name "Create campaign" \
-    --name "Create credit" \
-    --name "Credits Library (Account Manager)" \
-    --name "Credits Library (Agency Manager / Clear account)" \
-    --name "Credits Library (Agency Manager)" \
-    --name "Deals Library (Account Manager)" \
-    --name "Deals Library (Agency Manager)" \
-    --name "Deals Library (Internal User)" \
-    --name "Deals Library (Read Only)" \
-    --name "Login/Logout" \
-    --name "Publisher groups (Account manager)" \
-    --name "Publisher groups (Agency manager)" \
-    --name "Publisher groups (Internal user)" \
-    --name "Publisher groups (Readonly)" \
-    --name "User management (Account Manager)" \
-    --name "User management (Agency manager)" \
-    --name "User management (Internal user)" \
-    --token "$TESTIM_TOKEN" \
-    --project "$TESTIM_PROJECT" \
-    --host "$GRID_HOST" \
-    --port "$GRID_PORT" \
-    --base-url "http://$SERVER_ENDPOINT" \
-    --parallel 2 \
-    --test-config "Chrome" \
-    --test-config "Firefox" --mode selenium \
-    --report-file testim-tests-report.xml
+# https://confluence.outbrain.com/display/WG/Jenkins+integration
+curl -s https://bitbucket.outbrain.com/projects/FEG/repos/e2e-scripts/raw/run-testim-kubernetes-grid.sh |
+    TESTIM_TOKEN="$TESTIM_TOKEN" \
+    TESTIM_PROJECT="$TESTIM_PROJECT" \
+    TESTIM_TEST_PLAN="$TESTIM_TEST_PLAN" \
+    TESTIM_BASE_URL="http://$SERVER_ENDPOINT" \
+    OWNER_TEAM="$OWNER_TEAM" \
+    TESTIM_RETRIES=3 \
+    PARALLEL_TESTS=4 \
+    bash

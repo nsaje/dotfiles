@@ -22,9 +22,9 @@ else # Local development environment
 endif
 
 # Exported because docker-compose.*.yml uses it
+export ECR_BASE
 export Z1_CLIENT_IMAGE
 export Z1_SERVER_IMAGE
-export ECR_BASE
 export ACCEPTANCE_IMAGE
 export TESTIM_TOKEN
 
@@ -201,13 +201,13 @@ build_utils:	## builds utility images for CI
 	docker build -t py3-tools -f docker/Dockerfile.py3-tools  docker/
 	docker build -t zemanta/z1-aglio -f docker/Dockerfile.z1-aglio docker/
 
+build_e2e_utils:	## builds e2e utility images for CI
+	docker build -t zemanta/deno -f docker/Dockerfile.z1-deno docker/
+
 pull: login	## pulls zemanta docker images
 	docker pull $(ECR_BASE)/z1-base:master && docker tag $(ECR_BASE)/z1-base:master $(ECR_BASE)/z1-base:latest
 	docker pull $(ECR_BASE)/z1:master && docker tag $(ECR_BASE)/z1:master $(ECR_BASE)/z1:latest
 	docker pull $(ECR_BASE)/z1-client:master && docker tag $(ECR_BASE)/z1-client:master $(ECR_BASE)/z1-client:latest
-
-pull_testim:
-	docker pull testim/docker-cli:node-8
 
 push_baseimage:	## pushes zemanta/z1-base docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH)
