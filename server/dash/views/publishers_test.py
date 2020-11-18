@@ -229,7 +229,7 @@ class PublisherGroupsUploadTestCase(BaseTestCase):
 
     def test_post_create_publisher(self):
         account = models.Account.objects.get(pk=1)
-        rows = [{"Publisher": "asd"}, {"Publisher": "qwe"}]
+        rows = [{"Publisher": "as/d"}, {"Publisher": "qwe"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
         data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}

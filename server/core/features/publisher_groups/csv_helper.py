@@ -1,6 +1,7 @@
 import copy
 import os
 import random
+import re
 import string
 
 from django.conf import settings
@@ -16,6 +17,7 @@ from .models import validate_placement
 logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_AGENCY = 55
+DOMAIN_PATTERN = re.compile(r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")
 
 
 def get_example_csv_content():
@@ -115,7 +117,6 @@ def _get_error_rows_generator(entry_dicts, agency=None, account=None):
 def validate_entries(entry_dicts):
     validated_entry_dicts = []
     sources_by_slug = {x.get_clean_slug(): x for x in models.Source.objects.all()}
-
     for entry in entry_dicts:
         if entry.get("publisher") == "":
             entry.update({"publisher": None})
@@ -137,7 +138,7 @@ def validate_entries(entry_dicts):
             for prefix in prefixes:
                 publisher = publisher.replace(prefix, "")
 
-            if "/" in publisher:
+            if DOMAIN_PATTERN.match(publisher) and "/" in publisher:
                 error.append("'/' should not be used")
         else:
             error.append("Publisher is required")

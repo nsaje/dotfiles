@@ -591,6 +591,7 @@ class PublisherGroupCSVHelpersTestCase(BaseTestCase):
                     {"publisher": "https://pub1.com", "source": "", "include_subdomains": True},
                     {"publisher": "https://pub1.com", "source": "asd", "include_subdomains": False},
                     {"publisher": "pub2.com", "include_subdomains": False},
+                    {"publisher": "domain.com/slash", "source": "AdsNative", "include_subdomains": True},
                 ]
             ),
             [
@@ -608,6 +609,12 @@ class PublisherGroupCSVHelpersTestCase(BaseTestCase):
                     "error": "Remove the following prefixes: http, https; Unknown source",
                 },
                 {"publisher": "pub2.com", "include_subdomains": False, "source": None},
+                {
+                    "publisher": "domain.com/slash",
+                    "source": "AdsNative",
+                    "include_subdomains": True,
+                    "error": "'/' should not be used",
+                },
             ],
         )
 
