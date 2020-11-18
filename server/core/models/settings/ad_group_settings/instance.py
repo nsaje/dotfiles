@@ -1,5 +1,4 @@
 import decimal
-import logging
 
 from django.db import transaction
 from django.db.models import Sum
@@ -15,6 +14,7 @@ from utils import email_helper
 from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
+from utils import zlogging
 
 from . import exceptions
 from . import helpers
@@ -22,7 +22,7 @@ from . import helpers
 REDIRECTOR_UPDATE_FIELDS = ("tracking_code", "click_capping_daily_ad_group_max_clicks")
 PRIORITY_UPDATE_FIELDS = ("state", "cpm", "cpc", "b1_sources_group_cpc_cc", "b1_sources_group_cpm")
 
-logger = logging.getLogger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class AdGroupSettingsMixin(object):
@@ -234,6 +234,16 @@ class AdGroupSettingsMixin(object):
             self._remove_no_change_fields(updates, "b1_sources_group_cpc_cc")
         if not is_cpm_bidding or not uses_realtime_autopilot:
             self._remove_no_change_fields(updates, "b1_sources_group_cpm")
+
+        # TODO: RTAP: remove when deploying restapi changes
+        daily_budget_legacy = updates.get("daily_budget_cc")
+        if daily_budget_legacy is not None:
+            logger.info(
+                "daily_budget_cc updated with non-default value",
+                agency_id=self.ad_group.campaign.account.agency_id,
+                ad_group_id=self.ad_group.id,
+                daily_budget_cc=daily_budget_legacy,
+            )
 
         return updates
 
