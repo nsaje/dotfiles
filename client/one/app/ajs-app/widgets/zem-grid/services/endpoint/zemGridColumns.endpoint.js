@@ -1,6 +1,7 @@
 var EntityPermissionValue = require('../../../../../core/users/users.constants')
     .EntityPermissionValue;
 var CategoryName = require('../../../../../app.constants').CategoryName;
+var arrayHelpers = require('../../../../../shared/helpers/array.helpers');
 
 angular
     .module('one.widgets')
@@ -2407,12 +2408,16 @@ angular
 
         function insertIntoColumns(columns, newColumns, placeholder) {
             var columnPosition = findColumnPosition(columns, placeholder);
-            if (!columnPosition) return;
+            if (!columnPosition || arrayHelpers.isEmpty(newColumns)) return;
 
             var allowedColumns = newColumns.filter(function(column) {
-                return column.shown;
+                return (
+                    column.shown &&
+                    !columns.some(function(element) {
+                        return element.field === column.field;
+                    })
+                );
             });
-
             Array.prototype.splice.apply(
                 columns,
                 [columnPosition, 0].concat(allowedColumns)
