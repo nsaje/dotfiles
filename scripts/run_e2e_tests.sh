@@ -4,7 +4,7 @@
 
 SERVER_HOSTNAME=${SERVER_HOSTNAME:-"server"}
 SERVER_PORT=${SERVER_PORT:-"8123"}
-SERVER_ENDPOINT="${HOST_NAME}:${SERVER_PORT}"
+SERVER_ENDPOINT="${SERVER_HOSTNAME}:${SERVER_PORT}"
 TESTIM_PROJECT="95qRp4zvX0ycrDY1MHRI"
 TESTIM_TEST_PLAN="Z1 Dashboard E2E"
 OWNER_TEAM="z1" # owner in dyploma
@@ -33,7 +33,7 @@ while true; do
             sleep 1
 	    echo -n "."
             ((n++))
-            if [[ $n -ge 720 ]]; then
+            if [[ $n -ge 360 ]]; then
                 echo "Waiting for server timed out"
                 exit_error
             fi
