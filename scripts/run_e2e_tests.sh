@@ -9,11 +9,17 @@ TESTIM_PROJECT="95qRp4zvX0ycrDY1MHRI"
 TESTIM_TEST_PLAN="Z1 Dashboard E2E"
 OWNER_TEAM="z1" # owner in dyploma
 
+function clean_up () {
+    rm $WORKSPACE/testim.conf.js
+}
+
 function exit_ok {
+    clean_up
     exit 0
 }
 
 function exit_error {
+    clean_up
     exit 1
 }
 
