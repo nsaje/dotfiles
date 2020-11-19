@@ -50,8 +50,7 @@ curl -s https://bitbucket.outbrain.com/projects/FEG/repos/e2e-scripts/raw/run-te
     TESTIM_TEST_PLAN="$TESTIM_TEST_PLAN" \
     TESTIM_BASE_URL="http://$SERVER_ENDPOINT" \
     OWNER_TEAM="$OWNER_TEAM" \
-    WORKSPACE="$WORKSPACE" \
-    JOB_NAME="$JOB_NAME" \
+    WORKSPACE="$PWD" \
     TESTIM_RETRIES=3 \
     PARALLEL_TESTS=4 \
     bash
