@@ -46,3 +46,4 @@ services:
           - SERVER_HOSTNAME=${JENKINS_AGENT_NAME}
           - WORKSPACE=${WORKSPACE}
           - JOB_NAME=${JOB_NAME}
+          - WORKSPACE=${WORKSPACE}
