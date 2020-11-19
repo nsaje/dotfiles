@@ -40,7 +40,10 @@ services:
         volumes:
           - "./scripts/run_e2e_tests.sh:/app/z1/run_e2e_tests.sh"
           - "/var/run/docker.sock:/var/run/docker.sock"
+          - ${PWD}:${PWD}
         working_dir: /app/z1/
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
           - SERVER_HOSTNAME=${JENKINS_AGENT_NAME}
+          - WORKSPACE=${PWD}
+          - JOB_NAME=${JOB_NAME}
