@@ -91,6 +91,7 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         "ob-nielsen",
         "neodata",
         "ifa",
+        "pmtseg",
     )
 
     def __init__(self, *args, **kwargs):
