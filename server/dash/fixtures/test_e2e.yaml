@@ -84,7 +84,6 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
-      - ["can_see_creative_library", "zemauth", "user"]
   model: zemauth.user
   pk: 1
 
@@ -172,7 +171,6 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
-      - ["can_see_creative_library", "zemauth", "user"]
   model: zemauth.user
   pk: 2
 
@@ -260,7 +258,6 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
-      - ["can_see_creative_library", "zemauth", "user"]
   model: zemauth.user
   pk: 3
 
