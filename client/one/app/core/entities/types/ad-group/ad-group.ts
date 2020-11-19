@@ -17,8 +17,6 @@ export interface AdGroup {
     archived: boolean;
     startDate: Date;
     endDate: Date;
-    redirectPixelUrls: string[];
-    redirectJavascript: string;
     trackingCode: string;
     bid: string;
     deliveryType: DeliveryType;

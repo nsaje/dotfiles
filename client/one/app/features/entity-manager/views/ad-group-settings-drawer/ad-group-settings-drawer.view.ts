@@ -75,7 +75,6 @@ export class AdGroupSettingsDrawerView
         [ExpandableSection.BUDGET]: false,
         [ExpandableSection.DEVICE_TARGETING]: false,
         [ExpandableSection.GEOTARGETING]: false,
-        [ExpandableSection.TRACKING]: false,
         [ExpandableSection.AUDIENCE]: false,
     };
 

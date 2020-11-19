@@ -98,8 +98,6 @@ describe('RulesHistoriesStore', () => {
                 archived: false,
                 startDate: date,
                 endDate: date,
-                redirectPixelUrls: [],
-                redirectJavascript: '',
                 trackingCode: '',
                 bid: '',
                 deliveryType: DeliveryType.STANDARD,

@@ -17,7 +17,6 @@ import {ZipTargetingComponent} from './components/zip-targeting/zip-targeting.co
 import {OperatingSystemListComponent} from './components/operating-system-list/operating-system-list.component';
 import {OperatingSystemComponent} from './components/operating-system/operating-system.component';
 import {TrackingCodeSettingComponent} from './components/tracking-code-setting/tracking-code-setting.component';
-import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting/tracking-pixel-setting.component';
 import {InterestTargetingComponent} from './components/interest-targeting/interest-targeting.component';
 import {PublisherGroupTargetingComponent} from './components/publisher-groups-targeting/publisher-groups-targeting.component';
 import {RetargetingComponent} from './components/retargeting/retargeting.component';
@@ -67,7 +66,6 @@ import {BiddingStrategySettingComponent} from './components/bidding-strategy-set
         BrowserTargetingComponent,
         ConnectionTypeTargetingComponent,
         TrackingCodeSettingComponent,
-        TrackingPixelSettingComponent,
         InterestTargetingComponent,
         PublisherGroupTargetingComponent,
         RetargetingComponent,

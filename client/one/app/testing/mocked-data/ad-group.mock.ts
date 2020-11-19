@@ -9,8 +9,6 @@ export const adGroupMock: AdGroup = {
     archived: null,
     startDate: null,
     endDate: null,
-    redirectPixelUrls: [],
-    redirectJavascript: null,
     trackingCode: null,
     bid: null,
     deliveryType: null,

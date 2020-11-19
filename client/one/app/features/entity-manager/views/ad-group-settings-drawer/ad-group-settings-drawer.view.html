@@ -799,28 +799,6 @@
                         (valueChange)="store.setTrackingCode($event)"
                     ></zem-tracking-code-setting>
                 </div>
-                <zem-expandable-section
-                    class="zem-expandable-section"
-                    [expandedByDefault]="
-                        expandedSectionsByDefault[expandableSection.TRACKING]
-                    "
-                    [expandLabel]="
-                        'Show advanced settings (3rd party pixel tracking)'
-                    "
-                    [collapseLabel]="
-                        'Hide advanced settings (3rd party pixel tracking)'
-                    "
-                >
-                    <div class="zem-settings-section">
-                        <zem-tracking-pixel-setting
-                            class="zem-tracking-pixel-setting zem-settings-section__item"
-                            [redirectPixelUrls]="state.entity.redirectPixelUrls"
-                            [redirectJavascript]="
-                                state.entity.redirectJavascript
-                            "
-                        ></zem-tracking-pixel-setting>
-                    </div>
-                </zem-expandable-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">

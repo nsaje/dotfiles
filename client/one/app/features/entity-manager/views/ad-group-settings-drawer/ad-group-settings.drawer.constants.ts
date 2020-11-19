@@ -3,6 +3,5 @@ export enum ExpandableSection {
     BUDGET = 'BUDGET',
     DEVICE_TARGETING = 'DEVICE_TARGETING',
     GEOTARGETING = 'GEOTARGETING',
-    TRACKING = 'TRACKING',
     AUDIENCE = 'AUDIENCE',
 }

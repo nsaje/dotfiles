@@ -11,7 +11,6 @@ export const EXPANDABLE_SECTIONS = [
     ExpandableSection.BUDGET,
     ExpandableSection.DEVICE_TARGETING,
     ExpandableSection.GEOTARGETING,
-    ExpandableSection.TRACKING,
     ExpandableSection.AUDIENCE,
 ];
 
@@ -47,12 +46,6 @@ export const EXPANDED_SECTIONS_CONFIG: {
         return doesAnySettingHaveValue(
             entity.targeting.geo.included.postalCodes,
             entity.targeting.geo.excluded.postalCodes
-        );
-    },
-    [ExpandableSection.TRACKING]: (entity: AdGroup): boolean => {
-        return doesAnySettingHaveValue(
-            entity.redirectPixelUrls,
-            entity.redirectJavascript
         );
     },
     [ExpandableSection.AUDIENCE]: (entity: AdGroup): boolean => {
