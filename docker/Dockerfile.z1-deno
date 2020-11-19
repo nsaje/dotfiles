@@ -1,6 +1,9 @@
 FROM hayd/ubuntu-deno:1.0.0
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
     apt-get install  -y --no-install-recommends \
         wget \
-        curl
+        curl \
+    && curl -sSL https://get.docker.com | sh

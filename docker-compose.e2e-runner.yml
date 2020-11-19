@@ -36,8 +36,10 @@ services:
         links:
           - "server"
         entrypoint: bash
+        privileged: true
         volumes:
           - "./scripts/run_e2e_tests.sh:/app/z1/run_e2e_tests.sh"
+          - "/var/run/docker.sock:/var/run/docker.sock"
         working_dir: /app/z1/
         environment:
           - TESTIM_TOKEN=${TESTIM_TOKEN}
