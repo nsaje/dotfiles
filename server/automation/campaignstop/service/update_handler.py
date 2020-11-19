@@ -24,7 +24,7 @@ def handle_updates(campaign_id, campaign_type, time):
             f"campaignstop.handle_updates{str(campaign_id)}.{campaign_type}", wait=False
         ) as acquired:
             if not acquired:
-                handle_updates.apply_async((campaign_id, campaign_type, time), countdown=30)
+                handle_updates.retry(countdown=30)
                 return
             _handle_updates(campaign_id, campaign_type, time)
     except SoftTimeLimitExceeded:
