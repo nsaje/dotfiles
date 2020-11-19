@@ -32,6 +32,8 @@ import {CanActivateUserGuard} from './route-guards/canActivateUser.guard';
 import {SidebarContentModule} from './features/sidebar-content/sidebar-content.module';
 import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 import {UsersModule} from './features/users/users.module';
+import {CreativeLibraryModule} from './features/creative-library/creative-library.module';
+import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -90,6 +92,7 @@ if (APP_CONFIG.env.prod) {
         SidebarContentModule,
         NewEntityAnalyticsMockModule,
         UsersModule,
+        CreativeLibraryModule,
 
         // App router
         RouterModule.forRoot(APP_ROUTES),
@@ -98,6 +101,7 @@ if (APP_CONFIG.env.prod) {
         CanActivateDashboardGuard,
         CanActivateRedirectGuard,
         CanActivateUserGuard,
+        CanActivatePermissionGuard,
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         {
             provide: '$scope',

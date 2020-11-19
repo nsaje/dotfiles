@@ -96,6 +96,16 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                 },
             ],
         },
+        {
+            value: RoutePathName.CREATIVE_LIBRARY,
+            displayValue: 'Creative library',
+            icon: ListGroupItemIcon.CreativeLibrary,
+            isVisible: () => {
+                return this.authStore.hasPermission(
+                    'zemauth.can_see_creative_library'
+                );
+            },
+        },
     ];
 
     hasAgencyScope: boolean;

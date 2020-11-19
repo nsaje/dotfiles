@@ -761,6 +761,7 @@ export enum RoutePathName {
     PUBLISHER_GROUPS = 'publishergroups',
     PIXELS_LIBRARY = 'pixels',
     INVENTORY_PLANNING = 'inventory-planning',
+    CREATIVE_LIBRARY = 'creative-library',
     ARCHIVED = 'archived',
     DEALS = 'deals',
     USERS = 'user-management',

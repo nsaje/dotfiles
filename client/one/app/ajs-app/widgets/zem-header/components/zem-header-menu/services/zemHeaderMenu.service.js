@@ -62,6 +62,12 @@ angular
                         ),
                         isNewFeature: true,
                     },
+                    {
+                        name: 'Creative library',
+                        getUrlTree: getCreativeLibraryUrlTree,
+                        isAvailable: isCreativeLibraryViewAvailable,
+                        isNewFeature: true,
+                    },
                 ],
             },
             {
@@ -142,24 +148,9 @@ angular
         }
 
         function getPublisherGroupsUrlTree() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-
-            if (commonHelpers.isDefined(activeAccount)) {
-                return NgRouter.createUrlTree(
-                    [RoutePathName.APP_BASE, RoutePathName.PUBLISHER_GROUPS],
-                    {
-                        queryParams: {
-                            agencyId: activeAccount.data.agencyId,
-                            accountId: activeAccount.id,
-                        },
-                    }
-                );
-            }
-
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.PUBLISHER_GROUPS,
-            ]);
+            return getManagementConsoleItemUrlTree(
+                RoutePathName.PUBLISHER_GROUPS
+            );
         }
 
         function isCreditsViewAvailable() {
@@ -167,24 +158,7 @@ angular
         }
 
         function getCreditsUrlTree() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-
-            if (commonHelpers.isDefined(activeAccount)) {
-                return NgRouter.createUrlTree(
-                    [RoutePathName.APP_BASE, RoutePathName.CREDITS],
-                    {
-                        queryParams: {
-                            agencyId: activeAccount.data.agencyId,
-                            accountId: activeAccount.id,
-                        },
-                    }
-                );
-            }
-
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.CREDITS,
-            ]);
+            return getManagementConsoleItemUrlTree(RoutePathName.CREDITS);
         }
 
         function getScheduledReportsUrlTree() {
@@ -231,46 +205,11 @@ angular
         }
 
         function getDealsUrlTree() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-
-            if (commonHelpers.isDefined(activeAccount)) {
-                return NgRouter.createUrlTree(
-                    [RoutePathName.APP_BASE, RoutePathName.DEALS],
-                    {
-                        queryParams: {
-                            agencyId: activeAccount.data.agencyId,
-                            accountId: activeAccount.id,
-                        },
-                    }
-                );
-            }
-
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.DEALS,
-            ]);
+            return getManagementConsoleItemUrlTree(RoutePathName.DEALS);
         }
 
         function getUsersUrlTree() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-
-            if (commonHelpers.isDefined(activeAccount)) {
-                return NgRouter.createUrlTree(
-                    [RoutePathName.APP_BASE, RoutePathName.USERS],
-
-                    {
-                        queryParams: {
-                            agencyId: activeAccount.data.agencyId,
-                            accountId: activeAccount.id,
-                        },
-                    }
-                );
-            }
-
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.USERS,
-            ]);
+            return getManagementConsoleItemUrlTree(RoutePathName.USERS);
         }
 
         function isRulesViewAvailable() {
@@ -280,11 +219,34 @@ angular
         }
 
         function getRulesUrlTree() {
+            return getManagementConsoleItemUrlTree(RoutePathName.RULES);
+        }
+
+        function getInventoryPlanningUrlTree() {
+            return NgRouter.createUrlTree([
+                RoutePathName.APP_BASE,
+                RoutePathName.INVENTORY_PLANNING,
+            ]);
+        }
+
+        function isCreativeLibraryViewAvailable() {
+            return zemAuthStore.hasPermission(
+                'zemauth.can_see_creative_library'
+            );
+        }
+
+        function getCreativeLibraryUrlTree() {
+            return getManagementConsoleItemUrlTree(
+                RoutePathName.CREATIVE_LIBRARY
+            );
+        }
+
+        function getManagementConsoleItemUrlTree(itemPath) {
             var activeAccount = zemNavigationNewService.getActiveAccount();
 
             if (commonHelpers.isDefined(activeAccount)) {
                 return NgRouter.createUrlTree(
-                    [RoutePathName.APP_BASE, RoutePathName.RULES],
+                    [RoutePathName.APP_BASE, itemPath],
                     {
                         queryParams: {
                             agencyId: activeAccount.data.agencyId,
@@ -293,16 +255,6 @@ angular
                     }
                 );
             }
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.RULES,
-            ]);
-        }
-
-        function getInventoryPlanningUrlTree() {
-            return NgRouter.createUrlTree([
-                RoutePathName.APP_BASE,
-                RoutePathName.INVENTORY_PLANNING,
-            ]);
+            return NgRouter.createUrlTree([RoutePathName.APP_BASE, itemPath]);
         }
     });
