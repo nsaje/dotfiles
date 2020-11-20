@@ -48,8 +48,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}],
-        target_browsers=[],
-        exclusion_target_browsers=[],
+        target_browsers=[{"family": constants.BrowserFamily.CHROME}],
         target_connection_types=[constants.ConnectionType.WIFI],
         interest_targeting=[constants.InterestCategory.WOMEN, constants.InterestCategory.FASHION],
         exclusion_interest_targeting=[constants.InterestCategory.POLITICS],
@@ -98,9 +97,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
                 "devices": restapi.serializers.targeting.DevicesSerializer(target_devices).data,
                 "environments": restapi.serializers.targeting.EnvironmentsSerializer(target_environments).data,
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
-                "browsers": restapi.adgroup.v1.serializers.BrowsersSerializer(
-                    {"included": target_browsers, "excluded": exclusion_target_browsers}
-                ).data,
+                "browsers": restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
                 "browsersOen": restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
                 "interest": {
                     "included": [constants.InterestCategory.get_name(i) for i in interest_targeting],
@@ -189,7 +186,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
             target_environments=settings_db.target_environments,
             target_os=settings_db.target_os,
             target_browsers=settings_db.target_browsers,
-            exclusion_target_browsers=settings_db.exclusion_target_browsers,
             target_connection_types=settings_db.target_connection_types,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
             click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
@@ -1262,8 +1258,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             tracking_code="",
             bid="1.5",
             interest_targeting=[],
-            target_browsers=[],
-            exclusion_target_browsers=[],
+            target_browsers=None,
             daily_budget="",
             autopilot_daily_budget="",
             click_capping_daily_ad_group_max_clicks="",
@@ -1285,8 +1280,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["maxCpc"], "1.500")
         self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["targeting"]["interest"]["included"], [])
-        self.assertEqual(resp_json["data"]["targeting"]["browsers"]["included"], [])
-        self.assertEqual(resp_json["data"]["targeting"]["browsers"]["excluded"], [])
+        self.assertEqual(resp_json["data"]["targeting"]["browsers"], [])
         self.assertEqual(resp_json["data"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["autopilot"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
@@ -1364,7 +1358,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
             tracking_code=None,
             interest_targeting=[],
             target_browsers=None,
-            exclusion_audience_targeting=None,
             daily_budget=None,
             autopilot_daily_budget=None,
             click_capping_daily_ad_group_max_clicks=None,
@@ -1382,8 +1375,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["endDate"], self.expected_none_date_output)
         self.assertEqual(resp_json["data"]["trackingCode"], "")
         self.assertEqual(resp_json["data"]["targeting"]["interest"]["included"], [])
-        self.assertEqual(resp_json["data"]["targeting"]["browsers"]["included"], [])
-        self.assertEqual(resp_json["data"]["targeting"]["browsers"]["excluded"], [])
+        self.assertEqual(resp_json["data"]["targeting"]["browsers"], [])
         self.assertEqual(resp_json["data"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["autopilot"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
@@ -1551,174 +1543,3 @@ class AdGroupViewSetTest(RESTAPITestCase):
             [dash.constants.ConnectionType.get_name(dash.constants.ConnectionType.WIFI)],
             resp_json["data"]["targeting"]["connectionTypes"],
         )
-
-    def test_put_adgroups_invalid_target_browsers(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["browsers"] = {
-            "included": [{"family": dash.constants.BrowserFamily.CHROME}],
-            "excluded": [{"family": dash.constants.BrowserFamily.EDGE}],
-        }
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
-    def test_put_adgroups_invalid_target_browser_device_type(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["devices"] = [dash.constants.AdTargetDevice.MOBILE]
-        put_data["targeting"]["browsers"] = {"included": [{"family": dash.constants.BrowserFamily.IE}], "excluded": []}
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
-    def test_put_adgroups_valid_target_browsers(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["browsers"] = {
-            "included": [{"family": dash.constants.BrowserFamily.CHROME}],
-            "excluded": [],
-        }
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.assertEqual(
-            {"family": dash.constants.BrowserFamily.CHROME}, resp_json["data"]["targeting"]["browsers"]["included"][0]
-        )
-
-        put_data["targeting"]["browsers"] = {
-            "included": [],
-            "excluded": [{"family": dash.constants.BrowserFamily.EDGE}],
-        }
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.assertEqual(
-            {"family": dash.constants.BrowserFamily.EDGE}, resp_json["data"]["targeting"]["browsers"]["excluded"][0]
-        )
-
-    def test_put_adgroups_valid_browsers_oen(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["browsersOen"] = [{"family": dash.constants.BrowserFamily.CHROME}]
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertEqual(
-            {"family": dash.constants.BrowserFamily.CHROME}, resp_json["data"]["targeting"]["browsersOen"][0]
-        )
-
-    def test_put_adgroups_invalid_browsers_oen(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["browsersOen"] = [{"family": "abc"}]
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
-    def test_put_adgroups_browsers_and_browsers_oen_together(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        # setting "browsersOen" field together with "browsers" should not override "browsers" field
-        put_data["targeting"]["browsers"] = {
-            "included": [{"family": dash.constants.BrowserFamily.CHROME}],
-            "excluded": [],
-        }
-        put_data["targeting"]["browsersOen"] = [{"family": dash.constants.BrowserFamily.CHROME}]
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertEqual(
-            {"family": dash.constants.BrowserFamily.CHROME}, resp_json["data"]["targeting"]["browsers"]["included"][0]
-        )
-        self.assertEqual([], resp_json["data"]["targeting"]["browsers"]["excluded"])
-
-        put_data["targeting"]["browsers"] = {
-            "included": [],
-            "excluded": [{"family": dash.constants.BrowserFamily.CHROME}],
-        }
-        put_data["targeting"]["browsersOen"] = [{"family": dash.constants.BrowserFamily.CHROME}]
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertEqual(
-            {"family": dash.constants.BrowserFamily.CHROME}, resp_json["data"]["targeting"]["browsers"]["excluded"][0]
-        )
-        self.assertEqual([], resp_json["data"]["targeting"]["browsers"]["included"])
