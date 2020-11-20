@@ -4,6 +4,7 @@ import pytz
 import rest_framework.serializers
 
 import core.models.settings
+import core.models.settings.ad_group_settings.helpers
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
@@ -94,11 +95,29 @@ class AdGroupDaypartingSerializer(
         return data
 
 
+class BrowsersSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    included = rest_framework.serializers.ListField(
+        child=restapi.serializers.targeting.BrowserSerializer(),
+        source="target_browsers",
+        allow_null=True,
+        required=False,
+    )
+    excluded = rest_framework.serializers.ListField(
+        child=restapi.serializers.targeting.BrowserSerializer(),
+        source="exclusion_target_browsers",
+        allow_null=True,
+        required=False,
+    )
+
+
 class AdGroupTargetingSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {}
+        permissioned_fields = {
+            "browsers": "zemauth.can_use_browser_targeting",
+            "browsers_oen": "zemauth.can_use_oen_browser_targeting",
+        }
 
     # TODO: PLAC: remove after legacy grace period
     def to_representation(self, instance):
@@ -113,6 +132,29 @@ class AdGroupTargetingSerializer(
         ret = super().to_internal_value(data)
         return ret
 
+    def validate(self, data):
+        super().validate(data)
+
+        # skip this validation for OEN browser targeting
+        request_data = self.context.get("request").data
+        if request_data and request_data.get("targeting") and request_data.get("targeting").get("browsers_oen"):
+            return data
+
+        if data.get("target_browsers"):
+            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
+                data.get("target_browsers"), data.get("target_devices")
+            )
+            if any(browsers_errors):
+                raise rest_framework.serializers.ValidationError({"browsers": {"included": browsers_errors}})
+        elif data.get("exclusion_target_browsers"):
+            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
+                data.get("exclusion_target_browsers"), data.get("target_devices")
+            )
+            if any(browsers_errors):
+                raise rest_framework.serializers.ValidationError({"browsers": {"excluded": browsers_errors}})
+
+        return data
+
     devices = restapi.serializers.targeting.DevicesSerializer(
         source="target_devices",
         allow_empty=False,
@@ -120,7 +162,8 @@ class AdGroupTargetingSerializer(
     )
     environments = restapi.serializers.targeting.EnvironmentsSerializer(source="target_environments", required=False)
     os = restapi.serializers.targeting.OSsSerializer(source="target_os", required=False)
-    browsers = restapi.serializers.targeting.BrowsersSerializer(source="target_browsers", required=False)
+    browsers_oen = restapi.serializers.targeting.BrowsersSerializer(source="target_browsers", required=False)
+    browsers = BrowsersSerializer(source="*", required=False)
     audience = restapi.serializers.targeting.AudienceSerializer(source="bluekai_targeting", required=False)
     geo = AdGroupGeoSerializer(source="*", required=False)
     interest = AdGroupInterestSerializer(source="*", required=False)
@@ -131,13 +174,6 @@ class AdGroupTargetingSerializer(
     connection_types = restapi.serializers.targeting.ConnectionTypesSerializer(
         source="target_connection_types", required=False
     )
-
-
-class AdGroupTargetingOenSerializer(AdGroupTargetingSerializer):
-    class Meta:
-        permissioned_fields = {"browsers_oen": "zemauth.can_use_oen_browser_targeting"}
-
-    browsers_oen = restapi.serializers.targeting.BrowsersSerializer(source="target_browsers", required=False)
 
 
 class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -258,7 +294,7 @@ class AdGroupSerializer(
         max_digits=10, decimal_places=4, allow_null=True, required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     dayparting = AdGroupDaypartingSerializer(required=False, allow_null=True)
-    targeting = AdGroupTargetingOenSerializer(source="*", required=False)
+    targeting = AdGroupTargetingSerializer(source="*", required=False)
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
     frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)
     additional_data = rest_framework.fields.JSONField(allow_null=True, required=False)
