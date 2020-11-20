@@ -22,6 +22,7 @@ export interface GridRowDataStatsValue {
     value: string | number | BidModifier;
     popoverMessage?: string;
     url?: string;
+    redirectorUrl?: string;
     text?: string;
     overall?: Emoticon;
     list?: PerformanceItem[];

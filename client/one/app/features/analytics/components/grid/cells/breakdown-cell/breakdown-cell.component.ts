@@ -19,6 +19,7 @@ export class BreakdownCellComponent implements ICellRendererAngularComp {
     valueFormatted: string;
     valueType: BreakdownValueType;
     url: string;
+    redirectorUrl: string;
     popoverTooltip: string;
 
     BreakdownValueType = BreakdownValueType;
@@ -45,6 +46,8 @@ export class BreakdownCellComponent implements ICellRendererAngularComp {
             if (ENTITIES_WITH_EXTERNAL_LINKS.includes(entity.type)) {
                 this.valueType = BreakdownValueType.EXTERNAL_LINK;
                 this.url = (this.params.value as GridRowDataStatsValue).url;
+                this.redirectorUrl = (this.params
+                    .value as GridRowDataStatsValue).redirectorUrl;
             }
         }
     }
@@ -56,15 +59,15 @@ export class BreakdownCellComponent implements ICellRendererAngularComp {
         return true;
     }
 
-    openUrl($event: MouseEvent, url: string) {
+    openUrl($event: MouseEvent) {
         $event.preventDefault();
         if (
             this.shouldOpenInNewTab($event) ||
             this.valueType === BreakdownValueType.EXTERNAL_LINK
         ) {
-            window.open(url, '_blank');
+            window.open(this.redirectorUrl || this.url, '_blank');
         } else {
-            this.params.navigateByUrl(this.params, url);
+            this.params.navigateByUrl(this.params, this.url);
         }
     }
 
