@@ -1219,10 +1219,6 @@ customAudiences  |          |            |                                      
 retargetingAdGroups |       |            |                                                                      |
 &nbsp;           | included |            | array[adGroupId]                                                     | IDs of ad groups to retarget
 &nbsp;           | excluded |            | array[adGroupId]                                                     | IDs of ad groups to avoid
-browsers         |          |            |                                                                      |
-&nbsp;           | included |            | array[[browserFamily](#browser-targeting-settings)]                  | A list of browsers to target. If none specified, content is served to all browsers.
-&nbsp;           | excluded |            | array[[browserFamily](#browser-targeting-settings)]                  | A list of browsers to target. If none specified, content is served to all browsers.
-connectionType   |          |            | array[[connectionType](#connection-type)]                            | A list of connection types to target. If none specified, content is served to all connection types.
 
 <a name="os-targeting"></a>
 #### Operating System Targeting Settings
@@ -1311,13 +1307,6 @@ Property          | Type                                | Description
 state             | [autopilot state](#autopilot-state) | autopilot state
 dailyBudget       | dailyBudget                         | autopilot daily budget
 maxBid            | [money][#money]                     | the maximum allowed bid for autopilot
-
-<a name="browser-targeting-settings"></a>
-#### Browser Targeting Settings
-Property | Type                                | Description
----------|-------------------------------------|---------------------------------------------------------------------------------------------------|
-family   | [browser](#browser)                 | Browser family
-
 
 
 ### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
@@ -3403,24 +3392,17 @@ Include traffic that meets the following conditions:
 - `{{ key }}` - {{ value }}
 {% endfor %}
 
-<a name="browser"></a>
+<!-- <a name="browser"></a>
 ## Browser targeting
 
-- `CHROME` - Chrome
-- `SAFARI` - Safari
-- `FIREFOX` - Firefox
-- `IE` - Internet Explorer
-- `OPERA` - Opera
-- `EDGE` - Microsoft Edge
-- `SAMSUNG` - Samsung
-- `UC_BROWSER` - UC Browser
-- `OTHER` - Other (any browser other than the others named here)
-
-<a name="connection-type"></a>
-## Connection type targeting
-
-- `WIFI` - Wi-Fi
-- `CELLULAR` - Cellular
+- `CHROME`
+- `FIREFOX`
+- `SAFARI`
+- `IE`
+- `SAMSUNG`
+- `OPERA`
+- `UC_BROWSER`
+- `IN_APP` -->
 
 <a name="interest-category"></a>
 ## Interest targeting
@@ -3771,16 +3753,6 @@ Examples:
 - `min`: `ANDROID_6_0` (string)
 - `max`: `ANDROID_7_1` (string)
 
-
-## `browserFamilies` (object)
-
-- `family`: `CHROME` (array[string])
-
-## `browsers` (object)
-
-- `included` (browserFamilies)
-- `excluded`: (array[string])
-
 ## `targeting` (object)
 
 - `devices`: `DESKTOP`, `MOBILE` (array[string])
@@ -3792,8 +3764,6 @@ Examples:
 - `audience` (AudienceTargetingExpression)
 - `customAudiences` (customAudiences)
 - `retargetingAdGroups` (retargetingAdGroups)
-- `browsers` (browsers)
-- `connectionTypes`: `WIFI`, `CELLULAR` (array[string])
 
 ## `autopilot` (object)
 
