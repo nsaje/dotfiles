@@ -2,7 +2,6 @@ import decimal
 
 import rest_framework.serializers
 
-import core.models.settings.ad_group_settings.helpers
 import dash.constants
 import restapi.adgroup.v1.serializers
 import restapi.directdeal.internal.serializers
@@ -135,45 +134,6 @@ class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilot
     )
 
 
-class BrowsersSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    included = rest_framework.serializers.ListField(
-        child=restapi.serializers.targeting.BrowserSerializer(),
-        source="target_browsers",
-        allow_null=True,
-        required=False,
-    )
-    excluded = rest_framework.serializers.ListField(
-        child=restapi.serializers.targeting.BrowserSerializer(),
-        source="exclusion_target_browsers",
-        allow_null=True,
-        required=False,
-    )
-
-
-class AdGroupTargetingSerializer(restapi.adgroup.v1.serializers.AdGroupTargetingSerializer):
-    class Meta:
-        permissioned_fields = {"browsers": "zemauth.can_use_browser_targeting"}
-
-    browsers = BrowsersSerializer(source="*", required=False)
-
-    def validate(self, data):
-        super().validate(data)
-        if data.get("target_browsers"):
-            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
-                data.get("target_browsers"), data.get("target_devices")
-            )
-            if any(browsers_errors):
-                raise rest_framework.serializers.ValidationError({"browsers": {"included": browsers_errors}})
-        elif data.get("exclusion_target_browsers"):
-            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
-                data.get("exclusion_target_browsers"), data.get("target_devices")
-            )
-            if any(browsers_errors):
-                raise rest_framework.serializers.ValidationError({"browsers": {"excluded": browsers_errors}})
-
-        return data
-
-
 class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     class Meta(restapi.adgroup.v1.serializers.AdGroupSerializer.Meta):
         fields = (
@@ -215,7 +175,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     deals = rest_framework.serializers.ListSerializer(
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
-    targeting = AdGroupTargetingSerializer(source="*", required=False)
     bid = restapi.serializers.fields.TwoWayBlankDecimalField(
         source="local_bid",
         max_digits=10,
