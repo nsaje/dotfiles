@@ -3774,11 +3774,11 @@ Examples:
 
 ## `browserFamilies` (object)
 
-- `family`: `CHROME` (array[string])
+- `family`: `CHROME` (string)
 
 ## `browsers` (object)
 
-- `included` (browserFamilies)
+- `included` (array[browserFamilies])
 - `excluded`: (array[string])
 
 ## `targeting` (object)
