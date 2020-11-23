@@ -65,7 +65,9 @@ class AdGroupSourceSettingsMixin(object):
 
         user = request.user if request else None
 
-        agency_uses_realtime_autopilot = self.ad_group_source.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        agency_uses_realtime_autopilot = self.ad_group_source.ad_group.campaign.account.agency_uses_realtime_autopilot(
+            ad_group=self.ad_group_source.ad_group
+        )
         autopilot_active = (
             self.ad_group_source.ad_group.settings.autopilot_state
             != dash.constants.AdGroupSettingsAutopilotState.INACTIVE

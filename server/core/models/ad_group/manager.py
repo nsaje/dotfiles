@@ -156,7 +156,7 @@ class AdGroupManager(core.common.BaseManager):
 
     def _post_create(self, ad_group):
         # TODO: RTAP: LEGACY
-        if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if not ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group):
             if (
                 ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
                 or ad_group.campaign.settings.autopilot

@@ -76,7 +76,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
 
         # TODO: RTAP: LEGACY
-        if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if not ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group):
             if (
                 ad_group.settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
                 or ad_group.campaign.settings.autopilot
@@ -258,9 +258,9 @@ class AdGroupSourceState(BaseBulkActionView):
     def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
             # TODO: RTAP: LEGACY
-            enabling_autopilot_sources_allowed = ad_group.campaign.account.agency_uses_realtime_autopilot() or helpers.enabling_autopilot_sources_allowed(
-                ad_group, ad_group_sources
-            )
+            enabling_autopilot_sources_allowed = ad_group.campaign.account.agency_uses_realtime_autopilot(
+                ad_group=ad_group
+            ) or helpers.enabling_autopilot_sources_allowed(ad_group, ad_group_sources)
             if not enabling_autopilot_sources_allowed:
                 raise exc.ValidationError("Please increase Autopilot Daily Spend Cap to enable these sources.")
 
@@ -514,7 +514,7 @@ class CampaignAdGroupState(BaseBulkActionView):
 
         if campaign.settings.autopilot:
             # TODO: RTAP: LEGACY
-            if not ad_group.campaign.account.agency_uses_realtime_autopilot():
+            if not ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group):
                 autopilot_legacy.recalculate_budgets_campaign(campaign)
             else:
                 autopilot.recalculate_ad_group_budgets(campaign)

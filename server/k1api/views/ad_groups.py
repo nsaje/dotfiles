@@ -76,7 +76,7 @@ class AdGroupsView(K1APIView):
 
             b1_autopilot_state = (
                 dash.constants.B1AutopilotState.ACTIVE
-                if ad_group.campaign.account.agency_uses_realtime_autopilot()
+                if ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group)
                 and ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
                 else dash.constants.B1AutopilotState.INACTIVE
             )

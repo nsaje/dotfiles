@@ -107,7 +107,7 @@ class AdGroupSettingsMixin(object):
 
     def _handle_legacy_changes(self, new_settings, skip_validation=False):
         # TODO: RTAP: remove check after migration
-        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group):
             return
 
         changes = self.get_setting_changes(new_settings)
@@ -176,7 +176,9 @@ class AdGroupSettingsMixin(object):
 
     # TODO: RTAP: remove this after Phase 1
     def _set_bid_defaults(self, updates):
-        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot(
+            ad_group=self.ad_group
+        )
 
         if agency_uses_realtime_autopilot:
             return updates
@@ -199,7 +201,7 @@ class AdGroupSettingsMixin(object):
 
         self._remap_bid_fields(updates)
 
-        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group)
         is_cpm_bidding = self.ad_group.bidding_type == constants.BiddingType.CPM
 
         if is_cpm_bidding:
@@ -334,7 +336,7 @@ class AdGroupSettingsMixin(object):
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         changes = self.get_setting_changes(new_settings)
-        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group)
 
         # Turning on RTB-as-one
         if "b1_sources_group_enabled" in changes and changes["b1_sources_group_enabled"]:
@@ -407,7 +409,9 @@ class AdGroupSettingsMixin(object):
         skip_notification=False,
         write_source_history=True,
     ):
-        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot(
+            ad_group=self.ad_group
+        )
         autopilot_active = self.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
 
         if agency_uses_realtime_autopilot and autopilot_active:
@@ -447,7 +451,7 @@ class AdGroupSettingsMixin(object):
 
     def _handle_budget_autopilot(self, changes):
         # TODO: RTAP: LEGACY
-        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group):
             if not self._should_recalculate_budget_autopilot_legacy(changes):
                 return
 
