@@ -61,7 +61,11 @@ CREATE TABLE IF NOT EXISTS mv_adgroup_placement (
 
     local_base_effective_cost_nano bigint,
     local_base_effective_data_cost_nano bigint,
-    local_service_fee_nano bigint
+    local_service_fee_nano bigint,
+
+    -- kw::dimensions
+    outbrain_publisher_id varchar(127) encode zstd,
+    outbrain_section_id varchar(127) encode zstd
     -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_adgroup_placement_main_idx ON mv_adgroup_placement (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement, date);

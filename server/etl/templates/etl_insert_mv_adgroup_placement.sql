@@ -122,7 +122,9 @@ INSERT INTO mv_adgroup_placement (
                   (nvl(a.spend, 0) + nvl(a.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) -- effective spend
                 ) * cf.pct_service_fee::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
-        ) as local_service_fee_nano
+        ) as local_service_fee_nano,
+        a.outbrain_publisher_id,
+        a.outbrain_section_id
     FROM
         (
             SELECT
@@ -142,6 +144,9 @@ INSERT INTO mv_adgroup_placement (
                 LOWER(publisher) AS publisher,
                 NULLIF(placement_type, 0) AS placement_type,
                 CASE WHEN TRIM(placement)='' THEN NULL ELSE translate(placement, chr(0), '') END AS placement,
+
+                outbrain_publisher_id,
+                outbrain_section_id,
 
                 SUM(impressions) AS impressions,
                 SUM(clicks) AS clicks,
@@ -176,7 +181,7 @@ INSERT INTO mv_adgroup_placement (
                 AND ad_group_id=ANY(%(ad_group_id)s)
                 {% endif %}
             GROUP BY
-                1, 2, 3, 4, 5, 6
+                1, 2, 3, 4, 5, 6, 7, 8
         ) a
         LEFT OUTER JOIN mvh_source b ON a.source_slug=b.bidder_slug
         JOIN mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id

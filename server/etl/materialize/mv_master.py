@@ -194,8 +194,8 @@ class MasterView(Materialize):
                         0,  # local_service_fee_nano,
                         dash.constants.BrowserFamily.UNKNOWN,
                         dash.constants.ConnectionType.UNKNOWN,
-                        None,
-                        None,
+                        None,  # outbrain_publisher_id
+                        None,  # outbrain_section_id
                     ),
                     (row.conversions, row.postclick_source),
                 )

@@ -61,6 +61,10 @@ CREATE TABLE mv_adgroup_placement (
 
     local_base_effective_cost_nano bigint encode AZ64,
     local_base_effective_data_cost_nano bigint encode AZ64,
-    local_service_fee_nano bigint encode AZ64
+    local_service_fee_nano bigint encode AZ64,
+
+    -- kw::dimensions
+    outbrain_publisher_id varchar(127) encode zstd,
+    outbrain_section_id varchar(127) encode zstd
     -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement);
