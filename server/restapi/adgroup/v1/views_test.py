@@ -41,7 +41,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         end_date=None,
         max_cpc="0.600",
         max_cpm=None,
-        daily_budget="15.00",
+        daily_budget="50.00",
         tracking_code="a=b",
         target_regions={},
         exclusion_target_regions={},
@@ -74,7 +74,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
         final_target_regions.update(target_regions)
         final_exclusion_target_regions = {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []}
         final_exclusion_target_regions.update(exclusion_target_regions)
-
         representation = {
             "id": str(id) if id is not None else None,
             "campaignId": str(campaign_id) if campaign_id is not None else None,
@@ -90,7 +89,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             else cls.expected_none_decimal_output,
             "maxCpm": Decimal(max_cpm).quantize(Decimal("1.000")) if max_cpm else cls.expected_none_decimal_output,
             "dailyBudget": Decimal(daily_budget).quantize(Decimal("1.00"))
-            if daily_budget
+            if daily_budget not in (None, "")
             else cls.expected_none_decimal_output,
             "trackingCode": tracking_code,
             "targeting": {
@@ -118,7 +117,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             "autopilot": {
                 "state": constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
                 "dailyBudget": Decimal(autopilot_daily_budget).quantize(Decimal("1.00"))
-                if autopilot_daily_budget
+                if autopilot_daily_budget not in (None, "")
                 else cls.expected_none_decimal_output,
                 "maxBid": Decimal(max_autopilot_bid).quantize(Decimal("1.000"))
                 if max_autopilot_bid
@@ -168,7 +167,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             end_date=settings_db.end_date,
             max_cpc=settings_db.max_cpc_legacy,
             max_cpm=settings_db.max_cpm_legacy,
-            daily_budget=settings_db.daily_budget_cc,
+            daily_budget=settings_db.daily_budget_legacy,
             tracking_code=settings_db.tracking_code,
             target_regions=self._partition_regions(settings_db.target_regions),
             interest_targeting=settings_db.interest_targeting,
@@ -351,6 +350,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         # TODO: PLAC: remove after legacy grace period
         new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["bid"] = resp_json["data"]["maxCpc"]
+        new_ad_group["dailyBudget"] = resp_json["data"]["dailyBudget"]
+        new_ad_group["autopilot"]["dailyBudget"] = resp_json["data"]["dailyBudget"]
         self.assertEqual(resp_json["data"], new_ad_group)
         adgroup_db = dash.models.AdGroup.objects.get(pk=new_ad_group["id"])
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
@@ -374,6 +375,12 @@ class AdGroupViewSetTest(RESTAPITestCase):
         # TODO: PLAC: remove after legacy grace period
         new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpc"] = resp_json["data"]["bid"]
+
+        # RESTAPI default is b1_sources_group_enabled=False so source budgets get aggregated into daily_budget
+        # but because there are no allowed/active sources it gets overwritten by zero
+        new_ad_group["dailyBudget"] = resp_json["data"]["dailyBudget"]
+        new_ad_group["autopilot"]["dailyBudget"] = resp_json["data"]["dailyBudget"]
+
         self.assertEqual(resp_json["data"], new_ad_group)
         adgroup_db = dash.models.AdGroup.objects.get(pk=new_ad_group["id"])
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
@@ -395,6 +402,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
 
         new_ad_group["id"] = resp_json["data"]["id"]
+        new_ad_group["dailyBudget"] = resp_json["data"]["dailyBudget"]
+        new_ad_group["autopilot"]["dailyBudget"] = resp_json["data"]["dailyBudget"]
         # TODO: PLAC: remove after legacy grace period
         new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         # "bid" value overrides "maxCpc" value
@@ -428,6 +437,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpm"] = resp_json["data"]["maxCpm"]
         new_ad_group["bid"] = resp_json["data"]["maxCpm"]
+        new_ad_group["dailyBudget"] = resp_json["data"]["dailyBudget"]
+        new_ad_group["autopilot"]["dailyBudget"] = resp_json["data"]["dailyBudget"]
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
@@ -451,6 +462,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         # TODO: PLAC: remove after legacy grace period
         new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpm"] = resp_json["data"]["bid"]
+        new_ad_group["dailyBudget"] = resp_json["data"]["dailyBudget"]
+        new_ad_group["autopilot"]["dailyBudget"] = resp_json["data"]["dailyBudget"]
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
@@ -693,6 +706,71 @@ class AdGroupViewSetTest(RESTAPITestCase):
         test_adgroup["maxCpm"] = resp_json["data"]["maxCpm"]
         self.assertEqual(resp_json["data"], test_adgroup)
 
+    def test_adgroups_put_daily_budget(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group.settings.update_unsafe(
+            None,
+            b1_sources_group_enabled=True,
+            daily_budget_cc=Decimal("10.0"),
+            local_daily_budget=Decimal("100.0"),
+            local_autopilot_daily_budget=Decimal("120.0"),
+        )
+
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, daily_budget="123.4")
+        del put_data["autopilot"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("10"), ad_group.settings.daily_budget_cc)
+        self.assertEqual(Decimal("123.40"), ad_group.settings.local_daily_budget)
+        self.assertEqual(Decimal("123.40"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual("123.40", resp_json["data"]["dailyBudget"])
+        self.assertEqual("123.40", resp_json["data"]["autopilot"]["dailyBudget"])
+
+    def test_adgroups_put_daily_budget_legacy_agency(self):
+        account = self.mix_account(
+            self.user,
+            permissions=[Permission.READ, Permission.WRITE],
+            agency__id=1234,
+            agency__uses_realtime_autopilot=False,
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group.settings.update_unsafe(
+            None,
+            b1_sources_group_enabled=True,
+            daily_budget_cc=Decimal("10.0"),
+            local_daily_budget=Decimal("100.0"),
+            local_autopilot_daily_budget=Decimal("120.0"),
+        )
+
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, daily_budget="123.4")
+        del put_data["autopilot"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("123.40"), ad_group.settings.daily_budget_cc)
+        self.assertEqual(Decimal("100.00"), ad_group.settings.local_daily_budget)
+        self.assertEqual(Decimal("120.00"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual("123.40", resp_json["data"]["dailyBudget"])
+        self.assertEqual("120.00", resp_json["data"]["autopilot"]["dailyBudget"])
+
     def test_adgroups_put_name(self):
         account = self.mix_account(
             self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
@@ -824,6 +902,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             campaign_id=campaign.id,
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
             autopilot_daily_budget="20.00",
+            daily_budget="20.00",
             max_autopilot_bid="0.600",
         )
         r = self.client.put(
@@ -1061,6 +1140,22 @@ class AdGroupViewSetTest(RESTAPITestCase):
         )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(resp_json["details"], {"bid": ["CPM can't be lower than $0.01."]})
+
+    def test_adgroups_post_multiple_budget_legacy_error(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+
+        new_ad_group = self.adgroup_repr(
+            campaign_id=campaign.id,
+            name="Test Group",
+            daily_budget=Decimal("9000"),
+            autopilot_daily_budget=Decimal("9001"),
+        )
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"], "Budget updated with multiple values")
 
     def test_adgroups_put_end_date_before_start_date(self):
         account = self.mix_account(

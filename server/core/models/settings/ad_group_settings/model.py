@@ -294,6 +294,13 @@ class AdGroupSettings(
         else:
             return self.local_max_autopilot_bid
 
+    @property
+    def daily_budget_legacy(self):
+        account = self.ad_group.campaign.account
+        if account.agency_uses_realtime_autopilot():
+            return self.local_daily_budget
+        return self.daily_budget_cc
+
     @classmethod
     def get_defaults_dict(cls, ad_group=None, currency=None):
         # TODO: RTAP: correct defaults after migration

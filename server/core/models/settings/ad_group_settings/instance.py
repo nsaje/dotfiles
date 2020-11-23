@@ -2,6 +2,8 @@ import decimal
 
 from django.db import transaction
 from django.db.models import Sum
+from django.db.models import Value
+from django.db.models.functions import Coalesce
 
 import core.common
 import core.features.audiences
@@ -88,7 +90,7 @@ class AdGroupSettingsMixin(object):
             return
 
         ad_group_budget_data = self.ad_group.adgroupsource_set.filter_active().aggregate(
-            total_local_daily_budget=Sum("settings__local_daily_budget_cc")
+            total_local_daily_budget=Coalesce(Sum("settings__local_daily_budget_cc"), Value("0.0"))
         )
         self.update(
             request,
@@ -124,15 +126,20 @@ class AdGroupSettingsMixin(object):
             )
 
     def _sync_legacy_fields(self, new_settings, changes):
-        budget = (
-            changes.get("local_daily_budget")
-            or changes.get("local_autopilot_daily_budget")
-            or changes.get("local_b1_sources_group_daily_budget")
+        budget_update_field = (
+            "local_daily_budget" in changes
+            and "local_daily_budget"
+            or "local_autopilot_daily_budget" in changes
+            and "local_autopilot_daily_budget"
+            or "local_b1_sources_group_daily_budget" in changes
+            and "local_b1_sources_group_daily_budget"
         )
-        if budget:
-            new_settings.local_daily_budget = budget
-            new_settings.local_autopilot_daily_budget = budget
-            new_settings.local_b1_sources_group_daily_budget = budget
+        if budget_update_field:
+            budget = changes.get(budget_update_field)
+            if budget is not None:
+                new_settings.local_daily_budget = budget
+                new_settings.local_autopilot_daily_budget = budget
+                new_settings.local_b1_sources_group_daily_budget = budget
 
         bid_field, b1_sources_group_bid_field = (
             ("local_cpc", "local_b1_sources_group_cpc_cc")
@@ -207,15 +214,22 @@ class AdGroupSettingsMixin(object):
         if not is_cpm_bidding or not uses_realtime_autopilot:
             self._remove_no_change_fields(updates, "b1_sources_group_cpm")
 
-        # TODO: RTAP: remove when deploying restapi changes
-        daily_budget_legacy = updates.get("daily_budget_cc")
-        if daily_budget_legacy is not None:
-            logger.info(
-                "daily_budget_cc updated with non-default value",
-                agency_id=self.ad_group.campaign.account.agency_id,
-                ad_group_id=self.ad_group.id,
-                daily_budget_cc=daily_budget_legacy,
-            )
+        if "daily_budget_legacy" in updates:
+            daily_budget_legacy = updates.pop("daily_budget_legacy")
+
+            # TODO: RTAP: remove at cleanup
+            if daily_budget_legacy is not None:
+                logger.info(
+                    "daily_budget_cc updated with non-default value",
+                    agency_id=self.ad_group.campaign.account.agency_id,
+                    ad_group_id=self.ad_group.id,
+                    daily_budget_cc=daily_budget_legacy,
+                )
+
+            if uses_realtime_autopilot:
+                updates["local_daily_budget"] = daily_budget_legacy
+            else:
+                updates["daily_budget_cc"] = daily_budget_legacy
 
         return updates
 

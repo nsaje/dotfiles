@@ -275,7 +275,7 @@ class AdGroupSerializer(
         rounding=decimal.ROUND_HALF_DOWN,
     )
     daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="daily_budget_cc",
+        source="daily_budget_legacy",
         max_digits=10,
         decimal_places=4,
         output_precision=2,
