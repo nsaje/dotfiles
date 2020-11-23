@@ -97,7 +97,6 @@ angular
                     {
                         name: 'Browser',
                         breakdown: constants.breakdown.BROWSER,
-                        permissions: 'zemauth.can_see_browser_reporting',
                         page: 1,
                         pageSize: 50,
                         isNewFeature: true,
@@ -105,8 +104,6 @@ angular
                     {
                         name: 'Connection Type',
                         breakdown: constants.breakdown.CONNECTION_TYPE,
-                        permissions:
-                            'zemauth.can_see_connection_type_reporting',
                         page: 1,
                         pageSize: 50,
                         isNewFeature: true,

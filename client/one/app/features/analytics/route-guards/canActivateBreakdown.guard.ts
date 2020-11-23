@@ -31,18 +31,7 @@ export class CanActivateBreakdownGuard implements CanActivate {
     }
 
     private canSeeBreakdown(breakdown: BreakdownParam): boolean {
-        if (breakdown === BreakdownParam.BROWSER) {
-            return this.authStore.hasPermission(
-                'zemauth.can_see_browser_reporting'
-            );
-        }
-
-        if (breakdown === BreakdownParam.CONNECTION_TYPE) {
-            return this.authStore.hasPermission(
-                'zemauth.can_see_connection_type_reporting'
-            );
-        }
-
+        // add permissions check here
         return true;
     }
 

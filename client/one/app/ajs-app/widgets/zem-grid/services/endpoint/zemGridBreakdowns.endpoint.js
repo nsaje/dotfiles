@@ -122,16 +122,14 @@ angular
                 name: 'Browser',
                 query: 'browser',
                 report_query: 'Browser',
-                shown: 'zemauth.can_use_browser_targeting',
-                internal: 'zemauth.can_use_browser_targeting',
+                shown: true,
             },
 
             connectionType: {
                 name: 'Connection Type',
                 query: 'connection_type',
                 report_query: 'Connection Type',
-                shown: 'zemauth.can_use_connection_type_targeting',
-                internal: 'zemauth.can_use_connection_type_targeting',
+                shown: true,
             },
 
             zemPlacementType: {

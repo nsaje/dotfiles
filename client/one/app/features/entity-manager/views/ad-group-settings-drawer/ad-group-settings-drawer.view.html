@@ -566,58 +566,50 @@
                             </ng-template>
                         </zem-operating-system-list>
                         <hr />
-                        <ng-container
+                        <div
+                            class="zem-settings-section__description zem-settings-section__description--highlight"
+                        >
+                            Choose browser:
+                        </div>
+                        <div
                             *ngIf="
-                                authStore.hasPermission(
-                                    'zemauth.can_use_browser_targeting'
+                                state.entity.targeting.browsers.included
+                                    .length === 0 &&
+                                state.entity.targeting.browsers.excluded
+                                    .length === 0
+                            "
+                            class="zem-message"
+                        >
+                            You are currently targeting all browsers.
+                        </div>
+                        <zem-browser-targeting
+                            class="zem-browser-targeting zem-settings-section__item"
+                            [includedBrowsers]="
+                                state.entity.targeting.browsers.included
+                            "
+                            [excludedBrowsers]="
+                                state.entity.targeting.browsers.excluded
+                            "
+                            [selectedDeviceTypes]="
+                                state.entity.targeting.devices
+                            "
+                            [isDisabled]="isReadOnly"
+                            [browserTargetingErrors]="
+                                state.fieldsErrors.targeting.browsers
+                            "
+                            (includeExcludeChange)="
+                                store.browserTargetingIncludeExcludeChange(
+                                    $event
                                 )
                             "
-                        >
-                            <div
-                                class="zem-settings-section__description zem-settings-section__description--highlight"
-                            >
-                                Choose browser:
-                            </div>
-                            <div
-                                *ngIf="
-                                    state.entity.targeting.browsers.included
-                                        .length === 0 &&
-                                    state.entity.targeting.browsers.excluded
-                                        .length === 0
-                                "
-                                class="zem-message"
-                            >
-                                You are currently targeting all browsers.
-                            </div>
-                            <zem-browser-targeting
-                                class="zem-browser-targeting zem-settings-section__item"
-                                [includedBrowsers]="
-                                    state.entity.targeting.browsers.included
-                                "
-                                [excludedBrowsers]="
-                                    state.entity.targeting.browsers.excluded
-                                "
-                                [selectedDeviceTypes]="
-                                    state.entity.targeting.devices
-                                "
-                                [isDisabled]="isReadOnly"
-                                [browserTargetingErrors]="
-                                    state.fieldsErrors.targeting.browsers
-                                "
-                                (includeExcludeChange)="
-                                    store.browserTargetingIncludeExcludeChange(
-                                        $event
-                                    )
-                                "
-                                (addBrowserTargeting)="
-                                    store.addBrowserTargeting($event)
-                                "
-                                (removeBrowserTargeting)="
-                                    store.removeBrowserTargeting($event)
-                                "
-                            ></zem-browser-targeting>
-                            <hr />
-                        </ng-container>
+                            (addBrowserTargeting)="
+                                store.addBrowserTargeting($event)
+                            "
+                            (removeBrowserTargeting)="
+                                store.removeBrowserTargeting($event)
+                            "
+                        ></zem-browser-targeting>
+                        <hr />
                         <div class="zem-settings-section__inline-items">
                             <div class="zem-settings-section__inline-item">
                                 <div
@@ -652,34 +644,25 @@
                                 </zem-image-checkbox-input-group>
                                 <hr />
                             </div>
-                            <ng-container
-                                *ngIf="
-                                    authStore.hasPermission(
-                                        'zemauth.can_use_connection_type_targeting'
-                                    )
-                                "
-                            >
-                                <div class="zem-settings-section__inline-item">
-                                    <div
-                                        class="zem-settings-section__description zem-settings-section__description--highlight"
-                                    >
-                                        Choose connection type:
-                                    </div>
-                                    <zem-connection-type-targeting
-                                        class="zem-connection-type-targeting zem-settings-section__item"
-                                        [selectedConnectionTypes]="
-                                            state.entity.targeting
-                                                .connectionTypes
-                                        "
-                                        [isDisabled]="isReadOnly"
-                                        (connectionTypeToggle)="
-                                            store.toggleConnectionTypeTargeting(
-                                                $event
-                                            )
-                                        "
-                                    ></zem-connection-type-targeting>
+                            <div class="zem-settings-section__inline-item">
+                                <div
+                                    class="zem-settings-section__description zem-settings-section__description--highlight"
+                                >
+                                    Choose connection type:
                                 </div>
-                            </ng-container>
+                                <zem-connection-type-targeting
+                                    class="zem-connection-type-targeting zem-settings-section__item"
+                                    [selectedConnectionTypes]="
+                                        state.entity.targeting.connectionTypes
+                                    "
+                                    [isDisabled]="isReadOnly"
+                                    (connectionTypeToggle)="
+                                        store.toggleConnectionTypeTargeting(
+                                            $event
+                                        )
+                                    "
+                                ></zem-connection-type-targeting>
+                            </div>
                         </div>
                     </div>
                 </zem-expandable-section>

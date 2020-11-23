@@ -114,10 +114,7 @@ class AdGroupTargetingSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {
-            "browsers": "zemauth.can_use_browser_targeting",
-            "browsers_oen": "zemauth.can_use_oen_browser_targeting",
-        }
+        permissioned_fields = {"browsers_oen": "zemauth.can_use_oen_browser_targeting"}
 
     # TODO: PLAC: remove after legacy grace period
     def to_representation(self, instance):
