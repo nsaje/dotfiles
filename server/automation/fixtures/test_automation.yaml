@@ -180,8 +180,6 @@
     start_date: '2014-06-04'
     created_by: 1
     state: 1
-    cpc_cc: 100.00
-    max_cpm: 100.00
     autopilot_state: 1
     cpc: 0.15
     cpm: 0.16

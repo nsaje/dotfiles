@@ -7,7 +7,6 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
     def create_default(self, ad_group, name):
         new_settings = self._create_default_obj(ad_group)
         new_settings.ad_group_name = name
-        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(None)
         return new_settings
 
@@ -24,7 +23,6 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.autopilot_daily_budget = 0
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
-        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(None)
         return new_settings
 
@@ -46,7 +44,6 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         if source_ad_group_settings.end_date is not None and source_ad_group_settings.end_date <= today:
             new_settings.end_date = None
 
-        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(request)
         return new_settings
 

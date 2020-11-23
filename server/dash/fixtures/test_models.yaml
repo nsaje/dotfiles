@@ -284,7 +284,6 @@
         state: 1
         start_date: '2014-06-04'
         end_date: '2014-06-05'
-        cpc_cc: '1.00'
         cpc: '1.00'
         daily_budget: '500.'
         local_daily_budget: '500.'
@@ -315,7 +314,6 @@
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
-        max_cpm: '1.6'
         cpm: '1.6'
         b1_sources_group_enabled: true
         b1_sources_group_daily_budget: '500.0000'
@@ -343,7 +341,6 @@
         state: 2
         start_date: '2014-06-04'
         end_date: '2014-06-05'
-        cpc_cc: '0.12'
         cpc: '0.12'
         daily_budget_cc: '50.'
         tracking_code: ''
@@ -358,7 +355,6 @@
         state: 1
         start_date: '2014-06-04'
         end_date: '2014-06-05'
-        cpc_cc: '1.00'
         cpc: '1.00'
         daily_budget_cc: '50.'
         autopilot_state: 1
@@ -397,7 +393,8 @@
         state: 1
         start_date: '2014-06-04'
         end_date: '2014-06-05'
-        local_cpc_cc: '1.00'
+        local_cpc: '1.00'
+        local_cpm: '1.60'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
@@ -425,7 +422,6 @@
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
-        local_max_cpm: '1.6'
         b1_sources_group_enabled: true
         b1_sources_group_state: 1
         local_b1_sources_group_daily_budget: '500.0000'

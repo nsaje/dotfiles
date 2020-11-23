@@ -59,7 +59,6 @@ class AdGroupSettingsMixin(object):
             self._handle_bid_autopilot_initial_bids(
                 new_settings, skip_notification=skip_notification, write_source_history=write_source_history
             )
-            self.keep_old_and_new_bid_values_in_sync(new_settings)
             changes = self.get_setting_changes(new_settings)
             if changes:
                 if not skip_field_change_validation_autopilot:
@@ -154,33 +153,6 @@ class AdGroupSettingsMixin(object):
             setattr(new_settings, bid_field, bid)
             new_settings.local_max_autopilot_bid = bid
             setattr(new_settings, b1_sources_group_bid_field, bid)
-
-    def keep_old_and_new_bid_values_in_sync(self, update_object):
-        changes = update_object.__dict__
-
-        # copy old settings (if used) into new ones so that we do not lose any changes done with old settings
-        if "cpc_cc" in changes and changes["cpc_cc"] is not None:
-            update_object.cpc = changes["cpc_cc"]
-        if "local_cpc_cc" in changes and changes["local_cpc_cc"] is not None:
-            update_object.local_cpc = changes["local_cpc_cc"]
-        if "max_cpm" in changes and changes["max_cpm"] is not None:
-            update_object.cpm = changes["max_cpm"]
-        if "local_max_cpm" in changes and changes["local_max_cpm"] is not None:
-            update_object.local_cpm = changes["local_max_cpm"]
-
-        # copy new settings into old ones so that we do not lose any changes if we need to roll back
-        if changes.get("autopilot_state", self.autopilot_state) == constants.AdGroupSettingsAutopilotState.INACTIVE:
-            update_object.cpc_cc = changes.get("cpc", self.cpc)
-            update_object.local_cpc_cc = changes.get("local_cpc", self.local_cpc)
-            update_object.max_cpm = changes.get("cpm", self.cpm)
-            update_object.local_max_cpm = changes.get("local_cpm", self.local_cpm)
-        else:
-            if self.ad_group.bidding_type == constants.BiddingType.CPC:
-                update_object.cpc_cc = changes.get("max_autopilot_bid", self.max_autopilot_bid)
-                update_object.local_cpc_cc = changes.get("local_max_autopilot_bid", self.local_max_autopilot_bid)
-            else:
-                update_object.max_cpm = changes.get("max_autopilot_bid", self.max_autopilot_bid)
-                update_object.local_max_cpm = changes.get("local_max_autopilot_bid", self.local_max_autopilot_bid)
 
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):
@@ -527,12 +499,6 @@ class AdGroupSettingsMixin(object):
         email_helper.send_ad_group_notification_email(self.ad_group, request, changes_text)
 
     def add_to_history(self, user, action_type, changes, history_changes_text=None):
-        # remove old bid fields from history
-        changes.pop("cpc_cc", None)
-        changes.pop("local_cpc_cc", None)
-        changes.pop("max_cpm", None)
-        changes.pop("local_max_cpm", None)
-
         changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,

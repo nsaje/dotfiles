@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import unicodecsv as csv
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Case
 from django.db.models import Count
 from django.db.models import DateField
 from django.db.models import ExpressionWrapper
@@ -15,6 +16,7 @@ from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Q
 from django.db.models import Subquery
+from django.db.models import When
 from django.db.models.functions import Cast
 from django.db.models.functions import Coalesce
 
@@ -197,7 +199,7 @@ def _calculate_ad_group_stats(
         else:
             active_ssps = []
 
-        budget, cpc = _calculate_budget_and_cpc(
+        budget, bid = _calculate_budget_and_bid(
             campaign_data_dict[ad_group_data_row["campaign_id"]],
             ad_group_data_row,
             ad_group_source_data_dict[ad_group_id],
@@ -212,7 +214,7 @@ def _calculate_ad_group_stats(
             if "license_fee_nano" in ad_group_stats
             else 0,
             "calculated_daily_budget": budget,
-            "calculated_cpc": cpc,
+            "calculated_bid": bid,
             "active_ssps": ", ".join(sorted(active_ssps)),
             "active_ssps_count": len(active_ssps),
             "bidding_type": ad_group_data_row["adgroup_bidding_type"],
@@ -267,9 +269,11 @@ def _calculate_ad_group_stats(
     return ad_group_dict
 
 
-def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_source_rows, source_id_map):
+def _calculate_budget_and_bid(campaign_data_row, ad_group_data_row, ad_group_source_rows, source_id_map):
     adgroup_row = campaign_data_row.copy()
     adgroup_row.update(ad_group_data_row)
+
+    uses_realtime_autopilot = adgroup_row["uses_realtime_autopilot"] is True
 
     if adgroup_row["autopilot"] or adgroup_row["autopilot_state"] in (
         constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -295,18 +299,18 @@ def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_sou
         calculated_daily_budget = sum([i["budget"] for i in source_data])
         if adgroup_row["autopilot_state"] == constants.AdGroupSettingsAutopilotState.INACTIVE:
             if calculated_daily_budget != 0:
-                calculated_cpc = _weighted_average_cpc(source_data, daily_budget_sum=calculated_daily_budget)
+                calculated_bid = _weighted_average_cpc(source_data, daily_budget_sum=calculated_daily_budget)
             else:
-                calculated_cpc = Decimal(0)
+                calculated_bid = Decimal(0)
         else:
-            calculated_cpc = adgroup_row["cpc_cc"]
+            calculated_bid = adgroup_row["bid"] if uses_realtime_autopilot else adgroup_row["max_autopilot_bid"]
 
     elif adgroup_row["autopilot_state"] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         calculated_daily_budget = adgroup_row["autopilot_daily_budget"]
-        calculated_cpc = adgroup_row["cpc_cc"]
+        calculated_bid = adgroup_row["bid"] if uses_realtime_autopilot else adgroup_row["max_autopilot_bid"]
     elif adgroup_row["autopilot_state"] == constants.AdGroupSettingsAutopilotState.ACTIVE:
         calculated_daily_budget = adgroup_row["daily_budget"]
-        calculated_cpc = adgroup_row["cpc_cc"]
+        calculated_bid = adgroup_row["bid"]
 
         # TODO RTAP: don't fail the job until we fix daily budgets
         if calculated_daily_budget is None:
@@ -315,7 +319,7 @@ def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_sou
     else:
         raise ValueError("Unhandled autopilot_state: %s" % adgroup_row["autopilot_state"])
 
-    return calculated_daily_budget, calculated_cpc
+    return calculated_daily_budget, calculated_bid
 
 
 def _get_source_budget_and_cpc(source_row):
@@ -642,6 +646,7 @@ def _get_campaign_data(campaign_ids):
         "autopilot": F("settings__autopilot"),
         "campaignsettings_frequency_capping": F("settings__frequency_capping"),
         "campaign_tags": ArrayAgg("entity_tags__name", distinct=True),
+        "uses_realtime_autopilot": F("account__agency__uses_realtime_autopilot"),
     }
     output_values = list(field_mapping.keys()) + [
         "account_id",
@@ -811,7 +816,8 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "adgroup_default_blacklist_id": F("default_blacklist_id"),
         "start_date": F("settings__start_date"),
         "end_date": F("settings__end_date"),
-        "cpc_cc": F("settings__cpc_cc"),
+        "bid": Case(When(bidding_type=constants.BiddingType.CPM, then=F("settings__cpm")), default=F("settings__cpc")),
+        "max_autopilot_bid": F("settings__max_autopilot_bid"),
         "target_devices": F("settings__target_devices"),
         "target_regions": F("settings__target_regions"),
         "daily_budget": F("settings__daily_budget"),

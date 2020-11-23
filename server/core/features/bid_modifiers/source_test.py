@@ -4,7 +4,6 @@ from datetime import timedelta
 import mock
 from django.test import TestCase
 
-import core.features.multicurrency
 from core.features import bid_modifiers
 from core.features.multicurrency.service.update import _recalculate_ad_group_amounts
 from core.models.settings.ad_group_source_settings import exceptions as ags_exceptions
@@ -1109,339 +1108,6 @@ class MissingBidModifiersTestCase(TestCase):
         self.assertEquals(self._bid_modifier_qs(self.ad_group_source_1).first().modifier, 1.5)
 
 
-class MirrorOldAndNewBidValuesTestCase(TestCase):
-    def setUp(self):
-        magic_mixer.blend(
-            models.CurrencyExchangeRate,
-            currency=constants.Currency.EUR,
-            date=dates_helper.local_today(),
-            exchange_rate=decimal.Decimal("0.8968"),
-        )
-
-        self.ad_group = magic_mixer.blend(
-            models.AdGroup, campaign__account__currency=constants.Currency.EUR, bidding_type=constants.BiddingType.CPC
-        )
-        self.ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
-
-    def _initial_bid_values(self):
-        return {
-            "cpc_cc": decimal.Decimal("10.0000"),
-            "local_cpc_cc": decimal.Decimal("8.9680"),
-            "max_cpm": decimal.Decimal("12.5000"),
-            "local_max_cpm": decimal.Decimal("11.2100"),
-            "cpc": decimal.Decimal("10.0000"),
-            "local_cpc": decimal.Decimal("8.9680"),
-            "cpm": decimal.Decimal("12.5000"),
-            "local_cpm": decimal.Decimal("11.2100"),
-        }
-
-    def _assert_bid_values(self, kwargs):
-        for k, v in kwargs.items():
-            self.assertEqual(
-                getattr(self.ad_group.settings, k),
-                v,
-                "{}: expected {}, got {}".format(k, v, getattr(self.ad_group.settings, k)),
-            )
-
-    def test_change_old_cpc_value(self):
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, cpc_cc=decimal.Decimal("15.0000"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_old_local_cpc_value(self):
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, local_cpc_cc=decimal.Decimal("13.4520"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_cpc_value(self):
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, cpc=decimal.Decimal("15.0000"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_local_cpc_value(self):
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, local_cpc=decimal.Decimal("13.4520"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_old_cpm_value(self):
-        models.AdGroup.objects.filter(id=self.ad_group.id).update(bidding_type=constants.BiddingType.CPM)
-        self.ad_group.refresh_from_db()
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, max_cpm=decimal.Decimal("15.0000"))
-
-        bid_values.update(
-            {
-                "max_cpm": decimal.Decimal("15.0000"),
-                "local_max_cpm": decimal.Decimal("13.4520"),
-                "cpm": decimal.Decimal("15.0000"),
-                "local_cpm": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_old_local_cpm_value(self):
-        models.AdGroup.objects.filter(id=self.ad_group.id).update(bidding_type=constants.BiddingType.CPM)
-        self.ad_group.refresh_from_db()
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, local_max_cpm=decimal.Decimal("13.4520"))
-
-        bid_values.update(
-            {
-                "max_cpm": decimal.Decimal("15.0000"),
-                "local_max_cpm": decimal.Decimal("13.4520"),
-                "cpm": decimal.Decimal("15.0000"),
-                "local_cpm": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_cpm_value(self):
-        models.AdGroup.objects.filter(id=self.ad_group.id).update(bidding_type=constants.BiddingType.CPM)
-        self.ad_group.refresh_from_db()
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, cpm=decimal.Decimal("15.0000"))
-
-        bid_values.update(
-            {
-                "max_cpm": decimal.Decimal("15.0000"),
-                "local_max_cpm": decimal.Decimal("13.4520"),
-                "cpm": decimal.Decimal("15.0000"),
-                "local_cpm": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_local_cpm_value(self):
-        models.AdGroup.objects.filter(id=self.ad_group.id).update(bidding_type=constants.BiddingType.CPM)
-        self.ad_group.refresh_from_db()
-        bid_values = self._initial_bid_values()
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, local_cpm=decimal.Decimal("13.4520"))
-
-        bid_values.update(
-            {
-                "max_cpm": decimal.Decimal("15.0000"),
-                "local_max_cpm": decimal.Decimal("13.4520"),
-                "cpm": decimal.Decimal("15.0000"),
-                "local_cpm": decimal.Decimal("13.4520"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_cpc_value_unlimited(self):
-        bid_values = self._initial_bid_values()
-        bid_values.update({"cpc_cc": None, "local_cpc_cc": None, "max_cpm": None, "local_max_cpm": None})
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, cpc=decimal.Decimal("15.0000"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-                "max_cpm": decimal.Decimal("12.5000"),
-                "local_max_cpm": decimal.Decimal("11.2100"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-    def test_change_new_local_cpc_value_unlimited(self):
-        bid_values = self._initial_bid_values()
-        bid_values.update({"cpc_cc": None, "local_cpc_cc": None, "max_cpm": None, "local_max_cpm": None})
-        self.ad_group.settings.update_unsafe(None, **bid_values)
-
-        self._assert_bid_values(bid_values)
-
-        self.ad_group.settings.update(None, local_cpc=decimal.Decimal("13.4520"))
-
-        bid_values.update(
-            {
-                "cpc_cc": decimal.Decimal("15.0000"),
-                "local_cpc_cc": decimal.Decimal("13.4520"),
-                "cpc": decimal.Decimal("15.0000"),
-                "local_cpc": decimal.Decimal("13.4520"),
-                "max_cpm": decimal.Decimal("12.5000"),
-                "local_max_cpm": decimal.Decimal("11.2100"),
-            }
-        )
-
-        self._assert_bid_values(bid_values)
-
-
-@mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group", mock.MagicMock())
-@mock.patch.object(core.features.multicurrency, "get_current_exchange_rate")
-class MirrorOldBidValuesOnCreateTest(TestCase):
-    def setUp(self):
-        self.request = magic_mixer.blend_request_user()
-        self.campaign = magic_mixer.blend(models.Campaign)
-        self.exchange_rate = decimal.Decimal("2.0")
-        self.max_autopilot_bid = decimal.Decimal("5.0")
-
-    def test_cpc_inactive_autopilot(self, mock_get_exchange_rate):
-        mock_get_exchange_rate.return_value = self.exchange_rate
-        ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPC,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE,
-                "max_autopilot_bid": self.max_autopilot_bid,
-            },
-        )
-
-        self.assertEqual(ad_group.settings.cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE)
-        self.assertEqual(ad_group.settings.local_cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpc_cc, models.AdGroupSettings.DEFAULT_CPC_VALUE)
-        self.assertEqual(ad_group.settings.local_cpc_cc, models.AdGroupSettings.DEFAULT_CPC_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE)
-        self.assertEqual(ad_group.settings.local_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.max_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE)
-        self.assertEqual(ad_group.settings.local_max_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE * self.exchange_rate)
-
-    def test_cpc_active_autopilot(self, mock_get_exchange_rate):
-        mock_get_exchange_rate.return_value = self.exchange_rate
-        ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPC,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-                "max_autopilot_bid": self.max_autopilot_bid,
-            },
-        )
-
-        self.assertEqual(ad_group.settings.cpc, self.max_autopilot_bid)
-        self.assertEqual(ad_group.settings.local_cpc, self.max_autopilot_bid * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpc_cc, self.max_autopilot_bid)
-        self.assertEqual(ad_group.settings.local_cpc_cc, self.max_autopilot_bid * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE)
-        self.assertEqual(ad_group.settings.local_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.max_cpm, None)
-        self.assertEqual(ad_group.settings.local_max_cpm, None)
-
-    def test_cpm_inactive_autopilot(self, mock_get_exchange_rate):
-        mock_get_exchange_rate.return_value = self.exchange_rate
-        ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPM,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE,
-                "max_autopilot_bid": self.max_autopilot_bid,
-            },
-        )
-
-        self.assertEqual(ad_group.settings.cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE)
-        self.assertEqual(ad_group.settings.local_cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpc_cc, models.AdGroupSettings.DEFAULT_CPC_VALUE)
-        self.assertEqual(ad_group.settings.local_cpc_cc, models.AdGroupSettings.DEFAULT_CPC_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE)
-        self.assertEqual(ad_group.settings.local_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.max_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE)
-        self.assertEqual(ad_group.settings.local_max_cpm, models.AdGroupSettings.DEFAULT_CPM_VALUE * self.exchange_rate)
-
-    def test_cpm_active_autopilot(self, mock_get_exchange_rate):
-        mock_get_exchange_rate.return_value = self.exchange_rate
-        ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPM,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-                "max_autopilot_bid": self.max_autopilot_bid,
-            },
-        )
-
-        self.assertEqual(ad_group.settings.cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE)
-        self.assertEqual(ad_group.settings.local_cpc, models.AdGroupSettings.DEFAULT_CPC_VALUE * self.exchange_rate)
-        self.assertEqual(ad_group.settings.cpc_cc, None)
-        self.assertEqual(ad_group.settings.local_cpc_cc, None)
-        self.assertEqual(ad_group.settings.cpm, self.max_autopilot_bid)
-        self.assertEqual(ad_group.settings.local_cpm, self.max_autopilot_bid * self.exchange_rate)
-        self.assertEqual(ad_group.settings.max_cpm, self.max_autopilot_bid)
-        self.assertEqual(ad_group.settings.local_max_cpm, self.max_autopilot_bid * self.exchange_rate)
-
-
 class AllRTBUpdateTestCase(TestCase):
     def setUp(self):
         magic_mixer.blend(
@@ -1470,10 +1136,6 @@ class AllRTBUpdateTestCase(TestCase):
 
     def _initial_ad_group_settings(self, **updates):
         settings = {
-            "cpc_cc": None,
-            "local_cpc_cc": None,
-            "max_cpm": None,
-            "local_max_cpm": None,
             "cpc": decimal.Decimal("20.0000"),
             "local_cpc": decimal.Decimal("17.9360"),
             "cpm": decimal.Decimal("25.0000"),
@@ -1633,10 +1295,6 @@ class MulticurrencyUpdateTestCase(TestCase):
 
         ad_group.settings.update_unsafe(
             None,
-            cpc_cc=None,
-            local_cpc_cc=None,
-            max_cpm=None,
-            local_max_cpm=None,
             cpc=decimal.Decimal("20.0000"),
             local_cpc=decimal.Decimal("17.9360"),
             cpm=decimal.Decimal("25.0000"),
@@ -1748,10 +1406,6 @@ class MulticurrencyUpdateTestCase(TestCase):
 
         ad_group_1.settings.update_unsafe(
             None,
-            cpc_cc=None,
-            local_cpc_cc=None,
-            max_cpm=None,
-            local_max_cpm=None,
             cpc=decimal.Decimal("20.0000"),
             local_cpc=decimal.Decimal("17.9360"),
             cpm=decimal.Decimal("25.0000"),
@@ -1761,10 +1415,6 @@ class MulticurrencyUpdateTestCase(TestCase):
 
         ad_group_2.settings.update_unsafe(
             None,
-            cpc_cc=decimal.Decimal("10.0000"),
-            local_cpc_cc=decimal.Decimal("8.9680"),
-            max_cpm=decimal.Decimal("12.5000"),
-            local_max_cpm=decimal.Decimal("11.2100"),
             cpc=decimal.Decimal("10.0000"),
             local_cpc=decimal.Decimal("8.9680"),
             cpm=decimal.Decimal("12.5000"),
@@ -1772,19 +1422,11 @@ class MulticurrencyUpdateTestCase(TestCase):
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         )
 
-        self.assertEqual(ad_group_1.settings.cpc_cc, None)
-        self.assertEqual(ad_group_1.settings.local_cpc_cc, None)
-        self.assertEqual(ad_group_1.settings.max_cpm, None)
-        self.assertEqual(ad_group_1.settings.local_max_cpm, None)
         self.assertEqual(ad_group_1.settings.cpc, decimal.Decimal("20.0000"))
         self.assertEqual(ad_group_1.settings.local_cpc, decimal.Decimal("17.9360"))
         self.assertEqual(ad_group_1.settings.cpm, decimal.Decimal("25.0000"))
         self.assertEqual(ad_group_1.settings.local_cpm, decimal.Decimal("22.4200"))
 
-        self.assertEqual(ad_group_2.settings.cpc_cc, decimal.Decimal("10.0000"))
-        self.assertEqual(ad_group_2.settings.local_cpc_cc, decimal.Decimal("8.9680"))
-        self.assertEqual(ad_group_2.settings.max_cpm, decimal.Decimal("12.5000"))
-        self.assertEqual(ad_group_2.settings.local_max_cpm, decimal.Decimal("11.2100"))
         self.assertEqual(ad_group_2.settings.cpc, decimal.Decimal("10.0000"))
         self.assertEqual(ad_group_2.settings.local_cpc, decimal.Decimal("8.9680"))
         self.assertEqual(ad_group_2.settings.cpm, decimal.Decimal("12.5000"))
@@ -1802,19 +1444,11 @@ class MulticurrencyUpdateTestCase(TestCase):
         ad_group_1.refresh_from_db()
         ad_group_2.refresh_from_db()
 
-        self.assertEqual(ad_group_1.settings.cpc_cc, decimal.Decimal("19.7947"))
-        self.assertEqual(ad_group_1.settings.local_cpc_cc, decimal.Decimal("17.9360"))
-        self.assertEqual(ad_group_1.settings.max_cpm, decimal.Decimal("24.7434"))
-        self.assertEqual(ad_group_1.settings.local_max_cpm, decimal.Decimal("22.4200"))
         self.assertEqual(ad_group_1.settings.cpc, decimal.Decimal("19.7947"))
         self.assertEqual(ad_group_1.settings.local_cpc, decimal.Decimal("17.9360"))
         self.assertEqual(ad_group_1.settings.cpm, decimal.Decimal("24.7434"))
         self.assertEqual(ad_group_1.settings.local_cpm, decimal.Decimal("22.4200"))
 
-        self.assertEqual(ad_group_2.settings.cpc_cc, decimal.Decimal("9.8974"))
-        self.assertEqual(ad_group_2.settings.local_cpc_cc, decimal.Decimal("8.9680"))
-        self.assertEqual(ad_group_2.settings.max_cpm, decimal.Decimal("12.3717"))
-        self.assertEqual(ad_group_2.settings.local_max_cpm, decimal.Decimal("11.2100"))
         self.assertEqual(ad_group_2.settings.cpc, decimal.Decimal("9.8974"))
         self.assertEqual(ad_group_2.settings.local_cpc, decimal.Decimal("8.9680"))
         self.assertEqual(ad_group_2.settings.cpm, decimal.Decimal("12.3717"))
@@ -1831,10 +1465,6 @@ class SkipSourceValidationTestCase(TestCase):
 
         ad_group.settings.update_unsafe(
             None,
-            cpc_cc=None,
-            local_cpc_cc=None,
-            max_cpm=None,
-            local_max_cpm=None,
             cpc=decimal.Decimal("2.0000"),
             local_cpc=decimal.Decimal("1.0000"),
             cpm=decimal.Decimal("2.0000"),
@@ -1873,10 +1503,6 @@ class SkipSourceValidationTestCase(TestCase):
 
         ad_group.settings.update_unsafe(
             None,
-            cpc_cc=None,
-            local_cpc_cc=None,
-            max_cpm=None,
-            local_max_cpm=None,
             cpc=decimal.Decimal("2.0000"),
             local_cpc=decimal.Decimal("1.0000"),
             cpm=decimal.Decimal("2.0000"),

@@ -58,8 +58,8 @@ class RDSModelization(object):
         if not self.rds_data:
             self.rds_data = self._get_rds_queryset()
         columns = [self.PK] + list(self.FIELDS.keys())
-        for l in self.rds_data.iterator():
-            yield [l.get(col) for col in columns]
+        for elm in self.rds_data.iterator():
+            yield [elm.get(col) for col in columns]
 
     def _load_csv_from_s3(self):
         redshift.refresh_materialized_rds_table(self.s3_path, self.TABLE, bucket_name=self.BUCKET_NAME)
@@ -223,8 +223,10 @@ class RDSAdGroup(RDSModelization):
         campaign_id="campaign_id",
         amplify_review="amplify_review",
         state="settings__state",
-        cpc_cc="settings__cpc_cc",
-        local_cpc_cc="settings__local_cpc_cc",
+        cpc="settings__cpc",
+        local_cpc="settings__local_cpc",
+        cpm="settings__cpm",
+        local_cpm="settings__local_cpm",
         daily_budget_cc="settings__daily_budget_cc",
         target_devices="settings__target_devices",
         target_environments="settings__target_environments",
@@ -252,8 +254,6 @@ class RDSAdGroup(RDSModelization):
         b1_sources_group_cpc_cc="settings__b1_sources_group_cpc_cc",
         local_b1_sources_group_cpc_cc="settings__local_b1_sources_group_cpc_cc",
         b1_sources_group_state="settings__b1_sources_group_state",
-        max_cpm="settings__max_cpm",
-        local_max_cpm="settings__local_max_cpm",
         delivery_type="settings__delivery_type",
         click_capping_daily_ad_group_max_clicks="settings__click_capping_daily_ad_group_max_clicks",
         click_capping_daily_click_budget="settings__click_capping_daily_click_budget",

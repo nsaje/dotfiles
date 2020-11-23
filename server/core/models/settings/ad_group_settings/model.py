@@ -72,8 +72,6 @@ class AdGroupSettings(
         "local_cpm",
         "max_autopilot_bid",
         "local_max_autopilot_bid",
-        "cpc_cc",
-        "local_cpc_cc",
         "daily_budget",
         "local_daily_budget",
         "daily_budget_cc",
@@ -115,8 +113,6 @@ class AdGroupSettings(
         "local_b1_sources_group_cpm",
         "b1_sources_group_state",
         "dayparting",
-        "max_cpm",
-        "local_max_cpm",
         "delivery_type",
         "click_capping_daily_ad_group_max_clicks",
         "click_capping_daily_click_budget",
@@ -149,12 +145,6 @@ class AdGroupSettings(
     )
     local_max_autopilot_bid = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum autopilot bid"
-    )
-    cpc_cc = models.DecimalField(
-        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
-    )  # max CPC
-    local_cpc_cc = models.DecimalField(
-        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
     )
     daily_budget = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Ad group’s daily budget"
@@ -257,11 +247,6 @@ class AdGroupSettings(
 
     dayparting = jsonfield.JSONField(blank=True, default=dict, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
-    max_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPM")
-    local_max_cpm = models.DecimalField(
-        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPM"
-    )
-
     delivery_type = models.IntegerField(
         default=constants.AdGroupDeliveryType.STANDARD, choices=constants.AdGroupDeliveryType.get_choices()
     )
@@ -316,9 +301,7 @@ class AdGroupSettings(
             [
                 ("state", constants.AdGroupSettingsState.INACTIVE),
                 ("start_date", dates_helper.local_today()),
-                ("cpc_cc", None),
                 ("cpc", cls.DEFAULT_CPC_VALUE),
-                ("max_cpm", None),
                 ("cpm", cls.DEFAULT_CPM_VALUE),
                 ("max_autopilot_bid", None),
                 ("daily_budget", cls.DEFAULT_DAILY_BUDGET),
@@ -357,10 +340,6 @@ class AdGroupSettings(
             "local_cpm": "Bid CPM",
             "max_autopilot_bid": "Maximum autopilot bid (deprecated)",
             "local_max_autopilot_bid": "Maximum autopilot bid (deprecated)",
-            "cpc_cc": "Max CPC bid",
-            "local_cpc_cc": "Max CPC bid",
-            "max_cpm": "Max CPM bid",
-            "local_max_cpm": "Max CPM bid",
             "daily_budget": "Ad group’s daily budget",
             "local_daily_budget": "Ad group’s daily budget",
             "daily_budget_cc": "Daily spend cap",
@@ -429,10 +408,6 @@ class AdGroupSettings(
         elif prop_name == "local_cpm" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_max_autopilot_bid" and value is not None:
-            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
-        elif prop_name == "local_cpc_cc" and value is not None:
-            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
-        elif prop_name == "local_max_cpm" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_daily_budget" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)

@@ -441,8 +441,7 @@ class AdGroupSourcesTest(RESTAPITestCase):
     ):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
-        ad_group.settings.update_unsafe(None, b1_sources_group_enabled=False)
-        ad_group.settings.update_unsafe(None, cpc_cc=0.7792)
+        ad_group.settings.update_unsafe(None, cpc=0.7792, b1_sources_group_enabled=False)
         ad_group_sources = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=("a",))
 
         # min cpc - would return 0.12 without rounding ceiling
@@ -481,7 +480,7 @@ class AdGroupSourcesTest(RESTAPITestCase):
         ad_group = magic_mixer.blend(
             dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
-        ad_group.settings.update_unsafe(None, max_cpm=0.7792)
+        ad_group.settings.update_unsafe(None, cpm=0.7792)
         ad_group_sources = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=("a",))
 
         # min cpm - would return 0.12 without rounding ceiling

@@ -31,8 +31,6 @@ class InstanceTest(TestCase):
         expected_changes = {
             "cpc": Decimal("0.5"),
             "local_cpc": Decimal("0.5"),
-            "cpc_cc": Decimal("0.5"),
-            "local_cpc_cc": Decimal("0.5"),
             "max_autopilot_bid": Decimal("0.5"),
             "local_max_autopilot_bid": Decimal("0.5"),
             "b1_sources_group_cpc_cc": Decimal("0.5"),

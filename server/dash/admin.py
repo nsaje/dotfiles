@@ -959,7 +959,7 @@ class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     actions = None
 
     search_fields = ("ad_group__name",)
-    list_display = ("ad_group", "state", "cpc_cc", "daily_budget_cc", "start_date", "end_date", "created_dt")
+    list_display = ("ad_group", "state", "daily_budget_cc", "start_date", "end_date", "created_dt")
     readonly_fields = ("created_by", "ad_group")
 
     def has_delete_permission(self, request, obj=None):

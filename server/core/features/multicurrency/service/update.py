@@ -85,10 +85,6 @@ def _recalculate_ad_group_sources_amounts(ad_group):
 def _sanity_check(changes, multicurrency_fields, ad_group_id=None, ad_group_source_id=None):
     if not changes:
         return
-    changes.pop("cpc_cc", None)
-    changes.pop("local_cpc_cc", None)
-    changes.pop("max_cpm", None)
-    changes.pop("local_max_cpm", None)
     # TODO temporary fix due to prodops hacks on arhived ad groups
     changes.pop("delivery_type", None)
     if any(field not in multicurrency_fields for field in changes):
