@@ -153,7 +153,7 @@ class AdGroupOverview(DASHAPIBaseView):
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
 
-        agency_uses_realtime_autopilot = ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group)
+        agency_uses_realtime_autopilot = ad_group.campaign.account.agency_uses_realtime_autopilot()
 
         header = {
             "title": ad_group.name,
@@ -604,9 +604,7 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                     campaign_settings,
                     allowed_sources,
                 ),
-                "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot(
-                    ad_group=ad_group
-                )
+                "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot()
                 or helpers.enabling_autopilot_single_source_allowed(ad_group),
             }
         )

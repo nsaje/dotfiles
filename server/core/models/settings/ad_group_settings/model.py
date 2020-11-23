@@ -297,7 +297,7 @@ class AdGroupSettings(
     @property
     def daily_budget_legacy(self):
         account = self.ad_group.campaign.account
-        if account.agency_uses_realtime_autopilot(ad_group=self.ad_group):
+        if account.agency_uses_realtime_autopilot():
             return self.local_daily_budget
         return self.daily_budget_cc
 

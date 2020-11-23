@@ -117,8 +117,5 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
         else:
             return "N/A"
 
-    def agency_uses_realtime_autopilot(self, ad_group=None):
-        if ad_group is not None and ad_group.id == 344753:
-            return True
-
+    def agency_uses_realtime_autopilot(self):
         return self.agency.uses_realtime_autopilot if self.agency else False

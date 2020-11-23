@@ -38,7 +38,7 @@ def get_extra_data(user, ad_group):
         "audiences": audiences,
         "warnings": warnings,
         "current_bids": {"cpc": ad_group.settings.local_cpc, "cpm": ad_group.settings.local_cpm},
-        "agency_uses_realtime_autopilot": ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group),
+        "agency_uses_realtime_autopilot": ad_group.campaign.account.agency_uses_realtime_autopilot(),
     }
 
     if user.has_perm("zemauth.can_see_backend_hacks"):

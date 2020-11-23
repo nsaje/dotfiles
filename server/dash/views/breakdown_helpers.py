@@ -177,9 +177,7 @@ def get_upload_batches_response_list(upload_batches):
 
 def get_ad_group_sources_extras(ad_group):
     return {
-        "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot(
-            ad_group=ad_group
-        )
+        "enabling_autopilot_sources_allowed": ad_group.campaign.account.agency_uses_realtime_autopilot()
         or helpers.enabling_autopilot_single_source_allowed(ad_group),
         "ad_group_autopilot_state": ad_group.settings.autopilot_state,
         "campaign_autopilot": ad_group.campaign.settings.autopilot,
@@ -226,8 +224,7 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings):
         daily_budget_edit_enabled = False
         daily_budget_edit_message = "This value cannot be edited because the ad group is on Autopilot."
     if campaign_settings.autopilot or (
-        ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=ad_group)
-        and ad_group.settings.b1_sources_group_enabled
+        ad_group.campaign.account.agency_uses_realtime_autopilot() and ad_group.settings.b1_sources_group_enabled
     ):
         daily_budget_edit_enabled = False
         daily_budget_edit_message = "This value cannot be edited because the campaign is on Autopilot."

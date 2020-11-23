@@ -61,9 +61,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
         if new_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
             return
 
-        enabling_autopilot_sources_allowed = self.ad_group_source.ad_group.campaign.account.agency_uses_realtime_autopilot(
-            ad_group=self.ad_group_source.ad_group
-        ) or helpers.enabling_autopilot_sources_allowed(
+        enabling_autopilot_sources_allowed = self.ad_group_source.ad_group.campaign.account.agency_uses_realtime_autopilot() or helpers.enabling_autopilot_sources_allowed(
             self.ad_group_source.ad_group, [self.ad_group_source]
         )
         if not enabling_autopilot_sources_allowed:

@@ -376,9 +376,7 @@ class AdGroupBreakdown(DASHAPIBaseView):
             ).data
 
         extras["currency"] = currency
-        extras["agency_uses_realtime_autopilot"] = ad_group.campaign.account.agency_uses_realtime_autopilot(
-            ad_group=ad_group
-        )
+        extras["agency_uses_realtime_autopilot"] = ad_group.campaign.account.agency_uses_realtime_autopilot()
         stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
         if totals:
             stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
