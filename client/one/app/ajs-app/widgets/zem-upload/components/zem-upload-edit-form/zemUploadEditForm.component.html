@@ -1506,7 +1506,7 @@
                 </div>
 
                 <div
-                    ng-if="ctrl.selectedCandidate.adType !== ctrl.adType.AD_TAG"
+                    ng-if="ctrl.selectedCandidate.adType !== ctrl.adType.AD_TAG && !ctrl.hasPermission('zemauth.can_use_3rdparty_js_trackers')"
                 >
                     <div
                         class="form__group"
@@ -1670,6 +1670,31 @@
                         >
                             Add secondary tracker
                         </a>
+                    </div>
+                </div>
+                <div
+                    ng-if="ctrl.selectedCandidate.adType !== ctrl.adType.AD_TAG && ctrl.hasPermission('zemauth.can_use_3rdparty_js_trackers')"
+                    class="form__group"
+                >
+                    <label class="form__label form__label--optional">
+                        Tracking
+                    </label>
+                    <div class="zem-upload-edit-form__tracker-list">
+                        <zem-content-ad-trackers
+                            class="zem-content-ad-trackers"
+                            [content-ad-trackers]="
+                                ctrl.selectedCandidate.trackers
+                            "
+                            [content-ad-trackers-errors]="
+                                ctrl.selectedCandidate.errors.trackers
+                            "
+                            (content-ad-trackers-change)="
+                                ctrl.saveTrackers(
+                                    ctrl.selectedCandidate,
+                                    $event
+                                )
+                            "
+                        ></zem-content-ad-trackers>
                     </div>
                 </div>
             </div>

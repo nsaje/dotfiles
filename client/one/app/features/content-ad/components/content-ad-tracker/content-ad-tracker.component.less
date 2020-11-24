@@ -1,0 +1,60 @@
+@import 'variables';
+
+.zem-content-ad-tracker {
+    display: block;
+    border: 1px solid @color--lighter-neutral;
+    border-radius: @border-radius--default;
+}
+
+.zem-content-ad-tracker--error {
+    border: 1px solid @color--danger;
+}
+
+.zem-content-ad-tracker__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+}
+
+.zem-content-ad-tracker__item:first-child {
+    border-bottom: 1px solid @color--lighter-neutral;
+}
+
+.zem-content-ad-tracker__item-event-type {
+    flex: 0 0 100px;
+    background-color: tint(@color--secondary, 90%);
+    opacity: 0.4;
+    text-align: center;
+    line-height: 45px;
+    height: 45px;
+}
+
+.zem-content-ad-tracker__item-url {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 4px;
+    width: 100%;
+}
+
+.zem-content-ad-tracker__item-buttons {
+    flex: 0 0 95px;
+    padding-left: @spacing--default;
+    display: flex;
+    justify-content: space-between;
+}
+
+.zem-content-ad-tracker__item-index {
+    text-align: center;
+    color: @color--secondary;
+    font-size: 22px;
+    border-right: 1px solid @color--lighter-neutral;
+    width: 40px;
+    padding: 6px 10px 6px 6px;
+}
+
+.zem-content-ad-tracker__edit-form {
+    padding-top: 6px;
+    background-color: @color--lightest-neutral;
+}

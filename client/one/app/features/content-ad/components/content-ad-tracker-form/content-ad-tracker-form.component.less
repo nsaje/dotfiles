@@ -1,0 +1,53 @@
+@import 'variables';
+
+.zem-content-ad-tracker-form {
+    display: block;
+    width: 100%;
+}
+
+.zem-content-ad-tracker-form__item {
+    display: block;
+    margin-bottom: @zem-form-group__items-spacing--default;
+}
+
+.zem-content-ad-tracker-form__method-button.zem-button--highlighted {
+    background-color: @color--secondary;
+    color: #fff;
+
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: @color--secondary;
+            color: #fff;
+            box-shadow: 0px 0px 6px 0px fade(@color--secondary, 10%);
+        }
+    }
+}
+
+.zem-content-ad-tracker-form__method-button:first-child {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.zem-content-ad-tracker-form__method-button:last-child {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+.zem-content-ad-tracker-form__description {
+    color: @text-color--lighter;
+}
+
+.zem-content-ad-tracker-form__input-help {
+    display: flex;
+    align-items: center;
+}
+
+.zem-content-ad-tracker-form__input-help-input {
+    flex-grow: 1;
+}
+
+.zem-content-ad-tracker-form__input-help-icon {
+    margin-left: 4px;
+}

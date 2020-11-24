@@ -1146,3 +1146,26 @@
         }
     }
 }
+
+.content-upload {
+    .zem-upload-edit-form__tracker-list {
+        width: @form-input-width-content-upload;
+        margin-left: 18%;
+
+        .zem-content-ad-tracker-form__description {
+            font-size: 11px;
+        }
+    }
+
+    .zem-upload-edit-form__tracker-list-limit {
+        font-size: 11px;
+        color: @text-color--lighter;
+    }
+}
+
+@media only screen and (max-width: @tablet-breakpoint) {
+    .content-upload .zem-upload-edit-form__tracker-list {
+        width: 100%;
+        margin-left: 0;
+    }
+}

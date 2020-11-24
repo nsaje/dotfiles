@@ -34,6 +34,7 @@ import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 import {UsersModule} from './features/users/users.module';
 import {CreativeLibraryModule} from './features/creative-library/creative-library.module';
 import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
+import {ContentAdModule} from './features/content-ad/content-ad.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -93,6 +94,7 @@ if (APP_CONFIG.env.prod) {
         NewEntityAnalyticsMockModule,
         UsersModule,
         CreativeLibraryModule,
+        ContentAdModule,
 
         // App router
         RouterModule.forRoot(APP_ROUTES),

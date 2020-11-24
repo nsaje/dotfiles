@@ -55,6 +55,21 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             call_to_action: candidate.callToAction,
             primary_tracker_url: candidate.primaryTrackerUrl,
             secondary_tracker_url: candidate.secondaryTrackerUrl,
+            trackers: candidate.trackers
+                ? candidate.trackers.map(function(tracker) {
+                      return {
+                          event_type: tracker.eventType
+                              ? tracker.eventType.toLowerCase()
+                              : null,
+                          method: tracker.method
+                              ? tracker.method.toLowerCase()
+                              : null,
+                          url: tracker.url,
+                          fallback_url: tracker.fallbackUrl,
+                          tracker_optional: tracker.trackerOptional,
+                      };
+                  })
+                : undefined,
         };
 
         if (candidate.adSize) {
@@ -102,6 +117,16 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             trackerUrls: errors.tracker_urls,
             primaryTrackerUrl: errors.primary_tracker_url,
             secondaryTrackerUrl: errors.secondary_tracker_url,
+            trackers: errors.trackers
+                ? JSON.parse(errors.trackers).map(function(trackerError) {
+                      return {
+                          eventType: trackerError.event_type,
+                          method: trackerError.method,
+                          url: trackerError.url,
+                          fallbackUrl: trackerError.fallback_url,
+                      };
+                  })
+                : undefined,
         });
     }
 
@@ -143,6 +168,21 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             secondaryTrackerUrl: candidate.secondary_tracker_url,
             primaryTrackerUrlStatus: candidate.primary_tracker_url_status,
             secondaryTrackerUrlStatus: candidate.secondary_tracker_url_status,
+            trackers: candidate.trackers
+                ? candidate.trackers.map(function(tracker) {
+                      return {
+                          eventType: tracker.event_type
+                              ? tracker.event_type.toUpperCase()
+                              : null,
+                          method: tracker.method
+                              ? tracker.method.toUpperCase()
+                              : null,
+                          url: tracker.url,
+                          fallbackUrl: tracker.fallback_url,
+                          trackerOptional: tracker.tracker_optional,
+                      };
+                  })
+                : undefined,
         });
     }
 

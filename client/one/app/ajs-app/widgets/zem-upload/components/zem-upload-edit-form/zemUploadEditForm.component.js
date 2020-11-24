@@ -89,6 +89,10 @@ angular
             vm.fieldsSaved = {};
             vm.fieldsApiErrors = {};
 
+            if (!candidate.trackers) {
+                candidate.trackers = [];
+            }
+
             if (vm.showVideoUpload) {
                 handleVideoCreatives();
             } else if (vm.showDisplayUpload) {
@@ -288,6 +292,11 @@ angular
             candidate.useSecondaryTracker = false;
             candidate.secondaryTrackerUrl = null;
             vm.updateField(candidate, 'secondaryTrackerUrl');
+        };
+
+        vm.saveTrackers = function(candidate, trackers) {
+            candidate.trackers = trackers;
+            vm.updateField(candidate, 'trackers');
         };
 
         vm.fieldsHaveErrors = function(fields) {

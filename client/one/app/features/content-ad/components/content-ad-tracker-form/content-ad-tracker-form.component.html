@@ -1,0 +1,99 @@
+<zem-select-input
+    class="zem-select-input zem-content-ad-tracker-form__item"
+    bindLabel="name"
+    bindValue="value"
+    [placeholder]="'Please select Event type'"
+    [isDisabled]="isDisabled"
+    [value]="contentAdTracker.eventType"
+    [items]="availableTrackerEventTypes"
+    (valueChange)="onEventTypeChanged($event)"
+></zem-select-input>
+<ng-container *ngIf="contentAdTracker.eventType">
+    <div class="zem-content-ad-tracker-form__item">
+        <button
+            *ngFor="let method of availableTrackerMethods"
+            class="zem-button zem-content-ad-tracker-form__method-button"
+            [class.zem-button--highlighted]="
+                contentAdTracker.method === method.value
+            "
+            [class.zem-button--outlined]="
+                contentAdTracker.method !== method.value
+            "
+            [disabled]="isDisabled"
+            (click)="onMethodChanged(method.value)"
+        >
+            {{ method.name }}
+        </button>
+    </div>
+    <div
+        class="zem-content-ad-tracker-form__item zem-message zem-message--error"
+        *ngIf="contentAdTrackerErrors?.url"
+    >
+        {{ contentAdTrackerErrors?.method }}
+    </div>
+    <zem-text-input
+        class="zem-text-input zem-content-ad-tracker-form__item"
+        placeholder="Paste your tracker URL here"
+        [isDisabled]="isDisabled"
+        [value]="contentAdTracker.url"
+        (inputBlur)="onUrlChanged($event)"
+    ></zem-text-input>
+    <div
+        class="zem-content-ad-tracker-form__item zem-message zem-message--error"
+        *ngIf="contentAdTrackerErrors?.url"
+    >
+        {{ contentAdTrackerErrors?.url }}
+    </div>
+    <div
+        *ngIf="contentAdTracker.method === trackerMethod.JS"
+        class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__input-help"
+    >
+        <a *ngIf="!showFallbackUrlInput" (click)="showFallbackUrlInput = true"
+            >Add fallback image pixel tracker</a
+        >
+        <zem-text-input
+            *ngIf="showFallbackUrlInput"
+            class="zem-text-input zem-content-ad-tracker-form__input-help-input"
+            placeholder="Paste your image pixel tracker URL here"
+            [isDisabled]="isDisabled"
+            [value]="contentAdTracker.fallbackUrl"
+            (inputBlur)="onFallbackUrlChanged($event)"
+        ></zem-text-input>
+        <zem-help-popover
+            class="zem-content-ad-tracker-form__input-help-icon"
+            [content]="
+                'Allows to insert image version of the tracker. Zemanta will pass this tracker where JavaScript tracking is not supported.'
+            "
+        >
+        </zem-help-popover>
+    </div>
+    <div
+        class="zem-text-input zem-content-ad-tracker-form__item zem-message zem-message--error"
+        *ngIf="contentAdTrackerErrors?.fallbackUrl"
+    >
+        {{ contentAdTrackerErrors?.fallbackUrl }}
+    </div>
+    <div
+        class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__description"
+    >
+        Please make sure all trackers are GDPR compliant. In case of
+        non-compliant trackers, we will not respond to ad requests coming from
+        the GDPR restricted areas. To change this setting, select the checkbox
+        below.
+    </div>
+    <zem-checkbox-input
+        class="zem-checkbox-input zem-content-ad-tracker-form__item"
+        label="Tracker optional"
+        [isDisabled]="isDisabled"
+        [isChecked]="contentAdTracker.trackerOptional"
+        (toggle)="onTrackerOptionalChanged($event)"
+    >
+        Tracking optional
+        <zem-help-popover
+            [content]="
+                'Selecting this checkbox allows Zemanta to purchase traffic where 3rd party tracking is not supported. Keep in mind enabling this setting might cause reporting discrepancies between Zemanta and 3rd party vendors.'
+            "
+        >
+        </zem-help-popover>
+    </zem-checkbox-input>
+</ng-container>
