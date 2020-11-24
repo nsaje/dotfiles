@@ -47,3 +47,4 @@ services:
           - SERVER_HOSTNAME=${JENKINS_AGENT_NAME}
           - WORKSPACE=${PWD}
           - JOB_NAME=${JOB_NAME}
+          - BUILD_URL=${BUILD_URL}

@@ -58,6 +58,7 @@ curl -s https://bitbucket.outbrain.com/projects/FEG/repos/e2e-scripts/raw/run-te
     OWNER_TEAM="$OWNER_TEAM" \
     WORKSPACE="$WORKSPACE" \
     JOB_NAME="$JOB_NAME" \
+    BUILD_URL="$BUILD_URL" \
     TESTIM_RETRIES=3 \
     PARALLEL_TESTS=4 \
     bash
