@@ -14,7 +14,5 @@ def disconnect_notify_budgets():
 
 
 def _handle_budget_line_item_change(sender, instance, **kwargs):
-    if instance.campaign.settings.autopilot and instance.campaign.account.agency_uses_realtime_autopilot(
-        ad_group=instance
-    ):
+    if instance.campaign.settings.autopilot and instance.campaign.account.agency_uses_realtime_autopilot():
         service.recalculate_ad_group_budgets(instance.campaign)
