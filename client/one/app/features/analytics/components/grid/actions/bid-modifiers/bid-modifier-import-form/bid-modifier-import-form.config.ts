@@ -13,13 +13,16 @@ const CSV_INFO_TEXT_PUBLISHER = `
 `;
 
 const CSV_INFO_TEXT_PLACEMENT = `
-    First column in the CSV file contains the placement name and
-    the second column contains the media source name - both as
-    reported in the dashboard. For the placement name please
-    refer to the placement column and for the media source name
-    please refer to the source slug column. The third column
-    contains the bid modifier. The first row in the CSV file is
-    ignored.
+    First column in the CSV file contains the placement identifier
+    of the form &lt;publisher domain name&gt;__&lt;source id&gt;__&lt;placement id&gt;
+    (separated by double underscores). Please refer to the publisher
+    column as publisher domain name part of placement identifier,
+    the source id column for source id part of placement identifier
+    and the palacement column for the placement id part of placement
+    identifier. The second column contains the media source name
+    that can be obtained from the source slug column. The third
+    column contains the bid modifier. The first row in the CSV
+    file is ignored.
 `;
 
 const CSV_INFO_TEXT_MEDIA_SOURCE = `
