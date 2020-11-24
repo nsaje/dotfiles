@@ -97,7 +97,9 @@ def format_flight_time(start_date, end_date, no_ad_groups_or_budgets):
 
 
 def create_bid_value_overview_settings(ad_group):
-    if not ad_group.campaign.account.agency_uses_realtime_autopilot():  # TODO: RTAP: remove this after Phase 1
+    if not ad_group.campaign.account.agency_uses_realtime_autopilot(
+        ad_group=ad_group
+    ):  # TODO: RTAP: remove this after Phase 1
         return create_bid_value_overview_settings_legacy(ad_group)
 
     overview_settings = []
@@ -472,7 +474,9 @@ def get_adgroup_running_status(user, ad_group, filtered_sources=None):
         return dash.constants.InfoboxStatus.DISABLED
     running_status = dash.models.AdGroup.get_running_status(ad_group.settings)
 
-    if not ad_group.campaign.account.agency_uses_realtime_autopilot():  # TODO: RTAP: remove this after Phase 1
+    if not ad_group.campaign.account.agency_uses_realtime_autopilot(
+        ad_group=ad_group
+    ):  # TODO: RTAP: remove this after Phase 1
         return get_adgroup_running_status_class_legacy(
             user,
             ad_group.settings.autopilot_state,

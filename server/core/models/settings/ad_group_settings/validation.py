@@ -138,7 +138,7 @@ class AdGroupSettingsValidatorMixin(object):
         from automation import autopilot_legacy
 
         # TODO: RTAP: LEGACY
-        if self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group):
             return
 
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -184,7 +184,7 @@ class AdGroupSettingsValidatorMixin(object):
         # MVP for all-RTB-sources-as-one
 
         # TODO: remove after migration
-        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+        if not self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group):
             # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
             # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
             if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
@@ -285,7 +285,7 @@ class AdGroupSettingsValidatorMixin(object):
         if self.local_b1_sources_group_cpc_cc == new_settings.local_b1_sources_group_cpc_cc:
             return
         if (
-            self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+            self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group)
             and new_settings.local_b1_sources_group_cpc_cc is None
         ):
             return
@@ -303,7 +303,7 @@ class AdGroupSettingsValidatorMixin(object):
         if self.local_b1_sources_group_cpm == new_settings.local_b1_sources_group_cpm:
             return
         if (
-            self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+            self.ad_group.campaign.account.agency_uses_realtime_autopilot(ad_group=self.ad_group)
             and new_settings.local_b1_sources_group_cpm is None
         ):
             return
@@ -332,7 +332,9 @@ class AdGroupSettingsValidatorMixin(object):
             raise exceptions.TargetBrowsersInvalid("Cannot set both included and excluded browser targeting")
 
     def _validate_bid(self, new_settings):
-        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot()
+        agency_uses_realtime_autopilot = self.ad_group.campaign.account.agency_uses_realtime_autopilot(
+            ad_group=self.ad_group
+        )
 
         if (new_settings.ad_group.bidding_type == constants.BiddingType.CPC and new_settings.cpc is None) or (
             new_settings.ad_group.bidding_type == constants.BiddingType.CPM and new_settings.cpm is None
