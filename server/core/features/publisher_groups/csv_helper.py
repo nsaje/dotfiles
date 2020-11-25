@@ -138,7 +138,7 @@ def validate_entries(entry_dicts):
             for prefix in prefixes:
                 publisher = publisher.replace(prefix, "")
 
-            if DOMAIN_PATTERN.match(publisher) and "/" in publisher:
+            if " " not in publisher and "/" in publisher and DOMAIN_PATTERN.match(publisher):
                 error.append("'/' should not be used")
         else:
             error.append("Publisher is required")

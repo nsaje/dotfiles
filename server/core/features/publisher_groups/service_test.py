@@ -592,6 +592,7 @@ class PublisherGroupCSVHelpersTestCase(BaseTestCase):
                     {"publisher": "https://pub1.com", "source": "asd", "include_subdomains": False},
                     {"publisher": "pub2.com", "include_subdomains": False},
                     {"publisher": "domain.com/slash", "source": "AdsNative", "include_subdomains": True},
+                    {"publisher": "domain.com with space/a", "source": "AdsNative", "include_subdomains": True},
                 ]
             ),
             [
@@ -615,6 +616,7 @@ class PublisherGroupCSVHelpersTestCase(BaseTestCase):
                     "include_subdomains": True,
                     "error": "'/' should not be used",
                 },
+                {"publisher": "domain.com with space/a", "source": "AdsNative", "include_subdomains": True},
             ],
         )
 
