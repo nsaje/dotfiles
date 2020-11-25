@@ -29,5 +29,8 @@ services:
     memcached:
         image: memcached
 
+    redis:
+        image: redis
+
 volumes:
     stats-data:

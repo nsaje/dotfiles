@@ -169,11 +169,15 @@ class AdGroupInstanceMixin:
         else:
             changes_text = None
 
-        self.write_history(changes_text, user=request.user, action_type=dash.constants.HistoryActionType.CREATE)
+        self.write_history(
+            changes_text, user=request.user if request else None, action_type=dash.constants.HistoryActionType.CREATE
+        )
 
     def write_history_cloned_to(self, request, destination_ad_group):
         changes_text = "This Ad group was cloned to {}".format(destination_ad_group.get_name_with_id())
-        self.write_history(changes_text, user=request.user, action_type=dash.constants.HistoryActionType.CREATE)
+        self.write_history(
+            changes_text, user=request.user if request else None, action_type=dash.constants.HistoryActionType.CREATE
+        )
 
     def write_history_cloned_from(self, request, source_ad_group):
         source_names = list(self.adgroupsource_set.all().values_list("source__name", flat=True))

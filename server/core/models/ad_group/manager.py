@@ -24,6 +24,7 @@ class AdGroupManager(core.common.BaseManager):
         name=None,
         bidding_type=dash.constants.BiddingType.CPC,
         initial_settings=None,
+        sources=None,
         **kwargs
     ):
         self._validate_archived(campaign)
@@ -71,7 +72,12 @@ class AdGroupManager(core.common.BaseManager):
 
             if campaign.account_id != settings.HARDCODED_ACCOUNT_ID_OEN:
                 core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
-                    request, ad_group, write_history=False, k1_sync=False, apply_ad_group_bids=apply_ad_group_bids
+                    request,
+                    ad_group,
+                    sources=sources,
+                    write_history=False,
+                    k1_sync=False,
+                    apply_ad_group_bids=apply_ad_group_bids,
                 )
 
             if ad_group.amplify_review:

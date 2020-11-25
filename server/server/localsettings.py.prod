@@ -418,6 +418,7 @@ CELERY_ROUTES = {
     "campaign_cloning": {"queue": "z1-campaign-cloning"},
     "ad_group_cloning": {"queue": "z1-ad-group-cloning"},
     "campaignstop_update_handler": {"queue": "z1-campaign-updates"},
+    "bulkupload_adgroups": {"queue": "z1-bulk-upload"},
 }
 
 # must be empty otherwise k1 queues get prefixed as well

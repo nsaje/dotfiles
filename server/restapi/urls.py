@@ -11,6 +11,7 @@ import restapi.bidmodifiers.internal.urls
 import restapi.bidmodifiers.urls
 import restapi.bluekai.urls
 import restapi.booksclosed.urls
+import restapi.bulkupload.urls
 import restapi.campaign.urls
 import restapi.campaignbudget.urls
 import restapi.campaigngoal.urls
@@ -64,3 +65,4 @@ urlpatterns += restapi.videoassets.urls.urlpatterns
 urlpatterns += restapi.user.urls.urlpatterns
 urlpatterns += restapi.bluekai.urls.urlpatterns
 urlpatterns += restapi.booksclosed.urls.urlpatterns
+urlpatterns += restapi.bulkupload.urls.urlpatterns

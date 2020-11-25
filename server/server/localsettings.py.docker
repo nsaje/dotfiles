@@ -241,8 +241,8 @@ USE_REDSHIFT_BACKGROUND_CACHE = False
 IMAGE_THUMBNAIL_URL = "https://zem.outbrainimg.com/"
 
 # QUEUES
-BROKER_TRANSPORT = "memory"
-BROKER_URL = BROKER_TRANSPORT + "://"
+BROKER_TRANSPORT = "redis"
+BROKER_URL = BROKER_TRANSPORT + "://redis:6379/1"
 
 CELERY_RESULT_BACKEND = "django-db"
 
@@ -255,6 +255,7 @@ CELERY_ROUTES = {
     "redshift_background_cache": {"queue": "redshift-background-cache"},
     "campaign_cloning": {"queue": "campaign-cloning"},
     "ad_group_cloning": {"queue": "z1-ad-group-cloning"},
+    "bulkupload_adgroups": {"queue": "z1-bulk-upload"},
 }
 
 QUEUE_NAME_PREFIX = "test"

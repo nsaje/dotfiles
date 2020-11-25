@@ -125,11 +125,13 @@ class AdGroupSourceManager(core.common.BaseManager):
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(
-        self, request, ad_group, write_history=True, k1_sync=True, apply_ad_group_bids=False
+        self, request, ad_group, sources=None, write_history=True, k1_sync=True, apply_ad_group_bids=False
     ):
-        sources = ad_group.campaign.account.allowed_sources.all().select_related(
+        create_on_sources = ad_group.campaign.account.allowed_sources.all().select_related(
             "source_type", "defaultsourcesettings__credentials"
         )
+        if sources:
+            create_on_sources = create_on_sources.filter(id__in=[source.id for source in sources])
         added_ad_group_sources = []
 
         updates = {}
@@ -139,7 +141,7 @@ class AdGroupSourceManager(core.common.BaseManager):
             else:
                 updates["cpm"] = ad_group.settings.cpm
 
-        for source in sources:
+        for source in create_on_sources:
             if (
                 source.deprecated
                 or source.maintenance
