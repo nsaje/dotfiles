@@ -10,7 +10,7 @@ from . import serializers
 class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
     def get(self, request, task_id):
         promise = core.features.bulk_upload.get_upload_promise(task_id)
-        return self._handle_promise(promise)
+        return self._handle_promise(request, promise)
 
     def create(self, request):
         serializer = serializers.AdGroupCustomSerializer(data=request.data, many=True)
@@ -21,9 +21,9 @@ class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
             zemauth.access.get_campaign(request.user, Permission.WRITE, ad_group.get("ad_group", {}).get("campaign_id"))
 
         promise = core.features.bulk_upload.upload_adgroups.delay(request.user, data)
-        return self._handle_promise(promise)
+        return self._handle_promise(request, promise)
 
-    def _handle_promise(self, promise):
+    def _handle_promise(self, request, promise):
         status = promise.status
         ad_groups_settings = None
         if promise.successful():
@@ -34,5 +34,7 @@ class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
                 ad_group.settings.sources = ad_group.sources.filter(adgroupsource__settings__state=1)
                 ad_groups_settings.append(ad_group.settings)
         return self.response_ok(
-            serializers.TaskStatus({"task_id": promise.id, "status": status, "ad_groups": ad_groups_settings}).data
+            serializers.TaskStatus(
+                {"task_id": promise.id, "status": status, "ad_groups": ad_groups_settings}, context={"request": request}
+            ).data
         )

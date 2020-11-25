@@ -133,8 +133,8 @@ class AdGroupTargetingSerializer(
         super().validate(data)
 
         # skip this validation for OEN browser targeting
-        request_data = self.context.get("request").data
-        if request_data and request_data.get("targeting") and request_data.get("targeting").get("browsers_oen"):
+        request = self.context.get("request")
+        if request and getattr(request, "data", {}).get("targeting", {}).get("browsers_oen"):
             return data
 
         if data.get("target_browsers"):
