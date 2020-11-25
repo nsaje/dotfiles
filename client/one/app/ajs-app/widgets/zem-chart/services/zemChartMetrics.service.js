@@ -20,6 +20,7 @@ angular
         var TYPE_NUMBER = 'number';
         var TYPE_CURRENCY = 'currency';
         var TYPE_TIME = 'time';
+        var TYPE_PERCENT = 'percent';
 
         var METRICS = {
             /* eslint-disable max-len */
@@ -38,7 +39,7 @@ angular
             CTR: {
                 name: 'CTR',
                 value: 'ctr',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
             },
@@ -176,14 +177,14 @@ angular
             CLICK_DISCREPANCY: {
                 name: 'Click Discrepancy',
                 value: 'click_discrepancy',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
             },
             PERCENT_NEW_USERS: {
                 name: '% New Users',
                 value: 'percent_new_users',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
             },
@@ -208,7 +209,7 @@ angular
             BOUNCE_RATE: {
                 name: 'Bounce Rate',
                 value: 'bounce_rate',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
             },
@@ -377,7 +378,7 @@ angular
             MRC50_MEASURABLE_PERCENT: {
                 name: '% Measurable Impressions',
                 value: 'mrc50_measurable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
                 shortName: '% Measurable',
@@ -385,7 +386,7 @@ angular
             MRC50_VIEWABLE_PERCENT: {
                 name: '% Viewable Impressions',
                 value: 'mrc50_viewable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
                 shortName: '% Viewable',
@@ -393,7 +394,7 @@ angular
             MRC50_VIEWABLE_DISTRIBUTION: {
                 name: 'Impression Distribution (Viewable)',
                 value: 'mrc50_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
                 shortName: 'Viewable Dist.',
@@ -401,7 +402,7 @@ angular
             MRC50_NON_MEASURABLE_DISTRIBUTION: {
                 name: 'Impression Distribution (Not-Measurable)',
                 value: 'mrc50_non_measurable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
                 shortName: 'Not-Measurable Dist.',
@@ -409,7 +410,7 @@ angular
             MRC50_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'Impression Distribution (Not-Viewable)',
                 value: 'mrc50_non_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: true,
                 shortName: 'Not-Viewable Dist.',
@@ -458,7 +459,7 @@ angular
             MRC100_MEASURABLE_PERCENT: {
                 name: '% MRC100 Measurable Impressions',
                 value: 'mrc100_measurable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
@@ -467,7 +468,7 @@ angular
             MRC100_VIEWABLE_PERCENT: {
                 name: '% MRC100 Viewable Impressions',
                 value: 'mrc100_viewable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
@@ -476,7 +477,7 @@ angular
             MRC100_VIEWABLE_DISTRIBUTION: {
                 name: 'MRC100 Impression Distribution (Viewable)',
                 value: 'mrc100_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
@@ -485,7 +486,7 @@ angular
             MRC100_NON_MEASURABLE_DISTRIBUTION: {
                 name: 'MRC100 Impression Distribution (Not-Measurable)',
                 value: 'mrc100_non_measurable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
@@ -494,7 +495,7 @@ angular
             MRC100_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'MRC100 Impression Distribution (Not-Viewable)',
                 value: 'mrc100_non_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
@@ -545,7 +546,7 @@ angular
             VAST4_MEASURABLE_PERCENT: {
                 name: '% Video Measurable Impressions',
                 value: 'vast4_measurable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
@@ -554,7 +555,7 @@ angular
             VAST4_VIEWABLE_PERCENT: {
                 name: '% Video Viewable Impressions',
                 value: 'vast4_viewable_percent',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
@@ -563,7 +564,7 @@ angular
             VAST4_VIEWABLE_DISTRIBUTION: {
                 name: 'Video Impression Distribution (Viewable)',
                 value: 'vast4_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
@@ -572,7 +573,7 @@ angular
             VAST4_NON_MEASURABLE_DISTRIBUTION: {
                 name: 'Video Impression Distribution (Not-Measurable)',
                 value: 'vast4_non_measurable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
@@ -581,7 +582,7 @@ angular
             VAST4_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'Video Impression Distribution (Not-Viewable)',
                 value: 'vast4_non_viewable_distribution',
-                type: 'percent',
+                type: TYPE_PERCENT,
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
@@ -880,7 +881,7 @@ angular
                         conversionWindow.name +
                         columnSuffix +
                         ')',
-                    type: TYPE_CURRENCY,
+                    type: TYPE_PERCENT,
                     fractionSize: 2,
                     costMode: constants.costMode.PUBLIC,
                     shown: true,
