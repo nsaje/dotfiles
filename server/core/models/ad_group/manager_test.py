@@ -101,7 +101,7 @@ class AdGroupCreate(TestCase):
         )
         self.assertEqual(decimal.Decimal("0.45"), ad_group.settings.cpc)
         self.assertEqual(1, ad_group.settings.cpm)
-        self.assertEqual(decimal.Decimal("1.5718"), ad_group.settings.local_cpc)
+        self.assertEqual(decimal.Decimal("1.57185"), ad_group.settings.local_cpc)
         self.assertEqual(decimal.Decimal("3.4930"), ad_group.settings.local_cpm)
 
         ad_group = core.models.AdGroup.objects.create(

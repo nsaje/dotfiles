@@ -27,9 +27,13 @@ class MulticurrencySettingsMixin(object):
 
         if to_local_field:
             new_local = self._round(to_local_field, value * self._get_exchange_rate())
+            if self._is_rounding_error(to_local_field, new_local):
+                return None, None
             return to_local_field, new_local
         else:
             new_usd = self._round(to_usd_field, value / self._get_exchange_rate())
+            if self._is_rounding_error(to_usd_field, new_usd):
+                return None, None
             return to_usd_field, new_usd
 
     def _get_exchange_rate(self):
@@ -40,3 +44,6 @@ class MulticurrencySettingsMixin(object):
         field = self._meta.get_field(field_name)
         assert isinstance(field, django.db.models.DecimalField)
         return number.quantize(decimal.Decimal("10") ** -field.decimal_places)
+
+    def _is_rounding_error(self, field_name, value):
+        return False
