@@ -26,6 +26,8 @@ class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
     def _handle_promise(self, request, promise):
         status = promise.status
         ad_groups_settings = None
+        if promise.failed():
+            promise.get()  # raise exception
         if promise.successful():
             ad_groups_settings = []
             ad_groups, batches = promise.result
