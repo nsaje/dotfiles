@@ -1,7 +1,4 @@
 import decimal
-from functools import partial
-from threading import Lock
-from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -37,23 +34,7 @@ def _get_campaigns(campaigns: Optional[List[core.models.Campaign]] = None) -> It
 def _process_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
     campaigns = list(campaigns)
     with utils.threads.DjangoConnectionThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
-        executor.map(
-            partial(_process_campaign_thread_logging_wrapper, Lock(), {"total": len(campaigns), "current": 0}),
-            campaigns,
-        )
-
-
-def _process_campaign_thread_logging_wrapper(
-    lock: Lock, shared: Dict[str, int], campaign: core.models.Campaign
-) -> None:
-    _process_campaign(campaign)
-    with lock:
-        shared["current"] += 1
-        logger.info(
-            "Finished processing campaign {campaign_id} ({current}/{total})".format(
-                campaign_id=campaign.id, current=shared["current"], total=shared["total"]
-            )
-        )
+        executor.map(_process_campaign, campaigns)
 
 
 def _process_campaign(campaign: core.models.Campaign) -> None:
