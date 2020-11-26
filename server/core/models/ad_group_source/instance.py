@@ -23,6 +23,7 @@ class AdGroupSourceInstanceMixin:
                 updates["cpc_cc"] = self.source.default_mobile_cpc_cc
             if (
                 ad_group.settings.b1_sources_group_enabled
+                and ad_group.settings.b1_sources_group_cpc_cc is not None
                 and ad_group.settings.b1_sources_group_cpc_cc > 0.0
                 and self.source.source_type.type == dash.constants.SourceType.B1
             ):
@@ -35,6 +36,7 @@ class AdGroupSourceInstanceMixin:
                 updates["cpm"] = self.source.default_mobile_cpm
             if (
                 ad_group.settings.b1_sources_group_enabled
+                and ad_group.settings.b1_sources_group_cpm is not None
                 and ad_group.settings.b1_sources_group_cpm > 0.0
                 and self.source.source_type.type == dash.constants.SourceType.B1
             ):
