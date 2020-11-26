@@ -17,6 +17,7 @@ from django.db.models.functions import Coalesce
 
 import core.models
 import utils.decimal_helpers
+import utils.list_helper
 import utils.queryset_helper
 from core.features import bid_modifiers
 from dash import constants
@@ -69,69 +70,8 @@ class Command(Z1Command):
         no_changes_counters = defaultdict(int)
         changes_counters = defaultdict(int)
 
-        ad_groups_qs = (
-            core.models.AdGroup.objects.filter(
-                campaign__account__agency_id__in=agency_ids, campaign__account__agency__uses_realtime_autopilot=True
-            )
-            .select_related("settings")
-            .annotate(
-                avg_bid=Coalesce(
-                    Case(
-                        When(
-                            Q(bidding_type=constants.BiddingType.CPC, settings__b1_sources_group_enabled=True),
-                            then=Avg("adgroupsource__settings__cpc_cc"),
-                        ),
-                        When(
-                            Q(bidding_type=constants.BiddingType.CPM, settings__b1_sources_group_enabled=True),
-                            then=Avg("adgroupsource__settings__cpm"),
-                        ),
-                        default=Value(0.0),
-                    ),
-                    Value(0.0),
-                ),
-                total_daily_budget=Coalesce(
-                    Case(
-                        When(
-                            settings__b1_sources_group_enabled=False,
-                            then=Sum(
-                                Coalesce(
-                                    Case(
-                                        When(
-                                            adgroupsource__settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
-                                            then=F("adgroupsource__settings__daily_budget_cc"),
-                                        ),
-                                        default=Value(0.0),
-                                    ),
-                                    Value(0.0),
-                                )
-                            ),
-                        ),
-                        default=Value(0.0),
-                    ),
-                    Value(0.0),
-                ),
-                total_local_daily_budget=Coalesce(
-                    Case(
-                        When(
-                            settings__b1_sources_group_enabled=False,
-                            then=Sum(
-                                Coalesce(
-                                    Case(
-                                        When(
-                                            adgroupsource__settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
-                                            then=F("adgroupsource__settings__local_daily_budget_cc"),
-                                        ),
-                                        default=Value(0.0),
-                                    ),
-                                    Value(0.0),
-                                )
-                            ),
-                        ),
-                        default=Value(0.0),
-                    ),
-                    Value(0.0),
-                ),
-            )
+        ad_groups_qs = core.models.AdGroup.objects.filter(
+            campaign__account__agency_id__in=agency_ids, campaign__account__agency__uses_realtime_autopilot=True
         )
 
         if created_dt:
@@ -146,23 +86,97 @@ class Command(Z1Command):
         elif mode == 3:
             ad_groups_qs = ad_groups_qs.filter(archived=True)
 
-        if use_pool:
-            for ags in utils.queryset_helper.chunk_iterator(ad_groups_qs, chunk_size=batch_size):
+        ad_group_ids = list(ad_groups_qs.values_list("id", flat=True))
+
+        ad_group_count = len(ad_group_ids)
+        self.stdout.write(self.style.SUCCESS("Found %s ad groups to process" % ad_group_count))
+        batch_id = 0
+        for ids_chunk in utils.list_helper.list_chunker(ad_group_ids, batch_size):
+            progress = 100.0 * (batch_id * batch_size) / ad_group_count
+            self.stdout.write("Progress: %.2f %%" % progress)
+            batch_id += 1
+
+            ad_groups_qs = (
+                core.models.AdGroup.objects.filter(id__in=ids_chunk)
+                .select_related("settings")
+                .annotate(
+                    avg_bid=Coalesce(
+                        Case(
+                            When(
+                                Q(bidding_type=constants.BiddingType.CPC, settings__b1_sources_group_enabled=True),
+                                then=Avg("adgroupsource__settings__cpc_cc"),
+                            ),
+                            When(
+                                Q(bidding_type=constants.BiddingType.CPM, settings__b1_sources_group_enabled=True),
+                                then=Avg("adgroupsource__settings__cpm"),
+                            ),
+                            default=Value(0.0),
+                        ),
+                        Value(0.0),
+                    ),
+                    total_daily_budget=Coalesce(
+                        Case(
+                            When(
+                                settings__b1_sources_group_enabled=False,
+                                then=Sum(
+                                    Coalesce(
+                                        Case(
+                                            When(
+                                                adgroupsource__settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
+                                                then=F("adgroupsource__settings__daily_budget_cc"),
+                                            ),
+                                            default=Value(0.0),
+                                        ),
+                                        Value(0.0),
+                                    )
+                                ),
+                            ),
+                            default=Value(0.0),
+                        ),
+                        Value(0.0),
+                    ),
+                    total_local_daily_budget=Coalesce(
+                        Case(
+                            When(
+                                settings__b1_sources_group_enabled=False,
+                                then=Sum(
+                                    Coalesce(
+                                        Case(
+                                            When(
+                                                adgroupsource__settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
+                                                then=F("adgroupsource__settings__local_daily_budget_cc"),
+                                            ),
+                                            default=Value(0.0),
+                                        ),
+                                        Value(0.0),
+                                    )
+                                ),
+                            ),
+                            default=Value(0.0),
+                        ),
+                        Value(0.0),
+                    ),
+                )
+            )
+
+            if use_pool:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=pool_size) as executor:
-                    results = executor.map(functools.partial(self._process_ad_group, apply_changes=apply_changes), ags)
+                    results = executor.map(
+                        functools.partial(self._process_ad_group, apply_changes=apply_changes), ad_groups_qs
+                    )
 
                     for counter_to_update, changes in results:
                         if changes:
                             changes_counters[counter_to_update] += 1
                         else:
                             no_changes_counters[counter_to_update] += 1
-        else:
-            for ag in ad_groups_qs.iterator(chunk_size=batch_size):
-                counter_to_update, changes = self._process_ad_group(ag, apply_changes=apply_changes)
-                if changes:
-                    changes_counters[counter_to_update] += 1
-                else:
-                    no_changes_counters[counter_to_update] += 1
+            else:
+                for ag in ad_groups_qs:
+                    counter_to_update, changes = self._process_ad_group(ag, apply_changes=apply_changes)
+                    if changes:
+                        changes_counters[counter_to_update] += 1
+                    else:
+                        no_changes_counters[counter_to_update] += 1
 
         self.stdout.write("Changes counters:\n" + json.dumps(changes_counters, indent=2))
         self.stdout.write("No changes counters:\n" + json.dumps(no_changes_counters, indent=2))
