@@ -1,8 +1,5 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -25,7 +22,7 @@ import * as commonHelpers from '../../../../../../../shared/helpers/common.helpe
 import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
 
 export abstract class ColumnMapper {
-    map(grid: Grid, column: GridColumn): ColDef {
+    map(grid: Grid, column: GridColumn): SmartGridColDef {
         const defaultColDef = this.getDefaultColDef(grid, column);
         let colDef = {
             ...defaultColDef,
@@ -61,13 +58,13 @@ export abstract class ColumnMapper {
         return colDef;
     }
 
-    abstract getColDef(grid: Grid, column: GridColumn): ColDef;
+    abstract getColDef(grid: Grid, column: GridColumn): SmartGridColDef;
 
     //
     // PRIVATE METHODS
     //
 
-    private getDefaultColDef(grid: Grid, column: GridColumn): ColDef {
+    private getDefaultColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             headerName: commonHelpers.getValueOrDefault(column.data?.name, ''),
             field: commonHelpers.getValueOrDefault(column.data?.field, ''),

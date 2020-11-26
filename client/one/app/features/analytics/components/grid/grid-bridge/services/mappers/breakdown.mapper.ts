@@ -1,4 +1,5 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {ColumnMapper} from './column.mapper';
@@ -16,9 +17,10 @@ import {PinnedRowCellValueStyleClass} from '../../../../../../../shared/componen
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
 import {GridRow} from '../../types/grid-row';
 import {GridBridgeComponent} from '../../grid-bridge.component';
+import {ViewportBreakpoint} from '../../../../../../../app.constants';
 
 export class BreakdownColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             colId: GridColumnTypes.BREAKDOWN,
             minWidth: BREAKDOWN_COLUMN_WIDTH,
@@ -59,6 +61,7 @@ export class BreakdownColumnMapper extends ColumnMapper {
             pinnedRowValueFormatter: (params: ValueFormatterParams) => {
                 return TOTALS_LABELS;
             },
+            unpinBelowGridWidth: ViewportBreakpoint.Tablet,
         };
     }
 }

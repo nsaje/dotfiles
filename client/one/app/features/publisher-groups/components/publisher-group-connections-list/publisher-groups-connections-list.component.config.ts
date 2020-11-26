@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {ConnectionActionsCellComponent} from '../../../../shared/components/connection-actions-cell/connection-actions-cell.component';
 import {PublisherGroupConnectionLocation} from '../../../../core/publisher-groups/types/publisher-group-connection-location';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
@@ -6,7 +6,7 @@ import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/
 import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
 import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
-import {LevelParam} from '../../../../app.constants';
+import {LevelParam, ViewportBreakpoint} from '../../../../app.constants';
 
 export const PAGINATION_OPTIONS: PaginationOptions = {
     type: 'client',
@@ -15,7 +15,7 @@ export const PAGINATION_OPTIONS: PaginationOptions = {
     pageSize: 10,
 };
 
-export const COLUMN_USED_ON: ColDef = {
+export const COLUMN_USED_ON: SmartGridColDef = {
     headerName: 'Used on',
     cellRendererFramework: LinkCellComponent,
     cellRendererParams: {
@@ -24,12 +24,12 @@ export const COLUMN_USED_ON: ColDef = {
     } as LinkRendererParams<PublisherGroupConnection>,
 };
 
-export const COLUMN_USED_AS: ColDef = {
+export const COLUMN_USED_AS: SmartGridColDef = {
     headerName: 'Used as',
     valueGetter: usedAsGetter,
 };
 
-export const COLUMN_ACTIONS: ColDef = {
+export const COLUMN_ACTIONS: SmartGridColDef = {
     headerName: '',
     width: 40,
     suppressSizeToFit: true,

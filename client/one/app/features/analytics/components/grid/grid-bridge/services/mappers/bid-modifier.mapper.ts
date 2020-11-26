@@ -1,4 +1,5 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams} from 'ag-grid-community';
 import {BidModifier} from '../../../../../../../core/bid-modifiers/types/bid-modifier';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {BidModifierGridCellComponent} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
@@ -17,7 +18,7 @@ import {
 import {ColumnMapper} from './column.mapper';
 
 export class BidModifierColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             colId: GridColumnTypes.BID_MODIFIER_FIELD,
             minWidth: BID_MODIFIER_COLUMN_WIDTH,

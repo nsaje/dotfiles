@@ -1,6 +1,6 @@
 import {Injector} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {StoreAction} from '../../../../../../shared/services/store/store.action';
 import {StoreEffect} from '../../../../../../shared/services/store/store.effect';
 import {StoreProvider} from '../../../../../../shared/services/store/store.provider';
@@ -34,7 +34,7 @@ class SetTestColumnsActionReducer extends SetColumnsActionReducer {
         };
     }
 
-    private map(column: GridColumn): ColDef {
+    private map(column: GridColumn): SmartGridColDef {
         return {
             headerName: column.data.name,
             field: column.data.field,

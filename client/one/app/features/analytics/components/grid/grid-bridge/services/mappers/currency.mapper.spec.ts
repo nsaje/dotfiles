@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Breakdown, Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -29,6 +25,7 @@ import {CurrencyDataCellComponent} from '../../../cells/currency-data-cell/curre
 import {CurrencyDataRendererParams} from '../../../cells/currency-data-cell/types/currency-data.renderer-params';
 import {CurrencyRefundCellComponent} from '../../../cells/currency-refund-cell/currency-refund-cell.component';
 import {CurrencyRefundRendererParams} from '../../../cells/currency-refund-cell/types/currency-refund.renderer-params';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('CurrencyColumnMapper', () => {
     let mapper: CurrencyColumnMapper;
@@ -76,7 +73,7 @@ describe('CurrencyColumnMapper', () => {
     });
 
     it('should correctly map non-editable currency grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
@@ -89,7 +86,7 @@ describe('CurrencyColumnMapper', () => {
             true,
             true
         );
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Stats',
             field: 'stats',
             colId: 'stats',
@@ -147,7 +144,7 @@ describe('CurrencyColumnMapper', () => {
             },
         };
 
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             editableMockedColumn as GridColumn
         );
@@ -160,7 +157,7 @@ describe('CurrencyColumnMapper', () => {
             true,
             true
         );
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Stats',
             field: 'stats',
             colId: 'stats',
@@ -239,7 +236,7 @@ describe('CurrencyColumnMapper', () => {
             },
         };
 
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             refundMockedGrid as Grid,
             refundMockedColumn as GridColumn
         );
@@ -252,7 +249,7 @@ describe('CurrencyColumnMapper', () => {
             true,
             true
         );
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Media spend',
             field: 'e_media_cost',
             colId: 'e_media_cost',

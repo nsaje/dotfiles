@@ -1,6 +1,5 @@
 import {
     CellClassParams,
-    ColDef,
     ValueFormatterParams,
     ValueGetterParams,
 } from 'ag-grid-community';
@@ -24,6 +23,7 @@ import {
     MIN_COLUMN_WIDTH,
 } from '../../grid-bridge.component.constants';
 import {CellRole} from '../../../../../../../shared/components/smart-grid/smart-grid.component.constants';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('StatsDataColumnMapper', () => {
     let mapper: StatsDataColumnMapper;
@@ -71,7 +71,7 @@ describe('StatsDataColumnMapper', () => {
     });
 
     it('should correctly map stats data grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
@@ -84,7 +84,7 @@ describe('StatsDataColumnMapper', () => {
             true,
             true
         );
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Stats',
             field: 'stats',
             colId: 'stats',

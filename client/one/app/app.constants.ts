@@ -1,3 +1,9 @@
+export enum ViewportBreakpoint {
+    Desktop = 1024,
+    Tablet = 768,
+    Mobile = 500,
+}
+
 export enum Unit {
     Percent = 'PERCENT',
     CurrencySign = 'CURRENCY',

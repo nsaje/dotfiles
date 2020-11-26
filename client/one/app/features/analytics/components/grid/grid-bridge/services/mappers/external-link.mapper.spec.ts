@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -21,6 +17,7 @@ import {ExternalLinkColumnMapper} from './external-link.mapper';
 import {EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_COLUMN_WIDTH} from '../../grid-bridge.component.config';
 import {LinkRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 import {GridRow} from '../../types/grid-row';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('ExternalLinkColumnMapper', () => {
     let mapper: ExternalLinkColumnMapper;
@@ -68,12 +65,12 @@ describe('ExternalLinkColumnMapper', () => {
     });
 
     it('should correctly map external link grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'SSPD Link',
             field: 'sspd_link',
             colId: 'sspd_link',

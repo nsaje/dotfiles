@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {CellComp, ColDef, Column} from 'ag-grid-community';
+import {CellComp, Column} from 'ag-grid-community';
 import {InternalFeatureDirective} from '../../../../../directives/internal-feature/internal-feature.directive';
 import {CheckboxInputComponent} from '../../../../checkbox-input/checkbox-input.component';
 import {HelpPopoverComponent} from '../../../../help-popover/help-popover.component';
@@ -12,11 +12,12 @@ import {
 } from './header-cell.component.config';
 import {HeaderCellSort} from './header-cell.component.constants';
 import {HeaderParams} from './types/header-params';
+import {SmartGridColDef} from '../../../types/smart-grid-col-def';
 
 describe('HeaderCellComponent', () => {
     let component: HeaderCellComponent;
     let fixture: ComponentFixture<HeaderCellComponent>;
-    let colDef: Partial<ColDef>;
+    let colDef: Partial<SmartGridColDef>;
     let field: string;
     let colId: string;
     let column: Partial<Column>;

@@ -1,8 +1,6 @@
 export const GRID_API_DEBOUNCE_TIME = 5;
 export const GRID_API_LOADING_DATA_ERROR_MESSAGE = `Error: Data can't be retrieved`;
 
-export const TABLET_BREAKPOINT = 768;
-
 export const MIN_COLUMN_WIDTH = 50;
 export const MAX_COLUMN_WIDTH = 180;
 

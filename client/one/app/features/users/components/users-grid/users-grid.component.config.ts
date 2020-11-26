@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {EntityPermission} from '../../../../core/users/types/entity-permission';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {Account} from '../../../../core/entities/types/account/account';
@@ -14,7 +14,7 @@ import {
     getPermissionsLevel,
     getPermissionsText,
 } from './helpers/users-grid.helpers';
-import {UserStatus} from '../../../../app.constants';
+import {ViewportBreakpoint, UserStatus} from '../../../../app.constants';
 import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
 import {
     IconTooltipCellIcon,
@@ -30,21 +30,21 @@ import {
 } from '../../helpers/users.helpers';
 import {distinct} from '../../../../shared/helpers/array.helpers';
 
-export const COLUMN_NAME: ColDef = {
+export const COLUMN_NAME: SmartGridColDef = {
     headerName: 'Name',
     valueGetter: nameGetter,
     width: 100,
     minWidth: 100,
 };
 
-export const COLUMN_EMAIL: ColDef = {
+export const COLUMN_EMAIL: SmartGridColDef = {
     headerName: 'Email',
     field: 'email',
     width: 180,
     minWidth: 180,
 };
 
-export const COLUMN_STATUS: ColDef = {
+export const COLUMN_STATUS: SmartGridColDef = {
     headerName: 'Status',
     field: 'status',
     valueFormatter: statusFormatter,
@@ -52,7 +52,7 @@ export const COLUMN_STATUS: ColDef = {
     minWidth: 120,
 };
 
-export const COLUMN_ACCESS: ColDef = {
+export const COLUMN_ACCESS: SmartGridColDef = {
     headerName: 'Access',
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
@@ -66,7 +66,7 @@ export const COLUMN_ACCESS: ColDef = {
     minWidth: 100,
 };
 
-export const COLUMN_PERMISSIONS: ColDef = {
+export const COLUMN_PERMISSIONS: SmartGridColDef = {
     headerName: 'Permissions',
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
@@ -81,7 +81,7 @@ export const COLUMN_PERMISSIONS: ColDef = {
     resizable: true,
 };
 
-export const COLUMN_REPORTS: ColDef = {
+export const COLUMN_REPORTS: SmartGridColDef = {
     headerName: 'Reports',
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
@@ -96,13 +96,13 @@ export const COLUMN_REPORTS: ColDef = {
     resizable: true,
 };
 
-export const COLUMN_ACTIONS: ColDef = {
+export const COLUMN_ACTIONS: SmartGridColDef = {
     headerName: '',
     cellRendererFramework: UserActionsCellComponent,
     pinned: 'right',
     maxWidth: 105,
     minWidth: 105,
-    resizable: false,
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
 function statusFormatter(params: {value: UserStatus}): string {

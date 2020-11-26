@@ -10,7 +10,7 @@ import {
 } from './header-cell.component.config';
 import {SortModel} from './types/sort-models';
 import {HeaderCellSort} from './header-cell.component.constants';
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../types/smart-grid-col-def';
 import {CellRole} from '../../../smart-grid.component.constants';
 
 @Component({
@@ -21,7 +21,7 @@ export class HeaderCellComponent implements IHeaderAngularComp {
 
     HeaderCellSort = HeaderCellSort;
 
-    colDef: ColDef;
+    colDef: SmartGridColDef;
     colId: string;
     field: string;
     role: CellRole;

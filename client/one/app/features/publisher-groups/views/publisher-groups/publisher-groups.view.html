@@ -5,19 +5,25 @@
     <div
         class="zem-panel zem-panel--with-padding zem-publisher-groups-view__panel"
     >
-        <div class="zem-publisher-groups-view__top-bar">
-            <div class="zem-publisher-groups-view__description">
+        <div class="zem-publisher-groups-view__actions">
+            <div
+                class="zem-publisher-groups-view__description zem-publisher-groups-view__action"
+            >
                 Publishers & placements allow you to upload lists of publishers
                 or placements and blacklist or whitelist them in account,
                 campaign or ad group settings.
             </div>
-            <button
-                class="zem-publisher-groups-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
-                [disabled]="isReadOnly"
-                (click)="addPublisherGroup()"
+            <div
+                class="zem-publisher-groups-view__buttons zem-publisher-groups-view__action"
             >
-                Add new list
-            </button>
+                <button
+                    class="zem-publisher-groups-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-publisher-groups-view__button"
+                    [disabled]="isReadOnly"
+                    (click)="addPublisherGroup()"
+                >
+                    Add new list
+                </button>
+            </div>
         </div>
         <zem-smart-grid
             class="zem-smart-grid zem-publisher-groups-view__item"

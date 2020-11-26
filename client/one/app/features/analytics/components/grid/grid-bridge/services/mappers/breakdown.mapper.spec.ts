@@ -1,9 +1,5 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
-import {Currency} from '../../../../../../../app.constants';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
+import {Currency, ViewportBreakpoint} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
 import {PinnedRowCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
@@ -24,6 +20,7 @@ import {BreakdownColumnMapper} from './breakdown.mapper';
 import {BreakdownCellComponent} from '../../../cells/breakdown-cell/breakdown-cell.component';
 import {BreakdownRendererParams} from '../../../cells/breakdown-cell/types/breakdown.renderer-params';
 import {PinnedRowCellValueStyleClass} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component.constants';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('BreakdownColumnMapper', () => {
     let mapper: BreakdownColumnMapper;
@@ -71,12 +68,12 @@ describe('BreakdownColumnMapper', () => {
     });
 
     it('should correctly map breakdown grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Breakdown',
             field: 'breakdown',
             colId: GridColumnTypes.BREAKDOWN,
@@ -127,6 +124,7 @@ describe('BreakdownColumnMapper', () => {
                     url: string
                 ) => {},
             } as BreakdownRendererParams,
+            unpinBelowGridWidth: ViewportBreakpoint.Tablet,
         };
 
         expect(JSON.stringify(colDef)).toEqual(JSON.stringify(expectedColDef));

@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -24,6 +20,7 @@ import {BidModifierColumnMapper} from './bid-modifier.mapper';
 import {BidModifierGridCellComponent} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/bid-modifier-grid-cell.component';
 import {BidModifierRendererParams} from '../../../cells/bid-modifiers/bid-modifier-grid-cell/types/bid-modifier.renderer-params';
 import {BidModifier} from '../../../../../../../core/bid-modifiers/types/bid-modifier';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('BidModifierColumnMapper', () => {
     let mapper: BidModifierColumnMapper;
@@ -71,12 +68,12 @@ describe('BidModifierColumnMapper', () => {
     });
 
     it('should correctly map bid modifier grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Bid modifier',
             field: 'bid_modifier',
             colId: GridColumnTypes.BID_MODIFIER_FIELD,

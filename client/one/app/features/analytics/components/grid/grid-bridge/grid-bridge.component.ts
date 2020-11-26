@@ -1,7 +1,6 @@
 import './grid-bridge.component.less';
 
 import {
-    AfterViewInit,
     ChangeDetectionStrategy,
     Component,
     EventEmitter,
@@ -21,7 +20,6 @@ import {
     GridApi,
     GridColumnsChangedEvent,
     GridOptions,
-    GridSizeChangedEvent,
     RowDataUpdatedEvent,
 } from 'ag-grid-community';
 import {merge, Observable, Subject} from 'rxjs';
@@ -41,7 +39,6 @@ import {
     SMART_GRID_ROW_ARCHIVED_CLASS,
     GRID_API_DEBOUNCE_TIME,
     GRID_API_LOADING_DATA_ERROR_MESSAGE,
-    TABLET_BREAKPOINT,
 } from './grid-bridge.component.constants';
 import {NotificationService} from '../../../../../core/notification/services/notification.service';
 import {DOCUMENT} from '@angular/common';
@@ -54,8 +51,7 @@ import {Router} from '@angular/router';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [GridBridgeStore],
 })
-export class GridBridgeComponent
-    implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     grid: Grid;
     @Input()
@@ -77,8 +73,6 @@ export class GridBridgeComponent
     private onSelectionUpdatedHandler: Function;
     private onDataUpdatedErrorHandler: Function;
     private onRowDataUpdatedErrorHandler: Function;
-
-    private sidebarContainerContentElement: Element;
 
     constructor(
         public store: GridBridgeStore,
@@ -120,12 +114,6 @@ export class GridBridgeComponent
         }
     }
 
-    ngAfterViewInit(): void {
-        this.sidebarContainerContentElement = this.document.getElementById(
-            'zem-sidebar-container__content'
-        );
-    }
-
     ngOnDestroy(): void {
         if (commonHelpers.isDefined(this.onSelectionUpdatedHandler)) {
             this.onSelectionUpdatedHandler();
@@ -148,18 +136,10 @@ export class GridBridgeComponent
         }
     }
 
-    onGridSizeChange($event: GridSizeChangedEvent) {
-        if (!commonHelpers.isDefined(this.gridApi)) {
-            return;
-        }
-        this.setBreakdownColumnPinnedProperty();
-    }
-
     onGridColumnsChange($event: GridColumnsChangedEvent) {
         if (!commonHelpers.isDefined(this.gridApi)) {
             return;
         }
-        this.setBreakdownColumnPinnedProperty();
         setTimeout(() => {
             this.gridApi.sizeColumnsToFit();
         }, 250);
@@ -269,30 +249,6 @@ export class GridBridgeComponent
             rowNodes: [rowNode],
             force: true,
         });
-    }
-
-    private setBreakdownColumnPinnedProperty(): void {
-        if (!commonHelpers.isDefined(this.columnApi)) {
-            return;
-        }
-        if (!commonHelpers.isDefined(this.sidebarContainerContentElement)) {
-            return;
-        }
-        const column = this.columnApi.getColumn(GridColumnTypes.BREAKDOWN);
-        if (!commonHelpers.isDefined(column)) {
-            return;
-        }
-
-        const clientWidth = this.sidebarContainerContentElement.clientWidth;
-        if (clientWidth > TABLET_BREAKPOINT) {
-            if (!column.isPinned()) {
-                this.columnApi.setColumnPinned(column.getId(), 'left');
-            }
-        } else {
-            if (column.isPinned()) {
-                this.columnApi.setColumnPinned(column.getId(), null);
-            }
-        }
     }
 }
 

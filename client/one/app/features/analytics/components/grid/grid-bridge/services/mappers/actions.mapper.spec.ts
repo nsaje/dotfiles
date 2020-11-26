@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {Breakdown, Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -59,12 +59,12 @@ describe('ActionsColumnMapper', () => {
     });
 
     it('should correctly map breakdown grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Actions',
             field: GridColumnTypes.ACTIONS,
             colId: GridColumnTypes.ACTIONS,

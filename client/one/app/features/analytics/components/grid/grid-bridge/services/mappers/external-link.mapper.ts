@@ -1,4 +1,5 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams} from 'ag-grid-community';
 import {LinkCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
 import {LinkRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
 import {
@@ -13,7 +14,7 @@ import {GridRowDataStatsValue} from '../../types/grid-row-data';
 import {ColumnMapper} from './column.mapper';
 
 export class ExternalLinkColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             minWidth: MIN_COLUMN_WIDTH,
             width: EXTERNAL_LINK_GRID_COLUMN_TYPES_TO_COLUMN_WIDTH[column.type],

@@ -8,7 +8,7 @@ import {
     EventEmitter,
     OnChanges,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
+import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {Credit} from '../../../../core/credits/types/credit';
 import {CreditGridType} from '../../credits.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
@@ -32,6 +32,7 @@ import {
     COLUMN_AMOUNT_PAST,
     COLUMN_SERVICE_FEE,
 } from './credits-grid.component.config';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 @Component({
     selector: 'zem-credits-grid',
@@ -111,7 +112,7 @@ export class CreditsGridComponent implements OnInit, OnChanges {
         ],
     };
 
-    columnDefs: ColDef[];
+    columnDefs: SmartGridColDef[];
 
     private gridApi: GridApi;
 

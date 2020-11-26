@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {GridColumnTypes} from '../../../../../analytics.constants';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
@@ -9,11 +9,11 @@ import {ColumnMapperProvider} from '../mappers/column.provider';
 import {SetColumnsAction, SetColumnsActionReducer} from './set-columns.reducer';
 
 class TestColumnMapper extends ColumnMapper {
-    map(grid: Grid, column: GridColumn): ColDef {
+    map(grid: Grid, column: GridColumn): SmartGridColDef {
         return this.getColDef(grid, column);
     }
 
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             headerName: column.data.name,
             field: column.data.field,

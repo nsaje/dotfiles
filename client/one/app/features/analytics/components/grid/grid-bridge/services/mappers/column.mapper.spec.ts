@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -15,9 +11,10 @@ import {GridColumnOrder} from '../../types/grid-column-order';
 import {ColumnMapper} from './column.mapper';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {MIN_COLUMN_WIDTH} from '../../grid-bridge.component.constants';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 class RealColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return null;
     }
 }
@@ -68,12 +65,12 @@ describe('ColumnMapper', () => {
     });
 
     it('should correctly map abstract grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Test',
             field: 'test',
             colId: 'test',

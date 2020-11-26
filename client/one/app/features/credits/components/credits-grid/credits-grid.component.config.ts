@@ -1,4 +1,4 @@
-import {ColDef, ValueFormatterParams, CellClassParams} from 'ag-grid-community';
+import {ValueFormatterParams, CellClassParams} from 'ag-grid-community';
 import {NoteCellComponent} from '../../../../shared/components/smart-grid/components/cells/note-cell/note-cell.component';
 import {dateTimeFormatter} from '../../../../shared/helpers/grid.helpers';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
@@ -12,10 +12,11 @@ import {IconTooltipRendererParams} from '../../../../shared/components/smart-gri
 import {RefundActionsCellComponent} from './components/refund-actions-cell/refund-actions-cell.component';
 import {CreditActionsCellComponent} from './components/credit-actions-cell/credit-actions-cell.component';
 import {CreditGridType} from '../../credits.constants';
-import {CreditStatus} from '../../../../app.constants';
+import {CreditStatus, ViewportBreakpoint} from '../../../../app.constants';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cells/link-cell/link-cell.component';
 import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cells/link-cell/types/link.renderer-params';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 const statusCellContent = {
     [CreditStatus.PENDING]: {
@@ -32,12 +33,11 @@ const statusCellContent = {
     },
 };
 
-export const COLUMN_ID: ColDef = {
+export const COLUMN_ID: SmartGridColDef = {
     headerName: 'ID',
     field: 'id',
     width: 80,
     minWidth: 80,
-    resizable: false,
     cellRendererFramework: LinkCellComponent,
     cellRendererParams: {
         getText: params => params.data.id,
@@ -45,7 +45,7 @@ export const COLUMN_ID: ColDef = {
     } as LinkRendererParams<Credit>,
 };
 
-export const COLUMN_CREATED_BY: ColDef = {
+export const COLUMN_CREATED_BY: SmartGridColDef = {
     headerName: 'Created By',
     width: 150,
     minWidth: 150,
@@ -57,29 +57,26 @@ export const COLUMN_CREATED_BY: ColDef = {
     } as NoteRendererParams<Credit>,
 };
 
-export const COLUMN_VALID_FROM: ColDef = {
+export const COLUMN_VALID_FROM: SmartGridColDef = {
     headerName: 'Valid from',
     field: 'startDate',
     width: 100,
     minWidth: 100,
-    resizable: false,
     valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
 };
-export const COLUMN_VALID_TO: ColDef = {
+export const COLUMN_VALID_TO: SmartGridColDef = {
     headerName: 'Valid to',
     field: 'endDate',
     width: 100,
     minWidth: 100,
-    resizable: false,
     valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
 };
 
-export const COLUMN_SIGNED: ColDef = {
+export const COLUMN_SIGNED: SmartGridColDef = {
     headerName: 'Signed',
     field: 'status',
     width: 80,
     minWidth: 80,
-    resizable: false,
     cellClass: (params: CellClassParams) => {
         if (!isDefined(statusCellContent[params.value])) {
             return '';
@@ -94,53 +91,57 @@ export const COLUMN_SIGNED: ColDef = {
     },
 };
 
-export const COLUMN_CURRENCY: ColDef = {
+export const COLUMN_CURRENCY: SmartGridColDef = {
     headerName: 'Currency',
     field: 'currency',
     width: 80,
     minWidth: 80,
-    resizable: false,
 };
 
-export const COLUMN_LICENSE_FEE: ColDef = {
+export const COLUMN_LICENSE_FEE: SmartGridColDef = {
     headerName: 'License fee',
     field: 'licenseFee',
-    width: 80,
+    width: 85,
     minWidth: 80,
-    resizable: false,
+    suppressSizeToFit: true,
+    resizable: true,
     valueFormatter: feeFormatter,
 };
 
-export const COLUMN_SERVICE_FEE: ColDef = {
+export const COLUMN_SERVICE_FEE: SmartGridColDef = {
     headerName: 'Service fee',
     field: 'serviceFee',
-    width: 80,
+    width: 85,
     minWidth: 80,
-    resizable: false,
+    suppressSizeToFit: true,
+    resizable: true,
     valueFormatter: feeFormatter,
 };
 
-export const COLUMN_AMOUNT: ColDef = {
+export const COLUMN_AMOUNT: SmartGridColDef = {
     headerName: 'Credit Amount',
     field: 'total',
     width: 120,
     minWidth: 120,
-    resizable: false,
     valueFormatter: params => {
         return getValueInCurrency(params.value, params.data.currency);
     },
 };
 
-export const COLUMN_AMOUNT_PAST: ColDef = {
+export const COLUMN_AMOUNT_PAST: SmartGridColDef = {
     ...COLUMN_AMOUNT,
+    width: 135,
     headerName: 'Total Credit Amount',
+    suppressSizeToFit: true,
+    resizable: true,
 };
 
-export const COLUMN_ALLOCATED: ColDef = {
+export const COLUMN_ALLOCATED: SmartGridColDef = {
     headerName: 'Allocated budgets',
-    width: 120,
+    width: 125,
     minWidth: 120,
-    resizable: false,
+    suppressSizeToFit: true,
+    resizable: true,
     cellRendererFramework: NoteCellComponent,
     cellRendererParams: {
         getMainContent: item =>
@@ -149,20 +150,19 @@ export const COLUMN_ALLOCATED: ColDef = {
     } as NoteRendererParams<Credit>,
 };
 
-export const COLUMN_AVAILABLE: ColDef = {
+export const COLUMN_AVAILABLE: SmartGridColDef = {
     headerName: 'Available Credit',
     field: 'available',
     width: 120,
     minWidth: 120,
-    resizable: false,
     valueFormatter: params => {
         return getValueInCurrency(params.value, params.data.currency);
     },
 };
 
-export const COLUMN_SCOPE: ColDef = {
+export const COLUMN_SCOPE: SmartGridColDef = {
     headerName: 'Scope',
-    minWidth: 200,
+    minWidth: 180,
     cellRendererFramework: ItemScopeCellComponent,
     cellRendererParams: {
         getAgencyLink: item => {
@@ -174,12 +174,11 @@ export const COLUMN_SCOPE: ColDef = {
     } as ItemScopeRendererParams<Credit>,
 };
 
-export const COLUMN_NOTES: ColDef = {
+export const COLUMN_NOTES: SmartGridColDef = {
     headerName: 'Notes',
     field: 'comment',
     width: 80,
     minWidth: 80,
-    resizable: false,
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
         columnDisplayOptions: {
@@ -188,28 +187,30 @@ export const COLUMN_NOTES: ColDef = {
     } as IconTooltipRendererParams<string, Credit, any>,
 };
 
-export const COLUMN_ACTION_CREDIT: ColDef = {
+export const COLUMN_ACTION_CREDIT: SmartGridColDef = {
     headerName: 'Credit Actions',
     cellRendererFramework: CreditActionsCellComponent,
     pinned: 'right',
     maxWidth: 100,
     minWidth: 100,
-    resizable: false,
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
-export const COLUMN_ACTION_REFUND: ColDef = {
+export const COLUMN_ACTION_REFUND: SmartGridColDef = {
     headerName: 'Refund Actions',
     cellRendererFramework: RefundActionsCellComponent,
     cellRendererParams: {
         creditGridType: CreditGridType.ACTIVE,
     },
     pinned: 'right',
-    maxWidth: 100,
     minWidth: 100,
-    resizable: false,
+    width: 110,
+    suppressSizeToFit: true,
+    resizable: true,
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
-export const COLUMN_ACTION_REFUND_PAST: ColDef = {
+export const COLUMN_ACTION_REFUND_PAST: SmartGridColDef = {
     ...COLUMN_ACTION_REFUND,
     cellRendererParams: {
         creditGridType: CreditGridType.PAST,

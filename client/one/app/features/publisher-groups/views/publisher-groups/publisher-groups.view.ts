@@ -18,7 +18,8 @@ import {
     takeUntil,
     tap,
 } from 'rxjs/operators';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupsStore} from '../../services/publisher-groups-store/publisher-groups.store';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {PublisherGroupActionsCellComponent} from '../../components/publisher-group-actions-cell/publisher-group-actions-cell.component';
@@ -38,6 +39,7 @@ import {PublisherGroupsStoreState} from '../../services/publisher-groups-store/p
 import {RequestState} from '../../../../shared/types/request-state';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {ViewportBreakpoint} from '../../../../app.constants';
 
 const EXPLICIT_PAGINATION_URL_PARAMS: {
     [key: string]: keyof PaginationState;
@@ -66,8 +68,8 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     @ViewChild('deleteFailedModal', {static: false})
     deleteFailedModal: ModalComponent;
 
-    columnDefs: ColDef[] = [];
-    implicitColumnDefs: ColDef[] = [];
+    columnDefs: SmartGridColDef[] = [];
+    implicitColumnDefs: SmartGridColDef[] = [];
 
     context: any;
     isReadOnly: boolean = true;
@@ -307,6 +309,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,
                 pinned: 'right',
+                unpinBelowGridWidth: ViewportBreakpoint.Tablet,
             },
         ];
 
@@ -369,6 +372,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,
                 pinned: 'right',
+                unpinBelowGridWidth: ViewportBreakpoint.Tablet,
             },
         ];
     }

@@ -10,7 +10,8 @@ import {
     ViewChild,
     AfterViewInit,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {User} from '../../../../core/users/types/user';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
@@ -49,7 +50,7 @@ export class UsersGridComponent implements OnChanges, AfterViewInit {
     @ViewChild('accountAccessTemplate', {read: TemplateRef, static: false})
     accountAccessTemplate: TemplateRef<string[]>;
 
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         COLUMN_NAME,
         COLUMN_EMAIL,
         COLUMN_STATUS,

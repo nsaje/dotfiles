@@ -1,5 +1,5 @@
 <div
-    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-users-actions__search"
+    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-users-actions__search zem-users-actions__action"
 >
     <zem-text-input
         class="zem-text-input zem-prefixed-input__input"
@@ -11,14 +11,14 @@
 </div>
 <zem-checkbox-input
     *ngIf="isShowInternalVisible"
-    class="zem-checkbox-input"
+    class="zem-checkbox-input zem-users-actions__action"
     [isChecked]="showInternal"
     [zemInternalFeature]="true"
     (toggle)="showInternalChange.emit($event)"
 >
     Show internal users
 </zem-checkbox-input>
-<div class="zem-users-actions__buttons">
+<div class="zem-users-actions__buttons zem-users-actions__action">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-users-actions__button"
         [disabled]="isDisabled"

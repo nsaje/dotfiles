@@ -9,7 +9,8 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
@@ -41,7 +42,11 @@ export class PublisherGroupConnectionsListComponent
     removeConnection = new EventEmitter<PublisherGroupConnection>();
 
     context: any;
-    columnDefs: ColDef[] = [COLUMN_USED_ON, COLUMN_USED_AS, COLUMN_ACTIONS];
+    columnDefs: SmartGridColDef[] = [
+        COLUMN_USED_ON,
+        COLUMN_USED_AS,
+        COLUMN_ACTIONS,
+    ];
 
     paginationOptions: PaginationOptions = PAGINATION_OPTIONS;
     private gridApi: GridApi;

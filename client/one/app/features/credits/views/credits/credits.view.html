@@ -18,20 +18,23 @@
         <div class="zem-credits-view__panel-title">
             Active Credit Items
         </div>
-        <div class="zem-credits-view__panel-actions">
+        <div class="zem-credits-view__actions">
             <zem-checkbox-input
+                class="zem-checkbox-input zem-credits-view__action"
                 [isChecked]="state.excludeCanceled"
                 (toggle)="onExcludeCanceledChange($event)"
             >
                 Hide canceled credits
             </zem-checkbox-input>
-            <button
-                class="zem-credits-view__action zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
-                (click)="addCreditItem()"
-                [disabled]="isReadOnly"
-            >
-                Add Credit Item
-            </button>
+            <div class="zem-credits-view__buttons zem-credits-view__action">
+                <button
+                    class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-credits-view__button"
+                    (click)="addCreditItem()"
+                    [disabled]="isReadOnly"
+                >
+                    Add Credit Item
+                </button>
+            </div>
         </div>
         <zem-credits-grid
             [credits]="state.activeCredits"

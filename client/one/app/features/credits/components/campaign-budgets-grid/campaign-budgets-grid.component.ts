@@ -1,6 +1,7 @@
 import './campaign-budgets-grid.component.less';
 import {Input, Component, ChangeDetectionStrategy} from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {Currency} from '../../../../app.constants';
@@ -24,13 +25,12 @@ export class CampaignBudgetsGridComponent {
     @Input()
     isLoading: boolean;
 
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         {
             headerName: 'Campaign',
             field: 'campaignName',
             maxWidth: 170,
             minWidth: 100,
-            resizable: false,
             cellClass: 'zem-campaign-budgets-grid__cell--wrap',
         },
         {
@@ -38,7 +38,6 @@ export class CampaignBudgetsGridComponent {
             field: 'allocatedAmount',
             maxWidth: 85,
             minWidth: 85,
-            resizable: false,
             valueFormatter: params => {
                 return getValueInCurrency(params.value, this.currency);
             },
@@ -48,7 +47,6 @@ export class CampaignBudgetsGridComponent {
             field: 'spend',
             maxWidth: 80,
             minWidth: 80,
-            resizable: false,
             valueFormatter: params => {
                 return getValueInCurrency(params.value, this.currency);
             },
@@ -57,7 +55,6 @@ export class CampaignBudgetsGridComponent {
             headerName: 'Flight dates',
             maxWidth: 165,
             minWidth: 100,
-            resizable: false,
             valueGetter: params => {
                 return `${moment(params.data.startDate).format(
                     'MM/DD/YYYY'
@@ -70,7 +67,6 @@ export class CampaignBudgetsGridComponent {
             field: 'comment',
             maxWidth: 50,
             minWidth: 50,
-            resizable: false,
             cellRendererFramework: IconTooltipCellComponent,
             cellRendererParams: {
                 columnDisplayOptions: {

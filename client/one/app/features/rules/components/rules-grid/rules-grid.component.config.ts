@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {Rule} from '../../../../core/rules/types/rule';
@@ -26,8 +26,9 @@ import {IconTooltipRendererParams} from '../../../../shared/components/smart-gri
 import {RuleEntity} from '../../../../core/rules/types/rule-entity';
 import {RuleEntities} from '../../../../core/rules/types/rule-entities';
 import {MappedRuleEntity} from '../../types/mapped-rule-entity';
+import {ViewportBreakpoint} from '../../../../app.constants';
 
-export const COLUMN_NAME: ColDef = {
+export const COLUMN_NAME: SmartGridColDef = {
     headerName: 'Name',
     field: 'name',
     width: 120,
@@ -35,7 +36,7 @@ export const COLUMN_NAME: ColDef = {
     suppressSizeToFit: true,
 };
 
-export const COLUMN_ACTION_TYPE: ColDef = {
+export const COLUMN_ACTION_TYPE: SmartGridColDef = {
     headerName: 'Action type',
     field: 'actionType',
     width: 160,
@@ -43,11 +44,10 @@ export const COLUMN_ACTION_TYPE: ColDef = {
     valueFormatter: actionTypeFormatter,
 };
 
-export const COLUMN_STATUS: ColDef = {
+export const COLUMN_STATUS: SmartGridColDef = {
     headerName: 'Status',
     field: 'state',
     width: 60,
-    resizable: false,
     suppressSizeToFit: true,
     cellRendererFramework: SwitchButtonCellComponent,
     cellRendererParams: {
@@ -66,16 +66,16 @@ export const COLUMN_STATUS: ColDef = {
     } as SwitchButtonRendererParams,
 };
 
-export const COLUMN_ACTION_FREQUENCY: ColDef = {
+export const COLUMN_ACTION_FREQUENCY: SmartGridColDef = {
     headerName: 'Action frequency',
     field: 'actionFrequency',
-    width: 110,
+    width: 120,
     resizable: true,
     suppressSizeToFit: true,
     valueFormatter: actionFrequencyFormatter,
 };
 
-export const COLUMN_NOTIFICATION: ColDef = {
+export const COLUMN_NOTIFICATION: SmartGridColDef = {
     headerName: 'Notification',
     field: 'notificationType',
     width: 140,
@@ -84,7 +84,7 @@ export const COLUMN_NOTIFICATION: ColDef = {
     valueFormatter: notificationTypeFormatter,
 };
 
-export const COLUMN_RUNS_ON: ColDef = {
+export const COLUMN_RUNS_ON: SmartGridColDef = {
     headerName: 'Runs on',
     width: 200,
     suppressSizeToFit: true,
@@ -95,7 +95,7 @@ export const COLUMN_RUNS_ON: ColDef = {
     },
 };
 
-export const COLUMN_RUNS_ON_TOOLTIP: ColDef = {
+export const COLUMN_RUNS_ON_TOOLTIP: SmartGridColDef = {
     headerName: '',
     maxWidth: 80,
     minWidth: 80,
@@ -110,7 +110,7 @@ export const COLUMN_RUNS_ON_TOOLTIP: ColDef = {
     } as IconTooltipRendererParams<string, Rule, any>,
 };
 
-export const COLUMN_SCOPE: ColDef = {
+export const COLUMN_SCOPE: SmartGridColDef = {
     headerName: 'Scope',
     minWidth: 200,
     resizable: true,
@@ -125,13 +125,14 @@ export const COLUMN_SCOPE: ColDef = {
     } as ItemScopeRendererParams<Rule>,
 };
 
-export const COLUMN_ACTIONS: ColDef = {
+export const COLUMN_ACTIONS: SmartGridColDef = {
     headerName: '',
     cellRendererFramework: RuleActionsCellComponent,
     pinned: 'right',
     width: 75,
     suppressSizeToFit: true,
     resizable: true,
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
 function notificationTypeFormatter(params: {

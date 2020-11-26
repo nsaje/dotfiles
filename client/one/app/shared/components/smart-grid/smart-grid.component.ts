@@ -10,12 +10,12 @@ import {
     OnInit,
     OnChanges,
     SimpleChanges,
+    OnDestroy,
 } from '@angular/core';
 import {
     DetailGridInfo,
     GridApi,
     GridOptions,
-    ColDef,
     RowSelectedEvent,
     SelectionChangedEvent,
     GridSizeChangedEvent,
@@ -23,6 +23,8 @@ import {
     GridColumnsChangedEvent,
     RowDataChangedEvent,
     RowDataUpdatedEvent,
+    ColumnApi,
+    Column,
 } from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
@@ -36,17 +38,22 @@ import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
 import {PaginationState} from './types/pagination-state';
 import {HeaderCellComponent} from './components/cells/header-cell/header-cell.component';
+import {isDefined} from '../../helpers/common.helpers';
+import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {SmartGridColDef} from './types/smart-grid-col-def';
+import {distinct} from '../../helpers/array.helpers';
 
 @Component({
     selector: 'zem-smart-grid',
     templateUrl: './smart-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmartGridComponent implements OnInit, OnChanges {
+export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     @Input('gridOptions')
     options: GridOptions;
     @Input()
-    columnDefs: ColDef[];
+    columnDefs: SmartGridColDef[];
     @Input()
     rowData: any[];
     @Input()
@@ -84,6 +91,9 @@ export class SmartGridComponent implements OnInit, OnChanges {
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
 
+    private gridWidth$: Subject<number> = new Subject<number>();
+    private ngUnsubscribe$: Subject<void> = new Subject();
+
     ngOnInit(): void {
         this.gridOptions = {
             ...DEFAULT_GRID_OPTIONS,
@@ -116,6 +126,11 @@ export class SmartGridComponent implements OnInit, OnChanges {
         }
     }
 
+    ngOnDestroy(): void {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
+    }
+
     onRowSelected(event: RowSelectedEvent) {
         this.rowSelected.emit(event.data);
     }
@@ -128,6 +143,14 @@ export class SmartGridComponent implements OnInit, OnChanges {
         this.isGridReady = true;
         this.gridApi = params.api;
         this.gridReady.emit(params);
+
+        if (
+            params.columnApi
+                .getAllColumns()
+                .some(this.columnUnpinsBelowGridWidth)
+        ) {
+            this.setupPinnedColumnToggling(params.columnApi);
+        }
     }
 
     onGridSizeChanged($event: GridSizeChangedEvent) {
@@ -136,6 +159,8 @@ export class SmartGridComponent implements OnInit, OnChanges {
             setTimeout(() => {
                 this.gridApi.sizeColumnsToFit();
             }, 250);
+
+            this.gridWidth$.next($event.clientWidth);
         }
     }
 
@@ -218,5 +243,66 @@ export class SmartGridComponent implements OnInit, OnChanges {
             case 'server':
                 return this.paginationCount;
         }
+    }
+
+    private columnUnpinsBelowGridWidth(column: Column): boolean {
+        return (
+            isDefined(column.getPinned()) &&
+            isDefined(
+                (<SmartGridColDef>column.getUserProvidedColDef())
+                    .unpinBelowGridWidth
+            )
+        );
+    }
+
+    private countThresholdsAboveWidth(
+        widthThresholds: number[],
+        width: number
+    ): number {
+        return widthThresholds.filter(threshold => width < threshold).length;
+    }
+
+    private setupPinnedColumnToggling(columnApi: ColumnApi) {
+        const columnPinnedSettings: {
+            colId: string;
+            pinned: string;
+            unpinBelowGridWidth: number;
+        }[] = columnApi
+            .getAllColumns()
+            .filter(this.columnUnpinsBelowGridWidth)
+            .map(column => ({
+                colId: column.getColId(),
+                pinned: column.getPinned(),
+                unpinBelowGridWidth: (<SmartGridColDef>(
+                    column.getUserProvidedColDef()
+                )).unpinBelowGridWidth,
+            }));
+
+        const widthThresholds: number[] = distinct(
+            columnPinnedSettings.map(setting => setting.unpinBelowGridWidth)
+        );
+
+        this.gridWidth$
+            .pipe(
+                debounceTime(100),
+                distinctUntilChanged(
+                    (prev, curr) =>
+                        this.countThresholdsAboveWidth(
+                            widthThresholds,
+                            prev
+                        ) ===
+                        this.countThresholdsAboveWidth(widthThresholds, curr)
+                ),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(gridWidth =>
+                columnPinnedSettings.forEach(setting => {
+                    const pinColumn: string | null =
+                        gridWidth < setting.unpinBelowGridWidth
+                            ? null
+                            : setting.pinned;
+                    columnApi.setColumnPinned(setting.colId, pinColumn);
+                })
+            );
     }
 }

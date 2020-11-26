@@ -1,4 +1,5 @@
-import {CellClassParams, ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {CellClassParams} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {ColumnMapper} from './column.mapper';
@@ -15,7 +16,7 @@ import {METRIC_GRID_COLUMN_TYPES} from '../../grid-bridge.component.config';
 import {PinnedRowRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/pinned-row-cell/types/pinned-row.renderer-params';
 
 export class StatsDataColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         const headerName: string = commonHelpers.getValueOrDefault(
             column.data?.name,
             ''

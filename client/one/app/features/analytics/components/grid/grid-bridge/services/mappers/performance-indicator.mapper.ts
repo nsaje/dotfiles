@@ -1,4 +1,5 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams} from 'ag-grid-community';
 import {HeaderCellIcon} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {Grid} from '../../types/grid';
@@ -12,7 +13,7 @@ import {PERFORMANCE_INDICATOR_COLUMN_WIDTH} from '../../grid-bridge.component.co
 import {GridColumnTypes} from '../../../../../analytics.constants';
 
 export class PerformanceIndicatorColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             colId: GridColumnTypes.PERFORMANCE_INDICATOR,
             minWidth: PERFORMANCE_INDICATOR_COLUMN_WIDTH,

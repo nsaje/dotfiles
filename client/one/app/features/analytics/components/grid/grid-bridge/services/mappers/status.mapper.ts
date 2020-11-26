@@ -1,4 +1,5 @@
-import {ColDef, ValueFormatterParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ValueFormatterParams} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {GridRowDataStatsValue} from '../../types/grid-row-data';
@@ -12,7 +13,7 @@ import {GridRow} from '../../types/grid-row';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 
 export class StatusColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         return {
             minWidth: STATUS_COLUMN_WIDTH,
             width: STATUS_COLUMN_WIDTH,

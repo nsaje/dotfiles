@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {BidModifierTypesGridStoreState} from './bid-modifier-types-grid.store.state';
 import {Store} from 'rxjs-observable-store';
-import {ColDef, GridOptions} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {GridOptions} from 'ag-grid-community';
 import {TypeSummaryGridRow} from './type-summary-grid-row';
 import * as numericHelpers from '../../../helpers/numeric.helpers';
 import {HeaderParams} from '../../smart-grid/components/cells/header-cell/types/header-params';
@@ -22,7 +23,7 @@ export class BidModifierTypesGridStore extends Store<
         const gridOptions: GridOptions = {
             suppressMovableColumns: true,
         };
-        const columnDefs: ColDef[] = [
+        const columnDefs: SmartGridColDef[] = [
             {
                 headerName: 'Dimension',
                 field: 'type',

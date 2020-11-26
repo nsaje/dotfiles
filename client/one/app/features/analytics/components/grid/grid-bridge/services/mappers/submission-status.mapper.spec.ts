@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -18,6 +14,7 @@ import {GridColumn} from '../../types/grid-column';
 import {GridColumnOrder} from '../../types/grid-column-order';
 import {HeaderCellSort} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {SubmissionStatusColumnMapper} from './submission-status.mapper';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('SubmissionStatusColumnMapper', () => {
     let mapper: SubmissionStatusColumnMapper;
@@ -65,12 +62,12 @@ describe('SubmissionStatusColumnMapper', () => {
     });
 
     it('should correctly map submission status grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: 'Submission status',
             field: 'submission_status',
             colId: GridColumnTypes.SUBMISSION_STATUS,

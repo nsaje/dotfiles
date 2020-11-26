@@ -7,7 +7,8 @@ import {
     OnChanges,
     Output,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {
@@ -50,7 +51,7 @@ export class DealsGridComponent implements OnChanges {
         PaginationState
     >();
 
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         COLUMN_ID,
         COLUMN_DEAL_NAME,
         COLUMN_DEAL_ID,

@@ -1,4 +1,5 @@
-import {ColDef, ICellRendererParams} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {ICellRendererParams} from 'ag-grid-community';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
@@ -24,8 +25,8 @@ import {CurrencyRefundCellComponent} from '../../../cells/currency-refund-cell/c
 import {CurrencyRefundRendererParams} from '../../../cells/currency-refund-cell/types/currency-refund.renderer-params';
 
 export class CurrencyColumnMapper extends StatsDataColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
-        let colDef: ColDef = super.getColDef(grid, column);
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
+        let colDef: SmartGridColDef = super.getColDef(grid, column);
 
         const refundField = this.getRefundField(column);
         if (

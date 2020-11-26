@@ -8,7 +8,8 @@ import {
     Output,
     OnInit,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
 import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
 import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/types/icon-tooltip.renderer-params';
@@ -50,13 +51,12 @@ export class RefundsGridComponent implements OnInit {
         rowHeight: 40,
     };
 
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         {
             headerName: 'ID',
             field: 'id',
             width: 80,
             minWidth: 80,
-            resizable: false,
         },
         {
             headerName: 'Created By',
@@ -74,7 +74,6 @@ export class RefundsGridComponent implements OnInit {
             field: 'startDate',
             width: 100,
             minWidth: 100,
-            resizable: false,
             valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
         },
         {
@@ -82,7 +81,6 @@ export class RefundsGridComponent implements OnInit {
             field: 'endDate',
             width: 100,
             minWidth: 100,
-            resizable: false,
             valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
         },
         {
@@ -90,7 +88,6 @@ export class RefundsGridComponent implements OnInit {
             field: 'amount',
             width: 100,
             minWidth: 100,
-            resizable: false,
             valueFormatter: params => {
                 return getValueInCurrency(params.value, this.credit.currency);
             },
@@ -100,7 +97,6 @@ export class RefundsGridComponent implements OnInit {
             field: 'comment',
             maxWidth: 50,
             minWidth: 50,
-            resizable: false,
             cellRendererFramework: IconTooltipCellComponent,
             cellRendererParams: {
                 columnDisplayOptions: {

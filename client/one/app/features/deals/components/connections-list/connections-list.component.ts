@@ -9,7 +9,7 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {ConnectionActionsCellComponent} from '../../../../shared/components/connection-actions-cell/connection-actions-cell.component';
 import {DealConnectionRowData} from '../../types/deal-connection-row-data';
 import {DealConnection} from 'one/app/core/deals/types/deal-connection';
@@ -34,7 +34,7 @@ export class ConnectionsListComponent
     removeConnection = new EventEmitter<string>();
 
     context: any;
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         {headerName: 'Connection name', field: 'name'},
         {
             headerName: '',

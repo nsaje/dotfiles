@@ -7,7 +7,8 @@ import {
     EventEmitter,
     OnChanges,
 } from '@angular/core';
-import {ColDef, DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {Rule} from '../../../../core/rules/types/rule';
@@ -44,7 +45,7 @@ export class RulesGridComponent implements OnChanges {
         PaginationState
     >();
 
-    columnDefs: ColDef[] = [
+    columnDefs: SmartGridColDef[] = [
         COLUMN_STATUS,
         COLUMN_NAME,
         COLUMN_ACTION_TYPE,

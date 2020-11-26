@@ -1,4 +1,5 @@
-import {CellClassParams, CellClickedEvent, ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {CellClassParams, CellClickedEvent} from 'ag-grid-community';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {Deal} from '../../../../core/deals/types/deal';
@@ -6,40 +7,49 @@ import {DealActionsCellComponent} from '../deal-actions-cell/deal-actions-cell.c
 import {dateTimeFormatter} from '../../../../shared/helpers/grid.helpers';
 import {DealConnectionType} from '../../types/deal-connection-type';
 import {DealsView} from '../../views/deals/deals.view';
+import {ViewportBreakpoint} from '../../../../app.constants';
 
-export const COLUMN_ID: ColDef = {
+export const COLUMN_ID: SmartGridColDef = {
     headerName: 'Id',
     field: 'id',
-    width: 65,
+    minWidth: 50,
+    width: 80,
     suppressSizeToFit: true,
+    resizable: true,
 };
 
-export const COLUMN_DEAL_NAME: ColDef = {
+export const COLUMN_DEAL_NAME: SmartGridColDef = {
     headerName: 'Deal name',
     field: 'name',
-    minWidth: 240,
+    minWidth: 120,
+    width: 200,
+    suppressSizeToFit: true,
+    resizable: true,
 };
 
-export const COLUMN_DEAL_ID: ColDef = {
+export const COLUMN_DEAL_ID: SmartGridColDef = {
     headerName: 'Deal Id',
     field: 'dealId',
-    minWidth: 150,
+    minWidth: 120,
+    width: 140,
+    suppressSizeToFit: true,
+    resizable: true,
 };
 
-export const COLUMN_SOURCE: ColDef = {
+export const COLUMN_SOURCE: SmartGridColDef = {
     headerName: 'Source',
     field: 'source',
     minWidth: 90,
 };
 
-export const COLUMN_FLOOR_PRICE: ColDef = {
+export const COLUMN_FLOOR_PRICE: SmartGridColDef = {
     headerName: 'Floor price',
     field: 'floorPrice',
     width: 90,
     suppressSizeToFit: true,
 };
 
-export const COLUMN_VALID_FROM: ColDef = {
+export const COLUMN_VALID_FROM: SmartGridColDef = {
     headerName: 'Valid from',
     field: 'validFromDate',
     valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
@@ -47,7 +57,7 @@ export const COLUMN_VALID_FROM: ColDef = {
     suppressSizeToFit: true,
 };
 
-export const COLUMN_VALID_TO: ColDef = {
+export const COLUMN_VALID_TO: SmartGridColDef = {
     headerName: 'Valid to',
     field: 'validToDate',
     valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
@@ -55,7 +65,7 @@ export const COLUMN_VALID_TO: ColDef = {
     suppressSizeToFit: true,
 };
 
-export const COLUMN_SCOPE: ColDef = {
+export const COLUMN_SCOPE: SmartGridColDef = {
     headerName: 'Scope',
     cellRendererFramework: ItemScopeCellComponent,
     cellRendererParams: {
@@ -67,59 +77,62 @@ export const COLUMN_SCOPE: ColDef = {
         },
     } as ItemScopeRendererParams<Deal>,
     minWidth: 180,
+    suppressSizeToFit: true,
     resizable: true,
 };
 
-export const COLUMN_ACCOUNTS: ColDef = {
+export const COLUMN_ACCOUNTS: SmartGridColDef = {
     ...getConnectionColumnConfig(DealConnectionType.ACCOUNT),
     headerName: 'Accounts',
     field: 'numOfAccounts',
-    width: 70,
-};
-
-export const COLUMN_CAMPAIGNS: ColDef = {
-    ...getConnectionColumnConfig(DealConnectionType.CAMPAIGN),
-    headerName: 'Campaigns',
-    field: 'numOfCampaigns',
     width: 80,
 };
 
-export const COLUMN_AD_GROUPS: ColDef = {
+export const COLUMN_CAMPAIGNS: SmartGridColDef = {
+    ...getConnectionColumnConfig(DealConnectionType.CAMPAIGN),
+    headerName: 'Campaigns',
+    field: 'numOfCampaigns',
+    width: 85,
+};
+
+export const COLUMN_AD_GROUPS: SmartGridColDef = {
     ...getConnectionColumnConfig(DealConnectionType.ADGROUP),
     headerName: 'Ad Groups',
     field: 'numOfAdgroups',
     width: 80,
 };
 
-export const COLUMN_NOTES: ColDef = {
+export const COLUMN_NOTES: SmartGridColDef = {
     headerName: 'Notes',
     field: 'description',
     minWidth: 90,
 };
 
-export const COLUMN_CREATED_BY: ColDef = {
+export const COLUMN_CREATED_BY: SmartGridColDef = {
     headerName: 'Created by',
     field: 'createdBy',
     minWidth: 180,
 };
 
-export const COLUMN_ACTIONS: ColDef = {
+export const COLUMN_ACTIONS: SmartGridColDef = {
     headerName: '',
     cellRendererFramework: DealActionsCellComponent,
     pinned: 'right',
     width: 75,
     suppressSizeToFit: true,
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
 function getConnectionColumnConfig(
     connectionType: DealConnectionType
-): Partial<ColDef> {
+): Partial<SmartGridColDef> {
     return {
         cellClassRules: {
             'zem-deals-grid__cell--clickable': canViewConnections,
         },
         onCellClicked: $event => openConnectionsModal(connectionType, $event),
         suppressSizeToFit: true,
+        resizable: true,
     };
 }
 

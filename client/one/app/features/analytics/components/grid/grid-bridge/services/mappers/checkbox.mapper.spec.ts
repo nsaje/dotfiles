@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {Breakdown, Currency} from '../../../../../../../app.constants';
 import {CheckboxCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
 import {CheckboxRendererParams} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/types/checkbox.renderer-params';
@@ -55,12 +55,12 @@ describe('CheckboxColumnMapper', () => {
     });
 
     it('should correctly map checkbox grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: '',
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
@@ -131,12 +131,12 @@ describe('CheckboxColumnMapper', () => {
             },
         };
 
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGridWithFilters as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: '',
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,

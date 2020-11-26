@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {StoreAction} from '../../../../../../../shared/services/store/store.action';
 import {StoreReducer} from '../../../../../../../shared/services/store/store.reducer';
 import {GridColumnTypes} from '../../../../../analytics.constants';
@@ -104,7 +104,7 @@ export class SetColumnsActionReducer extends StoreReducer<
         state: GridBridgeStoreState,
         action: SetColumnsAction
     ): GridBridgeStoreState {
-        const columns: ColDef[] = action.payload.map(column => {
+        const columns: SmartGridColDef[] = action.payload.map(column => {
             const mapper: ColumnMapper = this.getColumnMapper(column);
             if (commonHelpers.isDefined(mapper)) {
                 return mapper.map(state.grid, column);

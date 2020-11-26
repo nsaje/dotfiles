@@ -1,5 +1,5 @@
 <div
-    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-rules-actions__search"
+    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-rules-actions__search zem-rules-actions__action"
 >
     <zem-text-input
         class="zem-text-input zem-prefixed-input__input"
@@ -8,7 +8,7 @@
         (valueChange)="onSearchChange($event)"
     ></zem-text-input>
 </div>
-<div class="zem-rules-actions__buttons">
+<div class="zem-rules-actions__buttons zem-rules-actions__action">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-rules-actions__button"
         [disabled]="isDisabled || isReadOnly"

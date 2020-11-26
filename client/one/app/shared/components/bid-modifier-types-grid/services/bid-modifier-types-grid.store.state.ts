@@ -1,4 +1,5 @@
-import {ColDef, GridOptions} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
+import {GridOptions} from 'ag-grid-community';
 import {TypeSummaryGridRow} from './type-summary-grid-row';
 
 export class BidModifierTypesGridStoreState {
@@ -6,6 +7,6 @@ export class BidModifierTypesGridStoreState {
     selectableRows: boolean = false;
     selectionTooltip: string = null;
     gridOptions: GridOptions = null;
-    columnDefs: ColDef[] = null;
+    columnDefs: SmartGridColDef[] = null;
     typeSummaryGridRows: TypeSummaryGridRow[] = null;
 }

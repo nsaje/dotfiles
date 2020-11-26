@@ -1,8 +1,4 @@
-import {
-    ColDef,
-    ValueFormatterParams,
-    ValueGetterParams,
-} from 'ag-grid-community';
+import {ValueFormatterParams, ValueGetterParams} from 'ag-grid-community';
 import {Currency} from '../../../../../../../app.constants';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {SortModel} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/sort-models';
@@ -21,6 +17,7 @@ import {
     HeaderCellSort,
 } from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/header-cell.component.constants';
 import {PerformanceIndicatorColumnMapper} from './performance-indicator.mapper';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 
 describe('PerformanceIndicatorColumnMapper', () => {
     let mapper: PerformanceIndicatorColumnMapper;
@@ -68,12 +65,12 @@ describe('PerformanceIndicatorColumnMapper', () => {
     });
 
     it('should correctly map status grid column to smart grid column', () => {
-        const colDef: ColDef = mapper.map(
+        const colDef: SmartGridColDef = mapper.map(
             mockedGrid as Grid,
             mockedColumn as GridColumn
         );
 
-        const expectedColDef: ColDef = {
+        const expectedColDef: SmartGridColDef = {
             headerName: '',
             field: 'performance',
             colId: GridColumnTypes.PERFORMANCE_INDICATOR,

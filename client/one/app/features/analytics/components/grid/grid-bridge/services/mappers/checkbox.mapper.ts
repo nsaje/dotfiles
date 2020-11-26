@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {CheckboxCellComponent} from '../../../../../../../shared/components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
 import {HeaderParams} from '../../../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {
@@ -21,8 +21,8 @@ import {GridSelectionCustomFilter} from '../../types/grid-selection-custom-filte
 import {HEADER_CHECKBOX_WITH_FILTERS_BREAKDOWNS} from '../../grid-bridge.component.config';
 
 export class CheckboxColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef | null {
-        let colDef: ColDef = {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef | null {
+        let colDef: SmartGridColDef = {
             field: GridColumnTypes.CHECKBOX,
             colId: GridColumnTypes.CHECKBOX,
             minWidth: CHECKBOX_COLUMN_WIDTH,

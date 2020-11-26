@@ -1,4 +1,4 @@
-import {ColDef} from 'ag-grid-community';
+import {SmartGridColDef} from '../../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {Grid} from '../../types/grid';
 import {GridColumn} from '../../types/grid-column';
 import {ColumnMapper} from './column.mapper';
@@ -10,7 +10,7 @@ import {GridColumnTypes} from '../../../../../analytics.constants';
 import {BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH} from '../../grid-bridge.component.config';
 
 export class ActionsColumnMapper extends ColumnMapper {
-    getColDef(grid: Grid, column: GridColumn): ColDef {
+    getColDef(grid: Grid, column: GridColumn): SmartGridColDef {
         const columnWidth =
             BREAKDOWN_TO_ACTIONS_COLUMN_WIDTH[grid.meta.data.breakdown];
         return {
