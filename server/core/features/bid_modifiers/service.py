@@ -201,6 +201,12 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
 def _update_ad_group_source_settings(
     ad_group, target, modifier, user, write_history=True, propagate_to_k1=False, skip_validation=False
 ):
+    agency_uses_realtime_autopilot = ad_group.campaign.account.agency_uses_realtime_autopilot()
+    autopilot_active = ad_group.settings.autopilot_state != dash_constants.AdGroupSettingsAutopilotState.INACTIVE
+
+    if agency_uses_realtime_autopilot and autopilot_active:
+        return
+
     try:
         ad_group_source = ad_group.adgroupsource_set.select_related("settings").get(source__id=int(target))
     except core.models.AdGroupSource.DoesNotExist:
