@@ -154,11 +154,11 @@ class CloneAdGroupSerializerTestCase(TestCase):
             data={
                 "ad_group_id": self.ad_group.pk,
                 "destination_campaign_id": self.dest_campaign.pk,
-                "destination_ad_group_name": 128 * "x",
+                "destination_ad_group_name": 260 * "x",
                 "clone_ads": True,
             }
         )
         self.assertFalse(serializer.is_valid())
         self.assertDictEqual(
-            serializer.errors, {"destination_ad_group_name": ["Ensure this field has no more than 127 characters."]}
+            serializer.errors, {"destination_ad_group_name": ["Ensure this field has no more than 256 characters."]}
         )
