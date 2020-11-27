@@ -786,7 +786,7 @@ class CampaignTestCase(TestCase):
         self.assertEqual(settings.target_devices, ["mobile"])
         self.assertEqual(settings.target_regions, ["US"])
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_get_current_settings_no_existing_settings(self, mock_autopilot):
         campaign = models.Campaign.objects.create(
             test_helper.fake_request(self.user), models.Account.objects.get(pk=1), ""

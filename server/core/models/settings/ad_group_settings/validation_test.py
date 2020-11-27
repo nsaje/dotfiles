@@ -1,7 +1,6 @@
 import decimal
 from decimal import Decimal
 
-import mock
 from django.test import TestCase
 
 import core.features.audiences
@@ -18,7 +17,7 @@ from . import model
 class ValidationTest(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
 
     def test_validate_bidding_type_bid_fail(self):
         self.ad_group.bidding_type = constants.BiddingType.CPC
@@ -38,24 +37,6 @@ class ValidationTest(TestCase):
         current_settings.ad_group.bidding_type = constants.BiddingType.CPM
         with self.assertRaises(exceptions.CannotSetCPC):
             current_settings._validate_cpc(changes)
-
-    def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self):
-        current_settings = self.ad_group.settings
-        new_settings = current_settings.copy_settings()
-        new_settings.state = constants.AdGroupSettingsState.ACTIVE
-
-        current_settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = False
-
-        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-
-        with self.assertRaises(exceptions.AutopilotB1SourcesNotEnabled):
-            current_settings._validate_autopilot_settings(new_settings)
-
-        new_settings.state = constants.AdGroupSettingsState.INACTIVE
-        with self.assertRaises(exceptions.AutopilotB1SourcesNotEnabled):
-            current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_autopilot_settings_all_rtb_cpc(self):
         current_settings = self.ad_group.settings
@@ -78,8 +59,7 @@ class ValidationTest(TestCase):
         current_settings.b1_sources_group_cpc_cc = Decimal("0.1")
         new_settings.b1_sources_group_cpc_cc = Decimal("0.2")
 
-        with self.assertRaises(exceptions.CPCAutopilotNotDisabled):
-            current_settings._validate_autopilot_settings(new_settings)
+        current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_autopilot_settings_all_rtb_cpm(self):
         current_settings = self.ad_group.settings
@@ -102,8 +82,7 @@ class ValidationTest(TestCase):
         current_settings.b1_sources_group_cpm = Decimal("1.1")
         new_settings.b1_sources_group_cpm = Decimal("1.2")
 
-        with self.assertRaises(exceptions.CPMAutopilotNotDisabled):
-            current_settings._validate_autopilot_settings(new_settings)
+        current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_autopilot_settings_all_rtb_cpc_multicurrency(self):
         core.features.multicurrency.CurrencyExchangeRate.objects.create(
@@ -191,51 +170,6 @@ class ValidationTest(TestCase):
         with self.assertRaises(exceptions.CannotSetB1SourcesCPC):
             current_settings._validate_b1_sources_group_cpc_cc(new_settings)
 
-    def test_validate_autopilot_settings_all_rtb_daily_budget(self):
-        current_settings = self.ad_group.settings
-        new_settings = current_settings.copy_settings()
-        new_settings.state = constants.AdGroupSettingsState.ACTIVE
-
-        current_settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = True
-
-        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-
-        current_settings.b1_sources_group_daily_budget = Decimal("100.0")
-        new_settings.b1_sources_group_daily_budget = Decimal("200.0")
-        current_settings._validate_autopilot_settings(new_settings)  # no exception
-
-        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-
-        with self.assertRaises(exceptions.DailyBudgetAutopilotNotDisabled):
-            current_settings._validate_autopilot_settings(new_settings)
-
-    @mock.patch("automation.autopilot_legacy.get_adgroup_minimum_daily_budget", autospec=True)
-    def test_validate_autopilot_settings_autopilot_daily_budget(self, mock_get_min_budget):
-        current_settings = self.ad_group.settings
-        current_settings.autopilot_daily_budget = Decimal(50)
-        new_settings = current_settings.copy_settings()
-        new_settings.state = constants.AdGroupSettingsState.ACTIVE
-
-        mock_get_min_budget.return_value = 0
-        new_settings.b1_sources_group_enabled = True
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        new_settings.autopilot_daily_budget = Decimal(100)
-        current_settings._validate_autopilot_settings(new_settings)
-        mock_get_min_budget.assert_called_with(new_settings.ad_group, new_settings)
-
-        mock_get_min_budget.return_value = 1000000
-        with self.assertRaises(exceptions.AutopilotDailyBudgetTooLow):
-            current_settings._validate_autopilot_settings(new_settings)
-
-        # already too low on old settings and not changed
-        mock_get_min_budget.return_value = 1000000
-        current_settings.autopilot_daily_budget = Decimal(50)
-        new_settings.autopilot_daily_budget = Decimal(50)
-        current_settings._validate_autopilot_settings(new_settings)
-
     def test_validate_all_rtb_state_adgroup_inactive(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         settings = model.AdGroupSettings(ad_group=ad_group)
@@ -265,34 +199,6 @@ class ValidationTest(TestCase):
         with self.assertRaises(exceptions.SeparateSourceManagementDeprecated):
             settings._validate_all_rtb_state(new_settings)
 
-    def test_validate_all_rtb_state_adgroup_inactive_legacy(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False)
-        settings = model.AdGroupSettings(ad_group=ad_group)
-        new_settings = model.AdGroupSettings()
-        new_settings.state = constants.AdGroupSettingsState.INACTIVE
-
-        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-
-        settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_enabled = False
-        settings._validate_all_rtb_state(new_settings)
-
-        settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_enabled = True
-        settings._validate_all_rtb_state(new_settings)
-
-        settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = True
-        settings._validate_all_rtb_state(new_settings)
-
-        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
-        settings._validate_all_rtb_state(new_settings)
-
-        settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = False
-        settings._validate_all_rtb_state(new_settings)
-
     def test_validate_all_rtb_state(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         current_settings = model.AdGroupSettings(ad_group=ad_group)
@@ -315,26 +221,6 @@ class ValidationTest(TestCase):
 
         current_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_enabled = False
-        current_settings._validate_all_rtb_state(new_settings)
-
-    def test_validate_all_rtb_state_legacy(self):
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False)
-        current_settings = model.AdGroupSettings(ad_group=ad_group)
-        new_settings = model.AdGroupSettings()
-        new_settings.state = constants.AdGroupSettingsState.ACTIVE
-
-        current_settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = False
-        with self.assertRaises(exceptions.AdGroupNotPaused):
-            current_settings._validate_all_rtb_state(new_settings)
-
-        current_settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_enabled = True
-        with self.assertRaises(exceptions.AdGroupNotPaused):
-            current_settings._validate_all_rtb_state(new_settings)
-
-        current_settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = True
         current_settings._validate_all_rtb_state(new_settings)
 
     def test_validate_audience_targeting(self):
@@ -386,11 +272,13 @@ class ValidationTest(TestCase):
         new_settings.b1_sources_group_enabled = True
         current_settings.b1_sources_group_daily_budget = Decimal("400.0")
         new_settings.b1_sources_group_daily_budget = Decimal("400.0")
-        current_settings._validate_b1_sources_group_daily_budget(new_settings)
+        current_settings._validate_b1_sources_group_daily_budget(new_settings, is_create=False)
 
         new_settings.b1_sources_group_daily_budget = Decimal("700.0")
-        current_settings._validate_b1_sources_group_daily_budget(new_settings)
+        current_settings._validate_b1_sources_group_daily_budget(new_settings, is_create=False)
 
         new_settings.b1_sources_group_enabled = False
+        current_settings._validate_b1_sources_group_daily_budget(new_settings, is_create=True)
+
         with self.assertRaises(exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled):
-            current_settings._validate_b1_sources_group_daily_budget(new_settings)
+            current_settings._validate_b1_sources_group_daily_budget(new_settings, is_create=False)

@@ -41,6 +41,7 @@ class AdGroupSettingsMixin(object):
         write_history=True,
         write_source_history=True,
         k1_sync=True,
+        is_create=False,
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
@@ -54,7 +55,7 @@ class AdGroupSettingsMixin(object):
             self._handle_legacy_changes(new_settings, skip_validation)
             is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
             if not skip_validation and not is_pause:
-                self.clean(new_settings)
+                self.clean(new_settings, is_create)
             self._handle_archived(new_settings)
             self._handle_max_autopilot_bid_change(new_settings)
             self._handle_b1_sources_group_adjustments(new_settings)

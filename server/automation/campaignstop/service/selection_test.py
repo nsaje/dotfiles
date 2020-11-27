@@ -182,25 +182,6 @@ class UpdateAlmostDepletedTestCase(BaseTestCase):
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    def test_user_has_both_ad_group_and_ad_group_source_turned_on(self, _):
-        active_adg = dash.constants.AdGroupSettingsState.ACTIVE
-        active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
-
-        adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
-        self.assertEqual(adg_setting_state, active_adg)
-        adg_source_setting_state = (
-            AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
-        )
-        self.assertEqual(adg_source_setting_state, active_adg_source)
-
-        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=901)
-
-        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-        selection.mark_almost_depleted_campaigns()
-        self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-
-    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
         inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
         inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE

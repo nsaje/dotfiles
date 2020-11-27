@@ -131,6 +131,24 @@ class AdGroupSourceSettings(DASHAPIBaseView):
 
         try:
             ad_group.settings.update(request, **updates)
+
+        except exc.MultipleValidationError as err:
+            errors = {}
+            for e in err.errors:
+                if isinstance(e, core.models.settings.ad_group_settings.exceptions.CPCTooLow):
+                    errors.setdefault("b1_sources_group_cpc_cc", []).append(str(e))
+
+                elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPCTooHigh):
+                    errors.setdefault("b1_sources_group_cpc_cc", []).append(str(e))
+
+                elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPMTooLow):
+                    errors.setdefault("b1_sources_group_cpm", []).append(str(e))
+
+                elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPMTooHigh):
+                    errors.setdefault("b1_sources_group_cpm", []).append(str(e))
+
+            raise exc.ValidationError(errors=errors)
+
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise exc.ValidationError(
                 errors={

@@ -1292,6 +1292,7 @@ class MulticurrencyUpdateTestCase(TestCase):
         ad_group = magic_mixer.blend(
             models.AdGroup, bidding_type=constants.BiddingType.CPC, campaign__account__currency=constants.Currency.EUR
         )
+        ad_group.campaign.settings.update_unsafe(None, autopilot=False)
 
         ad_group.settings.update_unsafe(
             None,

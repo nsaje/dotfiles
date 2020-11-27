@@ -8,7 +8,7 @@ import dash.models
 import restapi.serializers
 import utils.dates_helper
 import utils.test_helper
-from automation import autopilot_legacy as autopilot  # TODO: RTAP: LEGACY
+from automation import autopilot
 from dash import constants
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
@@ -132,9 +132,11 @@ class CampaignViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=campaign.id).count())
 
-    @mock.patch.object(autopilot, "recalculate_budgets_campaign", autospec=True)
+    @mock.patch.object(autopilot, "recalculate_ad_group_budgets", autospec=True)
     def test_campaigns_put_autopilot(self, mock_autopilot):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT, autopilot=False
         )
@@ -352,11 +354,12 @@ class CampaignViewSetTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
-    # TODO: RTAP: LEGACY: convert
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post(self, mock_send, mock_autopilot):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         new_campaign = self.campaign_repr(
             account_id=account.id, name="All About Testing", type=constants.CampaignType.VIDEO, frequency_capping=33
         )
@@ -370,7 +373,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post_account_archived(self, mock_send, mock_autopilot):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], archived=True)
@@ -389,10 +392,11 @@ class CampaignViewSetTest(RESTAPITestCase):
         )
         mock_send.assert_not_called()
 
-    # TODO: RTAP: LEGACY: convert
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_campaigns_post_no_type(self, mock_autopilot):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
         new_campaign = self.campaign_repr(account_id=account.id, name="All About Testing", frequency_capping=33)
         del new_campaign["type"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")

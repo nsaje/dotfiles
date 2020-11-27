@@ -18,12 +18,12 @@ from . import exceptions
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
-@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
+@patch("automation.autopilot.recalculate_ad_group_budgets", autospec=True)
 @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class AdGroupCreate(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        self.campaign = magic_mixer.blend(core.models.Campaign)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
 
     def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
         self.campaign.settings.update_unsafe(None, autopilot=True)
@@ -44,7 +44,11 @@ class AdGroupCreate(TestCase):
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
     def test_create_oen(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
-        campaign = magic_mixer.blend(core.models.Campaign, account__id=settings.HARDCODED_ACCOUNT_ID_OEN)
+        campaign = magic_mixer.blend(
+            core.models.Campaign,
+            account__id=settings.HARDCODED_ACCOUNT_ID_OEN,
+            account__agency__uses_realtime_autopilot=True,
+        )
         core.models.AdGroup.objects.create(self.request, campaign)
 
         self.assertFalse(mock_bulk_create.called)
@@ -85,7 +89,9 @@ class AdGroupCreate(TestCase):
             date=dates_helper.local_today(),
             exchange_rate=decimal.Decimal("3.4930"),
         )
-        account = magic_mixer.blend(core.models.Account, currency=dash.constants.Currency.ILS)
+        account = magic_mixer.blend(
+            core.models.Account, currency=dash.constants.Currency.ILS, agency__uses_realtime_autopilot=True
+        )
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         ad_group = core.models.AdGroup.objects.create(self.request, campaign)
@@ -119,7 +125,7 @@ class AdGroupCreate(TestCase):
 @patch("core.models.AdGroupSource.objects.bulk_clone_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
-@patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
+@patch("automation.autopilot.recalculate_ad_group_budgets", autospec=True)
 class AdGroupClone(TestCase):
     def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
@@ -130,7 +136,9 @@ class AdGroupClone(TestCase):
         )
 
         agency = magic_mixer.blend(core.models.Agency)
-        campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.MOBILE)
+        campaign = magic_mixer.blend(
+            core.models.Campaign, type=dash.constants.CampaignType.MOBILE, account__agency=agency
+        )
         campaign.settings.update_unsafe(None, autopilot=True)
         direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1, agency=agency)
 
@@ -160,7 +168,7 @@ class AdGroupClone(TestCase):
     def test_clone_state_override(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
-        source_campaign = magic_mixer.blend(core.models.Campaign)
+        source_campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
         ad_group_name = "Ad Group (Clone)"
         self.assertEqual(source_ad_group.settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
@@ -180,7 +188,9 @@ class AdGroupClone(TestCase):
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.VIDEO)
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
 
-        campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.VIDEO)
+        campaign = magic_mixer.blend(
+            core.models.Campaign, type=dash.constants.CampaignType.VIDEO, account__agency__uses_realtime_autopilot=True
+        )
         campaign.settings.update_unsafe(None, autopilot=True)
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
@@ -200,7 +210,9 @@ class AdGroupClone(TestCase):
     def test_clone_video_error(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
-        source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.VIDEO)
+        source_campaign = magic_mixer.blend(
+            core.models.Campaign, type=dash.constants.CampaignType.VIDEO, account__agency__uses_realtime_autopilot=True
+        )
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
 
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.CONTENT)
@@ -213,7 +225,11 @@ class AdGroupClone(TestCase):
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
 
-        campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+        campaign = magic_mixer.blend(
+            core.models.Campaign,
+            type=dash.constants.CampaignType.DISPLAY,
+            account__agency__uses_realtime_autopilot=True,
+        )
         campaign.settings.update_unsafe(None, autopilot=True)
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
@@ -263,7 +279,11 @@ class AdGroupClone(TestCase):
                 target="9000",
             )
 
-        campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+        campaign = magic_mixer.blend(
+            core.models.Campaign,
+            type=dash.constants.CampaignType.DISPLAY,
+            account__agency__uses_realtime_autopilot=True,
+        )
 
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 

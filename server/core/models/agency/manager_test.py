@@ -23,4 +23,4 @@ class AgencyManagerTestCase(TestCase):
             name="Agency", default_account_type=dash.constants.AccountType.UNKNOWN, cs_representative=self.cs
         )
         self.assertIsNotNone(agency)
-        self.assertFalse(agency.uses_realtime_autopilot)
+        self.assertTrue(agency.uses_realtime_autopilot)

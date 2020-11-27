@@ -357,6 +357,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
         self.assertTrue(resp_json["data"]["maxCpc"])
         self.assertFalse(resp_json["data"]["maxCpm"])
+        # REST API default is b1_sources_group_enabled=False and there are no allowed sources
+        self.assertEqual("0.00", resp_json["data"]["dailyBudget"])
+        self.assertEqual("0.00", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_post_bid_cpc(self):
         account = self.mix_account(
@@ -442,6 +445,9 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
+        # REST API default is b1_sources_group_enabled=False and there are no allowed sources
+        self.assertEqual("0.00", resp_json["data"]["dailyBudget"])
+        self.assertEqual("0.00", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_post_bid_cpm(self):
         account = self.mix_account(

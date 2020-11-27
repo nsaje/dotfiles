@@ -3798,8 +3798,8 @@ Examples:
 ## `autopilot` (object)
 
 - `state`: `ACTIVE_CPC` (string)
-- `dailyBudget`: `100.0001` (string)
-- `maxBid`: `20.0000` (string, optional, nullable)
+- `dailyBudget`: `100.00` (string)
+- `maxBid`: `0.25` (string, optional, nullable)
 
 ## `dayparting` (object)
 
@@ -3818,7 +3818,7 @@ Examples:
 - `bid`: `0.25` (string)
 - `maxCpc`: `0.25` (string)
 - `maxCpm`: (string)
-- `dailyBudget`: `20.0` (string)
+- `dailyBudget`: `100.00` (string)
 - `targeting` (targeting)
 - `trackingCode`: `this=1&that=2` (string)
 - `autopilot` (autopilot)

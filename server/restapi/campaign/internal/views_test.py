@@ -790,8 +790,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
 
-    # TODO: RTAP: LEGACY: convert
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post(self, mock_send, mock_autopilot):
         agency = self.mix_agency(
@@ -912,8 +911,7 @@ class CampaignViewSetTest(RESTAPITestCase):
 
         self.assertIn("Invalid campaign manager.", r["details"]["campaignManager"][0])
 
-    # TODO: RTAP: LEGACY: convert
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post_goals_error(self, mock_send, mock_autopilot):
         agency = magic_mixer.blend(core.models.Agency)

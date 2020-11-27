@@ -108,6 +108,10 @@ class AdGroupSourceStateTestCase(BaseTestCase):
         source_id = 1
         maintenance_source_id = 6
 
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group.campaign.account.agency.uses_realtime_autopilot = False
+        ad_group.campaign.account.agency.save(None)
+
         settings = models.AdGroup.objects.get(pk=ad_group_id).get_current_settings().copy_settings()
         settings.retargeting_ad_groups = False
         settings.exclusion_retargeting_ad_groups = False
@@ -171,7 +175,7 @@ class AdGroupSourceStateTestCase(BaseTestCase):
 
         view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
 
-        autopilot_check_mock.assert_called_once_with(ad_group, ad_group_sources)
+        autopilot_check_mock.assert_not_called()
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
@@ -925,7 +929,7 @@ class CampaignAdGroupStateTestCase(BaseTestCase):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("automation.autopilot_legacy.recalculate_budgets_campaign")
+    @patch("automation.autopilot.recalculate_ad_group_budgets")
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")
     @patch("dash.views.helpers.validate_ad_groups_state")
     def test_enable(self, mock_validate_state, mock_has_budget, mock_autopilot):

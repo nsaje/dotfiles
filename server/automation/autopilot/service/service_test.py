@@ -240,7 +240,7 @@ class AutopilotTestCase(test.TestCase):
         mock_update_values.assert_not_called()
 
     def test_set_autopilot_changes_history(self):
-        ad_group = magic_mixer.blend(dash.models.AdGroup)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True)
         ad_group.settings.update(None, daily_budget=Decimal("10"), skip_validation=True)
 
         initial_history_records_count = dash.models.History.objects.filter(ad_group=ad_group).count()
@@ -258,7 +258,16 @@ class AutopilotTestCase(test.TestCase):
         # TODO: RTAP: local/daily_budget deliberately removed from history until it is ok for users to see that
         self.assertCountEqual(
             [(h.system_user, h.changes) for h in history_records],
-            [(dash.constants.SystemUserType.AUTOPILOT, {"local_daily_budget": "200.0000"})],
+            [
+                (
+                    dash.constants.SystemUserType.AUTOPILOT,
+                    {
+                        "local_daily_budget": "200.0000",
+                        "local_autopilot_daily_budget": "200.0000",
+                        "local_b1_sources_group_daily_budget": "200.0000",
+                    },
+                )
+            ],
         )
 
     @patch("automation.autopilot.service.service.run_autopilot")

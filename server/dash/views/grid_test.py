@@ -70,7 +70,8 @@ class RTBSourceSettingsTestCase(BaseTestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("Maximum CPC on RTB Sources is" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
+        # RTB cpc is mapped to ad group cpc
+        self.assertTrue("CPC can't be higher than" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_post_cpm(self, mock_redirector_insert_adgroup):
@@ -116,4 +117,5 @@ class RTBSourceSettingsTestCase(BaseTestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("Maximum CPM on RTB Sources is" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])
+        # RTB cpm is mapped to ad group cpm
+        self.assertTrue("CPM can't be higher than" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])

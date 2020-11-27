@@ -91,7 +91,7 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
 
     is_externally_managed = models.BooleanField(default=False, help_text="Agency is managed via SalesForce API.")
     is_disabled = models.BooleanField(default=False, help_text="Agency can be disabled only if is externally managed.")
-    uses_realtime_autopilot = models.BooleanField(default=False)
+    uses_realtime_autopilot = models.BooleanField(default=True)
 
     settings = CachedOneToOneField(
         "AgencySettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"

@@ -785,7 +785,7 @@ class AdGroupBreakdownTestCase(BaseTestCase):
             {
                 "data": [
                     {
-                        "agency_uses_realtime_autopilot": False,
+                        "agency_uses_realtime_autopilot": True,
                         "autopilot_state": "ACTIVE_CPC_BUDGET",
                         "bid": "1.0000",
                         "bidding_type": "CPC",
@@ -870,7 +870,7 @@ class AdGroupBreakdownTestCase(BaseTestCase):
             {
                 "data": [
                     {
-                        "agency_uses_realtime_autopilot": False,
+                        "agency_uses_realtime_autopilot": True,
                         "autopilot_state": "ACTIVE_CPC_BUDGET",
                         "bid": "1.0000",
                         "bidding_type": "CPC",
@@ -953,7 +953,7 @@ class AdGroupBreakdownTestCase(BaseTestCase):
             {
                 "data": [
                     {
-                        "agency_uses_realtime_autopilot": False,
+                        "agency_uses_realtime_autopilot": True,
                         "autopilot_state": "ACTIVE_CPC_BUDGET",
                         "bid": "1.0000",
                         "bidding_type": "CPC",
@@ -1034,7 +1034,7 @@ class AdGroupBreakdownTestCase(BaseTestCase):
             {
                 "data": [
                     {
-                        "agency_uses_realtime_autopilot": False,
+                        "agency_uses_realtime_autopilot": True,
                         "autopilot_state": "ACTIVE_CPC_BUDGET",
                         "bid": "1.0000",
                         "bidding_type": "CPC",

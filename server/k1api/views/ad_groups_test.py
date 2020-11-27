@@ -249,7 +249,7 @@ class AdGroupsTest(K1APIBaseTest):
 
     # TODO: RTAP: LEGACY
     def test_get_ad_groups_autopilot_state_legacy(self):
-        ad_group = magic_mixer.blend(dash.models.AdGroup)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False)
 
         # ad group cpc+budget autopilot on
         self.assertEqual(

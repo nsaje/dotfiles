@@ -77,7 +77,7 @@
       created_dt: '2015-09-23T09:57:22'
       modified_dt: '2015-09-23T09:57:22'
       modified_by: 1
-      uses_realtime_autopilot: false
+      uses_realtime_autopilot: true
   model: dash.agency
   pk: 1
 

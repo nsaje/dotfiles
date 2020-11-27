@@ -21,7 +21,7 @@ ARBITRARY_BLUEKAI_CATEGORIES_AGENCIES = {33}  # inPowered
 # should inherit from core.common.BaseValidator so that full_clean is called on save,
 # but until the refactoring is completed let's call clean() manually
 class AdGroupSettingsValidatorMixin(object):
-    def clean(self, new_settings):
+    def clean(self, new_settings, is_create=False):
         utils.validation_helper.validate_multiple(
             self._validate_cpc,
             self._validate_cpm,
@@ -37,7 +37,7 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_custom_audiences(new_settings)
         self._validate_b1_sources_group_cpc_cc(new_settings)
         self._validate_b1_sources_group_cpm(new_settings)
-        self._validate_b1_sources_group_daily_budget(new_settings)
+        self._validate_b1_sources_group_daily_budget(new_settings, is_create)
         self._validate_target_browsers(new_settings)
         self._validate_bid(new_settings)
 
@@ -312,10 +312,10 @@ class AdGroupSettingsValidatorMixin(object):
             new_settings.b1_sources_group_cpm, new_settings, self.ad_group.campaign.get_bcm_modifiers()
         )
 
-    def _validate_b1_sources_group_daily_budget(self, new_settings):
+    def _validate_b1_sources_group_daily_budget(self, new_settings, is_create):
         if self.local_b1_sources_group_daily_budget == new_settings.local_b1_sources_group_daily_budget:
             return
-        if not new_settings.b1_sources_group_enabled:
+        if not is_create and not new_settings.b1_sources_group_enabled:
             raise exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled(
                 "Can not set RTB sources group daily budget while managing RTB sources separately"
             )

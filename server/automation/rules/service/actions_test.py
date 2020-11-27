@@ -518,9 +518,9 @@ class ActionsTest(TestCase):
         with self.assertRaisesRegexp(Exception, "Invalid bid action type"):
             actions.adjust_bid(str(ad_group.id), rule, ad_group)
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_adjust_ad_group_autopilot_budget_increase(self, mock_recalculate_budgets):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.settings.update(
@@ -546,7 +546,7 @@ class ActionsTest(TestCase):
         self.assertEqual(Decimal("180"), ad_group.settings.autopilot_daily_budget)
         self.assertTrue(update.has_changes())
 
-        self.assertEqual(3, mock_recalculate_budgets.call_count)
+        mock_recalculate_budgets.assert_not_called()
 
         update = actions.adjust_autopilot_daily_budget(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
@@ -554,11 +554,11 @@ class ActionsTest(TestCase):
         self.assertFalse(update.has_changes())
 
         self.assertEqual(Decimal("180"), ad_group.settings.local_autopilot_daily_budget)
-        self.assertEqual(3, mock_recalculate_budgets.call_count)
+        mock_recalculate_budgets.assert_not_called()
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_adjust_ad_group_autopilot_budget_increase_over_limit(self, mock_recalculate_budgets):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.settings.update(
@@ -579,9 +579,9 @@ class ActionsTest(TestCase):
         self.assertEqual(Decimal("180"), ad_group.settings.autopilot_daily_budget)
         self.assertFalse(update.has_changes())
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_adjust_ad_group_autopilot_budget_decrease(self, mock_recalculate_budgets):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(
             core.models.AdGroup, campaign=campaign, bidding_type=dash.constants.BiddingType.CPC
@@ -609,7 +609,7 @@ class ActionsTest(TestCase):
         self.assertEqual(Decimal("120"), ad_group.settings.autopilot_daily_budget)
         self.assertTrue(update.has_changes())
 
-        self.assertEqual(3, mock_recalculate_budgets.call_count)
+        mock_recalculate_budgets.assert_not_called()
 
         update = actions.adjust_autopilot_daily_budget(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
@@ -617,11 +617,11 @@ class ActionsTest(TestCase):
         self.assertFalse(update.has_changes())
 
         self.assertEqual(Decimal("120"), ad_group.settings.local_autopilot_daily_budget)
-        self.assertEqual(3, mock_recalculate_budgets.call_count)
+        mock_recalculate_budgets.assert_not_called()
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_adjust_ad_group_autopilot_budget_decrease_under_limit(self, mock_recalculate_budgets):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(
             core.models.AdGroup, campaign=campaign, bidding_type=dash.constants.BiddingType.CPC
@@ -738,7 +738,7 @@ class ActionsTest(TestCase):
         with self.assertRaisesRegexp(Exception, "Invalid ad turn off target"):
             actions.turn_off(str(-1), rule, ad_group)
 
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_turn_off_ad_group_source(self, mock_recalculate_budgets):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         source = magic_mixer.blend(core.models.Source)
