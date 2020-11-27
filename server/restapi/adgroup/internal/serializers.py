@@ -26,7 +26,7 @@ class CloneAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             "required": "Please provide a name for destination ad group",
             "blank": "Please provide a name for destination ad group",
         },
-        max_length=127,
+        max_length=256,
     )
     clone_ads = rest_framework.serializers.BooleanField()
 

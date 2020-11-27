@@ -55,6 +55,7 @@ angular
             }
         }
 
+        // eslint-disable-next-line complexity
         function convertErrorsFromApi(data) {
             var errors;
 
@@ -65,9 +66,19 @@ angular
             ) {
                 errors = data.data.details;
                 return {
-                    destinationCampaignId: errors.destinationCampaignId[0],
-                    destinationAdGroupName: errors.destinationAdGroupName[0],
-                    cloneAds: errors.cloneAds[0],
+                    destinationCampaignId: errors.hasOwnProperty(
+                        'destinationCampaignId'
+                    )
+                        ? errors.destinationCampaignId[0]
+                        : null,
+                    destinationAdGroupName: errors.hasOwnProperty(
+                        'destinationAdGroupName'
+                    )
+                        ? errors.destinationAdGroupName[0]
+                        : null,
+                    cloneAds: errors.hasOwnProperty('cloneAds')
+                        ? errors.cloneAds[0]
+                        : null,
                     message:
                         data.status === 500 || data.status === 504
                             ? 'Something went wrong'
