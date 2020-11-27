@@ -51,6 +51,7 @@ class Command(Z1Command):
         parser.add_argument("--batch-size", dest="batch_size", default=BATCH_SIZE, type=int, help="Batch size")
         parser.add_argument("--use-pool", dest="use_pool", action="store_true", help="Use thread pool")
         parser.add_argument("--pool-size", dest="pool_size", type=int, default=POOL_SIZE, help="Thread pool size")
+        parser.add_argument("--log-ids", dest="log_ids", action="store_true", help="Log ad group IDs for changes")
 
     def handle(self, *args, **options):
         agency_ids = options["agency_ids"]
@@ -60,6 +61,7 @@ class Command(Z1Command):
         batch_size = options.get("batch_size", BATCH_SIZE)
         use_pool = options.get("use_pool", False)
         pool_size = options.get("pool_size", POOL_SIZE)
+        log_ids = options.get("log_ids", False)
 
         if use_pool:
             self.stdout.write(self.style.SUCCESS("Processing using thread pool"))
@@ -162,7 +164,8 @@ class Command(Z1Command):
             if use_pool:
                 with concurrent.futures.ThreadPoolExecutor(max_workers=pool_size) as executor:
                     results = executor.map(
-                        functools.partial(self._process_ad_group, apply_changes=apply_changes), ad_groups_qs
+                        functools.partial(self._process_ad_group, apply_changes=apply_changes, log_ids=log_ids),
+                        ad_groups_qs,
                     )
 
                     for counter_to_update, changes in results:
@@ -172,7 +175,9 @@ class Command(Z1Command):
                             no_changes_counters[counter_to_update] += 1
             else:
                 for ag in ad_groups_qs:
-                    counter_to_update, changes = self._process_ad_group(ag, apply_changes=apply_changes)
+                    counter_to_update, changes = self._process_ad_group(
+                        ag, apply_changes=apply_changes, log_ids=log_ids
+                    )
                     if changes:
                         changes_counters[counter_to_update] += 1
                     else:
@@ -186,7 +191,7 @@ class Command(Z1Command):
             )
         )
 
-    def _process_ad_group(self, ag, apply_changes=False):
+    def _process_ad_group(self, ag, apply_changes=False, log_ids=False):
         changes = False
         counter_to_update = ""
 
@@ -334,6 +339,9 @@ class Command(Z1Command):
             ]
         ):
             changes = True
+
+        if changes and log_ids:
+            self.stdout.write("Changes for ID %s, reason: %s" % (ag.id, counter_to_update))
 
         if changes and apply_changes:
             new_budget = _trim_precision(new_budget, BUDGET_PRECISION)
