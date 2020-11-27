@@ -33,9 +33,15 @@ class MVHelpersAdGroupStructure(Materialize):
                 logger.info("Copied CSV to table", table=self.TABLE_NAME, job=self.job_id)
 
     def generate_rows(self):
-        ad_groups = dash.models.AdGroup.objects.select_related("campaign", "campaign__account").all()
+        ad_groups = dash.models.AdGroup.objects.select_related("campaign", "campaign__account")
         if self.account_id:
             ad_groups = ad_groups.filter(campaign__account_id=self.account_id)
+        ad_groups = ad_groups.values("id", "campaign_id", "campaign__account_id", "campaign__account__agency_id")
 
-        for ad_group in ad_groups:
-            yield (ad_group.campaign.account.agency_id, ad_group.campaign.account_id, ad_group.campaign_id, ad_group.id)
+        for ad_group in ad_groups.iterator():
+            yield (
+                ad_group["campaign__account__agency_id"],
+                ad_group["campaign__account_id"],
+                ad_group["campaign_id"],
+                ad_group["id"],
+            )
