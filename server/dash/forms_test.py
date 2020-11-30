@@ -38,8 +38,6 @@ class AdGroupAdminFormTest(TestCase):
         form = forms.AdGroupAdminForm(instance=ad_group)
         self.assertEqual("", form.initial["notes"])
         self.assertEqual([], form.initial["bluekai_targeting"])
-        self.assertEqual([], form.initial["redirect_pixel_urls"])
-        self.assertEqual("", form.initial["redirect_javascript"])
 
     def test_instance_with_settings(self):
         ad_group = magic_mixer.blend(models.AdGroup, name="Test", campaign_id=1)
@@ -48,15 +46,11 @@ class AdGroupAdminFormTest(TestCase):
         settings.bluekai_targeting = ["a"]
         settings.interest_targeting = ["a"]
         settings.exclusion_interest_targeting = ["a"]
-        settings.redirect_pixel_urls = ["a"]
-        settings.redirect_javascript = 'alert("a");'
         settings.save(None)
 
         form = forms.AdGroupAdminForm(instance=ad_group)
         self.assertEqual("a", form.initial["notes"])
         self.assertEqual(["a"], form.initial["bluekai_targeting"])
-        self.assertEqual(["a"], form.initial["redirect_pixel_urls"])
-        self.assertEqual('alert("a");', form.initial["redirect_javascript"])
 
 
 class AdGroupAdsUploadFormTest(TestCase):

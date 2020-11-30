@@ -392,8 +392,6 @@
         local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.25'
         local_b1_sources_group_cpc_cc: '0.25'
@@ -719,8 +717,6 @@
         local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.01'
         cpc: '0.4500'
@@ -752,8 +748,6 @@
         local_autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.01'
         cpc: '0.4500'

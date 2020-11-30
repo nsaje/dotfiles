@@ -78,8 +78,6 @@ def insert_adgroup(ad_group):
             "enablegatracking": ad_group.campaign.settings.enable_ga_tracking,
             "enableadobetracking": ad_group.campaign.settings.enable_adobe_tracking,
             "adobetrackingparam": ad_group.campaign.settings.adobe_tracking_param,
-            "specialredirecttrackers": ad_group.settings.redirect_pixel_urls,
-            "specialredirectjavascript": ad_group.settings.redirect_javascript,
         }
         return _call_api_retry(url, json.dumps(data), method="PUT")
     except Exception:

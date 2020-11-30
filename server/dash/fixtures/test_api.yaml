@@ -402,8 +402,6 @@
         exclusion_interest_targeting: ["religion", "weather"]
         audience_targeting: [1, 2]
         exclusion_audience_targeting: [3, 4]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
         b1_sources_group_enabled: True
         b1_sources_group_daily_budget: '500.0000'
         local_b1_sources_group_daily_budget: '500.0000'
