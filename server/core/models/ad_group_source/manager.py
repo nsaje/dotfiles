@@ -231,3 +231,8 @@ class AdGroupSourceManager(core.common.BaseManager):
             utils.k1_helper.update_ad_group(ad_group, msg="AdGroupSources.put")
 
         return added_ad_group_sources
+
+    @transaction.atomic
+    def pause_sources(self, request, ad_group_sources):
+        for ad_group_source in ad_group_sources:
+            ad_group_source.settings.update(request, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)

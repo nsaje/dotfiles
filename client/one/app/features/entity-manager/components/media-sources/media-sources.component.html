@@ -27,10 +27,6 @@
         <label class="zem-media-sources__item">Allowed</label>
         <select
             class="zem-multiselect zem-media-sources__multiselect custom-scroller zem-media-sources__item"
-            [class.zem-media-sources__multiselect--error]="
-                allowedMediaSourcesErrors &&
-                allowedMediaSourcesErrors.length > 0
-            "
             [(ngModel)]="selectedAllowedMediaSources"
             multiple=""
         >
@@ -53,7 +49,7 @@
     </div>
 </div>
 <div
-    class="zem-media-sources__item zem-message zem-message--error"
+    class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
     *ngFor="let error of allowedMediaSourcesErrors"
 >
     {{ error }}

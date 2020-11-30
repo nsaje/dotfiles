@@ -1122,38 +1122,95 @@ class AccountViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["obSalesRepresentative"], str(account_ob_sales_representative.id))
         self.assertEqual(resp_json["data"]["obAccountManager"], str(account_ob_account_manager.id))
 
-    @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
-    @mock.patch("utils.slack.publish")
-    def test_put_allowed_sources_error(self, mock_slack_publish, mock_get_non_removable_sources_ids):
+    def test_validation_allowed_sources_error(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
-        account.settings.update_unsafe(
-            None,
-            name=account.name,
-            account_type=dash.constants.AccountType.ACTIVATED,
-            default_account_manager=self.user,
-            default_sales_representative=None,
-            default_cs_representative=None,
-            ob_sales_representative=None,
-            ob_account_manager=None,
-            auto_add_new_sources=True,
-            salesforce_url="http://salesforce.com",
-        )
 
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list(sources))
         account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
-        mock_get_non_removable_sources_ids.return_value = [sources[0].id, sources[1].id]
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+
+        magic_mixer.blend(
+            dash.models.CampaignGoal,
+            campaign=campaign,
+            type=dash.constants.CampaignGoalKPI.TIME_ON_SITE,
+            conversion_goal=None,
+            primary=True,
+            value="30.00",
+        )
+
+        ad_group_sources = []
+        for i in range(3):
+            ad_group_source = magic_mixer.blend(
+                core.models.AdGroupSource, source=sources[i], ad_group__campaign=campaign
+            )
+            ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+            ad_group_source.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+            ad_group_sources.append(ad_group_source)
 
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
 
-        allowed_media_sources_ids = [x["id"] for x in resp_json["data"]["allowedMediaSources"]]
-        self.assertCountEqual([str(x.id) for x in [sources[0], sources[1], sources[2]]], allowed_media_sources_ids)
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "Generic account"
+        put_data["allowedMediaSources"] = [
+            {
+                "id": str(sources[2].id),
+                "name": sources[2].name,
+                "released": sources[2].released,
+                "deprecated": sources[2].deprecated,
+            }
+        ]
+
+        r = self.client.post(reverse("restapi.account.internal:accounts_validate"), data=put_data, format="json")
+        r = self.assertResponseError(r, "ValidationError")
+
+        self.assertIn(
+            "Moving {} to the Available section will automatically pause them on all ad groups within this account. Make sure to save account settings to proceed with this action.".format(
+                ", ".join([sources[0].name, sources[1].name])
+            ),
+            r["details"]["allowedMediaSources"][0],
+        )
+
+    def test_pause_media_sources(self):
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list(sources))
+        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+
+        magic_mixer.blend(
+            dash.models.CampaignGoal,
+            campaign=campaign,
+            type=dash.constants.CampaignGoalKPI.TIME_ON_SITE,
+            conversion_goal=None,
+            primary=True,
+            value="30.00",
+        )
+
+        ad_group_sources = []
+        for i in range(3):
+            ad_group_source = magic_mixer.blend(
+                core.models.AdGroupSource, source=sources[i], ad_group__campaign=campaign
+            )
+            ad_group_source.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+            ad_group_source.ad_group.settings.update(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+            ad_group_sources.append(ad_group_source)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
 
         put_data = resp_json["data"].copy()
-
+        put_data["name"] = "Generic account"
         put_data["allowedMediaSources"] = [
             {
                 "id": str(sources[2].id),
@@ -1168,14 +1225,14 @@ class AccountViewSetTest(RESTAPITestCase):
             data=put_data,
             format="json",
         )
-        r = self.assertResponseError(r, "ValidationError")
+        resp_json = self.assertResponseValid(r)
 
-        self.assertIn(
-            "Can't save changes because media sources {} are still used on this account.".format(
-                ", ".join([sources[0].name, sources[1].name])
-            ),
-            r["details"]["allowedMediaSources"][0],
-        )
+        for ad_group_source in ad_group_sources:
+            ad_group_source.refresh_from_db()
+
+        self.assertEqual(ad_group_sources[0].settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertEqual(ad_group_sources[1].settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertEqual(ad_group_sources[2].settings.state, dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
     def test_put_deals_error(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])

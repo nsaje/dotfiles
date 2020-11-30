@@ -23,6 +23,12 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
     def validate(self, request):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
+
+        if request.data.get("id"):
+            account = zemauth.access.get_account(request.user, Permission.WRITE, request.data.get("id"))
+            self._validate_allowed_media_sources(
+                request, account, serializer.validated_data.get("allowed_media_sources", [])
+            )
         return self.response_ok(None)
 
     def defaults(self, request):
@@ -126,7 +132,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             raise utils.exc.ValidationError("Default icon must be set before updating or creating a new account.")
 
     @staticmethod
-    def _handle_allowed_media_sources(request, account, data):
+    def _get_media_sources_to_add_remove(request, account, data):
         allowed_sources = helpers.get_allowed_sources(account)
         available_sources = restapi.common.helpers.get_available_sources(request.user, account.agency, account=account)
 
@@ -141,23 +147,35 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         to_be_removed = allowed_sources_set.difference(new_allowed_sources_set)
         to_be_added = new_allowed_sources_set.difference(allowed_sources_set)
+        return (to_be_added, to_be_removed)
 
-        non_removable_sources_ids = helpers.get_non_removable_sources_ids(account, to_be_removed)
-        if len(non_removable_sources_ids) > 0:
+    @classmethod
+    def _validate_allowed_media_sources(cls, request, account, data):
+        to_be_added, to_be_removed = cls._get_media_sources_to_add_remove(request, account, data)
+
+        sources_to_pause = helpers.get_sources_to_pause(account, to_be_removed)
+        if len(sources_to_pause) > 0:
             source_names = (
-                core.models.Source.objects.filter(id__in=non_removable_sources_ids)
+                core.models.Source.objects.filter(
+                    id__in=[ad_group_source.source_id for ad_group_source in sources_to_pause]
+                )
                 .order_by("id")
                 .values_list("name", flat=True)
             )
-            if len(source_names) > 1:
-                error_message = "Can't save changes because media sources {} are still used on this account.".format(
-                    ", ".join(source_names)
-                )
-            else:
-                error_message = "Can't save changes because media source {} is still used on this account.".format(
-                    source_names[0]
-                )
+
+            error_message = "Moving {} to the Available section will automatically pause them on all ad groups within this account. Make sure to save account settings to proceed with this action.".format(
+                ", ".join(source_names)
+            )
+
             raise utils.exc.ValidationError(errors={"allowed_media_sources": [str(error_message)]})
+
+    @classmethod
+    def _handle_allowed_media_sources(cls, request, account, data):
+        to_be_added, to_be_removed = cls._get_media_sources_to_add_remove(request, account, data)
+        sources_to_pause = helpers.get_sources_to_pause(account, to_be_removed)
+
+        if sources_to_pause:
+            core.models.AdGroupSource.objects.pause_sources(request, sources_to_pause)
 
         if to_be_added or to_be_removed:
             changes = helpers.get_changes_for_sources(to_be_added, to_be_removed)

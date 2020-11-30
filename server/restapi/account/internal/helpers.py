@@ -117,14 +117,13 @@ def get_allowed_sources(account):
     return list(account.allowed_sources.all())
 
 
-def get_non_removable_sources_ids(account, sources_to_be_removed):
-    return list(
+def get_sources_to_pause(account, sources_to_be_removed):
+    return (
         core.models.AdGroupSource.objects.all()
         .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
         .filter(ad_group__settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
         .filter(ad_group__campaign__account=account.id)
         .filter(source__in=sources_to_be_removed)
-        .values_list("source_id", flat=True)
         .distinct()
     )
 
