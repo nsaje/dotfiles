@@ -17,6 +17,8 @@ class AdGroupAdmin(TestCase):
 
     @mock.patch.object(admin.utils.redirector_helper, "insert_adgroup")
     def test_save_additional_targeting(self, mock_r1_insert_adgroup):
+        trackers = ["http://a.com", "http://b.com"]
+        javascript = 'alert("A");'
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -36,6 +38,16 @@ class AdGroupAdmin(TestCase):
         self.assertNotEqual(old_settings.notes, "new notes")
         self.assertEqual(ad_group.settings.notes, "new notes")
         mock_r1_insert_adgroup.assert_not_called()
+
+        form.cleaned_data["redirect_pixel_urls"] = trackers
+        form.cleaned_data["redirect_javascript"] = javascript
+        adgroup_admin.save_model(request, ad_group, form, None)
+        old_settings = models.AdGroupSettings.objects.filter(ad_group=ad_group)[1]
+        self.assertNotEqual(old_settings.redirect_pixel_urls, trackers)
+        self.assertNotEqual(old_settings.redirect_javascript, javascript)
+        self.assertEqual(ad_group.settings.redirect_pixel_urls, trackers)
+        self.assertEqual(ad_group.settings.redirect_javascript, javascript)
+        mock_r1_insert_adgroup.assert_called_with(ad_group)
 
 
 class DirectDealConnectionAdminTestCase(TestCase):

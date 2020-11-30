@@ -311,6 +311,8 @@
         exclusion_interest_targeting: ["c", "d"]
         audience_targeting: [1, 2]
         exclusion_audience_targeting: [3, 4]
+        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
+        redirect_javascript: "alert('a')"
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
         cpm: '1.6'
         b1_sources_group_enabled: true
@@ -417,6 +419,8 @@
         exclusion_interest_targeting: ["c", "d"]
         audience_targeting: [1, 2]
         exclusion_audience_targeting: [3, 4]
+        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
+        redirect_javascript: "alert('a')"
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
         b1_sources_group_enabled: true
         b1_sources_group_state: 1

@@ -17,6 +17,7 @@ from django import forms
 from django.contrib.postgres import forms as postgres_forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core import validators
+from django.utils.html import strip_tags
 from django.core import exceptions
 from django.conf import settings
 
@@ -117,8 +118,14 @@ class PublisherGroupsFormMixin(forms.Form):
 
 
 class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
-    SETTINGS_FIELDS = ["notes", "bluekai_targeting"]
-    ADDITIONAL_TARGETING_FIELDS = ["notes", "bluekai_campaign_id", "bluekai_targeting"]
+    SETTINGS_FIELDS = ["notes", "bluekai_targeting", "redirect_pixel_urls", "redirect_javascript"]
+    ADDITIONAL_TARGETING_FIELDS = [
+        "notes",
+        "bluekai_campaign_id",
+        "bluekai_targeting",
+        "redirect_pixel_urls",
+        "redirect_javascript",
+    ]
     notes = PlainCharField(
         required=False,
         widget=forms.Textarea,
@@ -132,6 +139,22 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     bluekai_targeting = postgres_forms.JSONField(
         required=False,
         help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]',
+    )
+    redirect_pixel_urls = postgres_forms.SimpleArrayField(
+        PlainCharField(),
+        label="[Deprecated] Redirect pixel urls:",
+        required=False,
+        delimiter="\n",
+        widget=forms.Textarea,
+        help_text="Put every entry in a separate line. Example: https://www.facebook.com/tr?id=531027177051024&ev=PageView&noscript=1.",
+        disabled=True,
+    )
+    redirect_javascript = forms.CharField(
+        label="[Deprecated] Redirect javascript:",
+        required=False,
+        widget=forms.Textarea,
+        help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT),
+        disabled=True,
     )
 
     def __init__(self, *args, **kwargs):
