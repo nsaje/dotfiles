@@ -31,7 +31,9 @@ class CleanUpOldHistoryStackTracesTest(TestCase):
             FOR VALUES FROM ('2020-09-19') TO ('2020-09-20');
         """
                 ),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200902;"),
                 mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200902;"),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200901;"),
                 mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200901;"),
             ]
         )

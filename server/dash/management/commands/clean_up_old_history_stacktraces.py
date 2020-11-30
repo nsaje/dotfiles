@@ -1,6 +1,7 @@
 import datetime
 
 from django.db import connection
+from django.db.utils import ProgrammingError
 
 import utils.dates_helper
 from utils import zlogging
@@ -38,8 +39,13 @@ class Command(Z1Command):
 
     def _delete_old_partitions(self, today):
         cursor = connection.cursor()
-        sql = "DROP TABLE IF EXISTS dash_historystacktrace_{date_postfix};"
+        detach_sql = "ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_{date_postfix};"
+        drop_sql = "DROP TABLE IF EXISTS dash_historystacktrace_{date_postfix};"
 
         for i in range(1, PARTITION_CHECK_DAYS + 1):
             date = today - datetime.timedelta(HISTORY_DATA_KEEP_DAYS + i)
-            cursor.execute(sql.format(date_postfix=date.strftime("%Y%m%d")))
+            try:
+                cursor.execute(detach_sql.format(date_postfix=date.strftime("%Y%m%d")))
+            except ProgrammingError:
+                pass
+            cursor.execute(drop_sql.format(date_postfix=date.strftime("%Y%m%d")))
