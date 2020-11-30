@@ -167,8 +167,6 @@ class InsertAdGroupTest(TestCase):
 
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
         new_ad_group_settings.tracking_code = "lala=1"
-        new_ad_group_settings.redirect_pixel_urls = []
-        new_ad_group_settings.redirect_javascript = ""
         new_ad_group_settings.save(None)
 
         new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
@@ -198,14 +196,10 @@ class InsertAdGroupTest(TestCase):
                 "enablegatracking": True,
                 "enableadobetracking": False,
                 "adobetrackingparam": "cid",
-                "specialredirecttrackers": [],
-                "specialredirectjavascript": "",
             },
         )
 
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
-        new_ad_group_settings.redirect_pixel_urls = ["http://a.com", "http://b.com"]
-        new_ad_group_settings.redirect_javascript = 'alert("a");'
         new_ad_group_settings.save(None)
 
         redirector_helper.insert_adgroup(ad_group)
@@ -223,8 +217,6 @@ class InsertAdGroupTest(TestCase):
                 "enablegatracking": True,
                 "enableadobetracking": False,
                 "adobetrackingparam": "cid",
-                "specialredirecttrackers": ["http://a.com", "http://b.com"],
-                "specialredirectjavascript": 'alert("a");',
             },
         )
 

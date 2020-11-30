@@ -842,8 +842,6 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
             new_settings.save(request)
-            if "redirect_pixel_urls" in changes or "redirect_javascript" in changes:
-                utils.redirector_helper.insert_adgroup(ad_group)
             changes_text = new_settings.get_changes_text(current_settings, new_settings, request.user, separator="\n")
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)

@@ -184,8 +184,8 @@ class AdGroupSettings(
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
-    redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
-    redirect_javascript = models.TextField(blank=True)
+    redirect_pixel_urls = jsonfield.JSONField(blank=True, null=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    redirect_javascript = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True)
     tracking_code = models.TextField(blank=True)
     archived = models.BooleanField(default=False)
