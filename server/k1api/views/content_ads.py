@@ -64,6 +64,14 @@ class ContentAdsView(K1APIView):
                 .only("account_id", "default_icon")
             )
         }
+        amplify_submission_status_map = {
+            x["content_ad_id"]: x["submission_status"]
+            for x in (
+                dash.models.ContentAdSource.objects.filter(
+                    content_ad_id__in=set([ca.id for ca in content_ads]), source__bidder_slug=OUTBRAIN_SOURCE_SLUG
+                ).values("content_ad_id", "submission_status")
+            )
+        }
 
         response = []
         for item in content_ads:
@@ -108,6 +116,9 @@ class ContentAdsView(K1APIView):
                 "document_id": item.document_id,
                 "document_features": item.document_features,
                 "ad_tag": item.ad_tag,
+                "amplify_approval_status": amplify_submission_status_map.get(
+                    item.id, dash.constants.ContentAdSubmissionStatus.NOT_SUBMITTED
+                ),
             }
 
             if content_ad["icon_id"] is None:
