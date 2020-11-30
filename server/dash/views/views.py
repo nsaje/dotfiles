@@ -17,6 +17,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 
+import core.features.delivery_status
 import core.features.multicurrency
 import core.models.ad_group_source.exceptions
 import core.models.campaign.exceptions
@@ -150,8 +151,7 @@ class AdGroupOverview(DASHAPIBaseView):
 
         filtered_sources = view_filter.cleaned_data.get("filtered_sources")
         ad_group_settings = ad_group.get_current_settings()
-
-        ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
+        ad_group_running_status = core.features.delivery_status.get_ad_group_detailed_delivery_status(ad_group)
 
         agency_uses_realtime_autopilot = ad_group.campaign.account.agency_uses_realtime_autopilot()
 
@@ -248,7 +248,7 @@ class CampaignOverview(DASHAPIBaseView):
         start_date = view_filter.cleaned_data.get("start_date")
         end_date = view_filter.cleaned_data.get("end_date")
 
-        campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
+        campaign_running_status = core.features.delivery_status.get_campaign_detailed_delivery_status(campaign)
 
         agency_uses_realtime_autopilot = campaign.account.agency_uses_realtime_autopilot()
 
@@ -407,7 +407,7 @@ class AccountOverview(DASHAPIBaseView):
     def get(self, request, account_id):
         account = zemauth.access.get_account(request.user, Permission.READ, account_id, select_related_users=True)
 
-        account_running_status = infobox_helpers.get_account_running_status(account)
+        account_running_status = core.features.delivery_status.get_account_detailed_delivery_status(account)
 
         agency_uses_realtime_autopilot = account.agency_uses_realtime_autopilot()
 

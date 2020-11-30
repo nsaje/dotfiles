@@ -3,6 +3,7 @@ import sys
 from django.template import Context
 from django.template import Template
 
+import core.features.delivery_status
 import dash.constants
 from utils import constant_base
 from utils import zlogging
@@ -28,6 +29,7 @@ class Command(Z1Command):
                     "currency": self.generate_constants_section(dash.constants.Currency),
                     "osv": self.generate_constants_section(dash.constants.OperatingSystemVersion),
                     "os": self.generate_constants_section(dash.constants.OperatingSystem),
+                    "delivery": self.generate_constants_section(core.features.delivery_status.DeliveryStatus),
                 }
             }
         )

@@ -107,14 +107,14 @@ class AccountViewSetTest(RESTAPITestCase):
 
     def test_accounts_list_exclude_archived(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ])
-        non_arhived_accounts = magic_mixer.cycle(3).blend(core.models.Account, agency=agency, archived=False)
-        arhived_accounts = magic_mixer.cycle(2).blend(core.models.Account, agency=agency, archived=True)
+        non_archived_accounts = magic_mixer.cycle(3).blend(core.models.Account, agency=agency, archived=False)
+        archived_accounts = magic_mixer.cycle(2).blend(core.models.Account, agency=agency, archived=True)
         r = self.client.get(reverse("restapi.account.v1:accounts_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_ids = [x.get("id") for x in resp_json["data"]]
-        for item in non_arhived_accounts:
+        for item in non_archived_accounts:
             self.assertTrue(str(item.id) in resp_json_ids)
-        for item in arhived_accounts:
+        for item in archived_accounts:
             self.assertTrue(str(item.id) not in resp_json_ids)
         for item in resp_json["data"]:
             item["defaultIconUrl"] = None
@@ -123,18 +123,27 @@ class AccountViewSetTest(RESTAPITestCase):
 
     def test_accounts_list_include_archived(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ])
-        non_arhived_accounts = magic_mixer.cycle(3).blend(core.models.Account, agency=agency, archived=False)
-        arhived_accounts = magic_mixer.cycle(2).blend(core.models.Account, agency=agency, archived=True)
+        non_archived_accounts = magic_mixer.cycle(3).blend(core.models.Account, agency=agency, archived=False)
+        archived_accounts = magic_mixer.cycle(2).blend(core.models.Account, agency=agency, archived=True)
         r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"includeArchived": "TRUE"})
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_ids = [x.get("id") for x in resp_json["data"]]
-        for item in non_arhived_accounts:
+        for item in non_archived_accounts:
             self.assertTrue(str(item.id) in resp_json_ids)
-        for item in arhived_accounts:
+        for item in archived_accounts:
             self.assertTrue(str(item.id) in resp_json_ids)
         for item in resp_json["data"]:
             item["defaultIconUrl"] = None
             self.validate_against_db(item)
+
+    def test_accounts_list_include_delivery_status(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency)
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"includeDeliveryStatus": "true"})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(5, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.assertTrue(item["deliveryStatus"])
 
     def test_accounts_post(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -186,6 +195,15 @@ class AccountViewSetTest(RESTAPITestCase):
         r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+
+    def test_accounts_get_include_delivery_status(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        r = self.client.get(
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}),
+            {"includeDeliveryStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertIn("deliveryStatus", resp_json["data"])
 
     def test_accounts_put(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ, Permission.WRITE])

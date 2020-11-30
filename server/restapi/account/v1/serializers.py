@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+import core.features.delivery_status
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
@@ -39,6 +40,9 @@ class AccountSerializer(
         allow_null=True, required=False, source="settings.frequency_capping"
     )
     default_icon_url = serializers.URLField(required=False, allow_blank=True)
+    delivery_status = restapi.serializers.fields.DashConstantField(
+        core.features.delivery_status.DeliveryStatus, read_only=True, required=False
+    )
 
     def to_representation(self, instance):
         self.fields["default_icon_url"] = serializers.SerializerMethodField()
@@ -48,9 +52,16 @@ class AccountSerializer(
         return account.settings.get_base_default_icon_url()
 
 
+class AccountQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    include_delivery_status = serializers.BooleanField(required=False, default=False)
+
+
 class AccountListQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     agency_id = restapi.serializers.fields.IdField(required=False)
     keyword = restapi.serializers.fields.PlainCharField(required=False)
     include_archived = serializers.BooleanField(required=False)
+    include_delivery_status = serializers.BooleanField(required=False, default=False)

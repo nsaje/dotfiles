@@ -3,6 +3,7 @@ import decimal
 import pytz
 import rest_framework.serializers
 
+import core.features.delivery_status
 import core.models.settings
 import core.models.settings.ad_group_settings.helpers
 import restapi.serializers.base
@@ -226,6 +227,7 @@ class AdGroupSerializer(
             "autopilot",
             "frequency_capping",
             "additional_data",
+            "delivery_status",
         )
         permissioned_fields = {
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
@@ -304,11 +306,21 @@ class AdGroupSerializer(
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
     )
+    delivery_status = restapi.serializers.fields.DashConstantField(
+        core.features.delivery_status.DeliveryStatus, read_only=True, required=False
+    )
 
 
 class AdGroupQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
+    include_delivery_status = rest_framework.serializers.BooleanField(default=False, required=False)
+
+
+class AdGroupListQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
     campaign_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
     include_archived = rest_framework.serializers.BooleanField(default=False, required=False)
+    include_delivery_status = rest_framework.serializers.BooleanField(default=False, required=False)

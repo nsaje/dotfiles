@@ -1,5 +1,6 @@
 from django.db import transaction
 
+import core.features.delivery_status
 import core.models
 import core.models.ad_group.exceptions
 import utils.converters
@@ -17,7 +18,13 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
     serializer = serializers.AdGroupSerializer
 
     def get(self, request, ad_group_id):
+        qpe = serializers.AdGroupQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status = core.features.delivery_status.get_ad_group_delivery_status(ad_group)
+            ad_group.settings.delivery_status = delivery_status
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def put(self, request, ad_group_id):
@@ -32,7 +39,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def list(self, request):
-        qpe = serializers.AdGroupQueryParams(data=request.query_params)
+        qpe = serializers.AdGroupListQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
 
         queryset = core.models.AdGroup.objects.filter_by_entity_permission(request.user, Permission.READ)
@@ -53,6 +60,13 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         paginator = StandardPagination()
         ad_groups_paginated = paginator.paginate_queryset(ad_groups, request)
         paginated_settings = [ad.settings for ad in ad_groups_paginated]
+
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status_map = core.features.delivery_status.get_ad_group_delivery_status_map(ad_groups_paginated)
+            for setting in paginated_settings:
+                setting.delivery_status = delivery_status_map.get(setting.ad_group_id)
+
         return paginator.get_paginated_response(
             self.serializer(paginated_settings, many=True, context={"request": request}).data
         )

@@ -7,8 +7,8 @@ from django.core.cache import caches
 from django.db import models
 from django.db.models import Sum
 
-import automation.campaignstop
 import core.features.bid_modifiers
+import core.features.delivery_status
 import core.features.multicurrency
 import dash.campaign_goals
 import dash.constants
@@ -467,161 +467,39 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def get_adgroup_running_status(user, ad_group, filtered_sources=None):
-    if not ad_group.campaign.account.is_enabled():
-        return dash.constants.InfoboxStatus.DISABLED
-    running_status = dash.models.AdGroup.get_running_status(ad_group.settings)
-
-    if not ad_group.campaign.account.agency_uses_realtime_autopilot():  # TODO: RTAP: remove this after Phase 1
-        return get_adgroup_running_status_class_legacy(
-            user,
-            ad_group.settings.autopilot_state,
-            running_status,
-            ad_group.settings.state,
-            ad_group.settings.ad_group.campaign.real_time_campaign_stop,
-            automation.campaignstop.get_campaignstop_state(ad_group.campaign),
-            ad_group.campaign.settings.autopilot,
-        )
-
-    return get_adgroup_running_status_class(
-        user,
-        ad_group.settings.autopilot_state,
-        running_status,
-        ad_group.settings.state,
-        ad_group.settings.ad_group.campaign.real_time_campaign_stop,
-        automation.campaignstop.get_campaignstop_state(ad_group.campaign),
-        ad_group.campaign.settings.autopilot,
-    )
-
-
-def get_adgroup_running_status_class(
-    user,
-    autopilot_state,
-    running_status,
-    state,
-    real_time_campaign_stop,
-    campaignstop_state,
-    campaign_budget_optimization_enabled,
-):
-    if (
-        state == dash.constants.AdGroupSettingsState.INACTIVE
-        and running_status == dash.constants.AdGroupRunningStatus.INACTIVE
-    ):
-        return dash.constants.InfoboxStatus.STOPPED
-
-    if (
-        running_status == dash.constants.AdGroupRunningStatus.INACTIVE
-        and state == dash.constants.AdGroupSettingsState.ACTIVE
-    ) or (
-        running_status == dash.constants.AdGroupRunningStatus.ACTIVE
-        and state == dash.constants.AdGroupSettingsState.INACTIVE
-    ):
-        return dash.constants.InfoboxStatus.INACTIVE
-
-    optimal_bid_strategy_enabled = autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-
-    if real_time_campaign_stop and campaignstop_state:
-        campaignstop_state_status = _get_campaignstop_state_status(
-            campaignstop_state,
-            campaign_budget_optimization_enabled=campaign_budget_optimization_enabled,
-            optimal_bid_strategy_enabled=optimal_bid_strategy_enabled,
-        )
-        if campaignstop_state_status:
-            return campaignstop_state_status
-
-    if campaign_budget_optimization_enabled and optimal_bid_strategy_enabled:
-        return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID
-    elif campaign_budget_optimization_enabled:
-        return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION
-    elif optimal_bid_strategy_enabled:
-        return dash.constants.InfoboxStatus.OPTIMAL_BID
-
-    return dash.constants.InfoboxStatus.ACTIVE
-
-
-def get_campaign_running_status(campaign):
-    if not campaign.account.agency_uses_realtime_autopilot():  # TODO: RTAP: remove this after Phase 1
-        return get_campaign_running_status_legacy(campaign)
-
-    if not campaign.account.is_enabled():
-        return dash.constants.InfoboxStatus.DISABLED
-    if campaign.real_time_campaign_stop:
-        campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
-        campaignstop_state_status = _get_campaignstop_state_status(
-            campaignstop_state, campaign_budget_optimization_enabled=campaign.settings.autopilot
-        )
-        if campaignstop_state_status:
-            return campaignstop_state_status
-
-    running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().exists()
-    if running_exists:
-        if campaign.settings.autopilot:
-            return dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION
-        return dash.constants.InfoboxStatus.ACTIVE
-
-    active_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_active().exists()
-    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
-
-
-def _get_campaignstop_state_status(
-    campaignstop_state, campaign_budget_optimization_enabled=False, optimal_bid_strategy_enabled=False
-):
-    if not campaignstop_state["allowed_to_run"]:
-        if campaignstop_state["pending_budget_updates"]:
-            if campaign_budget_optimization_enabled and optimal_bid_strategy_enabled:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID
-            elif campaign_budget_optimization_enabled:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION
-            elif optimal_bid_strategy_enabled:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE
-        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-    if campaignstop_state["almost_depleted"]:
-        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
-    return None
-
-
-def get_account_running_status(account):
-    if not account.is_enabled():
-        return dash.constants.InfoboxStatus.DISABLED
-    running_exists = dash.models.AdGroup.objects.filter(campaign__account=account).filter_current_and_active().exists()
-    if running_exists:
-        return dash.constants.InfoboxStatus.ACTIVE
-
-    active_exists = dash.models.AdGroup.objects.filter(campaign__account=account).filter_active().exists()
-    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
-
-
 def get_entity_delivery_text(status, agency_uses_realtime_autopilot):
     if not agency_uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
         return get_entity_delivery_text_legacy(status)
 
-    if status == dash.constants.InfoboxStatus.DISABLED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.DISABLED:
         return "Disabled - Contact Zemanta CSM"
-    if status in (dash.constants.InfoboxStatus.ACTIVE, dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
+    if status in (
+        core.features.delivery_status.DetailedDeliveryStatus.ACTIVE,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
+    ):
         return "Active"
     if status in (
-        dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION,
+        core.features.delivery_status.DetailedDeliveryStatus.BUDGET_OPTIMIZATION,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION,
     ):
         return "Active - Budget optimization"
     if status in (
-        dash.constants.InfoboxStatus.OPTIMAL_BID,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID,
+        core.features.delivery_status.DetailedDeliveryStatus.OPTIMAL_BID,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID,
     ):
         return "Active - Optimal bid optimization"
     if status in (
-        dash.constants.InfoboxStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID,
+        core.features.delivery_status.DetailedDeliveryStatus.BUDGET_OPTIMIZATION_OPTIMAL_BID,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID,
     ):
         return "Active - Budget and optimal bid optimization"
-    if status == dash.constants.InfoboxStatus.STOPPED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.STOPPED:
         return "Paused"
-    if status == dash.constants.InfoboxStatus.INACTIVE:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.INACTIVE:
         return "Inactive"
-    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_STOPPED:
         return "Stopped - Out of budget"
-    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_LOW_BUDGET:
         return "Active - Running out of budget"
 
 
@@ -791,99 +669,29 @@ def create_bid_value_overview_settings_legacy(ad_group):
     return overview_settings
 
 
-def get_adgroup_running_status_class_legacy(
-    user, autopilot_state, running_status, state, real_time_campaign_stop, campaignstop_state, is_campaign_autopilot
-):
-    if (
-        state == dash.constants.AdGroupSettingsState.INACTIVE
-        and running_status == dash.constants.AdGroupRunningStatus.INACTIVE
-    ):
-        return dash.constants.InfoboxStatus.STOPPED
-
-    if (
-        running_status == dash.constants.AdGroupRunningStatus.INACTIVE
-        and state == dash.constants.AdGroupSettingsState.ACTIVE
-    ) or (
-        running_status == dash.constants.AdGroupRunningStatus.ACTIVE
-        and state == dash.constants.AdGroupSettingsState.INACTIVE
-    ):
-        return dash.constants.InfoboxStatus.INACTIVE
-
-    autopilot = (
-        autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or is_campaign_autopilot
-    )
-    price_discovery = autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
-
-    if real_time_campaign_stop and campaignstop_state:
-        campaignstop_state_status = _get_campaignstop_state_status_legacy(
-            campaignstop_state, autopilot=autopilot, price_discovery=price_discovery
-        )
-        if campaignstop_state_status:
-            return campaignstop_state_status
-
-    if autopilot:
-        return dash.constants.InfoboxStatus.AUTOPILOT
-    elif price_discovery:
-        return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
-
-    return dash.constants.InfoboxStatus.ACTIVE
-
-
-def get_campaign_running_status_legacy(campaign):
-    if not campaign.account.is_enabled():
-        return dash.constants.InfoboxStatus.DISABLED
-    if campaign.real_time_campaign_stop:
-        campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
-        campaignstop_state_status = _get_campaignstop_state_status_legacy(
-            campaignstop_state, autopilot=campaign.settings.autopilot
-        )
-        if campaignstop_state_status:
-            return campaignstop_state_status
-
-    running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().exists()
-    if running_exists:
-        if campaign.settings.autopilot:
-            return dash.constants.InfoboxStatus.AUTOPILOT
-        return dash.constants.InfoboxStatus.ACTIVE
-
-    active_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_active().exists()
-    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
-
-
 def get_entity_delivery_text_legacy(status):
-    if status == dash.constants.InfoboxStatus.DISABLED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.DISABLED:
         return "Disabled - Contact Zemanta CSM"
-    if status in (dash.constants.InfoboxStatus.ACTIVE, dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
+    if status in (
+        core.features.delivery_status.DetailedDeliveryStatus.ACTIVE,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
+    ):
         return "Active"
     if status in (
-        dash.constants.InfoboxStatus.AUTOPILOT,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+        core.features.delivery_status.DetailedDeliveryStatus.AUTOPILOT,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
     ):
         return "Active - Autopilot mode"
     if status in (
-        dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
-        dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+        core.features.delivery_status.DetailedDeliveryStatus.ACTIVE_PRICE_DISCOVERY,
+        core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
     ):
         return "Active - Price Discovery"
-    if status == dash.constants.InfoboxStatus.STOPPED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.STOPPED:
         return "Paused"
-    if status == dash.constants.InfoboxStatus.INACTIVE:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.INACTIVE:
         return "Inactive"
-    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_STOPPED:
         return "Stopped - Out of budget"
-    if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
+    if status == core.features.delivery_status.DetailedDeliveryStatus.CAMPAIGNSTOP_LOW_BUDGET:
         return "Active - Running out of budget"
-
-
-def _get_campaignstop_state_status_legacy(campaignstop_state, autopilot=False, price_discovery=False):
-    if not campaignstop_state["allowed_to_run"]:
-        if campaignstop_state["pending_budget_updates"]:
-            if autopilot:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT
-            if price_discovery:
-                return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY
-            return dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE
-        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED
-    if campaignstop_state["almost_depleted"]:
-        return dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
-    return None

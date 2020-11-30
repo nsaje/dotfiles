@@ -101,6 +101,17 @@ class CampaignViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
+    def test_campaigns_get_delivery_status(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
+            {"includeDeliveryStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertIn("deliveryStatus", resp_json["data"])
+
     def test_campaigns_put(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
@@ -354,6 +365,19 @@ class CampaignViewSetTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_campaigns_list_include_delivery_status(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        magic_mixer.cycle(5).blend(dash.models.Campaign, account=account)
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id, "includeDeliveryStatus": "true"}
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(5, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.assertTrue(item["deliveryStatus"])
+
+    # TODO: RTAP: LEGACY: convert
     @mock.patch("automation.autopilot.recalculate_ad_group_budgets")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post(self, mock_send, mock_autopilot):

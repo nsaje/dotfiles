@@ -2,6 +2,7 @@ import functools
 
 from django.db import transaction
 
+import core.features.delivery_status
 import core.models
 import utils.converters
 import utils.exc
@@ -25,7 +26,13 @@ class AccountViewSet(RESTAPIBaseViewSet):
     serializer = serializers.AccountSerializer
 
     def get(self, request, account_id):
+        qpe = serializers.AccountQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
         account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status = core.features.delivery_status.get_account_delivery_status(account)
+            account.delivery_status = delivery_status
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def put(self, request, account_id):
@@ -61,6 +68,12 @@ class AccountViewSet(RESTAPIBaseViewSet):
         paginator = StandardPagination()
         accounts = accounts.order_by("pk")
         accounts_paginated = paginator.paginate_queryset(accounts, request)
+
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status_map = core.features.delivery_status.get_account_delivery_status_map(accounts_paginated)
+            for account in accounts_paginated:
+                account.delivery_status = delivery_status_map.get(account.id)
 
         return self.response_ok(self.serializer(accounts_paginated, many=True, context={"request": request}).data)
 

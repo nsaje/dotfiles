@@ -1,5 +1,6 @@
 import rest_framework.serializers
 
+import core.features.delivery_status
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
@@ -94,6 +95,9 @@ class CampaignSerializer(
     tracking = CampaignTrackingSerializer(source="*", required=False)
     targeting = CampaignTargetingSerializer(source="*", required=False)
     frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)
+    delivery_status = restapi.serializers.fields.DashConstantField(
+        core.features.delivery_status.DeliveryStatus, read_only=True, required=False
+    )
 
     def validate_iab_category(self, value):
         if value != constants.IABCategory.IAB24 and "-" not in value:
@@ -110,7 +114,14 @@ class CampaignIdsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 class CampaignQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
+    include_delivery_status = rest_framework.serializers.BooleanField(default=False, required=False)
+
+
+class CampaignListQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
     account_id = restapi.serializers.fields.IdField(required=False)
     only_non_paginated_ids = rest_framework.serializers.BooleanField(default=False, required=False)
-    include_archived = rest_framework.serializers.BooleanField(required=False)
+    include_archived = rest_framework.serializers.BooleanField(default=False, required=False)
     exclude_inactive = rest_framework.serializers.BooleanField(default=False, required=False)
+    include_delivery_status = rest_framework.serializers.BooleanField(default=False, required=False)

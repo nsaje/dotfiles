@@ -1,8 +1,8 @@
 from django.db import transaction
 
+import core.features.delivery_status
 import core.models
 import prodops.hacks
-import utils.converters
 import utils.exc
 import zemauth.access
 from restapi.common.pagination import StandardPagination
@@ -16,7 +16,13 @@ class CampaignViewSet(RESTAPIBaseViewSet):
     serializer = serializers.CampaignSerializer
 
     def get(self, request, campaign_id):
+        qpe = serializers.CampaignQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
         campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status = core.features.delivery_status.get_campaign_delivery_status(campaign)
+            campaign.settings.delivery_status = delivery_status
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def put(self, request, campaign_id):
@@ -30,7 +36,7 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def list(self, request):
-        qpe = serializers.CampaignQueryParams(data=request.query_params)
+        qpe = serializers.CampaignListQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
 
         account_id = qpe.validated_data.get("account_id", None)
@@ -40,7 +46,8 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         else:
             campaigns = core.models.Campaign.objects.filter_by_entity_permission(request.user, Permission.READ)
 
-        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
+        include_archived = qpe.validated_data.get("include_archived")
+        if not include_archived:
             campaigns = campaigns.exclude_archived()
 
         exclude_inactive = qpe.validated_data.get("exclude_inactive", False)
@@ -59,6 +66,13 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         campaigns = campaigns.select_related("settings").order_by("pk")
         campaigns_paginated = paginator.paginate_queryset(campaigns, request)
         paginated_settings = [c.settings for c in campaigns_paginated]
+
+        include_delivery_status = qpe.validated_data.get("include_delivery_status")
+        if include_delivery_status:
+            delivery_status_map = core.features.delivery_status.get_campaign_delivery_status_map(campaigns_paginated)
+            for setting in paginated_settings:
+                setting.delivery_status = delivery_status_map.get(setting.campaign_id)
+
         return paginator.get_paginated_response(
             self.serializer(paginated_settings, many=True, context={"request": request}).data
         )

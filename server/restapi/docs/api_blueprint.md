@@ -293,6 +293,8 @@ targeting | [targeting](#account-targeting) | account targeting settings       |
 currency  | [Currency](#currency) | the account's currency (default is USD)    | optional | N\A
 frequencyCapping | number | The maximum number of times ads from the account can be shown to a unique user in one day. | optional | optional
 defaultIconUrl | string           | URL of a brand logo which will be placed in all creatives and served with ads where this is required by the publisher. Setting the brand logo for a specific creative can be done on the ad creative level. The minimum required size is 128x128 pixels and the required format is square (1:1). | required | optional
+deliveryStatus | [deliveryStatus](#delivery-status) | Delivery status of the account. Set `includeDeliveryStatus` flag to `true` to get this information.| N/A      | read only
+
                         
 
 <a name="account-targeting"></a>
@@ -305,10 +307,12 @@ publisherGroups  |          |           |                                       
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
 
-### Get account details [GET /rest/v1/accounts/{accountId}]
+### Get account details [GET /rest/v1/accounts/{accountId}{?includeDeliveryStatus}]
 
 + Parameters
     + accountId: 186 (required)
+    + includeDeliveryStatus: true (bool, optional)
+        + Default: false
 
 + Response 200 (application/json)
 
@@ -328,10 +332,12 @@ publisherGroups  |          |           |                                       
 
     + Attributes (AccountResponse)
 
-### List accounts [GET /rest/v1/accounts/{?includeArchived}]
+### List accounts [GET /rest/v1/accounts/{?includeArchived,includeDeliveryStatus}]
 
 + Parameters
     + includeArchived (bool, optional) - Set to true to retrieve archived accounts.
+        + Default: false
+    + includeDeliveryStatus: true (boolean, optional)
         + Default: false
 
 + Response 200 (application/json)
@@ -720,6 +726,8 @@ autopilot | bool                  | Autopilot Budget optimization. [Read more](h
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
 targeting | [targeting](#campaign-targeting)   | campaign targeting settings   | optional | optional
 frequencyCapping | number | The maximum number of times ads from the campaign can be shown to a unique user in one day. | optional | optional
+deliveryStatus | [deliveryStatus](#delivery-status) | Delivery status of the campaign.  Set `includeDeliveryStatus` flag to `true` to get this information. | N/A      | read only
+
 
 <a name="tracking"></a>
 #### Tracking Settings
@@ -749,10 +757,12 @@ publisherGroups  |          |           |                                       
 &nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
 
-### Get campaign details [GET /rest/v1/campaigns/{campaignId}]
+### Get campaign details [GET /rest/v1/campaigns/{campaignId}{?includeDeliveryStatus}]
 
 + Parameters
     + campaignId: 608 (required)
+    + includeDeliveryStatus: true (bool, optional)
+        + Default: false
 
 + Response 200 (application/json)
 
@@ -772,12 +782,14 @@ publisherGroups  |          |           |                                       
 
     + Attributes (CampaignResponse)
 
-### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived}]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived,includeDeliveryStatus}]
 
 + Parameters
     + accountId: 168 (number, optional) - Optional account ID.
     + campaignId: 608 (number, optional) - Optional campaign ID.
     + includeArchived (bool, optional) - Set to true to retrieve archived ad groups.
+        + Default: false
+    + includeDeliveryStatus: true (bool, optional)
         + Default: false
 
 ### List campaigns [GET /rest/v1/campaigns/{?includeArchived,onlyIds}]
@@ -1183,6 +1195,7 @@ autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings           
 deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.        | optional | optional
 frequencyCapping | number | The maximum number of times ads from the ad group can be shown to a unique user in one day.                                                       | optional | optional
 clickCappingDailyAdGroupMaxClicks | number | Limit number of clicks you want to reach daily within the ad group. Once Zemanta hits the maximum number of clicks you set it will stop spending for the rest of the day. | optional | optional
+deliveryStatus | [deliveryStatus](#delivery-status) | Delivery status of the ad group.  Set `includeDeliveryStatus` flag to `true` to get this information.                   | N/A      | read only
 
 
 <a name="targeting"></a>
@@ -1320,10 +1333,12 @@ family   | [browser](#browser)                 | Browser family
 
 
 
-### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
+### Get ad group details [GET /rest/v1/adgroups/{adGroupId}{?includeDeliveryStatus}]
 
 + Parameters
     + adGroupId: 2040 (required)
+    + includeDeliveryStatus: true (bool, optional)
+        + Default: false
 
 + Response 200 (application/json)
     + Attributes (AdGroupResponse)
@@ -1342,12 +1357,14 @@ family   | [browser](#browser)                 | Browser family
 
     + Attributes (AdGroupResponse)
 
-### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived}]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived,includeDeliveryStatus}]
 
 + Parameters
     + accountId: 168 (number, optional) - Optional account ID.
     + campaignId: 608 (number, optional) - Optional campaign ID.
     + includeArchived (bool, optional) - Set to true to retrieve archived ad groups.
+        + Default: false
+    + includeDeliveryStatus: true (bool, optional)
         + Default: false
 
 + Response 200 (application/json)
@@ -2892,6 +2909,13 @@ Include traffic that meets the following conditions:
 - `MOBILE` - Native Mobile App Advertising
 - `VIDEO` - Native Video Advertising
 
+<a name="delivery-status"></a>
+## Delivery Status
+
+{% for key, value in constants.delivery.items %}
+- `{{ key }}` - {{ value }}
+{% endfor %}
+
 <a name="languages"></a>
 ## Language
 
@@ -3836,13 +3860,18 @@ Examples:
 - Include AdGroupIds
 - Include AdGroupWithoutIds
 
+## AdGroupResponseData (object)
+
+- Include AdGroup
+- `deliveryStatus`: `ACTIVE` (string)
+
 ## AdGroupResponse
 
-- `data` (AdGroup)
+- `data` (AdGroupResponseData)
 
 ## AdGroupListResponse
 
-- `data` (array[AdGroup])
+- `data` (array[AdGroupResponseData])
 
 
 <!-- CAMPAIGN -->
@@ -3886,13 +3915,19 @@ Examples:
 - Include CampaignIds
 - Include CampaignWithoutIds
 
+
+## CampaignResponseData (object)
+
+- Include Campaign
+- `deliveryStatus`: `ACTIVE` (string)
+
 ## CampaignResponse
 
-- `data` (Campaign)
+- `data` (CampaignResponseData)
 
 ## CampaignListResponse
 
-- `data` (array[Campaign])
+- `data` (array[CampaignResponseData])
 
 
 <!-- ACCOUNT -->
@@ -3916,13 +3951,18 @@ Examples:
 - Include AccountIds
 - Include AccountWithoutIds
 
+## AccountResponseData (object)
+
+- Include Account
+- `deliveryStatus`: `ACTIVE` (string)
+
 ## AccountResponse
 
-- `data` (Account)
+- `data` (AccountResponseData)
 
 ## AccountListResponse
 
-- `data` (array[Account])
+- `data` (array[AccountResponseData])
 
 
 <!-- GEOLOCATION -->

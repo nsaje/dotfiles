@@ -234,6 +234,19 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
 
+    def test_adgroups_get_include_delivery_status(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
+
+        r = self.client.get(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            {"includeDeliveryStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertIn("deliveryStatus", resp_json["data"])
+
     def test_adgroups_list(self):
         account = self.mix_account(self.user, permissions=[Permission.READ], agency__uses_realtime_autopilot=True)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -285,6 +298,21 @@ class AdGroupViewSetTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
             self.assertEqual(int(item["campaignId"]), campaign_one.id)
+
+    def test_adgroups_list_include_delivery(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        magic_mixer.cycle(5).blend(core.models.AdGroup, campaign=campaign)
+
+        r = self.client.get(
+            reverse("restapi.adgroup.v1:adgroups_list"),
+            data={"campaignId": campaign.id, "includeDeliveryStatus": "true"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(5, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.assertTrue(item["deliveryStatus"])
 
     def test_adgroups_campaign_id_invalid(self):
         r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"campaignId": 1000})

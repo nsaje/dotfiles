@@ -15,6 +15,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from mock import patch
 
+import core.features.delivery_status
 import core.models.source_type.model
 import demo
 import zemauth.models
@@ -403,7 +404,7 @@ class AdGroupOverviewTestCase(BaseTestCase):
         self.assertTrue(response["success"])
         header = response["data"]["header"]
         self.assertEqual(header["title"], "test adgroup 1 Čžš")
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header["active"])
+        self.assertEqual(core.features.delivery_status.DetailedDeliveryStatus.INACTIVE, header["active"])
 
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
         flight_setting = self._get_setting(settings, "flight")
@@ -484,7 +485,7 @@ class AdGroupOverviewTestCase(BaseTestCase):
         self.assertTrue(response["success"])
         header = response["data"]["header"]
         self.assertEqual(header["title"], "test adgroup 1 Čžš")
-        self.assertEqual(constants.InfoboxStatus.OPTIMAL_BID, header["active"])
+        self.assertEqual(core.features.delivery_status.DetailedDeliveryStatus.OPTIMAL_BID, header["active"])
 
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 
@@ -582,7 +583,7 @@ class CampaignOverviewTestCase(BaseTestCase):
 
         header = response["data"]["header"]
         self.assertEqual("test campaign 1 \u010c\u017e\u0161", header["title"])
-        self.assertEqual(constants.InfoboxStatus.ACTIVE, header["active"])
+        self.assertEqual(core.features.delivery_status.DetailedDeliveryStatus.ACTIVE, header["active"])
 
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 

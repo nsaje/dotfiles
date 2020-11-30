@@ -2,6 +2,7 @@ import decimal
 
 import rest_framework.serializers
 
+import core.features.delivery_status
 import dash.constants
 import restapi.adgroup.v1.serializers
 import restapi.directdeal.internal.serializers
@@ -38,7 +39,7 @@ class CloneAdGroupResponseSerializer(restapi.serializers.base.RESTAPIBaseSeriali
 
     state = restapi.serializers.fields.DashConstantField(dash.constants.AdGroupSettingsState)
     status = restapi.serializers.fields.DashConstantField(dash.constants.AdGroupRunningStatus)
-    active = restapi.serializers.fields.DashConstantField(dash.constants.InfoboxStatus)
+    active = restapi.serializers.fields.DashConstantField(core.features.delivery_status.DetailedDeliveryStatus)
 
 
 class ExtraDataDefaultSettingsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

@@ -1,5 +1,5 @@
+import core.features.delivery_status
 from dash import constants
-from dash import infobox_helpers
 from dash import models
 
 
@@ -29,14 +29,8 @@ def get_ad_group_dict(
         "archived": ad_group_settings.archived if ad_group_settings else False,
         "autopilot_state": autopilot_state,
         "bidding_type": ad_group["bidding_type"],
-        "active": infobox_helpers.get_adgroup_running_status_class(
-            user,
-            autopilot_state,
-            running_status,
-            state,
-            real_time_campaign_stop,
-            campaignstop_state,
-            is_campaign_autopilot,
+        "active": core.features.delivery_status.get_ad_group_detailed_delivery_status_from_state(
+            autopilot_state, running_status, state, real_time_campaign_stop, campaignstop_state, is_campaign_autopilot
         ),
     }
     return ad_group_dict
