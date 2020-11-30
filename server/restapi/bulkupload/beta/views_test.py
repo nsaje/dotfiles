@@ -68,8 +68,6 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["name"], "")
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(resp_json["data"]["notes"], "")
-        self.assertEqual(resp_json["data"]["redirectPixelUrls"], [])
-        self.assertEqual(resp_json["data"]["redirectJavascript"], "")
         self.assertEqual(resp_json["data"]["deals"], [])
         self.assertEqual(
             resp_json["extra"],
@@ -159,8 +157,6 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(resp_json["data"]["notes"], settings.notes)
-        self.assertEqual(resp_json["data"]["redirectPixelUrls"], settings.redirect_pixel_urls)
-        self.assertEqual(resp_json["data"]["redirectJavascript"], settings.redirect_javascript)
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
