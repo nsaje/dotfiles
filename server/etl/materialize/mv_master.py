@@ -69,22 +69,18 @@ class MasterView(Materialize):
         return sql, params
 
     def prefetch(self):
+        ad_groups_qs = dash.models.AdGroup.objects.all()
         if self.account_id:
-            self.ad_groups_map = {
-                x.id: x for x in dash.models.AdGroup.objects.filter(campaign__account_id=self.account_id)
-            }
-            self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.filter(account_id=self.account_id)}
-            self.accounts_map = {x.id: x for x in dash.models.Account.objects.filter(id=self.account_id)}
-
-        else:
-            self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
-            self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
-            self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
-
-        self.sources_slug_map = {
-            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()
+            ad_groups_qs = ad_groups_qs.filter(campaign__account_id=self.account_id)
+        self.ad_groups_parents_map = {
+            x["id"]: (x["campaign_id"], x["campaign__account_id"])
+            for x in ad_groups_qs.values("id", "campaign_id", "campaign__account_id").iterator()
         }
-        self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
+
+        sources_qs = dash.models.Source.objects.all()
+        self.sources_slug_map = {
+            helpers.extract_source_slug(x["bidder_slug"]): x["id"] for x in sources_qs.values("id", "bidder_slug")
+        }
 
     def get_postclickstats(self, cursor, date):
 
@@ -112,32 +108,31 @@ class MasterView(Materialize):
                     logger.info("Got postclick stats for unknown source", source=row.source_slug)
                     continue
 
-                if row.ad_group_id not in self.ad_groups_map:
+                if row.ad_group_id not in self.ad_groups_parents_map:
                     logger.info("Got postclick stats for unknown ad group", ad_group=row.ad_group_id)
                     continue
 
-                source = self.sources_slug_map[source_slug]
-                ad_group = self.ad_groups_map[row.ad_group_id]
-                campaign = self.campaigns_map[ad_group.campaign_id]
-                account = self.accounts_map[campaign.account_id]
+                source_id = self.sources_slug_map[source_slug]
+                ad_group_id = row.ad_group_id
+                campaign_id, account_id = self.ad_groups_parents_map[ad_group_id]
 
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
                 publisher = row.publisher
-                if publisher and source.id:
+                if publisher and source_id:
                     publisher = publisher.lower()
 
                 yield (
-                    helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id),
+                    helpers.get_breakdown_key_for_postclickstats(source_id, row.content_ad_id),
                     (
                         date,
-                        source.id,
-                        account.id,
-                        campaign.id,
-                        ad_group.id,
+                        source_id,
+                        account_id,
+                        campaign_id,
+                        ad_group_id,
                         row.content_ad_id,
                         publisher,
-                        "{}__{}".format(publisher if publisher else "", source.id),  # publisher_source_id
+                        "{}__{}".format(publisher if publisher else "", source_id),  # publisher_source_id
                         dash.constants.DeviceType.UNKNOWN,
                         None,  # device_os
                         None,  # device_os_version
