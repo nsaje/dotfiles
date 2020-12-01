@@ -6,6 +6,7 @@ from django.test import TestCase
 import core.features.delivery_status
 import core.models
 import dash.constants
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from . import service
@@ -19,7 +20,7 @@ class AccountDetailedDeliveryStatusServiceTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=100)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=100)
         end_date = start_date + datetime.timedelta(days=80)
         ad_group.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -29,14 +30,12 @@ class AccountDetailedDeliveryStatusServiceTest(TestCase):
             service.get_account_detailed_delivery_status_map([account]),
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
         )
-
         ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
-
         self.assertEqual(
             {account.id: core.features.delivery_status.DetailedDeliveryStatus.ACTIVE},
             service.get_account_detailed_delivery_status_map([account]),
@@ -59,13 +58,13 @@ class AccountDetailedDeliveryStatusServiceTest(TestCase):
         ad_group_1 = magic_mixer.blend(core.models.AdGroup, campaign__account=account_1)
         ad_group_2 = magic_mixer.blend(core.models.AdGroup, campaign__account=account_2)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=50)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=50)
         end_date = start_date + datetime.timedelta(days=10)
         ad_group_1.settings.update_unsafe(
             None, state=dash.constants.AdGroupSettingsState.ACTIVE, start_date=start_date, end_date=end_date
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group_2.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -85,13 +84,13 @@ class AccountDetailedDeliveryStatusServiceTest(TestCase):
         ad_group_1 = magic_mixer.blend(core.models.AdGroup, campaign__account=account_1)
         ad_group_2 = magic_mixer.blend(core.models.AdGroup, campaign__account=account_2)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=50)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=50)
         end_date = start_date + datetime.timedelta(days=10)
         ad_group_1.settings.update_unsafe(
             None, state=dash.constants.AdGroupSettingsState.ACTIVE, start_date=start_date, end_date=end_date
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group_2.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -115,7 +114,7 @@ class CampaignDetailedDeliveryStatusServiceTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=50)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=50)
         end_date = start_date + datetime.timedelta(days=10)
         ad_group.settings.update_unsafe(
             None, state=dash.constants.AdGroupSettingsState.ACTIVE, start_date=start_date, end_date=end_date
@@ -125,7 +124,7 @@ class CampaignDetailedDeliveryStatusServiceTest(TestCase):
             service.get_campaign_detailed_delivery_status_map([campaign]),
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -227,13 +226,13 @@ class CampaignDetailedDeliveryStatusServiceTest(TestCase):
         ad_group_1 = magic_mixer.blend(core.models.AdGroup, campaign=campaign_1)
         ad_group_2 = magic_mixer.blend(core.models.AdGroup, campaign=campaign_2)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=50)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=50)
         end_date = start_date + datetime.timedelta(days=10)
         ad_group_1.settings.update_unsafe(
             None, state=dash.constants.AdGroupSettingsState.ACTIVE, start_date=start_date, end_date=end_date
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group_2.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -254,13 +253,13 @@ class CampaignDetailedDeliveryStatusServiceTest(TestCase):
         ad_group_1 = magic_mixer.blend(core.models.AdGroup, campaign=campaign_1)
         ad_group_2 = magic_mixer.blend(core.models.AdGroup, campaign=campaign_2)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=50)
+        start_date = dates_helper.local_today() - datetime.timedelta(days=50)
         end_date = start_date + datetime.timedelta(days=10)
         ad_group_1.settings.update_unsafe(
             None, state=dash.constants.AdGroupSettingsState.ACTIVE, start_date=start_date, end_date=end_date
         )
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group_2.settings.update_unsafe(
             None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
@@ -285,7 +284,7 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group)
 
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() + datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -293,7 +292,7 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.INACTIVE,
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
-            created_dt=datetime.datetime.utcnow(),
+            created_dt=dates_helper.local_now(),
         )
         self.assertEqual(
             {ad_group.id: core.features.delivery_status.DetailedDeliveryStatus.STOPPED},
@@ -301,14 +300,14 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
         )
 
         # adgroup is active and sources are active
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
-            created_dt=datetime.datetime.utcnow(),
+            created_dt=dates_helper.local_now(),
         )
         ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
         self.assertEqual(
@@ -386,7 +385,7 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
         campaign.settings.update_unsafe(None, autopilot=False)
 
         # adgroup is active, sources are active and adgroup is on CPC autopilot
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
@@ -402,14 +401,14 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
         )
 
         # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
-        start_date = datetime.datetime.today().date()
+        start_date = dates_helper.local_today() - datetime.timedelta(days=10)
         end_date = start_date + datetime.timedelta(days=99)
         ad_group.settings.update_unsafe(
             None,
             start_date=start_date,
             end_date=end_date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
-            created_dt=datetime.datetime.utcnow(),
+            created_dt=dates_helper.local_now(),
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         )
         self.assertEqual(
@@ -422,14 +421,14 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
             ad_group.campaign.set_real_time_campaign_stop(None, True)
 
             # adgroup is active and on CPC autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
+            start_date = dates_helper.local_today() - datetime.timedelta(days=10)
             end_date = start_date + datetime.timedelta(days=99)
             ad_group.settings.update_unsafe(
                 None,
                 start_date=start_date,
                 end_date=end_date,
                 state=dash.constants.AdGroupSettingsState.ACTIVE,
-                created_dt=datetime.datetime.utcnow(),
+                created_dt=dates_helper.local_now(),
                 autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,  # price_discovery
             )
             mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
@@ -441,14 +440,14 @@ class AdGroupDetailedDeliveryStatusServiceTest(TestCase):
             )
 
             # adgroup is active and on CPC+Budget autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
+            start_date = dates_helper.local_today() - datetime.timedelta(days=10)
             end_date = start_date + datetime.timedelta(days=99)
             ad_group.settings.update_unsafe(
                 None,
                 start_date=start_date,
                 end_date=end_date,
                 state=dash.constants.AdGroupSettingsState.ACTIVE,
-                created_dt=datetime.datetime.utcnow(),
+                created_dt=dates_helper.local_now(),
                 autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,  # autopilot
             )
             mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
