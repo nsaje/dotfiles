@@ -19,6 +19,7 @@ logger = zlogging.getLogger(__name__)
 
 @celery.app.task(acks_late=True, name="campaignstop_update_handler", soft_time_limit=3 * 60, ignore_result=True)
 def handle_updates(campaign_id, campaign_type, time):
+    logger.info("processing update", campaign_id=campaign_id, campaign_type=campaign_type)
     try:
         with django_pglocks.advisory_lock(
             f"campaignstop.handle_updates{str(campaign_id)}.{campaign_type}", wait=False
