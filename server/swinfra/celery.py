@@ -20,7 +20,11 @@ def handle_worker_init(**kwargs):
 
 
 def handle_worker_process_init(**kwargs):
-    start_outbrain_wsgi_server()
+    try:
+        start_outbrain_wsgi_server()
+    except OSError:
+        # address already in use
+        pass
 
 
 def start_outbrain_wsgi_server():
