@@ -10,7 +10,7 @@ logger = zlogging.getLogger(__name__)
 
 AD_GROUP_SETTINGS_FIELDS = [
     "state",
-    "local_b1_sources_group_state",
+    "b1_sources_group_state",
     "local_b1_sources_group_daily_budget",
     "start_date",
     "end_date",
