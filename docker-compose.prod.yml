@@ -183,7 +183,7 @@ services:
       labels:
         SERVICE_IGNORE: "true"
       entrypoint: ""
-      command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-campaign-updates -l INFO -f /app/logs/campaign_update_handler.log --prefetch-multiplier 0 -P prefork -c 100"
+      command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-campaign-updates -l INFO -f /app/logs/campaign_update_handler.log --prefetch-multiplier 0 -P prefork -c 25"
 
     einsworker_bulkupload:
         extends: eins-base
