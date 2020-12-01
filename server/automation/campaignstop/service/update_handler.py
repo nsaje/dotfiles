@@ -1,4 +1,3 @@
-import django_pglocks
 from celery.exceptions import SoftTimeLimitExceeded
 
 import core.models
@@ -20,13 +19,7 @@ logger = zlogging.getLogger(__name__)
 @celery.app.task(acks_late=True, name="campaignstop_update_handler", soft_time_limit=3 * 60, ignore_result=True)
 def handle_updates(campaign_id, campaign_type, time):
     try:
-        lock_id = f"campaignstop.handle_updates{str(campaign_id)}.{campaign_type}"
-        logger.info("processing update", campaign_id=campaign_id, campaign_type=campaign_type, lock_id=lock_id)
-        with django_pglocks.advisory_lock(lock_id, wait=False) as acquired:
-            if not acquired:
-                handle_updates.retry(countdown=30)
-                return
-            _handle_updates(campaign_id, campaign_type, time)
+        _handle_updates(campaign_id, campaign_type, time)
     except SoftTimeLimitExceeded:
         logger.warning("Time limit exceeded", campaign_id=campaign_id, type=campaign_type)
 
