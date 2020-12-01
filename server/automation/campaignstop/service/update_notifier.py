@@ -10,13 +10,13 @@ logger = zlogging.getLogger(__name__)
 
 AD_GROUP_SETTINGS_FIELDS = [
     "state",
-    "b1_sources_group_state",
-    "b1_sources_group_daily_budget",
+    "local_b1_sources_group_state",
+    "local_b1_sources_group_daily_budget",
     "start_date",
     "end_date",
-    "daily_budget",
+    "local_daily_budget",
 ]
-AD_GROUP_SOURCE_SETTINGS_FIELDS = ["daily_budget_cc", "state"]
+AD_GROUP_SOURCE_SETTINGS_FIELDS = ["local_daily_budget_cc", "state"]
 
 
 def notify_initialize(campaign):
