@@ -78,7 +78,7 @@ def get_campaign_delivery_status(campaign):
 
 
 def get_campaign_detailed_delivery_status(campaign):
-    if not campaign.account.agency.uses_realtime_autopilot:  # TODO: RTAP: remove this after Phase 1
+    if not campaign.account.agency_uses_realtime_autopilot():  # TODO: RTAP: remove this after Phase 1
         return _get_campaign_delivery_status_legacy(campaign)
 
     if not campaign.account.is_enabled():
