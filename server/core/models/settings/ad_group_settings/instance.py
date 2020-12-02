@@ -479,10 +479,16 @@ class AdGroupSettingsMixin(object):
         ):
             forbidden_fields.remove("local_autopilot_daily_budget")
 
+        # TODO: RTAP: remove the field from the check after migration
+        if "autopilot_state" in changes and self.ad_group.campaign.account.agency_uses_realtime_autopilot():
+            forbidden_fields.remove("autopilot_state")
+
         if self.ad_group.campaign.settings.autopilot and any(field in changes for field in forbidden_fields):
             raise exc.ForbiddenError(
-                "The following fields can't be changed if autopilot is active: {}, {}, {}, {}".format(
-                    *[core.models.settings.AdGroupSettings.get_human_prop_name(field) for field in forbidden_fields]
+                "The following fields can't be changed if autopilot is active: {}".format(
+                    ", ".join(
+                        [core.models.settings.AdGroupSettings.get_human_prop_name(field) for field in forbidden_fields]
+                    )
                 )
             )
 

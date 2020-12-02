@@ -348,10 +348,6 @@ class InstanceTest(TestCase):
     @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_recalculate_autopilot_enable(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
-        with self.assertRaises(utils.exc.ForbiddenError):
-            self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
-
-        self.ad_group.campaign.settings.update_unsafe(None, autopilot=False)
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         mock_autopilot.assert_not_called()
@@ -527,8 +523,13 @@ class InstanceTest(TestCase):
     @patch("automation.autopilot.recalculate_ad_group_budgets")
     def test_change_forbidden_fields(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.assertTrue(self.ad_group.settings.autopilot_state)
+
+        self.ad_group.settings.update(None, autopilot_state=False)
+        self.assertFalse(self.ad_group.settings.autopilot_state)
+
         with self.assertRaises(utils.exc.ForbiddenError):
-            self.ad_group.settings.update(None, autopilot_state=False, autopilot_daily_budget=Decimal("10.0"))
+            self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"))
 
 
 @patch("automation.autopilot.recalculate_ad_group_budgets", mock.MagicMock())
