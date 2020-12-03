@@ -220,23 +220,26 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings):
 
     daily_budget_edit_enabled = True
     daily_budget_edit_message = None
-    if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+    if (
+        not ad_group.campaign.account.agency_uses_realtime_autopilot()
+        and ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+    ):
         daily_budget_edit_enabled = False
-        daily_budget_edit_message = "This value cannot be edited because the ad group is on Autopilot."
+        daily_budget_edit_message = "This setting cannot be edited and will soon be deprecated. To adjust Ad group’s daily budget, please navigate to ad group settings."
     if campaign_settings.autopilot or (
         ad_group.campaign.account.agency_uses_realtime_autopilot() and ad_group.settings.b1_sources_group_enabled
     ):
         daily_budget_edit_enabled = False
-        daily_budget_edit_message = "This value cannot be edited because the campaign is on Autopilot."
+        daily_budget_edit_message = "This setting cannot be edited and will soon be deprecated. To adjust Ad group’s daily budget, please navigate to ad group settings."
 
     bid_edit_enabled = True
     bid_edit_message = None
     if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         bid_edit_enabled = False
-        bid_edit_message = "This value cannot be edited because the ad group is on Autopilot."
+        bid_edit_message = "This setting cannot be edited and will soon be deprecated. To adjust Ad group’s daily budget, please navigate to ad group settings."
     if campaign_settings.autopilot:
         bid_edit_enabled = False
-        bid_edit_message = "This value cannot be edited because the campaign is on Autopilot."
+        bid_edit_message = "This setting cannot be edited and will soon be deprecated. To adjust Ad group’s daily budget, please navigate to ad group settings."
 
     return {
         "breakdown_name": all_rtb.AllRTBSource.name,
