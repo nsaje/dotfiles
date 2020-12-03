@@ -91,6 +91,9 @@ def index(request):
             "whitelabel": whitelabel and whitelabel.theme,
             "faviconUrl": whitelabel and whitelabel.favicon_url,
             "dashboardTitle": whitelabel and whitelabel.dashboard_title,
+            "termsOfServiceUrl": whitelabel and whitelabel.terms_of_service_url,
+            "copyrightHolder": whitelabel and whitelabel.copyright_holder,
+            "copyrightHolderUrl": whitelabel and whitelabel.copyright_holder_url,
         },
     )
 

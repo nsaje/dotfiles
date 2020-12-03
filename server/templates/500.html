@@ -9,9 +9,11 @@
     <div class="container" id="error-box">
         <div class="container__left container__left--smaller">
             {% if wl.base == "newscorp" %}
-            <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
+                <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
+            {% elif wl.base == "das" %}
+                <img class="logo" src="{% static "img/das-logo-white.svg" %}" alt="Native Ocean Logo"/>
             {% else %}
-            <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+                <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
             {% endif %}
         </div>
         <div class="container__right container__right--maintenance">

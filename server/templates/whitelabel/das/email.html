@@ -1,0 +1,77 @@
+{% load staticfiles %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>{{ subject }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </head>
+    <body bgcolor="#ebebeb">
+        <table width="100%" bgcolor="#ebebeb">
+            <tr>
+                <td align="center">
+                    <table cellpadding="0" cellspacing="0" width="600">
+                        <tr>
+                            <td width="10"></td>
+                            <td width="580">
+                                <table cellpadding="0" cellspacing="0" width="580">
+                                    <tr>
+                                        <td height="100" colspan="3" valign="middle" align="center"><img height="50" style="display: block;" src="https://one-static.zemanta.com/whitelabel/whitelabel-logo-das.svg" alt=""/></td>
+                                    </tr>
+                                    <tr bgcolor="#e35519">
+                                        <td width="20" rowspan="3" align="left" valign="top"><img width="20" style="display: block;" src="http://www.zemanta.com/images/zemanta-logo-squares-white-for-email.png" alt=""/></td>
+                                        <td align="center" height="20" valign="middle"></td>
+                                        <td width="20" rowspan="3"></td>
+                                    </tr>
+                                    <tr bgcolor="#e35519">
+                                        <td align="center" valign="middle"><h1 style="color: white; font-size: 20px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; margin: 0; padding: 0;">{{ subject }}</h1></td>
+                                    </tr>
+                                    <tr bgcolor="#e35519">
+                                        <td align="center" height="20" valign="middle"></td>
+                                    </tr>
+                                    <tr bgcolor="white">
+                                        <td colspan="3" height="20"></td>
+                                    </tr>
+                                    <tr bgcolor="white">
+                                        <td width="20"></td>
+                                        <td>
+                                            <div style="color: #222222; font-size: 14px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; margin: 0; padding: 0;">{% autoescape off %}{{ content }}{% endautoescape %}</div>
+                                        </td>
+                                        <td width="20"></td>
+                                    </tr>
+                                    <tr bgcolor="white">
+                                        <td colspan="3" height="20"></td>
+                                    </tr>
+                                    <tr bgcolor="#ebebeb">
+                                        <td colspan="3" height="20"></td>
+                                    </tr>
+                                    <tr bgcolor="#ebebeb">
+                                        <td colspan="3" align="center">
+                                            <div style="color: #999999; font-size: 12px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">This email was sent by <a href="http://www.zemanta.com" style="color: #999999">zemanta.com</a></div>
+                                        </td>
+                                    </tr>
+                                    <tr bgcolor="#ebebeb">
+                                        <td colspan="3" height="20"></td>
+                                    </tr>
+                                    <tr bgcolor="#ebebeb">
+                                        <td colspan="3" align="center">
+                                            <div style="color: #999999; font-size: 12px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; line-height: 18px;">
+                                                <a href="%tag_unsubscribe_url%" style="color: #999999">Unsubscribe</a> from this type of notifications.<br>
+                                                <a href="%unsubscribe_url%" style="color: #999999">Unsubscribe</a> from all Zemanta notifications.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr bgcolor="#ebebeb">
+                                        <td colspan="3" height="20"></td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td width="10"></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

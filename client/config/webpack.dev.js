@@ -147,12 +147,16 @@ function generateStyleConfig(appEnvironment, themeName) {
 
     var config = merge.smart(mainConfig, styleConfig);
 
-    config.entry = {
-        'zemanta-one': [
-            common.root('./one/app/styles/main.less'),
-            common.root('./one/main.jit.ts'),
-        ],
-    };
+    var entryName = 'zemanta-one';
+    if (themeName !== common.DEFAULT_THEME.name) {
+        entryName = entryName + '-' + themeName;
+    }
+
+    config.entry = {};
+    config.entry[entryName] = [
+        common.root('./one/app/styles/main.less'),
+        common.root('./one/main.jit.ts'),
+    ];
 
     config.output = {
         path: common.root('./dist/one'),

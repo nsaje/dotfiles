@@ -12,7 +12,9 @@ var THEMES = {
     burda: {name: 'burda'},
     mediamond: {name: 'mediamond'},
     adyoulike: {name: 'adyoulike'},
+    das: {name: 'das'},
 };
+var DEFAULT_THEME = THEMES.one;
 var WHITELABELS = [
     THEMES.adtechnacity,
     THEMES.greenpark,
@@ -20,8 +22,10 @@ var WHITELABELS = [
     THEMES.burda,
     THEMES.mediamond,
     THEMES.adyoulike,
+    THEMES.das,
 ];
 
+module.exports.DEFAULT_THEME = DEFAULT_THEME;
 module.exports.getAppEnvironment = getAppEnvironment;
 module.exports.getThemes = getThemes;
 module.exports.getWhitelabels = getWhitelabels;
@@ -212,7 +216,7 @@ function generateAppEnvironment(env) {
         },
         buildNumber: env.npm_config_build_number || '',
         branchName: env.npm_config_branch_name || '',
-        theme: THEMES[env.npm_config_theme] || THEMES.one,
+        theme: THEMES[env.npm_config_theme] || DEFAULT_THEME,
         analyze: env.npm_config_analyze === 'true' || false,
         sentryToken: env.npm_config_sentry_token || '',
         buildMainConfig: env.npm_config_build_main === 'true' || false,

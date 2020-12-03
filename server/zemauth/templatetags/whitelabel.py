@@ -41,7 +41,14 @@ def whitelabel_from_host(context):
 
 @register.simple_tag(takes_context=True)
 def get_whitelabel_info(context):
-    info = {"base": "zemanta", "favicon": None, "dashboard_title": None}
+    info = {
+        "base": "zemanta",
+        "favicon_url": None,
+        "dashboard_title": None,
+        "terms_of_service_url": None,
+        "copyright_holder": None,
+        "copyright_holder_url": None,
+    }
     agencies = _get_agency_from_host(context) or _get_user_agencies(context)
     if agencies:
         # As the case of an user with 2 agencies with a whitelabel should be very rare, we decided to take the first one
@@ -50,6 +57,9 @@ def get_whitelabel_info(context):
         agency = agencies_w_whitelabel[0] if agencies_w_whitelabel else None
         if agency and agency.white_label:
             info["base"] = agency.white_label.theme
-            info["favicon"] = agency.white_label.favicon_url
+            info["favicon_url"] = agency.white_label.favicon_url
             info["dashboard_title"] = agency.white_label.dashboard_title
+            info["terms_of_service_url"] = agency.white_label.terms_of_service_url
+            info["copyright_holder"] = agency.white_label.copyright_holder
+            info["copyright_holder_url"] = agency.white_label.copyright_holder_url
     return info

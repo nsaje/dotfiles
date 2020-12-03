@@ -5,9 +5,10 @@
 
 {% block head_extra %}
     {{ block.super }}
-    {% get_whitelabel_info as wl %}
     {% if wl.base == "newscorp" %}
         <title>Welcome to Newscorp Dashboard</title>
+    {% elif wl.base == "das" %}
+        <title>Welcome to Native Ocean Dashboard</title>
     {% else %}
         <title>Welcome to Zemanta One</title>
     {% endif %}
@@ -29,11 +30,17 @@
 
                         {% if wl.base == "newscorp" %}
                             <h2 class="set-new-user__page_title">Welcome to Newscorp Dashboard</h2>
+                        {% elif wl.base == "das" %}
+                            <h2 class="set-new-user__page_title">Welcome to Native Ocean Dashboard</h2>
                         {% else %}
                             <h2 class="set-new-user__page_title">Welcome to Zemanta One</h2>
                         {% endif %}
 
-                        <p class="set-new-user__description">You are about to start using Zemanta One. Before you begin, please tell us a bit about yourself, so that we’ll be able to better assist you.</p>
+                        {% if wl.base == "das" %}
+                            <p class="set-new-user__description">You are about to start using Native Ocean Dashboard. Before you begin, please tell us a bit about yourself, so that we’ll be able to better assist you.</p>
+                        {% else %}
+                            <p class="set-new-user__description">You are about to start using Zemanta One. Before you begin, please tell us a bit about yourself, so that we’ll be able to better assist you.</p>
+                        {% endif %}
 
 
                         <div class="two-columns set-new-user__item">
@@ -69,6 +76,8 @@
                         <div class="set-new-user__actions">
                             {% if wl.base == "newscorp" %}
                                 <input class="button set-new-user__start_button" id="id_set_new_user_btn" type="submit" value="Start using Newscorp Dashboard">
+                            {% elif wl.base == "das" %}
+                                <input class="button set-new-user__start_button" id="id_set_new_user_btn" type="submit" value="Start using Native Ocean Dashboard" />
                             {% else %}
                                 <input class="button set-new-user__start_button" id="id_set_new_user_btn" type="submit" value="Start using Zemanta One" />
                             {% endif %}
@@ -79,12 +88,18 @@
         {% else %}
             <div class="container">
                 <div class="container__left container__left--smaller">
-                    <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+                    {% if wl.base == "das" %}
+                        <img class="logo" src="{% static "img/das-logo-white.svg" %}" alt="Native Ocean Logo"/>
+                    {% else %}
+                        <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+                    {% endif %}
                 </div>
                 <div class="container__right container__right--error">
                     <h2>Oops.</h2>
                     {% if wl.base == "newscorp" %}
                         <p class="bigger">Your link to Newscorp Dashboard expired.</p>
+                    {% elif wl.base == "das" %}
+                        <p class="bigger">Your link to Native Ocean Dashboard expired.</p>
                     {% else %}
                         <p class="bigger">Your link to Zemanta One expired.</p>
                     {% endif %}

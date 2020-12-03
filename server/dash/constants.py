@@ -2020,6 +2020,7 @@ class Whitelabel(ConstantBase):
     BURDA = "burda"
     MEDIAMOND = "mediamond"
     ADYOULIKE = "adyoulike"
+    DAS = "das"
 
     _VALUES = {
         GREENPARK: "Green Park Content",
@@ -2028,6 +2029,7 @@ class Whitelabel(ConstantBase):
         BURDA: "Burda",
         MEDIAMOND: "Mediamond",
         ADYOULIKE: "Adyoulike",
+        DAS: "Native Ocean",
     }
 
 

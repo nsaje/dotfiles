@@ -11,7 +11,10 @@
         {% if whitelabel %}
             window.zOne.whitelabel = {
                 id: "{{ whitelabel }}",
-                dashboardTitle: "{{ dashboardTitle }}"
+                dashboardTitle: "{{ dashboardTitle }}",
+                termsOfServiceUrl: "{{ termsOfServiceUrl }}",
+                copyrightHolder: "{{ copyrightHolder }}",
+                copyrightHolderUrl: "{{ copyrightHolderUrl }}",
             };
         {% endif %}
     </script>

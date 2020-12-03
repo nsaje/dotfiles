@@ -1,38 +1,35 @@
+import './footer.component.less';
+
+import {OnInit, Component, ChangeDetectionStrategy} from '@angular/core';
+import * as commonHelpers from '../../shared/helpers/common.helpers';
 import {
-    Directive,
-    OnInit,
-    OnChanges,
-    DoCheck,
-    OnDestroy,
-    ElementRef,
-    Inject,
-    Injector,
-    SimpleChanges,
-} from '@angular/core';
-import {UpgradeComponent} from '@angular/upgrade/static';
+    DEFAULT_COPYRIGHT_HOLDER,
+    DEFAULT_COPYRIGHT_HOLDER_URL,
+    DEFAULT_TERMS_OF_SERVICE_URL,
+} from './footer.component.constants';
 
-@Directive({
-    selector: 'zem-footer', // tslint:disable-line directive-selector
+@Component({
+    selector: 'zem-footer',
+    templateUrl: './footer.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FooterComponent extends UpgradeComponent
-    implements OnInit, OnChanges, DoCheck, OnDestroy {
-    constructor(
-        @Inject(ElementRef) elementRef: ElementRef,
-        @Inject(Injector) injector: Injector
-    ) {
-        super('zemFooter', elementRef, injector);
-    }
+export class FooterComponent implements OnInit {
+    termsOfServiceUrl: string;
+    copyrightHolder: string;
+    copyrightHolderUrl: string;
 
-    ngOnInit() {
-        super.ngOnInit();
-    }
-    ngOnChanges(changes: SimpleChanges) {
-        super.ngOnChanges(changes);
-    }
-    ngDoCheck() {
-        super.ngDoCheck();
-    }
-    ngOnDestroy() {
-        super.ngOnDestroy();
+    ngOnInit(): void {
+        this.termsOfServiceUrl = commonHelpers.getValueOrDefault(
+            (window as any).zOne.whitelabel.termsOfServiceUrl,
+            DEFAULT_TERMS_OF_SERVICE_URL
+        );
+        this.copyrightHolder = commonHelpers.getValueOrDefault(
+            (window as any).zOne.whitelabel.copyrightHolder,
+            DEFAULT_COPYRIGHT_HOLDER
+        );
+        this.copyrightHolderUrl = commonHelpers.getValueOrDefault(
+            (window as any).zOne.whitelabel.copyrightHolderUrl,
+            DEFAULT_COPYRIGHT_HOLDER_URL
+        );
     }
 }

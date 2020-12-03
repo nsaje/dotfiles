@@ -2,9 +2,11 @@
 <html>
     <head>
         {% load staticfiles %}
+        {% load whitelabel %}
 
-        {% if whitelabel and faviconUrl %}
-            <link rel="shortcut icon" href="{{ faviconUrl }}" />
+        {% get_whitelabel_info as wl %}
+        {% if wl.favicon_url %}
+            <link rel="shortcut icon" href="{{ wl.favicon_url }}" />
         {% else %}
             <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
         {% endif %}

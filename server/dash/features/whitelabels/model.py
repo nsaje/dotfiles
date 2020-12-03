@@ -14,6 +14,9 @@ class WhiteLabel(models.Model):
     )
     favicon_url = models.CharField(max_length=255, editable=True, blank=True, default="")
     dashboard_title = models.CharField(max_length=255, editable=True, blank=True, default="")
+    terms_of_service_url = models.CharField(max_length=255, blank=True, null=True)
+    copyright_holder = models.CharField(max_length=255, blank=True, null=True)
+    copyright_holder_url = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.theme

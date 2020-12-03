@@ -427,6 +427,34 @@ h2.set-new-user__page_title{
     background-color: #040707;
 }
 
+/* WHITELABEL - DAS */
+
+.das .button {
+    color: #e35519;
+}
+
+.das .container__right .button {
+    color: white;
+    background-color: #e35519;
+}
+
+.das .container__right .button:hover {
+    background-color: #e35519;
+}
+
+.das .container__left {
+    background-color: #e35519;
+}
+
+.das .set-new-user__background{
+    background: url("../img/zemanta-logo-squares-white.svg") no-repeat left top, #e35519;
+    background-size: 40px;
+}
+
+.das .set-new-user__start_button{
+    background-color: #e35519;
+}
+
 /* WHITELABEL - AMPLIFY */
 
 .amplify .button {
