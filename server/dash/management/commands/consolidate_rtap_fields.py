@@ -29,7 +29,7 @@ BID_PRECISION = decimal.Decimal("1.000")
 BUDGET_PRECISION = decimal.Decimal("1.00")
 DEFAULT_MODE = 1
 BATCH_SIZE = 1000
-POOL_SIZE = 1000
+POOL_SIZE = 10
 
 
 # TODO: RTAP: BACKFILL: remove after all agencies migrated
