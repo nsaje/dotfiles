@@ -25,8 +25,8 @@ from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
-BID_PRECISION = decimal.Decimal("1.000")
-BUDGET_PRECISION = decimal.Decimal("1.00")
+BID_PRECISION = decimal.Decimal("1.0000")
+BUDGET_PRECISION = decimal.Decimal("1.0000")
 DEFAULT_MODE = 1
 BATCH_SIZE = 1000
 POOL_SIZE = 10
