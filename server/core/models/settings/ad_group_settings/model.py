@@ -93,8 +93,6 @@ class AdGroupSettings(
         "exclusion_audience_targeting",
         "whitelist_publisher_groups",
         "blacklist_publisher_groups",
-        "redirect_pixel_urls",
-        "redirect_javascript",
         "notes",
         "tracking_code",
         "archived",
@@ -184,8 +182,6 @@ class AdGroupSettings(
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
-    redirect_pixel_urls = jsonfield.JSONField(blank=True, null=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
-    redirect_javascript = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True)
     tracking_code = models.TextField(blank=True)
     archived = models.BooleanField(default=False)
@@ -369,8 +365,6 @@ class AdGroupSettings(
             "audience_targeting": "Custom audience targeting",
             "exclusion_audience_targeting": "Exclusion custom audience targeting",
             "language_targeting_enabled": "Language targeting enabled",
-            "redirect_pixel_urls": "Pixel retargeting tags",
-            "redirect_javascript": "Pixel retargeting JavaScript",
             "notes": "Notes",
             "tracking_code": "Tracking code",
             "state": "State",
@@ -447,8 +441,6 @@ class AdGroupSettings(
             value = AdGroupSettings._get_human_value_for_interests_targeting(value)
         elif prop_name in ("audience_targeting", "exclusion_audience_targeting"):
             value = AdGroupSettings._get_human_value_for_audience_targeting(value)
-        elif prop_name == "redirect_pixel_urls":
-            value = ", ".join(value)
         elif prop_name == "dayparting":
             value = AdGroupSettings._get_dayparting_human_value(value)
         elif prop_name == "b1_sources_group_state":

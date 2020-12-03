@@ -77,8 +77,6 @@ class AdGroupSettingsTest(TestCase):
             "audience_targeting": [1, 2],
             "exclusion_audience_targeting": [3, 4],
             "language_targeting_enabled": False,
-            "redirect_pixel_urls": [],
-            "redirect_javascript": None,
             "display_url": "example.com",
             "brand_name": "Example",
             "description": "Example description",

@@ -144,8 +144,6 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
         settings = ad_group.get_current_settings().copy_settings()
         settings.notes = "adgroups notes"
-        settings.redirect_pixel_urls = ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        settings.redirect_javascript = "alert('a')"
         settings.save(None)
 
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
@@ -303,8 +301,6 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         settings = ad_group.get_current_settings().copy_settings()
         settings.ad_group_name = ad_group.name
         settings.notes = "adgroups notes"
-        settings.redirect_pixel_urls = ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        settings.redirect_javascript = "alert('a')"
         settings.save(None)
 
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
