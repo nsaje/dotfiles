@@ -15,6 +15,7 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 cache = caches["cluster_level_cache"]
+CACHE_TIMEOUT = 3600 * 2
 
 
 @dataclass
@@ -36,7 +37,7 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
     Is idempotently retriable and can pick up where it left off due to saving intermediate data in cache.
     """
 
-    task_id = task_id or ""
+    task_id = task_id or self.request.id or ""
     request = Request(user)
 
     logger.info("Processing bulk upload task", task_id=task_id)
@@ -51,6 +52,7 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
         with transaction.atomic():
             logger.info("Creating ad groups", task_id=task_id)
             ad_group_ids = _upload_adgroups(task_id, request, ad_groups_dicts)
+            logger.info("Ad groups created", task_id=task_id, ad_group_ids=ad_group_ids)
             _cache_set(task_id, "adgroupids", ad_group_ids)
 
     ad_groups_by_id = {ag.id: ag for ag in core.models.AdGroup.objects.filter(pk__in=ad_group_ids)}
@@ -61,6 +63,7 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
         with transaction.atomic():
             logger.info("Creating batches", task_id=task_id)
             batch_ids = _upload_batches(task_id, request, ad_groups, ad_groups_dicts)
+            logger.info("Batches created", task_id=task_id, batch_ids=batch_ids)
             _cache_set(task_id, "batchids", batch_ids)
 
     _wait_for_batch_validation(batch_ids)
@@ -164,7 +167,7 @@ def _cache_get(task_id, kind):
 
 
 def _cache_set(task_id, kind, value):
-    return cache.set(_get_cache_key(task_id, kind), value)
+    return cache.set(_get_cache_key(task_id, kind), value, timeout=CACHE_TIMEOUT)
 
 
 def _get_cache_key(task_id, kind):
