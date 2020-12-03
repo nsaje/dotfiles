@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import core.common
 from dash import constants
 from utils import dates_helper
@@ -22,7 +24,13 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_daily_budget = 0
         new_settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        # TODO: RTAP: Remove after defaults updated for everyone
+        if ad_group.campaign.account_id == settings.HARDCODED_ACCOUNT_ID_OEN:
+            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
+        else:
+            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+
         new_settings.update_unsafe(None)
         return new_settings
 
