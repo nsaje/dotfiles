@@ -39,13 +39,17 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
     task_id = task_id or ""
     request = Request(user)
 
+    logger.info("Processing bulk upload task", task_id=task_id)
+
     exception = _cache_get(task_id, "exception")
     if exception:
+        logger.info("Raising cached exception", task_id=task_id)
         raise exception
 
     ad_group_ids = _cache_get(task_id, "adgroupids") or []
     if not ad_group_ids:
         with transaction.atomic():
+            logger.info("Creating ad groups", task_id=task_id)
             ad_group_ids = _upload_adgroups(task_id, request, ad_groups_dicts)
             _cache_set(task_id, "adgroupids", ad_group_ids)
 
@@ -55,6 +59,7 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
     batch_ids = _cache_get(task_id, "batchids") or []
     if not batch_ids:
         with transaction.atomic():
+            logger.info("Creating batches", task_id=task_id)
             batch_ids = _upload_batches(task_id, request, ad_groups, ad_groups_dicts)
             _cache_set(task_id, "batchids", batch_ids)
 
@@ -91,6 +96,7 @@ def _upload_adgroups(task_id, request, ad_groups_dicts):
         if has_errors:
             e = exc.ValidationError("Error uploading one or more ad groups", errors=errors)
             _cache_set(task_id, "exception", e)
+            logger.info("Raising validation exception", task_id=task_id)
             raise e
     return ad_group_ids
 
@@ -120,6 +126,7 @@ def _upload_batches(task_id, request, ad_groups, ad_groups_dicts):
         if has_errors:
             e = exc.ValidationError("Error uploading one or more ad batches", errors=errors)
             _cache_set(task_id, "exception", e)
+            logger.info("Raising ad validation exception", task_id=task_id)
             raise e
     return batch_ids
 
@@ -148,6 +155,7 @@ def _ensure_batches_valid(task_id, request, batches):
     if has_errors:
         e = exc.ValidationError("Error uploading one or more ad batches", errors=errors)
         _cache_set(task_id, "exception", e)
+        logger.info("Raising ad batch validation exception", task_id=task_id)
         raise e
 
 
