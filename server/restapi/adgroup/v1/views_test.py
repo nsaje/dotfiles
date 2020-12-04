@@ -418,6 +418,23 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["maxCpc"])
         self.assertFalse(resp_json["data"]["maxCpm"])
 
+    # TODO: RTAP: remove after migration
+    @mock.patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
+    def test_adgroups_post_allrtb_oen(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True, id=305
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
+
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_against_db(resp_json["data"])
+
+        new_ad_group_db = core.models.AdGroup.objects.get(id=resp_json["data"]["id"])
+        self.assertTrue(new_ad_group_db.settings.b1_sources_group_enabled)
+        self.assertEqual(constants.AdGroupSettingsState.ACTIVE, new_ad_group_db.settings.b1_sources_group_state)
+
     def test_adgroups_post_cpc_mixed(self):
         account = self.mix_account(
             self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
