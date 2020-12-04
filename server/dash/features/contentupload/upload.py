@@ -695,6 +695,7 @@ def process_callback(callback_data):
             logger.info("No candidate with id", candidate_id=callback_data["id"])
             return
 
+        logger.info("Processing callback for candidate", candidate_id=candidate.id, ad_group_id=candidate.ad_group_id)
         cleaned_urls = _get_cleaned_urls(candidate)
         _process_url_update(candidate, cleaned_urls["url"], callback_data)
         _process_image_url_update(candidate, cleaned_urls["image_url"], callback_data)
