@@ -41,6 +41,7 @@ VALID_UPDATE_FIELDS = set(
         "trackers",
     ]
 )
+MAX_TRACKERS = 3
 
 
 def insert_candidates(
@@ -337,6 +338,13 @@ def _remove_permissioned_fields_and_rows(request, fields, rows):
     if not request or not request.user:
         return fields, rows
 
+    for field, permissions in forms.FIELD_PERMISSION_MAPPING.items():
+        if not all(request.user.has_perm(p) for p in permissions):
+            field_name = _transform_field(field)
+            fields.remove(field_name)
+            for row in rows:
+                row.pop(field_name, None)
+
     return fields, rows
 
 
@@ -353,6 +361,7 @@ def _get_candidates_csv_rows(candidates):
     for candidate in sorted(candidates, key=lambda x: x.id):
         row = {_transform_field(k): v for k, v in list(candidate.to_dict().items()) if k in forms.ALL_CSV_FIELDS}
         row = _remap_separate_to_joint_fields(candidate, row)
+        row = _map_trackers(candidate, row)
         rows.append(row)
     return rows
 
@@ -370,6 +379,15 @@ def _transform_field(field):
     if field in forms.CSV_EXPORT_COLUMN_NAMES_DICT:
         return forms.CSV_EXPORT_COLUMN_NAMES_DICT[field]
     return field.replace("_", " ").capitalize()
+
+
+def _map_trackers(candidate, row):
+    if candidate.trackers:
+        csv_trackers = dash.features.contentupload.map_trackers_to_csv(candidate.trackers)
+        for field, value in csv_trackers.items():
+            row[_transform_field(field)] = value
+
+    return row
 
 
 @transaction.atomic

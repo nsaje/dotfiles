@@ -55,6 +55,8 @@ class AdGroupAdminFormTest(TestCase):
 
 class AdGroupAdsUploadFormTest(TestCase):
     def setUp(self):
+        self.request = magic_mixer.blend_request_user(permissions=["can_use_3rdparty_js_trackers"])
+
         self.batch_name = "Test batch name"
         self.url = "http://example.com"
         self.title = "Test Title"
@@ -74,6 +76,22 @@ class AdGroupAdsUploadFormTest(TestCase):
                 self.crop_areas,
             ],
         ]
+
+        self.tracker_1_event_type = constants.TrackerEventType.IMPRESSION
+        self.tracker_1_method = constants.TrackerMethod.JS
+        self.tracker_1_url = "https://t.tracker1.com/tracker.js"
+        self.tracker_1_fallback_url = "https://t.tracker1.com/fallback.png"
+        self.tracker_1_optional = False
+        self.tracker_2_event_type = constants.TrackerEventType.IMPRESSION
+        self.tracker_2_method = constants.TrackerMethod.JS
+        self.tracker_2_url = "https://t.tracker2.com/tracker.js"
+        self.tracker_2_fallback_url = "https://t.tracker2.com/fallback.png"
+        self.tracker_2_optional = False
+        self.tracker_3_event_type = constants.TrackerEventType.IMPRESSION
+        self.tracker_3_method = constants.TrackerMethod.JS
+        self.tracker_3_url = "https://t.tracker3.com/tracker.js"
+        self.tracker_3_fallback_url = "https://t.tracker3.com/fallback.png"
+        self.tracker_3_optional = False
 
     def test_parse_unknown_file(self):
         csv_file = self._get_csv_file(["Url", "Title", "Image Url", "Crop Areas"], [])
@@ -192,6 +210,84 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["candidates"][0]["primary_tracker_url"], self.primary_tracker_url)
 
+    def test_csv_trackers_columns(self):
+        csv_file = self._get_csv_file(
+            [
+                "Url",
+                "Title",
+                "Image Url",
+                "Tracker 1 Event type",
+                "Tracker 1 Method",
+                "Tracker 1 URL",
+                "Tracker 1 Fallback URL",
+                "Tracker 1 Optional",
+                "Tracker 2 Event type",
+                "Tracker 2 Method",
+                "Tracker 2 URL",
+                "Tracker 2 Fallback URL",
+                "Tracker 2 Optional",
+                "Tracker 3 Event type",
+                "Tracker 3 Method",
+                "Tracker 3 URL",
+                "Tracker 3 Fallback URL",
+                "Tracker 3 Optional",
+            ],
+            [
+                [
+                    self.url,
+                    self.title,
+                    self.image_url,
+                    self.tracker_1_event_type,
+                    self.tracker_1_method,
+                    self.tracker_1_url,
+                    self.tracker_1_fallback_url,
+                    self.tracker_1_optional,
+                    self.tracker_2_event_type,
+                    self.tracker_2_method,
+                    self.tracker_2_url,
+                    self.tracker_2_fallback_url,
+                    self.tracker_2_optional,
+                    self.tracker_3_event_type,
+                    self.tracker_3_method,
+                    self.tracker_3_url,
+                    self.tracker_3_fallback_url,
+                    self.tracker_3_optional,
+                ]
+            ],
+        )
+
+        form = self._init_form(csv_file, None)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(
+            form.cleaned_data["candidates"][0]["trackers"],
+            [
+                {
+                    "event_type": self.tracker_1_event_type,
+                    "method": self.tracker_1_method,
+                    "url": self.tracker_1_url,
+                    "fallback_url": self.tracker_1_fallback_url,
+                    "tracker_optional": False,
+                    "supported_privacy_frameworks": [],
+                },
+                {
+                    "event_type": self.tracker_2_event_type,
+                    "method": self.tracker_2_method,
+                    "url": self.tracker_2_url,
+                    "fallback_url": self.tracker_2_fallback_url,
+                    "tracker_optional": False,
+                    "supported_privacy_frameworks": [],
+                },
+                {
+                    "event_type": self.tracker_3_event_type,
+                    "method": self.tracker_3_method,
+                    "url": self.tracker_3_url,
+                    "fallback_url": self.tracker_3_fallback_url,
+                    "tracker_optional": False,
+                    "supported_privacy_frameworks": [],
+                },
+            ],
+        )
+
     def test_csv_ignore_errors_column(self):
         csv_file = self._get_csv_file(
             ["Url", "Title", "Image Url", "Errors"], [[self.url, self.title, self.image_url, "some errors"]]
@@ -223,6 +319,16 @@ class AdGroupAdsUploadFormTest(TestCase):
                         "title": self.title,
                         "url": self.url,
                         "primary_tracker_url": self.primary_tracker_url,
+                        "trackers": [
+                            {
+                                "event_type": constants.TrackerEventType.IMPRESSION,
+                                "method": constants.TrackerMethod.IMG,
+                                "url": "http://example1.com",
+                                "fallback_url": None,
+                                "tracker_optional": True,
+                                "supported_privacy_frameworks": [],
+                            }
+                        ],
                     }
                 ],
             },
@@ -302,7 +408,7 @@ class AdGroupAdsUploadFormTest(TestCase):
             data.update(data_updates)
 
         return forms.AdGroupAdsUploadForm(
-            data, {"candidates": SimpleUploadedFile("test_file.csv", csv_file.getvalue())}
+            data, {"candidates": SimpleUploadedFile("test_file.csv", csv_file.getvalue())}, user=self.request.user
         )
 
     def _get_csv_file(self, header, rows, encoding="utf-8"):
@@ -565,7 +671,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         ]
         f = forms.ContentAdForm(None, data, files)
         self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["trackers"], ["A maximum of three trackers are supported."])
+        self.assertEqual(f.errors["trackers"], ["A maximum of three trackers is supported."])
 
     def test_invalid_url_trackers(self):
         self.maxDiff = None

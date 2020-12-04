@@ -6,11 +6,11 @@ import {
     ChangeDetectionStrategy,
     EventEmitter,
     OnChanges,
-    OnInit,
 } from '@angular/core';
 import {ContentAdTracker} from '../../types/content-ad-tracker';
 import {TRACKER_EVENT_TYPE_NAMES} from '../../content-ad.config';
 import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-content-ad-tracker',
@@ -34,8 +34,18 @@ export class ContentAdTrackerComponent implements OnChanges {
     isEditFormVisible: boolean = false;
 
     ngOnChanges(): void {
-        if (this.contentAdTrackerErrors || !this.contentAdTracker?.url) {
+        if (
+            this.hasErrors(this.contentAdTrackerErrors) ||
+            !this.contentAdTracker?.url
+        ) {
             this.isEditFormVisible = true;
         }
+    }
+
+    private hasErrors(contentAdTrackerErrors: ContentAdTrackerErrors) {
+        return (
+            commonHelpers.isDefined(contentAdTrackerErrors) &&
+            Object.values(contentAdTrackerErrors).some(e => e)
+        );
     }
 }

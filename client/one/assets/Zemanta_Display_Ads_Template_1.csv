@@ -1,0 +1,2 @@
+URL,Name,Image URL,Creative size,Ad tag,Display URL,Label,Tracker 1 Event type,Tracker 1 Method,Tracker 1 URL,Tracker 1 Fallback URL,Tracker 1 Optional,Tracker 2 Event type,Tracker 2 Method,Tracker 2 URL,Tracker 2 Fallback URL,Tracker 2 Optional
+http://www.zemanta.com/insights/2016/6/13/8-tips-for-creating-clickable-content,8 Tips for Creating Clickable Content,,300x250,,www.zemanta.com,Blog Content,impression,js,https://www.example.com/tracker.js,https://www.example.com/tracker.png,true,impression,img,https://www.example.com/tracker2.js,,true

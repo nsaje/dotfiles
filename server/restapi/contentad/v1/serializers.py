@@ -49,7 +49,7 @@ class TrackersSerializer(rest_framework.serializers.ListSerializer):
 
     def validate(self, trackers):
         if len(trackers) > 3:
-            raise rest_framework.serializers.ValidationError("A maximum of three trackers are supported.")
+            raise rest_framework.serializers.ValidationError("A maximum of three trackers is supported.")
         return trackers
 
 

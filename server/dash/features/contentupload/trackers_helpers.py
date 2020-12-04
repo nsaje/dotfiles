@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 from typing import List
 from typing import Union
 
@@ -37,7 +38,12 @@ def convert_legacy_trackers(tracker_urls: List[str], tracker_optional: bool = Fa
 
 
 def get_tracker(
-    url: str, event_type: str, method: str, tracker_optional: bool, fallback_url: Union[None, str] = None, **kwargs
+    url: str,
+    event_type: str,
+    method: str,
+    tracker_optional: bool = False,
+    fallback_url: Union[None, str] = None,
+    **kwargs
 ) -> ContentAdTracker:
     return {
         "event_type": event_type,
@@ -54,6 +60,17 @@ def get_privacy_frameworks(url: str, fallback_url: Union[None, str]) -> List[str
         return list(set(_get_privacy_frameworks_from_url(url)) & set(_get_privacy_frameworks_from_url(fallback_url)))
     else:
         return _get_privacy_frameworks_from_url(url)
+
+
+def map_trackers_to_csv(trackers: List[ContentAdTracker]) -> Dict:
+    csv_trackers = {}
+    for i, tracker in enumerate(trackers, start=1):
+        csv_trackers["tracker_{}_event_type".format(i)] = tracker.get("event_type")
+        csv_trackers["tracker_{}_method".format(i)] = tracker.get("method")
+        csv_trackers["tracker_{}_url".format(i)] = tracker.get("url")
+        csv_trackers["tracker_{}_fallback_url".format(i)] = tracker.get("fallback_url")
+        csv_trackers["tracker_{}_optional".format(i)] = "true" if tracker.get("tracker_optional") else "false"
+    return csv_trackers
 
 
 def get_tracker_status_key(url: str, method: str) -> str:

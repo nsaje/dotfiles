@@ -8,6 +8,7 @@ from mock import ANY
 from mock import patch
 
 import core.models.source_type.model
+import utils.test_helper
 from dash import api
 from dash import constants
 from dash import history_helpers
@@ -773,6 +774,7 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
+        utils.test_helper.add_permissions(self.user, ["can_use_3rdparty_js_trackers"])
         self.client.login(username=self.user.email, password="secret")
 
     def _get_csv_from_server(self, data, ad_group_id=1):
@@ -781,15 +783,15 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         )
 
     def test_get_all(self):
+        self.maxDiff = None
         data = {"select_all": True}
-
         response = self._get_csv_from_server(data)
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","impression","img","http://testurl.com","","false","impression","img","http://testurl2.com","","false","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -808,9 +810,9 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Creative size","Ad tag"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","200x300",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","","","200x300",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Creative size","Ad tag","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","200x300","","impression","img","http://testurl.com","","false","impression","img","http://testurl2.com","","false","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","","","200x300","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -826,10 +828,10 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","impression","img","http://testurl.com","","false","impression","img","http://testurl2.com","","false","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -845,8 +847,8 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -862,9 +864,9 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","impression","img","http://testurl.com","","false","impression","img","http://testurl2.com","","false","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -880,10 +882,10 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -899,9 +901,9 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label","Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional","Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional","Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com","","impression","img","http://testurl.com","","false","impression","img","http://testurl2.com","","false","","","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","","","","","","","","","","","","","","","","",""',  # noqa
                 ]
             )
             + b"\r\n"

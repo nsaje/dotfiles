@@ -1006,6 +1006,21 @@
         archived: False
         url: 'http://testurl.com'
         tracker_urls: ['http://testurl.com', 'http://testurl2.com']
+        trackers: [{
+            'url': 'http://testurl.com',
+            'fallback_url': null,
+            'method': 'img',
+            'event_type': 'impression',
+            'supported_privacy_frameworks': [],
+            'tracker_optional': false
+        }, {
+            'url': 'http://testurl2.com',
+            'fallback_url': null,
+            'method': 'img',
+            'event_type': 'impression',
+            'supported_privacy_frameworks': [],
+            'tracker_optional': false
+        }]
         title: 'Test Article unicode Čžš'
         ad_group: 1
         redirect_id: 'abc'

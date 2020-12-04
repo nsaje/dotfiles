@@ -1886,16 +1886,19 @@ class GetCandidatesCsvTestCase(TestCase):
     fixtures = ["test_upload.yaml"]
 
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
+        self.request = magic_mixer.blend_request_user(permissions=["can_use_3rdparty_js_trackers"])
 
     def test_candidates_csv_unprocessed(self):
         batch = models.UploadBatch.objects.get(id=1)
         content = contentupload.upload.get_candidates_csv(self.request, batch)
         self.assertEqual(
             '"URL","Title","Image URL","Brand Logo URL","Display URL","Brand name","Description","Call to action",'
-            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
+            '"Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional",'
+            '"Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional",'
+            '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg",'
-            '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","",""\r\n',
+            '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","","","","","","","","","","","","","","","","",""\r\n',
             content,
         )
 
@@ -1907,9 +1910,12 @@ class GetCandidatesCsvTestCase(TestCase):
         self.assertEqual(
             '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
             '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
-            '"Creative size","Ad tag"\r\n'
-            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
-            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","","","",""\r\n',
+            '"Creative size","Ad tag",'
+            '"Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional",'
+            '"Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional",'
+            '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog",'
+            '"Read more","content ad 1","entropy","","","","","","","","","","","","","","","","","","",""\r\n',
             content,
         )
 
@@ -1918,10 +1924,13 @@ class GetCandidatesCsvTestCase(TestCase):
         content = contentupload.upload.get_candidates_csv(self.request, batch)
         self.assertEqual(
             '"URL","Title","Image URL","Brand Logo URL","Display URL","Brand name","Description","Call to action",'
-            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
-            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg",'
-            '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
-            '"https://t.zemanta.com/px2.png"\r\n',
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
+            '"Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional",'
+            '"Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional",'
+            '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg","zemanta.com",'
+            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png","https://t.zemanta.com/px2.png",'
+            '"impression","img","https://t.zemanta.com/px1.png","","false","impression","img","https://t.zemanta.com/px2.png","","false","","","","",""\r\n',
             content,
         )
 
@@ -1931,12 +1940,14 @@ class GetCandidatesCsvTestCase(TestCase):
         batch.ad_group.campaign.save(None)
         content = contentupload.upload.get_candidates_csv(self.request, batch)
         self.assertEqual(
-            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
-            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
-            '"Creative size","Ad tag"\r\n'
-            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
-            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
-            '"https://t.zemanta.com/px2.png","500x500",""\r\n',
+            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action","Label",'
+            '"Image crop","Primary impression tracker URL","Secondary impression tracker URL","Creative size","Ad tag",'
+            '"Tracker 1 Event type","Tracker 1 Method","Tracker 1 URL","Tracker 1 Fallback URL","Tracker 1 Optional",'
+            '"Tracker 2 Event type","Tracker 2 Method","Tracker 2 URL","Tracker 2 Fallback URL","Tracker 2 Optional",'
+            '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog",'
+            '"Read more","content ad 1","entropy","https://t.zemanta.com/px1.png","https://t.zemanta.com/px2.png","500x500","",'
+            '"impression","img","https://t.zemanta.com/px1.png","","false","impression","img","https://t.zemanta.com/px2.png","","false","","","","",""\r\n',
             content,
         )
 

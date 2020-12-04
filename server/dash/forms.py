@@ -254,7 +254,7 @@ class UserForm(forms.Form):
 
 DISPLAY_URL_MAX_LENGTH = 35
 MANDATORY_CSV_FIELDS = ["url", "title", "image_url"]
-OPTIONAL_CSV_FIELDS = [
+GENERAL_OPTIONAL_CSV_FIELDS = [
     "icon_url",
     "display_url",
     "brand_name",
@@ -267,6 +267,24 @@ OPTIONAL_CSV_FIELDS = [
     "creative_size",
     "ad_tag",
 ]
+TRACKER_OPTIONAL_CSV_FIELDS = [
+    "tracker_1_event_type",
+    "tracker_1_method",
+    "tracker_1_url",
+    "tracker_1_fallback_url",
+    "tracker_1_optional",
+    "tracker_2_event_type",
+    "tracker_2_method",
+    "tracker_2_url",
+    "tracker_2_fallback_url",
+    "tracker_2_optional",
+    "tracker_3_event_type",
+    "tracker_3_method",
+    "tracker_3_url",
+    "tracker_3_fallback_url",
+    "tracker_3_optional",
+]
+OPTIONAL_CSV_FIELDS = GENERAL_OPTIONAL_CSV_FIELDS + TRACKER_OPTIONAL_CSV_FIELDS
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ["errors"]
 JOINT_CSV_FIELDS = {"creative_size": ("x", "image_width", "image_height")}
@@ -279,7 +297,9 @@ EXPRESSIVE_FIELD_NAME_MAPPING = {
     "secondary_impression_tracker_url": "secondary_tracker_url",
 }
 INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.items()}
-FIELD_PERMISSION_MAPPING = {}
+FIELD_PERMISSION_MAPPING = {
+    tracker_field: ["zemauth.can_use_3rdparty_js_trackers"] for tracker_field in TRACKER_OPTIONAL_CSV_FIELDS
+}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -307,6 +327,21 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict(
         ["label", "Label"],
         ["creative_size", "Creative size"],
         ["ad_tag", "Ad tag"],
+        ["tracker_1_event_type", "Tracker 1 Event type"],
+        ["tracker_1_method", "Tracker 1 Method"],
+        ["tracker_1_url", "Tracker 1 URL"],
+        ["tracker_1_fallback_url", "Tracker 1 Fallback URL"],
+        ["tracker_1_optional", "Tracker 1 Optional"],
+        ["tracker_2_event_type", "Tracker 2 Event type"],
+        ["tracker_2_method", "Tracker 2 Method"],
+        ["tracker_2_url", "Tracker 2 URL"],
+        ["tracker_2_fallback_url", "Tracker 2 Fallback URL"],
+        ["tracker_2_optional", "Tracker 2 Optional"],
+        ["tracker_3_event_type", "Tracker 3 Event type"],
+        ["tracker_3_method", "Tracker 3 Method"],
+        ["tracker_3_url", "Tracker 3 URL"],
+        ["tracker_3_fallback_url", "Tracker 3 Fallback URL"],
+        ["tracker_3_optional", "Tracker 3 Optional"],
     ]
 )
 
@@ -476,6 +511,33 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
     def _is_example_row(self, row):
         return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.items())
 
+    def _map_trackers(self, row):
+        trackers = []
+        for i in range(1, dash.features.contentupload.MAX_TRACKERS + 1):
+            if (
+                row.get("tracker_{}_event_type".format(i))
+                or row.get("tracker_{}_method".format(i))
+                or row.get("tracker_{}_url".format(i))
+            ):
+                tracker = dash.features.contentupload.get_tracker(
+                    url=row.get("tracker_{}_url".format(i)),
+                    event_type=row.get("tracker_{}_event_type".format(i)),
+                    method=row.get("tracker_{}_method".format(i)),
+                    fallback_url=row.get("tracker_{}_fallback_url".format(i))
+                    if row.get("tracker_{}_method".format(i)) == dash.constants.TrackerMethod.JS
+                    else None,
+                    tracker_optional=row.get("tracker_{}_optional".format(i).lower()) == "true",
+                )
+                trackers.append(tracker)
+
+        if not trackers:
+            trackers = dash.features.contentupload.convert_legacy_trackers(
+                tracker_urls=[row.get("primary_tracker_url"), row.get("secondary_tracker_url")], tracker_optional=True
+            )
+
+        row["trackers"] = trackers
+        return row
+
     def clean_candidates(self):
         candidates_file = self.cleaned_data["candidates"]
 
@@ -489,6 +551,9 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
         data = (dict(list(zip(column_names, row))) for row in rows[1:])
         data = [self._remove_unnecessary_fields(row) for row in data if not self._is_example_row(row)]
         data = [self._remap_joint_to_separate_fields(row) for row in data]
+
+        if self.user.has_perm("zemauth.can_use_3rdparty_js_trackers"):
+            data = [self._map_trackers(row) for row in data]
 
         if len(data) < 1:
             raise forms.ValidationError("Uploaded file is empty.")
@@ -1066,8 +1131,8 @@ class ContentAdForm(ContentAdCandidateForm):
     def _get_trackers_error_msg(self, cleaned_data):
         trackers = cleaned_data.get("trackers", [])
 
-        if len(trackers) > 3:
-            return "A maximum of three trackers are supported."
+        if len(trackers) > dash.features.contentupload.MAX_TRACKERS:
+            return "A maximum of three trackers is supported."
 
         trackers_status_errors = []
         has_status_error = False

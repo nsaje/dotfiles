@@ -8,6 +8,7 @@ from django.db import transaction
 import core.features.multicurrency
 import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
+import dash.features.contentupload
 import zemauth.access
 from automation import autopilot
 from automation import autopilot_legacy
@@ -410,6 +411,9 @@ class AdGroupContentAdCSV(DASHAPIBaseView):
                     content_ad_dict["primary_tracker_url"] = content_ad.tracker_urls[0]
                 if len(content_ad.tracker_urls) > 1:
                     content_ad_dict["secondary_tracker_url"] = content_ad.tracker_urls[1]
+
+            if content_ad.trackers:
+                content_ad_dict.update(dash.features.contentupload.map_trackers_to_csv(content_ad.trackers))
 
             if ad_group.campaign.type == constants.CampaignType.DISPLAY:
                 content_ad_dict["ad_tag"] = content_ad.ad_tag

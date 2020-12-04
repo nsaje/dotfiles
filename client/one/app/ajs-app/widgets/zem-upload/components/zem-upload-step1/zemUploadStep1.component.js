@@ -19,9 +19,10 @@ angular.module('one.widgets').directive('zemUploadStep1', function() {
 
 angular
     .module('one.widgets')
-    .controller('ZemUploadStep1Ctrl', function(config, $scope) {
+    .controller('ZemUploadStep1Ctrl', function(config, $scope, zemAuthStore) {
         var vm = this;
         vm.config = config;
+        vm.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
 
         vm.formData = {
             batchName: vm.defaultBatchName,
@@ -29,6 +30,20 @@ angular
         vm.formErrors = null;
         vm.requestFailed = false;
         vm.requestInProgress = false;
+
+        if (vm.showDisplayUpload) {
+            vm.exampleFileName = vm.hasPermission(
+                'zemauth.can_use_3rdparty_js_trackers'
+            )
+                ? 'Zemanta_Display_Ads_Template_1'
+                : 'Zemanta_Display_Ads_Template';
+        } else {
+            vm.exampleFileName = vm.hasPermission(
+                'zemauth.can_use_3rdparty_js_trackers'
+            )
+                ? 'Zemanta_Content_Ads_Template_1'
+                : 'Zemanta_Content_Ads_Template';
+        }
 
         vm.clearFormErrors = function(field) {
             if (!vm.formErrors) {
