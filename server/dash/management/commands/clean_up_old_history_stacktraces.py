@@ -19,8 +19,8 @@ class Command(Z1Command):
         logger.info("Creating new dash_historystacktrace partitions")
         self._create_new_partitions(utc_today)
 
-        logger.info("Deleting old dash_historystacktrace partitions")
-        self._delete_old_partitions(utc_today)
+        # logger.info("Deleting old dash_historystacktrace partitions")
+        # self._delete_old_partitions(utc_today)
 
     def _create_new_partitions(self, today):
         cursor = connection.cursor()
