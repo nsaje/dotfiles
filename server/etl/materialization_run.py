@@ -39,7 +39,7 @@ def etl_data_complete_for_date(date) -> bool:
 
 
 def get_last_books_closed_date():
-    latest_closed_entry = models.EtlBooksClosed.objects.filter(etl_books_closed=True).last()
+    latest_closed_entry = models.EtlBooksClosed.objects.filter(etl_books_closed=True).order_by("date").last()
     if not latest_closed_entry:
         raise utils.exc.MissingDataError("Books closed does not exist")
-    return latest_closed_entry.date if latest_closed_entry else None
+    return latest_closed_entry.date.date() if latest_closed_entry else None

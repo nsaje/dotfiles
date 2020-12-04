@@ -30,4 +30,4 @@ class TestEtlDataCompleteForDate(TestCase):
         latest_closed_entry = magic_mixer.blend(etl.models.EtlBooksClosed, etl_books_closed=True, date=yesterday)
         magic_mixer.blend(etl.models.EtlBooksClosed, etl_books_closed=False, date=today)
         magic_mixer.blend(etl.models.EtlBooksClosed, etl_books_closed=False, date=today)
-        self.assertEqual(latest_closed_entry.date, etl.materialization_run.get_last_books_closed_date())
+        self.assertEqual(latest_closed_entry.date.date(), etl.materialization_run.get_last_books_closed_date())
