@@ -8,7 +8,6 @@ import {
     OnChanges,
     TemplateRef,
     ViewChild,
-    AfterViewInit,
 } from '@angular/core';
 import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {DetailGridInfo, GridApi} from 'ag-grid-community';
@@ -31,7 +30,7 @@ import {UsersView} from '../../views/users.view';
     templateUrl: './users-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UsersGridComponent implements OnChanges, AfterViewInit {
+export class UsersGridComponent implements OnChanges {
     @Input()
     users: User[];
     @Input()
@@ -62,10 +61,6 @@ export class UsersGridComponent implements OnChanges, AfterViewInit {
 
     private gridApi: GridApi;
 
-    ngAfterViewInit() {
-        COLUMN_ACCESS.cellRendererParams.columnDisplayOptions.iconTooltipTemplate = this.accountAccessTemplate;
-    }
-
     ngOnChanges() {
         if (this.gridApi && this.isLoading) {
             this.gridApi.showLoadingOverlay();
@@ -74,8 +69,33 @@ export class UsersGridComponent implements OnChanges, AfterViewInit {
 
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+
+        const columnAccessWithTemplate: SmartGridColDef = this.getColDefWithTemplate(
+            COLUMN_ACCESS,
+            this.accountAccessTemplate
+        );
+        $event.columnApi
+            .getColumn(COLUMN_ACCESS.colId)
+            .setColDef(columnAccessWithTemplate, null);
+
         if (this.isLoading) {
             this.gridApi.showLoadingOverlay();
         }
+    }
+
+    private getColDefWithTemplate(
+        colDef: SmartGridColDef,
+        template: TemplateRef<string[]>
+    ): SmartGridColDef {
+        return {
+            ...COLUMN_ACCESS,
+            cellRendererParams: {
+                ...COLUMN_ACCESS.cellRendererParams,
+                columnDisplayOptions: {
+                    ...COLUMN_ACCESS.cellRendererParams.columnDisplayOptions,
+                    iconTooltipTemplate: this.accountAccessTemplate,
+                },
+            },
+        };
     }
 }

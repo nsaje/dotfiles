@@ -53,6 +53,7 @@ export const COLUMN_STATUS: SmartGridColDef = {
 };
 
 export const COLUMN_ACCESS: SmartGridColDef = {
+    colId: 'columnAccess',
     headerName: 'Access',
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
