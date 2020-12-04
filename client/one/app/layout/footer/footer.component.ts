@@ -20,15 +20,15 @@ export class FooterComponent implements OnInit {
 
     ngOnInit(): void {
         this.termsOfServiceUrl = commonHelpers.getValueOrDefault(
-            (window as any).zOne.whitelabel.termsOfServiceUrl,
+            (window as any).zOne.whitelabel?.termsOfServiceUrl,
             DEFAULT_TERMS_OF_SERVICE_URL
         );
         this.copyrightHolder = commonHelpers.getValueOrDefault(
-            (window as any).zOne.whitelabel.copyrightHolder,
+            (window as any).zOne.whitelabel?.copyrightHolder,
             DEFAULT_COPYRIGHT_HOLDER
         );
         this.copyrightHolderUrl = commonHelpers.getValueOrDefault(
-            (window as any).zOne.whitelabel.copyrightHolderUrl,
+            (window as any).zOne.whitelabel?.copyrightHolderUrl,
             DEFAULT_COPYRIGHT_HOLDER_URL
         );
     }
