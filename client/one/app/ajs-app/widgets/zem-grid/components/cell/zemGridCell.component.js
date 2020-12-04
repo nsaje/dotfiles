@@ -113,7 +113,7 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             }
 
             function isAutopilotIconShown() {
-                if (ctrl.data && !ctrl.data.value) {
+                if (ctrl.data && (!ctrl.data.value || ctrl.data.isEditable)) {
                     return false;
                 }
                 if (ctrl.grid.meta.data.campaignAutopilot) {

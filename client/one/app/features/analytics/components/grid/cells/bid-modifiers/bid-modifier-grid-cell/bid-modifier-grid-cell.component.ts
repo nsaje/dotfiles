@@ -79,18 +79,20 @@ export class BidModifierGridCellComponent extends GridCellComponent
         this.adGroupAutopilotState = this.grid.meta.data.ext.autopilotState;
         this.agencyUsesRealtimeAutopilot = this.grid.meta.data.ext.agencyUsesRealtimeAutopilot;
 
-        // TODO (msuber): remove after migration to RTA completed
-        this.showAutopilotIcon = isAutopilotIconShown(
-            this.row,
-            this.breakdown,
-            this.campaignAutopilot,
-            this.adGroupSettingsAutopilotState
-        );
-
         this.isEditable = commonHelpers.getValueOrDefault(
             statsValue?.isEditable,
             false
         );
+
+        // TODO (msuber): remove after migration to RTA completed
+        this.showAutopilotIcon =
+            !this.isEditable &&
+            isAutopilotIconShown(
+                this.row,
+                this.breakdown,
+                this.campaignAutopilot,
+                this.adGroupSettingsAutopilotState
+            );
     }
 
     refresh(params: BidModifierRendererParams): boolean {

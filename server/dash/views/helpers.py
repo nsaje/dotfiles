@@ -372,13 +372,8 @@ def get_editable_fields(
 
 
 def _get_editable_fields_bid_modifier(user, ad_group, ad_group_source, ad_group_settings, campaign_settings):
-    # TODO: RTAP: LEGACY: in transitional period modifiers won't be editable when on autopilot;
-    # then we will reset all to 1.0 and enable editing
-    if campaign_settings.autopilot and ad_group.campaign.account.agency_uses_realtime_autopilot():
-        return {
-            "enabled": False,
-            "message": "This media source doesn't support setting this value through the dashboard.",
-        }
+    if ad_group.campaign.account.agency_uses_realtime_autopilot():
+        return {"enabled": user.has_write_perm_on(ad_group), "message": None}
 
     message = None
 
