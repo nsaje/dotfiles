@@ -223,7 +223,7 @@ class ContentAdsTest(RESTAPITestCase):
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         trackers = [
             {
-                "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                 "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                 "url": "https://t.test.com/tracker.js",
                 "trackerOptional": False,
@@ -241,7 +241,7 @@ class ContentAdsTest(RESTAPITestCase):
             resp_json["data"]["trackers"],
             [
                 {
-                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                     "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                     "url": "https://t.test.com/tracker.js",
                     "fallbackUrl": "",
@@ -276,6 +276,27 @@ class ContentAdsTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["brandName"], old_brand_name)
 
+    def test_contentads_invalid_tracker(self):
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        trackers = [
+            {
+                "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
+                "url": "https://t.test.com/tracker.js",
+                "trackerOptional": False,
+            }
+        ]
+        r = self.client.put(
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.pk}),
+            data={"trackers": trackers},
+            format="json",
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            [{"method": ["Javascript Tag method cannot be used together with Viewability type."]}],
+            resp_json["details"]["trackers"],
+        )
+
 
 class TestBatchUpload(RESTAPITestCase):
     def setUp(self):
@@ -303,7 +324,7 @@ class TestBatchUpload(RESTAPITestCase):
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
             "trackers": [
                 {
-                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                     "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                     "url": "https://t.test.com/tracker.js",
                     "trackerOptional": False,
@@ -323,7 +344,7 @@ class TestBatchUpload(RESTAPITestCase):
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
             "trackers": [
                 {
-                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                     "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                     "url": "https://t.test.com/tracker.js",
                     "trackerOptional": False,
@@ -346,7 +367,7 @@ class TestBatchUpload(RESTAPITestCase):
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
             "trackers": [
                 {
-                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                    "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                     "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                     "url": "https://t.test.com/tracker.js",
                     "trackerOptional": False,
@@ -430,7 +451,7 @@ class TestBatchUpload(RESTAPITestCase):
             self.assertEqual(
                 [
                     {
-                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                         "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                         "url": "https://t.test.com/tracker.js",
                         "fallbackUrl": "",
@@ -502,7 +523,7 @@ class TestBatchUpload(RESTAPITestCase):
             self.assertEqual(
                 [
                     {
-                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                         "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                         "url": "https://t.test.com/tracker.js",
                         "fallbackUrl": "",
@@ -556,7 +577,7 @@ class TestBatchUpload(RESTAPITestCase):
             self.assertEqual(
                 [
                     {
-                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.VIEWABILITY),
+                        "eventType": constants.TrackerEventType.get_name(constants.TrackerEventType.IMPRESSION),
                         "method": constants.TrackerMethod.get_name(constants.TrackerMethod.JS),
                         "url": "https://t.test.com/tracker.js",
                         "fallbackUrl": "",

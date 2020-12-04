@@ -24,6 +24,7 @@
 <button
     *ngIf="trackers.length < maxTrackersLimit"
     class="zem-button zem-button--highlighted zem-button--with-icon zem-button--add-icon"
+    [disabled]="isLoading"
     (click)="addTracker()"
 >
     Add new tracker

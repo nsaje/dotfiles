@@ -27,7 +27,7 @@
     </div>
     <div
         class="zem-content-ad-tracker-form__item zem-message zem-message--error"
-        *ngIf="contentAdTrackerErrors?.url"
+        *ngIf="contentAdTrackerErrors?.method"
     >
         {{ contentAdTrackerErrors?.method }}
     </div>
@@ -88,12 +88,7 @@
         [isChecked]="contentAdTracker.trackerOptional"
         (toggle)="onTrackerOptionalChanged($event)"
     >
-        Tracking optional
-        <zem-help-popover
-            [content]="
-                'Selecting this checkbox allows Zemanta to purchase traffic where 3rd party tracking is not supported. Keep in mind enabling this setting might cause reporting discrepancies between Zemanta and 3rd party vendors.'
-            "
-        >
-        </zem-help-popover>
+        Allow Zemanta to purchase traffic where 3rd party tracking is not
+        supported.
     </zem-checkbox-input>
 </ng-container>

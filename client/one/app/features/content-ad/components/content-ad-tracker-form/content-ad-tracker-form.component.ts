@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import {ContentAdTracker} from '../../types/content-ad-tracker';
 import {
+    TRACKER_EVENT_TYPE_METHODS,
     TRACKER_EVENT_TYPE_NAMES,
     TRACKER_EVENT_TYPE_OPTIONS,
     TRACKER_METHOD_OPTIONS,
@@ -36,8 +37,14 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     > = new EventEmitter<ChangeEvent<ContentAdTracker>>();
 
     availableTrackerEventTypes = TRACKER_EVENT_TYPE_OPTIONS;
-    availableTrackerMethods = TRACKER_METHOD_OPTIONS;
     trackerEventTypeNames = TRACKER_EVENT_TYPE_NAMES;
+
+    allTrackerMethods = TRACKER_METHOD_OPTIONS;
+    availableTrackerMethods: {
+        value: TrackerMethod;
+        name: string;
+    }[] = [];
+
     trackerMethod = TrackerMethod;
 
     showFallbackUrlInput: boolean = false;
@@ -45,6 +52,14 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.contentAdTracker && this.contentAdTracker.fallbackUrl) {
             this.showFallbackUrlInput = true;
+        }
+
+        if (changes.contentAdTracker && this.contentAdTracker.eventType) {
+            this.availableTrackerMethods = this.getAvailableTrackerMethods(
+                this.contentAdTracker.eventType,
+                this.allTrackerMethods,
+                TRACKER_EVENT_TYPE_METHODS
+            );
         }
     }
 
@@ -90,6 +105,21 @@ export class ContentAdTrackerFormComponent implements OnChanges {
             changes: {
                 trackerOptional: trackerOptional,
             },
+        });
+    }
+
+    private getAvailableTrackerMethods(
+        eventType: TrackerEventType,
+        allTrackerMethods: {
+            value: TrackerMethod;
+            name: string;
+        }[],
+        eventTypeMethods: {
+            [key in TrackerEventType]: TrackerMethod[];
+        }
+    ) {
+        return allTrackerMethods.filter(method => {
+            return eventTypeMethods[eventType].includes(method.value);
         });
     }
 }

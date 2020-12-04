@@ -1688,6 +1688,7 @@
                             [content-ad-trackers-errors]="
                                 ctrl.selectedCandidate.errors.trackers
                             "
+                            [is-loading]="ctrl.isEditLoading"
                             (content-ad-trackers-change)="
                                 ctrl.saveTrackers(
                                     ctrl.selectedCandidate,

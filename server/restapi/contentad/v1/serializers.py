@@ -34,6 +34,17 @@ class TrackerSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     tracker_optional = rest_framework.fields.BooleanField(required=False, default=False)
 
+    def validate(self, data):
+        data = super().validate(data)
+        if (
+            data.get("event_type") != dash.constants.TrackerEventType.IMPRESSION
+            and data.get("method") == dash.constants.TrackerMethod.JS
+        ):
+            raise rest_framework.serializers.ValidationError(
+                {"method": "Javascript Tag method cannot be used together with Viewability type."}
+            )
+        return data
+
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
         value["supported_privacy_frameworks"] = dash.features.contentupload.get_privacy_frameworks(

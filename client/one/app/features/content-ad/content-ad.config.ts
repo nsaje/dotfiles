@@ -14,6 +14,13 @@ export const TRACKER_METHOD_NAMES: {
     [TrackerMethod.JS]: 'Javascript Tag',
 };
 
+export const TRACKER_EVENT_TYPE_METHODS: {
+    [key in TrackerEventType]: TrackerMethod[];
+} = {
+    [TrackerEventType.IMPRESSION]: [TrackerMethod.IMG, TrackerMethod.JS],
+    [TrackerEventType.VIEWABILITY]: [TrackerMethod.IMG],
+};
+
 export const TRACKER_EVENT_TYPE_OPTIONS: {
     value: TrackerEventType;
     name: string;

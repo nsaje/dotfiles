@@ -14,6 +14,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function() {
             startPollingVideoAssetStatus: '=',
             batchId: '=',
             isEdit: '=',
+            isEditLoading: '=',
             showVideoUpload: '=',
             showDisplayUpload: '=',
         },

@@ -29,6 +29,8 @@ export class ContentAdTrackersComponent implements OnChanges {
     contentAdTrackersErrors: ContentAdTrackerErrors[];
     @Input()
     isDisabled: boolean;
+    @Input()
+    isLoading: boolean = false;
     @Output()
     contentAdTrackersChange: EventEmitter<
         ContentAdTracker[]
@@ -64,8 +66,9 @@ export class ContentAdTrackersComponent implements OnChanges {
         };
 
         if (
-            commonHelpers.isDefined(previousTrackerState.eventType) &&
-            commonHelpers.isDefined(previousTrackerState.method)
+            (commonHelpers.isDefined(previousTrackerState.eventType) &&
+                commonHelpers.isDefined(previousTrackerState.method)) ||
+            commonHelpers.isDefined(this.trackers[index].url)
         ) {
             this.contentAdTrackersChange.emit(this.trackers);
         }

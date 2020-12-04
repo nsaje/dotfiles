@@ -909,6 +909,13 @@ class ContentAdForm(ContentAdCandidateForm):
                 has_errors = True
                 tracker_error["method"] = "Valid Method is required."
 
+            if (
+                tracker.get("event_type") != dash.constants.TrackerEventType.IMPRESSION
+                and tracker.get("method") == dash.constants.TrackerMethod.JS
+            ):
+                has_errors = True
+                tracker_error["method"] = "Javascript Tag method cannot be used together with Viewability type."
+
             try:
                 if tracker.get("url") is None:
                     raise forms.ValidationError("URL is required.")
