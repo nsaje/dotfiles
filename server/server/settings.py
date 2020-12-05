@@ -440,7 +440,7 @@ DCRON = {
         "refresh_etl": 15000.0,  # 4 h 10 min
         "refresh_audience_sample_size_cache": 8100.0,  # 2h 15 min
         "cross_check": 7200,  # 2h
-        "sync_publisher_groups": 10800,  # 3h
+        "sync_publisher_groups": 7200,  # 2h
     },
     # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
