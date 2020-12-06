@@ -26,37 +26,6 @@ class PublisherGroupQuerySet(
     def filter_by_agency(self, agency):
         return self.filter(models.Q(agency=agency))
 
-    def filter_by_active_adgroups(self):
-        data = (
-            core.models.AdGroup.objects.all()
-            .filter_current_and_active()
-            .values_list(
-                "default_blacklist_id",
-                "default_whitelist_id",
-                "settings__whitelist_publisher_groups",
-                "settings__blacklist_publisher_groups",
-                "campaign__default_blacklist_id",
-                "campaign__default_whitelist_id",
-                "campaign__settings__whitelist_publisher_groups",
-                "campaign__settings__blacklist_publisher_groups",
-                "campaign__account__default_blacklist_id",
-                "campaign__account__default_whitelist_id",
-                "campaign__account__settings__whitelist_publisher_groups",
-                "campaign__account__settings__blacklist_publisher_groups",
-                "campaign__account__agency__default_blacklist_id",
-                "campaign__account__agency__default_whitelist_id",
-                "campaign__account__agency__settings__whitelist_publisher_groups",
-                "campaign__account__agency__settings__blacklist_publisher_groups",
-            )
-        )
-
-        ids = set()
-        ids.update(ANNOTATION_QUALIFIED_PUBLISHER_GROUPS)
-
-        self._all_ids_from_values_list_to_set(data, ids)
-
-        return self.filter(id__in=ids)
-
     def filter_by_active_candidate_adgroups(self):
         data = (
             core.models.AdGroup.objects.all()

@@ -51,8 +51,7 @@ def sync_publisher_groups():
 def _get_data():
     publisher_group_accounts = {
         g["pk"]: g["account_id"]
-        for g in models.PublisherGroup.objects.filter_by_active_adgroups().values("pk", "account_id")
-        # for g in models.PublisherGroup.objects.filter_by_active_candidate_adgroups().values("pk", "account_id")
+        for g in models.PublisherGroup.objects.filter_by_active_candidate_adgroups().values("pk", "account_id")
     }
     logger.info("Got publisher groups")
 
