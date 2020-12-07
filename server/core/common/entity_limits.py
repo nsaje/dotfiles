@@ -36,7 +36,7 @@ ACCOUNT_EXCEPTIONS = defaultdict(
             settings.HARDCODED_ACCOUNT_ID_OEN: 100000,
             950: 20000,  # MatchesFashion
         },
-        "PublisherGroup": {settings.HARDCODED_ACCOUNT_ID_OEN: 3000000, 5921: 1000},  # ironsource
+        "PublisherGroup": {settings.HARDCODED_ACCOUNT_ID_OEN: 5000000, 5921: 1000},  # ironsource
         "BudgetLineItem": {settings.HARDCODED_ACCOUNT_ID_OEN: 1000},  # OEN
         "ConversionPixel": {4300: 25},  # GroupM/MAIF
     },
