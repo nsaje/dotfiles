@@ -2060,6 +2060,10 @@ class UploadTest(TestCase):
             candidate.trackers_status, {"https://someImpressionTracker.com__img": constants.AsyncUploadJobStatus.OK}
         )
 
+    def test_process_callback_candidate_doesnt_exist(self, *mocks):
+        with self.assertRaises(contentupload.upload.exc.CandidateDoesNotExist):
+            contentupload.upload.process_callback({"id": -1})
+
     def test_process_callback_icon(self, *mocks):
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(pk=1)

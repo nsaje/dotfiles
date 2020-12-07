@@ -711,7 +711,7 @@ def process_callback(callback_data):
             candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related("batch").get()
         except models.ContentAdCandidate.DoesNotExist:
             logger.info("No candidate with id", candidate_id=callback_data["id"])
-            return
+            raise exc.CandidateDoesNotExist()
 
         logger.info("Processing callback for candidate", candidate_id=candidate.id, ad_group_id=candidate.ad_group_id)
         cleaned_urls = _get_cleaned_urls(candidate)

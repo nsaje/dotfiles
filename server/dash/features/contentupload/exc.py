@@ -8,3 +8,7 @@ class CandidateErrorsRemaining(Exception):
 
 class ChangeForbidden(Exception):
     pass
+
+
+class CandidateDoesNotExist(Exception):
+    pass

@@ -28,5 +28,9 @@ def content_upload(request):
     if not candidate:
         logger.error("Content upload validation returned no candidate.", data=str(callback_data))
         return JsonResponse({"status": "fail"})
-    contentupload.upload.process_callback(candidate)
+    try:
+        contentupload.upload.process_callback(candidate)
+    except contentupload.upload.exc.CandidateDoesNotExist:
+        logger.error("Content upload callback candidate not found.", candidate=candidate)
+        return JsonResponse({"status": "fail"})
     return JsonResponse({"status": "ok"})
