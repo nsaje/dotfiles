@@ -515,6 +515,7 @@ class ContentAdCandidateFormTestCase(TestCase):
                         "tracker_optional": False,
                     },
                 ],
+                "trackers_status": None,
                 "additional_data": None,
             },
         )
@@ -595,6 +596,7 @@ class ContentAdCandidateFormTestCase(TestCase):
                         "tracker_optional": False,
                     },
                 ],
+                "trackers_status": None,
                 "additional_data": None,
             },
         )

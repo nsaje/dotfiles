@@ -910,7 +910,7 @@ class PersistEditBatchTestCase(TestCase):
             self.assertEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
         for field in set(forms.ContentAdCandidateForm.Meta.fields) - contentupload.upload.VALID_UPDATE_FIELDS:
-            if field in ["image_url", "icon_url", "state"]:
+            if field in ["image_url", "icon_url", "state", "trackers_status"]:
                 continue
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             if field != "type":

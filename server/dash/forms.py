@@ -810,6 +810,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             "additional_data",
             "ad_tag",
             "trackers",
+            "trackers_status",
         ]
 
 
@@ -1149,7 +1150,7 @@ class ContentAdForm(ContentAdCandidateForm):
             tracker_status_key = dash.features.contentupload.get_tracker_status_key(
                 tracker.get("url"), tracker.get("method")
             )
-            if trackers_status and trackers_status[tracker_status_key] == constants.AsyncUploadJobStatus.FAILED:
+            if trackers_status and trackers_status.get(tracker_status_key) == constants.AsyncUploadJobStatus.FAILED:
                 has_status_error = True
                 tracker_status_error["url"] = "Invalid or unreachable tracker URL"
 
@@ -1160,7 +1161,7 @@ class ContentAdForm(ContentAdCandidateForm):
             if (
                 fallback_url
                 and trackers_status
-                and trackers_status[fallback_tracker_status_key] == constants.AsyncUploadJobStatus.FAILED
+                and trackers_status.get(fallback_tracker_status_key) == constants.AsyncUploadJobStatus.FAILED
             ):
                 has_status_error = True
                 tracker_status_error["fallback_url"] = "Invalid or unreachable tracker URL"
