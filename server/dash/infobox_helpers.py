@@ -311,6 +311,18 @@ def calculate_allocated_and_available_credit(account):
     return allocated, (assigned or 0) - allocated
 
 
+def get_total_account_budgets_amount(account, until_date=None):
+    at_date = until_date or utils.dates_helper.local_today()
+    budgets = _retrieve_active_budgetlineitems_by_account(account, at_date)
+    return sum(x.amount for x in budgets)
+
+
+def calculate_available_account_budget(account):
+    today = dates_helper.local_today()
+    budgets = _retrieve_active_budgetlineitems_by_account(account, today)
+    return sum(x.get_local_available_etfm_amount(today) for x in budgets)
+
+
 def calculate_credit_refund(account):
     return core.features.bcm.RefundLineItem.objects.filter(
         credit__account=account, start_date=utils.dates_helper.local_today().replace(day=1)
@@ -463,6 +475,17 @@ def _retrieve_active_budgetlineitems(campaign, date):
         return dash.models.BudgetLineItem.objects.none()
 
     qs = dash.models.BudgetLineItem.objects.filter(campaign__in=campaign)
+
+    return qs.filter_active(date)
+
+
+def _retrieve_active_budgetlineitems_by_account(account, date):
+    if not account:
+        return dash.models.BudgetLineItem.objects.none()
+
+    qs = dash.models.BudgetLineItem.objects.filter(campaign__account=account).filter(
+        campaign__real_time_campaign_stop=True
+    )
 
     return qs.filter_active(date)
 

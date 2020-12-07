@@ -10,6 +10,7 @@ import dash.constants
 import dash.infobox_helpers
 import dash.models
 import zemauth.models
+from utils import converters
 from utils import dates_helper
 from utils import test_helper
 from utils.base_test_case import BaseTestCase
@@ -549,6 +550,107 @@ class InfoBoxAccountHelpersTestCase(BaseTestCase):
         john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
+
+    def test_account_allocated_budget(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+
+        campaign_1 = magic_mixer.blend(dash.models.Campaign, account=account, real_time_campaign_stop=True)
+        campaign_2 = magic_mixer.blend(dash.models.Campaign, account=account, real_time_campaign_stop=True)
+        campaign_3 = magic_mixer.blend(dash.models.Campaign, account=account, real_time_campaign_stop=False)
+        magic_mixer.blend(dash.models.CampaignGoal, campaign=campaign_1, primary=True)
+        magic_mixer.blend(dash.models.CampaignGoal, campaign=campaign_2, primary=True)
+        magic_mixer.blend(dash.models.CampaignGoal, campaign=campaign_3, primary=True)
+
+        account_budget = dash.infobox_helpers.get_total_account_budgets_amount(account)
+        account_budget_available = dash.infobox_helpers.calculate_available_account_budget(account)
+
+        self.assertEqual(0, account_budget)
+        self.assertEqual(0, account_budget_available)
+
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=account,
+            currency=account.currency,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=5000.0,
+            license_fee=0,
+        )
+
+        budget_campaign_1 = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign_1,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=credit,
+            amount=200,
+            margin=0,
+        )
+
+        account_budget = dash.infobox_helpers.get_total_account_budgets_amount(account)
+        account_budget_available = dash.infobox_helpers.calculate_available_account_budget(account)
+
+        self.assertEqual(200, account_budget)
+        self.assertEqual(200, account_budget_available)
+
+        budget_campaign_2 = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign_2,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=credit,
+            amount=300,
+            margin=0,
+        )
+
+        # should not be calculated, it belongs to campaign with real_time_campaign_stop=False
+        magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign_3,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
+            credit=credit,
+            amount=1000,
+            margin=0,
+        )
+
+        account_budget = dash.infobox_helpers.get_total_account_budgets_amount(account)
+        account_budget_available = dash.infobox_helpers.calculate_available_account_budget(account)
+
+        self.assertEqual(500, account_budget)
+        self.assertEqual(500, account_budget_available)
+
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=budget_campaign_1,
+            date=dates_helper.local_today(),
+            base_media_spend_nano=50 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=50 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=0,
+            data_spend_nano=0,
+            service_fee_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
+        )
+
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=budget_campaign_2,
+            date=dates_helper.local_today(),
+            base_media_spend_nano=20 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=20 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=0,
+            data_spend_nano=0,
+            service_fee_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
+        )
+
+        account_budget = dash.infobox_helpers.get_total_account_budgets_amount(account)
+        account_budget_available = dash.infobox_helpers.calculate_available_account_budget(account)
+
+        self.assertEqual(500, account_budget)
+        self.assertEqual(360, account_budget_available)
 
 
 class CountActiveAgencyAccountsTestCase(BaseTestCase):

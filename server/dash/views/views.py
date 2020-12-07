@@ -463,16 +463,18 @@ class AccountOverview(DASHAPIBaseView):
         )
         settings.append(cs_manager_setting.as_dict())
 
-        allocated_credit, available_credit = infobox_helpers.calculate_allocated_and_available_credit(account)
-
         currency_symbol = core.features.multicurrency.get_currency_symbol(account.currency)
-        allocated_credit_text = lc_helper.format_currency(allocated_credit, curr=currency_symbol)
-        unallocated_credit_text = lc_helper.format_currency(available_credit, curr=currency_symbol)
 
-        allocated_credit_setting = infobox_helpers.OverviewSetting(
-            "Allocated credit:", allocated_credit_text, description="{} unallocated".format(unallocated_credit_text)
+        account_budget = infobox_helpers.get_total_account_budgets_amount(account)
+        account_budget_available = infobox_helpers.calculate_available_account_budget(account)
+        allocated_budget_setting = infobox_helpers.OverviewSetting(
+            "Allocated budget:",
+            lc_helper.format_currency(account_budget, curr=currency_symbol),
+            description="{} remaining".format(
+                lc_helper.format_currency(account_budget_available, curr=currency_symbol)
+            ),
         )
-        settings.append(allocated_credit_setting.as_dict())
+        settings.append(allocated_budget_setting.as_dict())
 
         credit_refund = infobox_helpers.calculate_credit_refund(account)
         if credit_refund:
