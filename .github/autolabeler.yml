@@ -1,2 +1,3 @@
 db-migrations: ["**/migrations/*.py"]
 permission: ["server/zemauth/models/user/model.py"]
+rest-api-changes: ["server/restapi/**/views.py", "server/restapi/**/serializers.py", "server/restapi/**/urls.py"]
