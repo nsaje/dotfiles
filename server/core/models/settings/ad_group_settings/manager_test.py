@@ -52,7 +52,8 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(
             ad_group_settings.exclusion_target_regions, ad_group.campaign.settings.exclusion_target_regions
         )
-        self.assertFalse(ad_group_settings.b1_sources_group_enabled)
+        self.assertTrue(ad_group_settings.b1_sources_group_enabled)
+        self.assertEqual(constants.AdGroupSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
     def test_clone(self):
         local_today = dates_helper.local_today()
