@@ -17,6 +17,7 @@ class Command(Z1Command):
     help = "Reset real-time autopilot AdGroup source bid modifiers and write a history record about the change"
 
     def add_arguments(self, parser):
+        parser.add_argument(dest="agency_ids", type=int, nargs="+", help="IDs of migrated agencies")
         parser.add_argument(
             "--apply-changes", dest="apply_changes", action="store_true", help="Apply calculated changes"
         )
@@ -24,13 +25,14 @@ class Command(Z1Command):
         parser.add_argument("--batch-size", dest="batch_size", default=BATCH_SIZE, type=int, help="Batch size")
 
     def handle(self, *args, **options):
+        agency_ids = options["agency_ids"]
         apply_changes = options.get("apply_changes", False)
         pool_size = options.get("pool_size", POOL_SIZE)
         batch_size = options.get("batch_size", BATCH_SIZE)
 
         ad_group_ids = list(
             core.models.AdGroup.objects.filter(
-                Q(campaign__account__agency__isnull=False)
+                Q(campaign__account__agency_id__in=agency_ids)
                 & Q(campaign__account__agency__uses_realtime_autopilot=True)
                 & ~Q(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
             ).values_list("id", flat=True)
