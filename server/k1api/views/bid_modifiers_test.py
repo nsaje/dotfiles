@@ -4,7 +4,6 @@ from django.urls import reverse
 
 import core.features.bid_modifiers
 import core.features.bid_modifiers.constants
-import dash.constants
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
@@ -69,91 +68,3 @@ class BidModifiersTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         self.assertEqual(1, len(data["response"]))
         self.assertEqual(data["response"], [self.repr(obj) for obj in test_objs if obj.type == ad_type])
-
-    # TODO: RTAP: remove after migration
-    def test_realtime_autopilot_force_modifier(self):
-        legacy_ad_group_no_agency = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=None)
-        legacy_ad_group_no_agency.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
-        )
-
-        legacy_ad_group_no_flag = magic_mixer.blend(
-            core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=False
-        )
-        legacy_ad_group_no_flag.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
-        )
-
-        ad_group_no_autopilot = magic_mixer.blend(
-            core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
-        )
-        ad_group_no_autopilot.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-        )
-
-        ad_group_realtime_autopilot = magic_mixer.blend(
-            core.models.AdGroup, campaign__account__agency__uses_realtime_autopilot=True
-        )
-        ad_group_realtime_autopilot.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE
-        )
-
-        magic_mixer.cycle(4).blend(
-            core.features.bid_modifiers.BidModifier,
-            ad_group=(
-                ag
-                for ag in (
-                    legacy_ad_group_no_agency,
-                    legacy_ad_group_no_flag,
-                    ad_group_no_autopilot,
-                    ad_group_realtime_autopilot,
-                )
-            ),
-            source=self.source,
-            source_slug=self.source.bidder_slug,
-            type=core.features.bid_modifiers.constants.BidModifierType.SOURCE,
-            modifier=2.0,
-        )
-        magic_mixer.cycle(4).blend(
-            core.features.bid_modifiers.BidModifier,
-            ad_group=(
-                ag
-                for ag in (
-                    legacy_ad_group_no_agency,
-                    legacy_ad_group_no_flag,
-                    ad_group_no_autopilot,
-                    ad_group_realtime_autopilot,
-                )
-            ),
-            source=None,
-            source_slug="",
-            type=core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-            modifier=2.0,
-        )
-
-        response = self.client.get(
-            reverse("k1api.bidmodifiers"),
-            {
-                "ad_group_ids": ",".join(
-                    str(ag.id)
-                    for ag in [
-                        legacy_ad_group_no_agency,
-                        legacy_ad_group_no_flag,
-                        ad_group_no_autopilot,
-                        ad_group_realtime_autopilot,
-                    ]
-                )
-            },
-        )
-        data = json.loads(response.content)
-
-        self.assert_response_ok(response, data)
-        self.assertEqual(8, len(data["response"]))
-
-        for bm in data["response"]:
-            if bm["type"] == core.features.bid_modifiers.constants.BidModifierType.SOURCE and bm["ad_group_id"] in [
-                ad_group_realtime_autopilot.id
-            ]:
-                self.assertEqual(1.0, bm["modifier"])
-            else:
-                self.assertEqual(2.0, bm["modifier"])
