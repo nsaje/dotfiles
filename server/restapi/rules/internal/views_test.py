@@ -405,8 +405,8 @@ class RuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
         rule_with_agency = magic_mixer.blend(automation.rules.Rule, agency=agency)
         rule_with_account_on_agency = magic_mixer.blend(automation.rules.Rule, account=account_on_agency)
 
-        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_agency)
-        rule_histories_with_account_on_agency = magic_mixer.cycle(3).blend(
+        rule_histories_agency_level = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_agency)
+        rule_histories_account_level = magic_mixer.cycle(3).blend(
             automation.rules.RuleHistory, rule=rule_with_account_on_agency
         )
 
@@ -416,8 +416,10 @@ class RuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
 
         response_ids = [int(item.get("id")) for item in result["data"]]
-        expected_response_ids = [item.id for item in rule_histories_with_account_on_agency]
-        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+        expected_response_ids = [
+            item.id for item in set(rule_histories_agency_level) | set(rule_histories_account_level)
+        ]
+        self.assertCountEqual(response_ids, expected_response_ids)
 
     def test_list_agency_rules_histories(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])

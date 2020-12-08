@@ -141,9 +141,14 @@ class RuleHistoryViewSet(RESTAPIBaseViewSet):
 
         if account_id is not None:
             account = zemauth.access.get_account(request.user, Permission.READ, account_id)
-            rules_histories = automation.rules.RuleHistory.objects.filter(Q(rule__account=account)).order_by(
-                "-created_dt"
-            )
+            if account.agency:
+                rules_histories = automation.rules.RuleHistory.objects.filter(
+                    Q(rule__account=account) | Q(rule__agency=account.agency)
+                ).order_by("-created_dt")
+            else:
+                rules_histories = automation.rules.RuleHistory.objects.filter(Q(rule__account=account)).order_by(
+                    "-created_dt"
+                )
         elif agency_id is not None:
             agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             rules_histories = automation.rules.RuleHistory.objects.filter(
