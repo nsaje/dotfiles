@@ -226,10 +226,7 @@ CACHES = {
         "LOCATION": "entity_permission_cache",
         "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
     },
-    "cluster_level_cache": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "cluster_level_cache",
-    },
+    "cluster_level_cache": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": "redis://redis:6379/2"},
 }
 
 

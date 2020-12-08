@@ -1,10 +1,12 @@
-
 import core.features.bulk_upload
 import zemauth.access
 from restapi.common.views_base import RESTAPIBaseViewSet
+from utils import zlogging
 from zemauth.features.entity_permission import Permission
 
 from . import serializers
+
+logger = zlogging.getLogger(__name__)
 
 
 class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
@@ -20,7 +22,8 @@ class BulkAdGroupsViewSet(RESTAPIBaseViewSet):
         for ad_group in data:
             zemauth.access.get_campaign(request.user, Permission.WRITE, ad_group.get("ad_group", {}).get("campaign_id"))
 
-        promise = core.features.bulk_upload.upload_adgroups.delay(request.user, data)
+        promise = core.features.bulk_upload.upload_adgroups(request.user, data)
+        logger.info("Triggered async bulk upload", task_id=promise.id)
         return self._handle_promise(request, promise)
 
     def _handle_promise(self, request, promise):

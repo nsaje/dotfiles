@@ -1,4 +1,5 @@
 import time
+import uuid
 from dataclasses import dataclass
 
 import celery.result
@@ -28,8 +29,15 @@ class Request:
     user: zemauth.models.User
 
 
+def upload_adgroups(user, ad_groups_dicts):
+    task_id = uuid.uuid4()
+    _cache_set(task_id, "ad_groups_dicts", ad_groups_dicts)
+    logger.info("Triggering async", task_id=task_id, ad_groups_dicts=ad_groups_dicts)
+    return upload_adgroups_async.apply_async((user,), task_id=task_id)
+
+
 @z1_celery.app.task(bind=True, acks_late=True, name="bulkupload_adgroups")
-def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
+def upload_adgroups_async(self, user):
     """
     Uploads ad groups in bulk.
 
@@ -37,7 +45,11 @@ def upload_adgroups(self, user, ad_groups_dicts, task_id=None):
     Is idempotently retriable and can pick up where it left off due to saving intermediate data in cache.
     """
 
-    task_id = task_id or self.request.id or ""
+    task_id = self.request.id or ""
+    ad_groups_dicts = _cache_get(task_id, "ad_groups_dicts")
+    if not ad_groups_dicts:
+        logger.error("No data in cache!", task_id=task_id)
+        raise Exception("No data in cache")
     request = Request(user)
 
     logger.info("Processing bulk upload task", task_id=task_id)
