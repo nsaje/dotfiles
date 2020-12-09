@@ -22,6 +22,7 @@ from .apply import ConditionValues
 
 
 @mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
+@mock.patch.object(RuleHistory, "get_formatted_changes", mock.MagicMock(return_value="mock history"))
 class ExecuteRulesDailyRunTest(TestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
