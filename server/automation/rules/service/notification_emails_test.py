@@ -39,14 +39,11 @@ class NotificationEmailTestCase(TestCase):
             notification_recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
         )
 
-    def test_execute_rule_send_email_changes(self, mock_send_email):
-        history = magic_mixer.blend(
-            RuleHistory,
-            rule=self.rule,
-            changes={
-                "pub1.com__12": dict(old_value=1.0, new_value=2.0),
-                "pub2.com__21": dict(old_value=2.0, new_value=1.0),
-            },
+    @mock.patch.object(RuleHistory, "get_formatted_changes")
+    def test_execute_rule_send_email_changes(self, mock_get_formatted_changes, mock_send_email):
+        history = magic_mixer.blend(RuleHistory, rule=self.rule)
+        mock_get_formatted_changes.return_value = (
+            "Increased bid modifier for 20.0% on publishers: pub1.com__12 (20.0%), pub2.com__21 (10.0%)"
         )
         notification_emails.send_notification_email_if_enabled(self.rule, self.ad_group, history)
 
@@ -60,7 +57,7 @@ class NotificationEmailTestCase(TestCase):
 
                         We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} with message:
 
-                        Increased bid modifier for 2.0% on publishers: pub1.com__12 (2.0%), pub2.com__21 (1.0%)
+                        Increased bid modifier for 20.0% on publishers: pub1.com__12 (20.0%), pub2.com__21 (10.0%)
 
                         Yours truly,
                         Zemanta"""

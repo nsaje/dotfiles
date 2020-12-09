@@ -397,6 +397,7 @@ class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         self.validate_against_db(result["data"])
 
 
+@mock.patch.object(automation.rules.RuleHistory, "get_formatted_changes", mock.MagicMock(return_value="mock history"))
 class RuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def test_list_account_rules_histories(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])

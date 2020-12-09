@@ -15,8 +15,8 @@ class RuleHistoryFormattersTestCase(TestCase):
         )
         self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0.1, {}))
         self.assertEqual(
-            "Increased bid modifier for 0.1% for countries: United Kingdom (0.2%)",
-            formatter(0.1, {"UK": {"old_value": 0.1, "new_value": 0.2}}),
+            "Increased bid modifier for 10.0% for countries: United Kingdom (20.0%)",
+            formatter(0.1, {"UK": {"old_value": 1.1, "new_value": 1.2}}),
         )
 
     def test_format_paused(self):
@@ -81,7 +81,8 @@ class RuleHistoryFormattersTestCase(TestCase):
             ),
         )
         self.assertEqual(
-            ["1234 (0.2%)"], formatters._get_changes_breakdown({"1234": {"old_value": 0.1, "new_value": 0.2}}, {}, True)
+            ["1234 (20.0%)"],
+            formatters._get_changes_breakdown({"1234": {"old_value": 0.1, "new_value": 0.2}}, {}, {"1234": 20.0}),
         )
 
     def test_get_mapped_item(self):

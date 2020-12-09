@@ -3,9 +3,14 @@ def get_bid_modifier_formatter(direction, target, get_mapping, no_changes_text):
         if not changes:
             return no_changes_text
 
+        values_dict = {key: round((val["new_value"] - 1) * 100, 2) for key, val in changes.items()}
+
         mapping = get_mapping()
         message = "{} bid modifier for {}% {}: {}".format(
-            direction, change_step, target, ", ".join(_get_changes_breakdown(changes, mapping, True))
+            direction,
+            round(change_step * 100, 2),
+            target,
+            ", ".join(_get_changes_breakdown(changes, mapping, values_dict)),
         )
         return message
 
@@ -87,16 +92,16 @@ def get_add_to_publisher_formatter(target, get_mapping, no_changes_text):
     return format
 
 
-def _get_changes_breakdown(changes, mapping, with_values=False):
+def _get_changes_breakdown(changes, mapping, values_dict=None):
     if changes is None:
         return []
 
     items_breakdown = []
 
     for changed_item in changes:
-        if with_values:
+        if values_dict:
             items_breakdown.append(
-                "{} ({}%)".format(_get_mapped_item(changed_item, mapping), round(changes[changed_item]["new_value"], 2))
+                "{} ({}%)".format(_get_mapped_item(changed_item, mapping), values_dict[changed_item])
             )
         else:
             items_breakdown.append(_get_mapped_item(changed_item, mapping))
