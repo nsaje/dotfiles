@@ -3,7 +3,7 @@
         <div class="zem-buttons-panel">
             <button
                 class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                [disabled]="isSaveDisabled"
+                [disabled]="isSaveDisabled || isLoading"
                 (click)="save.emit()"
             >
                 <ng-container *ngIf="isNewEntity">Create</ng-container>
