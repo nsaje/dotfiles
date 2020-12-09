@@ -395,7 +395,7 @@ class TestBatchUpload(RESTAPITestCase):
             candidate.save()
         contentupload.upload._handle_auto_save(batch)
 
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    @mock.patch("dash.features.contentupload.upload.invoke_external_validation", mock.Mock())
     def test_content_batch_upload_success(self):
         ad1 = self._mock_content_ad("test1")
         ad2 = self._mock_content_ad("test2")
@@ -461,7 +461,7 @@ class TestBatchUpload(RESTAPITestCase):
                 resp_json["data"]["approvedContentAds"][i]["trackers"],
             )
 
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    @mock.patch("dash.features.contentupload.upload.invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         self.ad_group.campaign.save(None)
@@ -608,7 +608,7 @@ class TestBatchUpload(RESTAPITestCase):
             candidate.save()
         contentupload.upload._handle_auto_save(batch)
 
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    @mock.patch("dash.features.contentupload.upload.invoke_external_validation", mock.Mock())
     def test_content_batch_upload_failure(self):
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         r = self.client.post(
@@ -642,7 +642,7 @@ class TestBatchUpload(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["approvedContentAds"], [])
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    @mock.patch("dash.features.contentupload.upload.invoke_external_validation", mock.Mock())
     def test_video_batch_upload_failure(self):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         self.ad_group.campaign.save(None)
@@ -683,7 +683,7 @@ class TestBatchUpload(RESTAPITestCase):
         for status in resp_json["data"]["validationStatus"]:
             self.assertEqual(status["videoAssetId"], ["Video asset required on video campaigns"])
 
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    @mock.patch("dash.features.contentupload.upload.invoke_external_validation", mock.Mock())
     def test_display_batch_upload_failure(self):
         to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
         r = self.client.post(

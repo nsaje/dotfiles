@@ -1798,7 +1798,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {"display_url": "new display url 123"})
         self.assertEqual(errors, {"display_url": ["Enter a valid URL."]})
 
-    @patch("dash.features.contentupload.upload._invoke_external_validation", Mock())
+    @patch("dash.features.contentupload.upload.invoke_external_validation", Mock())
     @patch("dash.image_helper.upload_image_to_s3")
     def test_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = "http://example.com/path/to/image"
@@ -1816,7 +1816,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {"image_url": "http://example.com/path/to/image"})
         self.assertEqual(errors, {})
 
-    @patch("dash.features.contentupload.upload._invoke_external_validation", Mock())
+    @patch("dash.features.contentupload.upload.invoke_external_validation", Mock())
     @patch("dash.image_helper.upload_image_to_s3")
     def test_invalid_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = "http://example.com/path/to/image"
@@ -1857,7 +1857,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.ad_group_id, 4)
         self.assertEqual(self.candidate.batch_id, 5)
 
-    @patch("dash.features.contentupload.upload._invoke_external_validation")
+    @patch("dash.features.contentupload.upload.invoke_external_validation")
     def test_invoke_external_validation(self, mock_invoke):
         contentupload.upload.update_candidate(self.new_candidate, [], self.candidate.batch)
         self.assertFalse(mock_invoke.called)

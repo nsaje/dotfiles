@@ -54,6 +54,7 @@ def insert_candidates(
     auto_save=False,
     batch_type=constants.UploadBatchType.INSERT,
     state_override=None,
+    do_invoke_external_validation=True,
 ):
     with transaction.atomic():
         batch = models.UploadBatch.objects.create_for_file(
@@ -68,8 +69,9 @@ def insert_candidates(
         )
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
-    for candidate in candidates:
-        _invoke_external_validation(candidate, batch)
+    if do_invoke_external_validation:
+        for candidate in candidates:
+            invoke_external_validation(candidate, batch)
 
     return batch, candidates
 
@@ -146,7 +148,7 @@ def _reset_candidate_async_status(candidate):
 
 
 @transaction.atomic
-def _invoke_external_validation(candidate, batch):
+def invoke_external_validation(candidate, batch):
     _reset_candidate_async_status(candidate)
 
     if settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME == "mock":
@@ -495,7 +497,7 @@ def _update_candidate(data, batch, files):
         or candidate.has_changed("secondary_tracker_url")
         or candidate.has_changed("trackers")
     ):
-        _invoke_external_validation(candidate, batch)
+        invoke_external_validation(candidate, batch)
 
     candidate.save()
     return updated_fields, candidate

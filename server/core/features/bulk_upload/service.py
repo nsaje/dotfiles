@@ -78,6 +78,11 @@ def upload_adgroups_async(self, user):
             logger.info("Batches created", task_id=task_id, batch_ids=batch_ids)
             _cache_set(task_id, "batchids", batch_ids)
 
+    validation_triggered = _cache_get(task_id, "validation_triggered") or False
+    if not validation_triggered:
+        _invoke_external_validation(batch_ids)
+        _cache_set(task_id, "validation_triggered", True)
+
     _wait_for_batch_validation(batch_ids)
 
     batches_by_id = {b.id: b for b in core.models.UploadBatch.objects.filter(pk__in=batch_ids)}
@@ -132,6 +137,7 @@ def _upload_batches(task_id, request, ad_groups, ad_groups_dicts):
                 "Bulk Upload",
                 None,
                 auto_save=True,
+                do_invoke_external_validation=False,
             )
             batch_ids.append(batch.id)
         except exc.ValidationError as e:
@@ -144,6 +150,12 @@ def _upload_batches(task_id, request, ad_groups, ad_groups_dicts):
             logger.info("Raising ad validation exception", task_id=task_id)
             raise e
     return batch_ids
+
+
+def _invoke_external_validation(batch_ids):
+    candidates = core.models.ContentAdCandidate.objects.filter(batch_id__in=batch_ids).select_related("batch")
+    for candidate in candidates:
+        contentupload.upload.invoke_external_validation(candidate, candidate.batch)
 
 
 def _wait_for_batch_validation(batch_ids):
