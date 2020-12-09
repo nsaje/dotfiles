@@ -146,7 +146,6 @@ export class RulesView implements OnInit, OnDestroy {
 
     closeEditRuleModal() {
         this.store.setActiveEntity({});
-        this.editRuleModal.close();
     }
 
     private updateInternalState(queryParams: any) {
