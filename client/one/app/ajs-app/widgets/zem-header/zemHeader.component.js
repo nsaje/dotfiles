@@ -12,6 +12,7 @@ angular.module('one.widgets').component('zemHeader', {
     ) {
         var $ctrl = this;
         var zemNavigationEndHandler;
+        var locationChangeUpdateHandler;
 
         $ctrl.config = config;
         $ctrl.navigateTo = navigateTo;
@@ -24,11 +25,18 @@ angular.module('one.widgets').component('zemHeader', {
                 '$zemNavigationEnd',
                 updateComponentState
             );
+            locationChangeUpdateHandler = $rootScope.$on(
+                '$locationChangeSuccess',
+                updateHomeHref
+            );
         };
 
         $ctrl.$onDestroy = function() {
             if (zemNavigationEndHandler) {
                 zemNavigationEndHandler();
+            }
+            if (locationChangeUpdateHandler) {
+                locationChangeUpdateHandler();
             }
         };
 
@@ -52,6 +60,10 @@ angular.module('one.widgets').component('zemHeader', {
             ) {
                 $ctrl.isFilterSelectorToggleVisible = true;
             }
+        }
+
+        function updateHomeHref() {
+            $ctrl.homeHref = zemNavigationNewService.getHomeHref();
         }
 
         function navigateTo($event) {
