@@ -258,7 +258,14 @@ class ContentAdsTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         data = data["response"]
 
-        expected_video_asset = {"id": str(video_asset.id), "duration": 31, "formats": formats, "vasturi": None}
+        expected_video_asset = {
+            "id": str(video_asset.id),
+            "duration": 31,
+            "formats": formats,
+            "vasturi": None,
+            "xml_hosted_by_us": True,
+            "supported_privacy_frameworks": [],
+        }
         self.assertEqual(data[0]["video_asset"], expected_video_asset)
 
     def test_get_content_ads(self):

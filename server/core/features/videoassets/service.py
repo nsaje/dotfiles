@@ -4,6 +4,8 @@ from collections import namedtuple
 import requests
 from defusedxml import ElementTree
 
+import dash.features.contentupload
+
 from . import constants
 from . import models
 
@@ -25,7 +27,7 @@ def initiate_asset_for_vast_upload(account):
 
 
 def create_asset_from_vast_url(account, vast_url):
-    duration, formats = _parse_vast_from_url(vast_url)
+    duration, formats, supported_privacy_frameworks = _parse_vast_from_url(vast_url)
     video_asset = models.VideoAsset.objects.create(
         constants.VideoAssetType.VAST_URL,
         account=account,
@@ -33,6 +35,7 @@ def create_asset_from_vast_url(account, vast_url):
         vast_url=vast_url,
         duration=duration,
         formats=formats,
+        supported_privacy_frameworks=supported_privacy_frameworks,
     )
     return video_asset
 
@@ -46,8 +49,11 @@ def update_asset_for_vast_upload(account, video_asset_id):
     ):
         return
 
-    duration, formats = _parse_vast_from_url(video_asset.get_vast_url(ready_for_use=False))
+    duration, formats, supported_privacy_frameworks = _parse_vast_from_url(
+        video_asset.get_vast_url(ready_for_use=False)
+    )
 
+    video_asset.supported_privacy_frameworks = supported_privacy_frameworks
     video_asset.status = constants.VideoAssetStatus.READY_FOR_USE
     video_asset.duration = duration
     video_asset.formats = formats
@@ -106,7 +112,8 @@ def _parse_vast(data):
     if len(formats) < 0:
         raise ParseVastError("Missing MediaFile")
 
-    return duration, formats
+    supported_privacy_frameworks = dash.features.contentupload.get_privacy_frameworks(data.decode("utf-8"), None)
+    return duration, formats, supported_privacy_frameworks
 
 
 def _parse_duration(duration_element):

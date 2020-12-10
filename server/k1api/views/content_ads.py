@@ -3,6 +3,7 @@ from datetime import datetime
 from django.http import Http404
 
 import core.features.ad_review
+import core.features.videoassets.constants
 import dash.constants
 import dash.features.submission_filters
 import dash.models
@@ -83,6 +84,12 @@ class ContentAdsView(K1APIView):
                     "duration": video_asset_obj.duration,
                     "formats": video_asset_obj.formats,
                     "vasturi": video_asset_obj.get_vast_url(),
+                    "xml_hosted_by_us": video_asset_obj.type
+                    in [
+                        core.features.videoassets.constants.VideoAssetType.DIRECT_UPLOAD,
+                        core.features.videoassets.constants.VideoAssetType.VAST_UPLOAD,
+                    ],
+                    "supported_privacy_frameworks": video_asset_obj.supported_privacy_frameworks or [],
                 }
             content_ad = {
                 "id": item.id,

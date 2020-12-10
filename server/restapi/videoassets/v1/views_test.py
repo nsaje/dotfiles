@@ -42,7 +42,7 @@ class VideoAssetTestCase(RESTAPITestCase):
     @override_settings(VAST_URL="http://vasttest.com/{filename}")
     @mock.patch("core.features.videoassets.service._parse_vast_from_url")
     def test_put(self, mock_parse):
-        mock_parse.return_value = 30, []
+        mock_parse.return_value = 30, [], []
         video_asset = magic_mixer.blend(
             models.VideoAsset,
             account=self.account,
@@ -110,7 +110,7 @@ class VideoAssetTestCase(RESTAPITestCase):
 
     @mock.patch("core.features.videoassets.service._parse_vast_from_url")
     def test_post_vast_url(self, mock_parse):
-        mock_parse.return_value = 30, []
+        mock_parse.return_value = 30, [], []
         data = {"name": "myvideo", "vast_url": "http://vasturl.com", "upload": {"type": "VAST_URL"}}
         r = self.client.post(
             reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),

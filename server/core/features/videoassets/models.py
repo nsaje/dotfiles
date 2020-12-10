@@ -3,6 +3,7 @@ import uuid
 import boto3
 import jsonfield
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
@@ -63,6 +64,7 @@ class VideoAsset(models.Model):
         default=constants.VideoAssetType.DIRECT_UPLOAD, choices=constants.VideoAssetType.get_choices()
     )
     vast_url = models.CharField(max_length=2048, blank=True, null=True)
+    supported_privacy_frameworks = ArrayField(models.CharField(max_length=255), null=True)
 
     def get_s3_presigned_url(self):
         if self.status != constants.VideoAssetStatus.NOT_UPLOADED:

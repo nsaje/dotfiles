@@ -7,7 +7,7 @@ from typing_extensions import TypedDict
 
 from dash import constants
 
-GDPR_REGEX = re.compile(r"{gdpr}|{gdpr_consent_[0-9]+}", re.IGNORECASE)
+GDPR_REGEX = re.compile(r"{gdpr}|{gdpr_consent_[0-9]+}|\[gdpr\]|\[gdpr_consent_[0-9]+\]", re.IGNORECASE)
 
 
 class ContentAdTracker(TypedDict):
@@ -85,7 +85,7 @@ def _get_privacy_frameworks_from_url(url: str) -> List[str]:
     if GDPR_REGEX.search(url):
         privacy_frameworks.append(constants.TrackerPrivacyFramework.GDPR)
 
-    if "${us_privacy}" in url:
+    if "{us_privacy}" in url or "[us_privacy]" in url:
         privacy_frameworks.append(constants.TrackerPrivacyFramework.CCPA)
 
     return privacy_frameworks

@@ -75,6 +75,17 @@ class TrackersHelpersTest(TestCase):
         )
 
         tracker_url = (
+            "https://www.example.com/pixel.png?gdpr=[gdpr]&gdpr_consent=[gdpr_consent_50]&us_privacy=[us_privacy]"
+        )
+        fallback_url = (
+            "https://www.example.com/pixel23.png?gdpr=[gdpr]&gdpr_consent=[gdpr_consent_50]&us_privacy=[us_privacy]"
+        )
+        privacy_frameworks = trackers_helpers.get_privacy_frameworks(tracker_url, fallback_url)
+        self.assertCountEqual(
+            privacy_frameworks, [constants.TrackerPrivacyFramework.GDPR, constants.TrackerPrivacyFramework.CCPA]
+        )
+
+        tracker_url = (
             "https://www.example.com/pixel.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}&us_privacy=${us_privacy}"
         )
         fallback_url = "https://www.example.com/pixel23.png?gdpr=${gdpr}&gdpr_consent=${gdpr_consent_50}"
