@@ -1,35 +1,33 @@
-<zem-select-input
-    class="zem-select-input zem-content-ad-tracker-form__item"
-    bindLabel="name"
-    bindValue="value"
-    [placeholder]="'Please select Event type'"
-    [isDisabled]="isDisabled"
-    [value]="contentAdTracker.eventType"
-    [items]="availableTrackerEventTypes"
-    (valueChange)="onEventTypeChanged($event)"
-></zem-select-input>
-<ng-container *ngIf="contentAdTracker.eventType">
-    <div class="zem-content-ad-tracker-form__item">
-        <button
-            *ngFor="let method of availableTrackerMethods"
-            class="zem-button zem-content-ad-tracker-form__method-button"
-            [class.zem-button--highlighted]="
-                contentAdTracker.method === method.value
-            "
-            [class.zem-button--outlined]="
-                contentAdTracker.method !== method.value
-            "
-            [disabled]="isDisabled"
-            (click)="onMethodChanged(method.value)"
-        >
-            {{ method.name }}
-        </button>
-    </div>
+<div class="zem-content-ad-tracker-form__item">
+    <button
+        *ngFor="let method of availableTrackerMethods"
+        class="zem-button zem-content-ad-tracker-form__method-button"
+        [class.zem-button--highlighted]="
+            contentAdTracker.method === method.value
+        "
+        [class.zem-button--outlined]="contentAdTracker.method !== method.value"
+        [disabled]="isDisabled"
+        (click)="onMethodChanged(method.value)"
+    >
+        {{ method.name }}
+    </button>
+</div>
+<ng-container *ngIf="contentAdTracker.method">
+    <zem-select-input
+        class="zem-select-input zem-content-ad-tracker-form__item"
+        bindLabel="name"
+        bindValue="value"
+        [placeholder]="'Please select Event type'"
+        [isDisabled]="isDisabled"
+        [value]="contentAdTracker.eventType"
+        [items]="availableTrackerEventTypes"
+        (valueChange)="onEventTypeChanged($event)"
+    ></zem-select-input>
     <div
         class="zem-content-ad-tracker-form__item zem-message zem-message--error"
-        *ngIf="contentAdTrackerErrors?.method"
+        *ngIf="contentAdTrackerErrors?.eventType"
     >
-        {{ contentAdTrackerErrors?.method }}
+        {{ contentAdTrackerErrors?.eventType }}
     </div>
     <zem-text-input
         class="zem-text-input zem-content-ad-tracker-form__item"

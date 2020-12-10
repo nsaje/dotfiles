@@ -10,9 +10,9 @@ import {
 } from '@angular/core';
 import {ContentAdTracker} from '../../types/content-ad-tracker';
 import {
-    TRACKER_EVENT_TYPE_METHODS,
     TRACKER_EVENT_TYPE_NAMES,
     TRACKER_EVENT_TYPE_OPTIONS,
+    TRACKER_METHOD_EVENT_TYPES,
     TRACKER_METHOD_OPTIONS,
 } from '../../content-ad.config';
 import {TrackerEventType, TrackerMethod} from '../../content-ad.constants';
@@ -36,14 +36,13 @@ export class ContentAdTrackerFormComponent implements OnChanges {
         ChangeEvent<ContentAdTracker>
     > = new EventEmitter<ChangeEvent<ContentAdTracker>>();
 
-    availableTrackerEventTypes = TRACKER_EVENT_TYPE_OPTIONS;
-    trackerEventTypeNames = TRACKER_EVENT_TYPE_NAMES;
-
-    allTrackerMethods = TRACKER_METHOD_OPTIONS;
-    availableTrackerMethods: {
-        value: TrackerMethod;
+    allTrackerEventTypes = TRACKER_EVENT_TYPE_OPTIONS;
+    availableTrackerEventTypes: {
+        value: TrackerEventType;
         name: string;
     }[] = [];
+    trackerEventTypeNames = TRACKER_EVENT_TYPE_NAMES;
+    availableTrackerMethods = TRACKER_METHOD_OPTIONS;
 
     trackerMethod = TrackerMethod;
 
@@ -54,11 +53,11 @@ export class ContentAdTrackerFormComponent implements OnChanges {
             this.showFallbackUrlInput = true;
         }
 
-        if (changes.contentAdTracker && this.contentAdTracker.eventType) {
-            this.availableTrackerMethods = this.getAvailableTrackerMethods(
-                this.contentAdTracker.eventType,
-                this.allTrackerMethods,
-                TRACKER_EVENT_TYPE_METHODS
+        if (changes.contentAdTracker && this.contentAdTracker.method) {
+            this.availableTrackerEventTypes = this.getAvailableTrackerEventTypes(
+                this.contentAdTracker.method,
+                this.allTrackerEventTypes,
+                TRACKER_METHOD_EVENT_TYPES
             );
         }
     }
@@ -77,6 +76,10 @@ export class ContentAdTrackerFormComponent implements OnChanges {
             target: this.contentAdTracker,
             changes: {
                 method: method,
+                eventType:
+                    method === TrackerMethod.JS
+                        ? TrackerEventType.IMPRESSION
+                        : this.contentAdTracker.eventType,
             },
         });
     }
@@ -108,18 +111,18 @@ export class ContentAdTrackerFormComponent implements OnChanges {
         });
     }
 
-    private getAvailableTrackerMethods(
-        eventType: TrackerEventType,
-        allTrackerMethods: {
-            value: TrackerMethod;
+    private getAvailableTrackerEventTypes(
+        method: TrackerMethod,
+        allTrackerEventTypes: {
+            value: TrackerEventType;
             name: string;
         }[],
-        eventTypeMethods: {
-            [key in TrackerEventType]: TrackerMethod[];
+        methodEventTypes: {
+            [key in TrackerMethod]: TrackerEventType[];
         }
     ) {
-        return allTrackerMethods.filter(method => {
-            return eventTypeMethods[eventType].includes(method.value);
+        return allTrackerEventTypes.filter(eventType => {
+            return methodEventTypes[method].includes(eventType.value);
         });
     }
 }
