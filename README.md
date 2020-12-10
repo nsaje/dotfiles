@@ -142,7 +142,7 @@ Then install the pre-commit hook by running `pre-commit install` in project's ro
 ## Documentation
 
 Documentation for the REST API is built on CI and deployed to dev.zemanta.com by deploykitty whenever Z1 is deployed.
-When modifying or changing its theme, you can run a preview server with `./server/restapi/docs/build.sh --server`.
+When modifying or changing its theme, you can run a preview server with `make preview_docs`. The server with the preview starts on `http://0.0.0.0:3000/`.
 If you don't have `zemanta/z1-aglio` docker image built yet, build it with `docker build -t zemanta/z1-aglio -f docker/Dockerfile.z1-aglio docker/` run from the root of the repo.
 
 

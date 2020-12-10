@@ -151,6 +151,39 @@ refresh_requirements: login build_utils
     --entrypoint=sh \
     py3-tools -c "pip-compile -v --no-annotate server/requirements.in"
 
+generate_docs:  ## generates docs
+	docker run --rm \
+		-v $(PWD)/server/restapi/docs:/tmp \
+		$(Z1_SERVER_IMAGE) \
+		bash -c "python manage.py api_blueprint_generate_constants /tmp/api_blueprint.md  > /tmp/api_blueprint_generated.md"
+	docker run --rm \
+		-v $(PWD)/server/restapi/docs:/tmp \
+		-t -e "DRAFTER_EXAMPLES=true" \
+		-e "NOCACHE=1" \
+		zemanta/z1-aglio \
+		-i "/tmp/api_blueprint_generated.md" --theme-style "/tmp/theme/style.less" --theme-variables "/tmp/theme/variables.less" --theme-template "/tmp/theme/template.jade" \
+		-o "/tmp/build-${BRANCH_NAME}.${BUILD_NUM}.html"
+
+push_docs:  ## pushes previously generated docs to the to s3
+	aws s3 cp $(PWD)/server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html s3://dev.zemanta.com/one/api/build-${BRANCH_NAME}.${BUILD_NUMBER}.html
+
+preview_docs:   ## generates and serves docs for the preview
+	docker run --rm \
+		-v $(PWD)/server/:/app/z1/ \
+		-v ${HOME}/.aws:/home/ubuntu/.aws:ro \
+		$(Z1_SERVER_IMAGE) \
+		bash -c "python manage.py api_blueprint_generate_constants /app/z1/restapi/docs/api_blueprint.md  > /app/z1/restapi/docs/api_blueprint_generated.md"
+	bash -c "trap 'docker rm -f z1-rest-aglio' EXIT; \
+		docker run --rm \
+		--name z1-rest-aglio \
+		-p 3000:3000 \
+		-v $(PWD)/server/restapi/docs:/tmp \
+		-t -e "DRAFTER_EXAMPLES=true" \
+		-e "NOCACHE=1" \
+		zemanta/z1-aglio \
+		-i "/tmp/api_blueprint_generated.md" --theme-style "/tmp/theme/style.less" --theme-variables "/tmp/theme/variables.less" --theme-template "/tmp/theme/template.jade" \
+		-s -h 0.0.0.0"
+
 ####################
 # image management #
 ####################

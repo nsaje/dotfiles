@@ -124,7 +124,7 @@ node {
                         sh './scripts/push_static_to_s3.sh'
                     },
                     'Restapi docs': {
-                        sh './server/restapi/docs/build-docker.sh "build-${BRANCH_NAME}.${BUILD_NUMBER}.html" && ./scripts/push_docs_to_s3.sh ./server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html'
+                        sh 'make generate_docs && make push_docs'
                     },
                     'Artifacts': {
                         sh './scripts/push_artifact_to_s3.sh "docker-compose.prod.yml"'
