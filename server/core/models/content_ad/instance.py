@@ -4,7 +4,6 @@ import dash.constants
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
-import utils.redirector_helper
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
@@ -139,4 +138,3 @@ class ContentAdInstanceMixin(object):
             user=request and request.user or None,
             action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
         )
-        utils.redirector_helper.update_redirect(self.url, self.redirect_id)

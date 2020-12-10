@@ -1,11 +1,9 @@
 from django.db import transaction
 
-import core.features.audiences
-import core.models
 import dash.constants
 import utils.exc
 import utils.k1_helper
-import utils.redirector_helper
+import utils.redirector
 
 from . import model
 
@@ -28,10 +26,9 @@ class ConversionPixelInstanceMixin:
         if not skip_propagation:
             self._write_change_history(request, changes)
             utils.k1_helper.update_account(self.account, msg="conversion_pixel.update")
-            self._r1_upsert_audiences()
 
         if not skip_propagation and "redirect_url" in changes:
-            utils.redirector_helper.update_pixel(self)
+            utils.redirector.update_pixel(self)
 
     def _clean_updates(self, request, updates, skip_permission_check):
         user = request.user if request else None
@@ -79,11 +76,6 @@ class ConversionPixelInstanceMixin:
             self.account.write_history(
                 changes_text, user=request.user, action_type=dash.constants.HistoryActionType.CONVERSION_PIXEL_RENAME
             )
-
-    def _r1_upsert_audiences(self):
-        audiences = core.features.audiences.Audience.objects.filter(pixel_id=self.id).filter(archived=False)
-        for audience in audiences:
-            utils.redirector_helper.upsert_audience(audience)
 
     @transaction.atomic
     def save(self, *args, **kwargs):

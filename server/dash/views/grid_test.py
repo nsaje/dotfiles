@@ -2,7 +2,6 @@ import json
 from decimal import Decimal
 
 from django.urls import reverse
-from mock import patch
 
 from core.models import all_rtb
 from dash import constants
@@ -27,8 +26,7 @@ class RTBSourceSettingsTestCase(BaseTestCase):
 
         self.client.login(username=self.user.email, password="secret")
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_post_cpc(self, mock_redirector_insert_adgroup):
+    def test_post_cpc(self):
         prev_ad_group_settings = self.ad_group.get_current_settings()
         response = self.client.post(
             reverse(
@@ -73,8 +71,7 @@ class RTBSourceSettingsTestCase(BaseTestCase):
         # RTB cpc is mapped to ad group cpc
         self.assertTrue("CPC can't be higher than" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_post_cpm(self, mock_redirector_insert_adgroup):
+    def test_post_cpm(self):
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(None)
         prev_ad_group_settings = self.ad_group.get_current_settings()

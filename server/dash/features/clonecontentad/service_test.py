@@ -10,7 +10,6 @@ from utils.magic_mixer import magic_mixer
 from . import service
 
 
-@patch.object(core.models.ContentAd.objects, "insert_redirects", autospec=True)
 class Clone(TestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
@@ -39,7 +38,7 @@ class Clone(TestCase):
 
     @patch("utils.sspd_client.sync_batch", autospec=True)
     @patch("utils.k1_helper.update_ad_group", autospec=True)
-    def test_clone(self, mock_update_ad_group, mock_sspd_sync, _):
+    def test_clone(self, mock_update_ad_group, mock_sspd_sync):
         batch = service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
         cloned_ads = core.models.ContentAd.objects.filter(batch=batch)
@@ -80,8 +79,7 @@ class Clone(TestCase):
         for bid_modifier in bid_modifiers:
             self.assertEqual(1.2, bid_modifier.modifier)
 
-    def test_clone_state_override(self, _):
-
+    def test_clone_state_override(self):
         for content_ad in self.source_content_ads:
             self.assertEqual(content_ad.state, dash.constants.ContentAdSourceState.ACTIVE)
 
@@ -98,13 +96,13 @@ class Clone(TestCase):
         for content_ad in cloned_ads:
             self.assertEqual(content_ad.state, dash.constants.ContentAdSourceState.INACTIVE)
 
-    def test_clone_type_mismatch(self, _):
+    def test_clone_type_mismatch(self):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         self.ad_group.campaign.save(None)
         with self.assertRaises(core.models.content_ad.exceptions.CampaignAdTypeMismatch):
             service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
-    def test_validate_other_account(self, _):
+    def test_validate_other_account(self):
         other_account = magic_mixer.blend(core.models.Account)
         other_campaign = magic_mixer.blend(core.models.Campaign, account=other_account)
         other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=other_campaign)

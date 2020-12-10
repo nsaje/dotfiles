@@ -295,8 +295,7 @@ class InstanceTest(TestCase):
             },
         )
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_get_external_cpc(self, mock_insert_adgroup):
+    def test_get_external_cpc(self):
         self.ad_group.settings.update(
             None, cpc=Decimal("1.0"), autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
@@ -305,8 +304,7 @@ class InstanceTest(TestCase):
             Decimal("0.648"), self.ad_group.settings.get_external_bid(Decimal("0.1"), Decimal("0.2"), Decimal("0.1"))
         )
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_get_external_cpm(self, mock_insert_adgroup):
+    def test_get_external_cpm(self):
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.settings.update(
             None, cpm=Decimal("10.0"), autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
@@ -316,8 +314,7 @@ class InstanceTest(TestCase):
             Decimal("6.48"), self.ad_group.settings.get_external_bid(Decimal("0.1"), Decimal("0.2"), Decimal("0.1"))
         )
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
+    def test_get_external_b1_sources_group_daily_budget(self):
         self.ad_group.settings.update(
             None,
             b1_sources_group_daily_budget=Decimal("500"),
@@ -331,8 +328,7 @@ class InstanceTest(TestCase):
             ),
         )
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_update_fields(self, mock_insert_adgroup):
+    def test_update_fields(self):
         self.ad_group.settings.update(None, bluekai_targeting=["outbrain:1234"])
         self.assertEqual(["outbrain:1234"], self.ad_group.settings.bluekai_targeting)
 
@@ -493,15 +489,6 @@ class InstanceTest(TestCase):
         # assert source bids haven't changed
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpm, Decimal("0.4"))
-
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_redirector_update(self, mock_insert_adgroup):
-        ad_group = magic_mixer.blend(core.models.AdGroup)
-        ad_group.settings.update(None, name="test")
-        mock_insert_adgroup.assert_not_called()
-
-        ad_group.settings.update(None, tracking_code="123")
-        mock_insert_adgroup.assert_called_once_with(ad_group)
 
     @patch("utils.k1_helper.update_ad_group")
     def test_k1_priority(self, mock_update_ad_group):

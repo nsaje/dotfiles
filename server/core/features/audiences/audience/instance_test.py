@@ -14,10 +14,9 @@ class InstanceTestCase(BaseTestCase):
         super().setUp()
         self.request = get_request_mock(self.user)
 
-    @mock.patch("utils.redirector_helper.upsert_audience")
     @mock.patch("utils.k1_helper.update_account")
     @mock.patch("core.features.audiences.Audience.add_to_history")
-    def test_create(self, history_mock, k1_update_account_mock, redirector_audience_mock):
+    def test_create(self, history_mock, k1_update_account_mock):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
@@ -39,12 +38,10 @@ class InstanceTestCase(BaseTestCase):
 
         history_mock.assert_called_once()
         k1_update_account_mock.assert_called_once()
-        redirector_audience_mock.assert_called_once()
 
-    @mock.patch("utils.redirector_helper.upsert_audience")
     @mock.patch("utils.k1_helper.update_account")
     @mock.patch("core.features.audiences.Audience.add_to_history")
-    def test_update(self, history_mock, k1_update_account_mock, redirector_audience_mock):
+    def test_update(self, history_mock, k1_update_account_mock):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="pixel1")
         audience = core.features.audiences.Audience.objects.create(
@@ -76,7 +73,6 @@ class InstanceTestCase(BaseTestCase):
 
         self.assertEqual(2, history_mock.call_count)
         self.assertEqual(2, k1_update_account_mock.call_count)
-        self.assertEqual(2, redirector_audience_mock.call_count)
 
     def test_archived(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])

@@ -512,7 +512,6 @@
         tracker_urls: ['http://testurl.com', 'http://testurl2.com']
         title: 'Test Article unicode Čžš'
         ad_group: 2040
-        redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:00'
         state: 1
         display_url: 'example.com'

@@ -2,10 +2,10 @@ import io
 import json
 
 import confluent_kafka
+import fastavro
 from confluent_kafka.serialization import Deserializer
 from confluent_kafka.serialization import SerializationError
 
-import fastavro
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)

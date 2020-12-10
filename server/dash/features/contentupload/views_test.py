@@ -463,17 +463,8 @@ class UploadSaveTestCase(BaseTestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    @staticmethod
-    def _mock_insert_redirects(content_ads, clickthrough_resolve):
-        return {
-            str(content_ad.id): {"redirect": {"url": "http://example.com"}, "redirectid": "abc123"}
-            for content_ad in content_ads
-        }
-
     @patch("utils.sspd_client.sync_batch", MagicMock())
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_ok(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects
+    def test_ok(self):
         batch_id = 8
         ad_group_id = 7
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
@@ -493,9 +484,7 @@ class UploadSaveTestCase(BaseTestCase):
             'Imported batch "batch 2" with 1 content ad.',
         )
 
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_ad_group_archived(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects
+    def test_ad_group_archived(self):
         batch_id = 8
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
         ad_group = models.AdGroup.objects.get(id=7)
@@ -522,9 +511,7 @@ class UploadSaveTestCase(BaseTestCase):
             json.loads(response.content),
         )
 
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_type_mismatch(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects
+    def test_type_mismatch(self):
         batch_id = 8
 
         response = self.client.post(
@@ -548,10 +535,7 @@ class UploadSaveTestCase(BaseTestCase):
         )
 
     @patch("utils.sspd_client.sync_batch", MagicMock())
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_change_batch_name(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects
-
+    def test_change_batch_name(self):
         batch_id = 8
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
@@ -593,10 +577,7 @@ class UploadSaveTestCase(BaseTestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(batch.name, "batch 2")
 
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_errors(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects
-
+    def test_errors(self):
         batch_id = 3
 
         response = self.client.post(
@@ -618,27 +599,6 @@ class UploadSaveTestCase(BaseTestCase):
             json.loads(response.content),
         )
         self.assertEqual(400, response.status_code)
-
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_redirector_error(self, mock_insert_batch):
-        mock_insert_batch.side_effect = Exception()
-
-        batch_id = 8
-        ad_group_id = 7
-        models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
-
-        response = self.client.post(
-            reverse("upload_save", kwargs={"batch_id": batch_id}),
-            json.dumps({}),
-            content_type="application/json",
-            follow=True,
-        )
-        self.assertEqual(500, response.status_code)
-        self.assertEqual(
-            {"success": False, "data": {"error_code": "ServerError", "message": "An error occurred."}},
-            json.loads(response.content),
-        )
-        self.assertEqual(0, models.ContentAd.objects.filter(ad_group_id=ad_group_id).count())
 
     def test_invalid_batch_status(self):
         batch_id = 4

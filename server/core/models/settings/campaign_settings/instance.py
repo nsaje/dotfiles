@@ -5,7 +5,6 @@ import dash.features.ga
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
-import utils.redirector_helper
 from automation import autopilot
 from automation import autopilot_legacy
 
@@ -111,14 +110,6 @@ class CampaignSettingsMixin(object):
 
     def _propagate_settings(self, changes):
         campaign_ad_groups = self.campaign.adgroup_set.all().select_related("settings", "campaign__settings")
-
-        any_tracking_changes = any(
-            prop in changes for prop in ["enable_ga_tracking", "enable_adobe_tracking", "adobe_tracking_param"]
-        )
-        if any_tracking_changes:
-            for ad_group in campaign_ad_groups:
-                utils.redirector_helper.insert_adgroup(ad_group)
-
         ad_group_changes = any(prop in changes for prop in ["iab_category", "language"])
         if ad_group_changes:
             utils.k1_helper.update_ad_groups(campaign_ad_groups, msg="CampaignSettings.update")

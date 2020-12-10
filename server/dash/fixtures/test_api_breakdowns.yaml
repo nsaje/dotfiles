@@ -492,7 +492,6 @@
         title: 'Title 1'
         type: 1
         ad_group: 1
-        redirect_id: 'r1'
         created_dt: '2015-02-21T00:00:00'
         state: 1
         display_url: 'example.com'
@@ -514,7 +513,6 @@
         title: 'Title 2'
         type: 1
         ad_group: 1
-        redirect_id: 'r2'
         created_dt: '2015-02-21T00:00:01'
         state: 2
         display_url: 'example.com'

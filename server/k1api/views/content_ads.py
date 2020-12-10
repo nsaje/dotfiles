@@ -101,7 +101,6 @@ class ContentAdsView(K1APIView):
                 "language": campaign_settings_map[item.ad_group.campaign_id].language,
                 "title": item.title,
                 "url": item.url,
-                "redirect_id": item.redirect_id,
                 "image_id": item.image_id,
                 "image_width": item.image_width,
                 "image_height": item.image_height,

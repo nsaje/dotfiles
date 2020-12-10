@@ -4,7 +4,6 @@ from django.db.models import Q
 from dash import constants
 from utils import exc
 from utils import k1_helper
-from utils import redirector_helper
 
 
 class AudienceInstanceMixin:
@@ -24,7 +23,6 @@ class AudienceInstanceMixin:
 
         if not skip_propagation:
             self._write_change_history(request, changes)
-            redirector_helper.upsert_audience(self)
             k1_helper.update_account(self.pixel.account, msg="audience.update")
 
     def _clean_updates(self, request, updates, skip_permission_check):

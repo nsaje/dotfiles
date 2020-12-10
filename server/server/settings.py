@@ -423,7 +423,6 @@ DCRON = {
     "default_warning_wait": 300,  # 5 min
     # Job warning wait overrides.
     "warning_waits": {
-        "monitor_adgroup_propagation": 3900,  # 1 h 5 min
         "campaignstop_simple": 1500,  # 25 min
         "refresh_etl": 600,  # 10 min
         "cross_check": 1800,  # 30 min
@@ -436,7 +435,6 @@ DCRON = {
         "campaignstop_selection": 7200,  # 120 min
         "clean_up_postgres_stats": 7200,  # 2h
         "create_demand_report": 7200,  # 2 h
-        "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
         "refresh_audience_sample_size_cache": 8100.0,  # 2h 15 min
         "cross_check": 7200,  # 2h

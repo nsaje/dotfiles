@@ -255,9 +255,8 @@ class ConversionPixelTestCase(BaseTestCase):
             decoded_response["data"]["rows"],
         )
 
-    @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.k1_helper.update_account")
-    def test_post(self, ping_mock, redirector_mock):
+    def test_post(self, ping_mock):
         response = self.client.post(
             reverse("account_conversion_pixels", kwargs={"account_id": 1}),
             json.dumps({"name": "name"}),
@@ -289,12 +288,10 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
         self.assertFalse(ping_mock.called)
-        self.assertFalse(redirector_mock.called)
 
-    @patch("utils.redirector_helper.update_pixel")
-    @patch("utils.redirector_helper.upsert_audience")
+    @patch("utils.redirector.update_pixel")
     @patch("utils.k1_helper.update_account")
-    def test_post_redirect_url(self, ping_mock, redirector_mock, update_pixel_mock):
+    def test_post_redirect_url(self, ping_mock, update_pixel_mock):
         permission = authmodels.Permission.objects.get(codename="can_redirect_pixels")
         self.user.user_permissions.add(permission)
 
@@ -330,7 +327,6 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
         self.assertFalse(ping_mock.called)
-        self.assertFalse(redirector_mock.called)
 
         self.assertTrue(update_pixel_mock.called)
 
@@ -376,10 +372,9 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
 
-    @patch("utils.redirector_helper.update_pixel")
-    @patch("utils.redirector_helper.upsert_audience")
+    @patch("utils.redirector.update_pixel")
     @patch("utils.k1_helper.update_account")
-    def test_post_notes(self, ping_mock, redirector_mock, update_pixel_mock):
+    def test_post_notes(self, ping_mock, update_pixel_mock):
         conversion_pixel = models.ConversionPixel.objects.get(id=1)
         conversion_pixel.save()
         response = self.client.post(
@@ -413,11 +408,9 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
         self.assertFalse(ping_mock.called)
-        self.assertFalse(redirector_mock.called)
         self.assertTrue(update_pixel_mock.called)
 
-    @patch("utils.redirector_helper.upsert_audience")
-    def test_put_archive(self, redirector_mock):
+    def test_put_archive(self):
         conversion_pixel = models.ConversionPixel.objects.get(pk=2)
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 2}),
@@ -446,8 +439,6 @@ class ConversionPixelTestCase(BaseTestCase):
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual("Archived conversion pixel named test2.", hist.changes_text)
-
-        self.assertFalse(redirector_mock.called)
 
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest("id")
@@ -481,9 +472,8 @@ class ConversionPixelTestCase(BaseTestCase):
 
         self.assertEqual("Conversion pixel does not exist", decoded_response["data"]["message"])
 
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_redirect_url(self, update_pixel_mock, upsert_audience_mock):
+    @patch("utils.redirector.update_pixel")
+    def test_put_redirect_url(self, update_pixel_mock):
         add_permissions(self.user, ["can_redirect_pixels"])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.save()
@@ -516,12 +506,10 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL, hist.action_type)
         self.assertEqual("Set redirect url of pixel named test to http://test.com.", hist.changes_text)
 
-        self.assertEqual(upsert_audience_mock.call_count, 4)
         update_pixel_mock.assert_called_once_with(conversion_pixel)
 
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_redirect_url_remove(self, update_pixel_mock, upsert_audience_mock):
+    @patch("utils.redirector.update_pixel")
+    def test_put_redirect_url_remove(self, update_pixel_mock):
         add_permissions(self.user, ["can_redirect_pixels"])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.redirect_url = "http://test.com"
@@ -556,7 +544,6 @@ class ConversionPixelTestCase(BaseTestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL, hist.action_type)
         self.assertEqual("Removed redirect url of pixel named test.", hist.changes_text)
 
-        self.assertEqual(upsert_audience_mock.call_count, 4)
         update_pixel_mock.assert_called_once_with(conversion_pixel)
 
     def test_put_redirect_url_invalid(self):
@@ -572,9 +559,8 @@ class ConversionPixelTestCase(BaseTestCase):
 
         self.assertEqual(["Enter a valid URL."], decoded_response["data"]["errors"]["redirect_url"])
 
-    @patch("utils.redirector_helper.upsert_audience")
-    @patch("utils.redirector_helper.update_pixel")
-    def test_put_notes(self, update_pixel_mock, upsert_audience_mock):
+    @patch("utils.redirector.update_pixel")
+    def test_put_notes(self, update_pixel_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.save()
         response = self.client.put(
@@ -601,7 +587,6 @@ class ConversionPixelTestCase(BaseTestCase):
             decoded_response["data"],
         )
 
-        self.assertEqual(upsert_audience_mock.call_count, 4)
         self.assertEqual(update_pixel_mock.call_count, 0)
 
 

@@ -1,0 +1,82 @@
+syntax = "proto3";
+package models;
+
+// IMPORTANT: The source repository for this file is in B1 project; everything else is just a copy!
+// IMPORTANT: Don't forget to use the same generated file in R1 project
+// IMPORTANT: Don't forget to use the same .proto file K1 project
+message RedirectData {
+    string request_zuid = 1;
+    string bid_id = 2;
+    
+    int64 account_id = 3;
+    int64 campaign_id = 4;
+    
+    string publisher_domain = 5;
+    string android_advertiser_id = 6;
+    string ios_advertiser_id = 7;
+
+    bool skip_blacklisted_ip = 8;
+    bool nas_media_source = 9;
+
+    string click_value = 10;
+    int64 cpc_type = 11;
+    double click_factor = 12;
+
+    int64 ob_kpio_activation_mode = 13;
+    double ob_cpc_discount = 14;
+
+    string user_categories = 15;
+
+    string cpc_data_price = 16;
+
+    string ob_section_id = 17;
+    string ob_amplify_publisher_id = 18;
+    string ob_engage_publisher_id = 19;
+    string ob_os_family = 20;
+    string ob_browser_family = 21;
+    string ob_platform = 22;
+    string ob_sub_platform = 23;
+
+    repeated uint64 ob_categories = 24;
+    uint64 ob_document_id = 25;
+
+    bool dnt = 26;
+    bool pdnt = 27;
+    bool ob_pdnt = 28;
+
+    string ab_test_context = 29;
+    bool control_context = 30;
+
+    string fingerprint = 31;
+    string ob_internal_uid = 32;
+    
+    int64 device_type = 33;
+    string device_os2 = 34;
+    string device_osv2 = 35;
+    string device_environment = 36;
+    string geo_country = 37;
+    string geo_region = 38;
+    int64 geo_metro = 39;
+    string geo_zip = 40;
+    string browser_family = 41;
+    string connection_type = 42;
+
+    string tag_id = 43;
+    int64 placement_type = 44;
+
+    int64 gdpr_version = 45;
+    string ccpa = 46;
+
+    string redirect_url = 47;
+
+    bool ga_tracking_enabled = 48;
+    bool adobe_tracking_enabled = 49;
+    string tracking_codes = 50;
+    string adobe_tracking_param = 51;
+
+    string request_rating = 52;
+
+    uint64 ob_ad_document_id = 53;
+    uint64 ob_ad_id = 54;
+    uint64 ob_campaign_id = 55;
+}

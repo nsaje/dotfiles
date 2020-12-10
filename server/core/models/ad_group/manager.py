@@ -9,7 +9,6 @@ import core.models.helpers
 import dash.constants
 import prodops.hacks
 import utils.k1_helper
-import utils.redirector_helper
 
 from . import exceptions
 from . import model
@@ -181,7 +180,6 @@ class AdGroupManager(core.common.BaseManager):
                 autopilot.recalculate_ad_group_budgets(ad_group.campaign)
 
         utils.k1_helper.update_ad_group(ad_group, msg="Campaignmodel.AdGroups.put")
-        utils.redirector_helper.insert_adgroup(ad_group)
 
     def _validate_archived(self, campaign):
         if campaign.is_archived():

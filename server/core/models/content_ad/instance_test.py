@@ -8,7 +8,6 @@ from dash import constants
 from utils import email_helper
 from utils import exc
 from utils import k1_helper
-from utils import redirector_helper
 from utils.magic_mixer import magic_mixer
 
 from . import instance
@@ -17,10 +16,9 @@ from . import model
 
 @mock.patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class InstanceTest(TestCase):
-    @mock.patch.object(redirector_helper, "update_redirect")
     @mock.patch.object(email_helper, "send_ad_group_notification_email")
     @mock.patch.object(k1_helper, "update_content_ad")
-    def test_update(self, mock_k1_update, mock_email_helper, mock_update_redirect):
+    def test_update(self, mock_k1_update, mock_email_helper):
         content_ad = magic_mixer.blend(model.ContentAd)
         content_ad.ad_group.write_history = mock.MagicMock()
 
@@ -67,7 +65,6 @@ class InstanceTest(TestCase):
         )
         # (tfischer): email_helper should not be called when passing user=None
         mock_email_helper.assert_not_called()
-        mock_update_redirect.assert_called_with("https://example.com", content_ad.redirect_id)
 
     @mock.patch.object(k1_helper, "update_content_ad")
     def test_oen_document_data(self, mock_k1_update):

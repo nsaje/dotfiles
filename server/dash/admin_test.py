@@ -15,8 +15,7 @@ class AdGroupAdmin(TestCase):
 
     fixtures = ["test_models"]
 
-    @mock.patch.object(admin.utils.redirector_helper, "insert_adgroup")
-    def test_save_additional_targeting(self, mock_r1_insert_adgroup):
+    def test_save_additional_targeting(self):
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -35,7 +34,6 @@ class AdGroupAdmin(TestCase):
         old_settings = models.AdGroupSettings.objects.filter(ad_group=ad_group)[1]
         self.assertNotEqual(old_settings.notes, "new notes")
         self.assertEqual(ad_group.settings.notes, "new notes")
-        mock_r1_insert_adgroup.assert_not_called()
 
 
 class DirectDealConnectionAdminTestCase(TestCase):

@@ -271,8 +271,7 @@ class AdGroupsTest(K1APIBaseTest):
         data = json.loads(response.content)["response"][0]
         self.assertEqual(dash.constants.B1AutopilotState.INACTIVE, data["autopilot_state"])
 
-    @patch("utils.redirector_helper.insert_adgroup")
-    def test_get_ad_groups(self, mock_redirector):
+    def test_get_ad_groups(self):
         n = 10
         source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
         ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)

@@ -11,9 +11,8 @@ from utils.magic_mixer import magic_mixer
 from . import exceptions
 
 
-@patch("core.models.ContentAd.objects.insert_redirects")
 class CreateContentAd(TestCase):
-    def test_create(self, mock_insert_redirects):
+    def test_create(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
@@ -25,9 +24,8 @@ class CreateContentAd(TestCase):
         self.assertEqual(content_ad.brand_name, "Zemanta")
 
         self.assertEqual(content_ad.contentadsource_set.all().count(), 5)
-        mock_insert_redirects.assert_called_with([content_ad], clickthrough_resolve=True)
 
-    def test_create_icon(self, mock_insert_redirects):
+    def test_create_icon(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
@@ -59,15 +57,14 @@ class CreateContentAd(TestCase):
         self.assertEqual(300, content_ad_4.icon.height)
         self.assertEqual("test.com", content_ad_4.icon.origin_url)
 
-    def test_create_ad_group_archived(self, mock_insert_redirects):
+    def test_create_ad_group_archived(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=True)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
         with self.assertRaises(exceptions.AdGroupIsArchived):
             core.models.ContentAd.objects.create(batch, sources, url="zemanta.com", brand_name="Zemanta")
-        mock_insert_redirects.assert_not_called()
 
-    def test_create_icon_not_square(self, mock_insert_redirects):
+    def test_create_icon_not_square(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
@@ -77,9 +74,8 @@ class CreateContentAd(TestCase):
             core.models.ContentAd.objects.create(batch, sources, icon_height=200)
         with self.assertRaises(exceptions.IconNotSquare):
             core.models.ContentAd.objects.create(batch, sources, icon_width=100)
-        mock_insert_redirects.assert_not_called()
 
-    def test_create_icon_incomplete_data(self, mock_insert_redirects):
+    def test_create_icon_incomplete_data(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
@@ -133,7 +129,6 @@ class CreateContentAd(TestCase):
             core.models.ContentAd.objects.create(
                 batch, sources, icon_hash="icon_hash", icon_height=200, icon_width=200, icon_file_size=1000
             )
-        mock_insert_redirects.assert_not_called()
         core.models.ContentAd.objects.create(
             batch,
             sources,
@@ -143,7 +138,6 @@ class CreateContentAd(TestCase):
             icon_width=200,
             icon_file_size=1000,
         )
-        mock_insert_redirects.assert_called_once()
 
     def _blend_a_batch(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -161,7 +155,7 @@ class CreateContentAd(TestCase):
         return magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
 
     @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
-    def test_bulk_create_from_candidates(self, mock_insert_redirects):
+    def test_bulk_create_from_candidates(self):
         batch = self._blend_a_batch()
         icon = magic_mixer.blend(
             core.models.ImageAsset,
@@ -193,11 +187,7 @@ class CreateContentAd(TestCase):
             self.assertEqual(1234, content_ad.icon.file_size)
             self.assertEqual("test.com", content_ad.icon.origin_url)
 
-        # check redirector sync
-        self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=True)
-
-    def test_bulk_clone(self, mock_insert_redirects):
+    def test_bulk_clone(self):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
         batch.state_override = None
@@ -251,11 +241,7 @@ class CreateContentAd(TestCase):
         for bid_modifier in bid_modifiers:
             self.assertEqual(1.7, bid_modifier.modifier)
 
-        # check redirector sync
-        self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
-
-    def test_bulk_clone_override_state(self, mock_insert_redirects):
+    def test_bulk_clone_override_state(self):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
         batch.state_override = constants.ContentAdSourceState.ACTIVE
@@ -291,12 +277,8 @@ class CreateContentAd(TestCase):
             self.assertEqual(1234, content_ad.icon.file_size)
             self.assertEqual("test.com", content_ad.icon.origin_url)
 
-        # check redirector sync
-        self.assertEqual(mock_insert_redirects.call_count, 1)
-        mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
-
     @patch.object(core.models.AdGroup, "is_archived", return_value=True)
-    def test_bulk_clone_archived_ad_group_fail(self, mock_archived, mock_insert_redirects):
+    def test_bulk_clone_archived_ad_group_fail(self, mock_archived):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
         icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
@@ -307,11 +289,8 @@ class CreateContentAd(TestCase):
         with self.assertRaises(exceptions.AdGroupIsArchived):
             core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
 
-        # check redirector sync
-        mock_insert_redirects.assert_not_called()
-
     @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
-    def test_create_oen_additional_data(self, mock_insert_redirects):
+    def test_create_oen_additional_data(self):
         core.models.Account.objects.filter(id=settings.HARDCODED_ACCOUNT_ID_OEN).delete()
         account = magic_mixer.blend(core.models.Account, id=settings.HARDCODED_ACCOUNT_ID_OEN)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)

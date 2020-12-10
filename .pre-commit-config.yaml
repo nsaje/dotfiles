@@ -32,6 +32,7 @@ repos:
       language: python
       language_version: python3.7
       types: [python]
+      exclude: _pb2.py$
 - repo: https://github.com/prettier/prettier
   rev: "1.19.1"
   hooks:

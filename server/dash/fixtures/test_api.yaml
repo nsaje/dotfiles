@@ -1023,7 +1023,6 @@
         }]
         title: 'Test Article unicode Čžš'
         ad_group: 1
-        redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:00'
         state: 1
         display_url: 'example.com'
@@ -1045,7 +1044,6 @@
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 1'
         ad_group: 1
-        redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:01'
         state: 2
         display_url: 'example.com'

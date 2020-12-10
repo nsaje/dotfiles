@@ -16,7 +16,6 @@ from . import exceptions
 
 
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
-@patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
 @patch("automation.autopilot.recalculate_ad_group_budgets", autospec=True)
 @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
@@ -25,7 +24,7 @@ class AdGroupCreate(TestCase):
         self.request = magic_mixer.blend_request_user()
         self.campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
 
-    def test_create(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+    def test_create(self, mock_autopilot_init, mock_k1_ping, mock_bulk_create):
         self.campaign.settings.update_unsafe(None, autopilot=True)
         self.assertEqual(0, core.models.settings.AdGroupSettings.objects.all().count())
 
@@ -35,7 +34,6 @@ class AdGroupCreate(TestCase):
         self.assertEqual(ad_group.campaign, self.campaign)
 
         self.assertTrue(mock_bulk_create.called)
-        self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
         mock_k1_ping.assert_called_with(ad_group, msg="Campaignmodel.AdGroups.put")
 
@@ -43,7 +41,7 @@ class AdGroupCreate(TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
-    def test_create_oen(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+    def test_create_oen(self, mock_autopilot_init, mock_k1_ping, mock_bulk_create):
         campaign = magic_mixer.blend(
             core.models.Campaign,
             account__id=settings.HARDCODED_ACCOUNT_ID_OEN,
@@ -53,7 +51,7 @@ class AdGroupCreate(TestCase):
 
         self.assertFalse(mock_bulk_create.called)
 
-    def test_create_campaign_archived(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+    def test_create_campaign_archived(self, mock_autopilot_init, mock_k1_ping, mock_bulk_create):
         self.campaign.archived = True
         with self.assertRaises(exceptions.CampaignIsArchived):
             core.models.AdGroup.objects.create(self.request, self.campaign, name="test")
@@ -61,7 +59,7 @@ class AdGroupCreate(TestCase):
     @patch("django.conf.settings.AMPLIFY_REVIEW", True)
     @patch("core.models.AdGroupSource.objects.create")
     def test_create_amplify_review_ad_group_source(
-        self, mock_create, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create
+        self, mock_create, mock_autopilot_init, mock_k1_ping, mock_bulk_create
     ):
         outbrain_source = magic_mixer.blend(core.models.Source, source_type__type="outbrain")
         ad_group = core.models.AdGroup.objects.create(self.request, self.campaign)
@@ -76,14 +74,14 @@ class AdGroupCreate(TestCase):
             state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
         )
 
-    def test_set_bidding_type(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+    def test_set_bidding_type(self, mock_autopilot_init, mock_k1_ping, mock_bulk_create):
         request_with_permission = magic_mixer.blend_request_user()
         ad_group = core.models.AdGroup.objects.create(
             request_with_permission, self.campaign, bidding_type=dash.constants.BiddingType.CPM
         )
         self.assertEqual(dash.constants.BiddingType.CPM, ad_group.bidding_type)
 
-    def test_set_initial_bids(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+    def test_set_initial_bids(self, mock_autopilot_init, mock_k1_ping, mock_bulk_create):
         core.features.multicurrency.CurrencyExchangeRate.objects.create(
             currency=dash.constants.Currency.ILS,
             date=dates_helper.local_today(),
@@ -123,11 +121,10 @@ class AdGroupCreate(TestCase):
 
 
 @patch("core.models.AdGroupSource.objects.bulk_clone_on_allowed_sources")
-@patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
 @patch("automation.autopilot.recalculate_ad_group_budgets", autospec=True)
 class AdGroupClone(TestCase):
-    def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.CONVERSION)
@@ -156,7 +153,6 @@ class AdGroupClone(TestCase):
         self.assertEqual(5, ad_group.directdealconnection_set.filter(deal=direct_deal).count())
 
         self.assertTrue(mock_bulk_clone.called)
-        self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
         mock_k1_ping.assert_called_with(ad_group, msg="Campaignmodel.AdGroups.put")
 
@@ -165,7 +161,7 @@ class AdGroupClone(TestCase):
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.DEAL_CONNECTION_CREATE)
         self.assertEqual(history[5].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
-    def test_clone_state_override(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_state_override(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, account__agency__uses_realtime_autopilot=True)
@@ -182,7 +178,7 @@ class AdGroupClone(TestCase):
         )
         self.assertEqual(ad_group.settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
 
-    def test_clone_video(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_video(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.VIDEO)
@@ -199,7 +195,6 @@ class AdGroupClone(TestCase):
         self.assertEqual(ad_group.name, "asd")
 
         self.assertTrue(mock_bulk_clone.called)
-        self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
         mock_k1_ping.assert_called_with(ad_group, msg="Campaignmodel.AdGroups.put")
 
@@ -207,7 +202,7 @@ class AdGroupClone(TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
-    def test_clone_video_error(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_video_error(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(
@@ -219,7 +214,7 @@ class AdGroupClone(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
-    def test_clone_display(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_display(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
@@ -238,7 +233,6 @@ class AdGroupClone(TestCase):
         self.assertEqual(ad_group.name, "asd")
 
         self.assertTrue(mock_bulk_clone.called)
-        self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
         mock_k1_ping.assert_called_with(ad_group, msg="Campaignmodel.AdGroups.put")
 
@@ -246,7 +240,7 @@ class AdGroupClone(TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
-    def test_clone_display_error(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_display_error(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
@@ -256,7 +250,7 @@ class AdGroupClone(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
-    def test_clone_bid_modifiers(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+    def test_clone_bid_modifiers(self, mock_autopilot_init, mock_k1_ping, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)

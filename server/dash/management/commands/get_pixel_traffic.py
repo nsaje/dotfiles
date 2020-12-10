@@ -1,5 +1,5 @@
+import utils.redirector
 from dash import models
-from utils import redirector_helper
 from utils import zlogging
 from utils.command_helpers import Z1Command
 
@@ -8,7 +8,7 @@ logger = zlogging.getLogger(__name__)
 
 class Command(Z1Command):
     def handle(self, *args, **options):
-        for pixel_traffic in redirector_helper.get_pixel_traffic():
+        for pixel_traffic in utils.redirector.get_pixel_traffic():
             logger.info("Updating pixel", slug=pixel_traffic["slug"], account=pixel_traffic["accountid"])
 
             try:

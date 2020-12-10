@@ -4,7 +4,6 @@ from decimal import Decimal
 
 import mock
 from django.conf import settings
-from django.test import override_settings
 from mock import MagicMock
 from mock import patch
 
@@ -38,6 +37,7 @@ are returned matters.
 
 
 START_DATE, END_DATE = datetime.date(2016, 7, 1), datetime.date(2016, 8, 31)
+R1_CREATIVE_REDIRECT_URL = "https://r1.zemanta.com/creative/123"
 
 SOURCE_1 = {
     "archived": False,
@@ -151,7 +151,7 @@ CONTENT_AD_1 = {
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
-    "redirector_url": "http://r1.zemanta.com/b/r1/z1/1/1/",
+    "redirector_url": R1_CREATIVE_REDIRECT_URL,
     "url": "http://testurl1.com",
     "state": 1,
     "status": 1,
@@ -206,7 +206,7 @@ CONTENT_AD_2 = {
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
-    "redirector_url": "http://r1.zemanta.com/b/r2/z1/1/2/",
+    "redirector_url": R1_CREATIVE_REDIRECT_URL,
     "url": "http://testurl2.com",
     "state": 2,
     "status": 2,
@@ -336,7 +336,7 @@ SOURCE_1__CONTENT_AD_1 = {
     "amplify_live_preview_link": "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?_b1_ad_group_id=1&_b1_cpm=500&_b1_no_targeting=1",
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
-    "redirector_url": "http://r1.zemanta.com/b/r1/z1/1/1/",
+    "redirector_url": R1_CREATIVE_REDIRECT_URL,
     "url": "http://testurl1.com",
     "state": 1,
     "status": 1,
@@ -511,9 +511,7 @@ PUBLISHER_5__SOURCE_2 = {
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 class QueryTestCase(BaseTestCase):
-
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_query_all_accounts_break_account(self):
@@ -892,7 +890,9 @@ class QueryTestCase(BaseTestCase):
             ],
         )
 
-    def test_query_ad_groups_break_content_ad(self):
+    @patch("utils.redirector.construct_redirector_url")
+    def test_query_ad_groups_break_content_ad(self, mock_construct_redirector_url):
+        mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = api_breakdowns.query(
             Level.AD_GROUPS,
             User.objects.get(pk=1),
@@ -952,7 +952,9 @@ class QueryTestCase(BaseTestCase):
 
         self.assertEqual(rows, [AD_GROUP_SOURCE_1, AD_GROUP_SOURCE_2])
 
-    def test_query_ad_groups_break_source_content_ad(self):
+    @patch("utils.redirector.construct_redirector_url")
+    def test_query_ad_groups_break_source_content_ad(self, mock_construct_redirector_url):
+        mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = api_breakdowns.query(
             Level.AD_GROUPS,
             User.objects.get(pk=1),
@@ -1057,9 +1059,7 @@ class QueryTestCase(BaseTestCase):
 
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 class QueryOrderTestCase(BaseTestCase):
-
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_query_campaigns_break_ad_group(self):
@@ -1139,9 +1139,7 @@ class QueryOrderTestCase(BaseTestCase):
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 class QueryForRowsTestCase(BaseTestCase):
-
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_query_for_rows_all_accounts_break_account(self):
@@ -1685,8 +1683,10 @@ class QueryForRowsTestCase(BaseTestCase):
             ],
         )
 
-    def test_query_for_rows_ad_groups_break_content_ad(self):
+    @patch("utils.redirector.construct_redirector_url")
+    def test_query_for_rows_ad_groups_break_content_ad(self, mock_construct_redirector_url):
         self.maxDiff = None
+        mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = api_breakdowns.query_for_rows(
             [{"content_ad_id": 1, "clicks": 11}, {"content_ad_id": 2, "clicks": 22}],
             Level.AD_GROUPS,

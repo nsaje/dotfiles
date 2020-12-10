@@ -273,13 +273,8 @@ USE_CELERY_FOR_CAMPAIGN_CLONING = False
 USE_CELERY_FOR_AD_GROUP_CLONING = False
 
 R1_DEMO_MODE = True
-R1_API_SIGN_KEY = Secret("").get()
-R1_REDIRECTS_API_URL = "https://r1.zemanta.com/api/redirects/"
-R1_REDIRECTS_BATCH_API_URL = "https://r1.zemanta.com/api/redirectsbatch/"
-R1_REDIRECTS_ADGROUP_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/"
-R1_VALIDATE_API_URL = "https://r1.zemanta.com/api/validate/"
-R1_BLANK_REDIRECT_URL = "http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/"
-R1_CUSTOM_AUDIENCE_API_URL = "https://r1.zemanta.com/api/audience/{audience_id}/"
+R1_API_SIGN_KEY = Secret("plain::secret").get()
+R1_URL_PARAMS_ENCRYPTION_KEY = Secret("plain::secret").get()
 R1_PIXEL_TRAFFIC_URL = "https://r1.zemanta.com/api/pixeltraffic/request/"
 R1_PIXEL_TRAFFIC_RESULT_URL = "https://r1.zemanta.com/api/pixeltraffic/result/{job_id}/"
 R1_PIXEL_URL = "https://r1.zemanta.com/api/pixel/{account_id}/{slug}/"

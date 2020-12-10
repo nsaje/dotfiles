@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.test import TestCase
-from django.test import override_settings
 from mock import MagicMock
 from mock import patch
 
@@ -13,6 +12,7 @@ from dash import models
 from dash.dashapi import api_reports
 from zemauth.models import User
 
+R1_CREATIVE_REDIRECT_URL = "https://r1.zemanta.com/creative/123"
 ACCOUNT_1 = {
     "account": "test account 1",
     "agency_id": "",
@@ -117,7 +117,7 @@ CONTENT_AD_1 = {
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
-    "redirector_url": "http://r1.zemanta.com/b/r1/z1/1/1/",
+    "redirector_url": R1_CREATIVE_REDIRECT_URL,
     "url": "http://testurl1.com",
     "tracker_urls": ["http://testurl1.com", "http://testurl2.com"],
     "state": 1,
@@ -166,7 +166,7 @@ CONTENT_AD_2 = {
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
-    "redirector_url": "http://r1.zemanta.com/b/r2/z1/1/2/",
+    "redirector_url": R1_CREATIVE_REDIRECT_URL,
     "url": "http://testurl2.com",
     "tracker_urls": [],
     "state": 2,
@@ -346,10 +346,10 @@ PUBLISHER_2__SOURCE_2 = {
 }
 
 
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
 class AnnotateTest(TestCase):
     fixtures = ["test_api_breakdowns"]
+    maxDiff = None
 
     def test_annotate_accounts(self):
         rows = [{"account_id": 1}]
@@ -405,7 +405,9 @@ class AnnotateTest(TestCase):
 
         self.assertEqual(rows, [AD_GROUP_1, AD_GROUP_2])
 
-    def test_annotate_content_ads(self):
+    @patch("utils.redirector.construct_redirector_url")
+    def test_annotate_content_ads(self, mock_construct_redirector_url):
+        mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = [{"content_ad_id": 1}, {"content_ad_id": 2}]
         api_reports.annotate(
             rows,
@@ -542,7 +544,9 @@ class AnnotateTest(TestCase):
 
         self.assertEqual(rows, [TEMP_PUBLISHER_1__SOURCE_1, TEMP_PUBLISHER_2__SOURCE_1, TEMP_PUBLISHER_2__SOURCE_2])
 
-    def test_annotate_breakdown(self):
+    @patch("utils.redirector.construct_redirector_url")
+    def test_annotate_breakdown(self, mock_construct_redirector_url):
+        mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = [
             {"account_id": 1, "campaign_id": 1, "ad_group_id": 1, "content_ad_id": 1, "source_id": 1},
             {"account_id": 1, "campaign_id": 1, "ad_group_id": 1, "content_ad_id": 2, "source_id": 1},
@@ -582,7 +586,6 @@ class AnnotateTest(TestCase):
         self.assertEqual(rows, [content_ad_1, content_ad_2])
 
 
-@override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 @patch("utils.sspd_client.get_content_ad_status", MagicMock())
 class QueryTest(TestCase):
     fixtures = ["test_api_breakdowns"]

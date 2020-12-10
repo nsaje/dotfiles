@@ -204,8 +204,7 @@ class AudiencesTestCase(BaseTestCase):
         self.assertEqual(json.loads(response.content), response_dict)
 
     @mock.patch("utils.k1_helper.update_account")
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_post(self, redirector_upsert_audience_mock, k1_update_account_mock):
+    def test_post(self, k1_update_account_mock):
         data = self._get_valid_post_data()
         del (data["prefill_days"])
         url = reverse("accounts_audiences", kwargs={"account_id": 1})
@@ -261,12 +260,10 @@ class AudiencesTestCase(BaseTestCase):
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 3)
 
-        redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.create")
 
     @mock.patch("utils.k1_helper.update_account")
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_put(self, redirector_upsert_audience_mock, k1_update_account_mock):
+    def test_put(self, k1_update_account_mock):
         # ttl work, but not rules
         data = {"name": "New name", "rules": [{"id": "1", "type": 1, "value": "teeeeest"}]}
         url = reverse("accounts_audience", kwargs={"account_id": 1, "audience_id": 1})
@@ -312,7 +309,6 @@ class AudiencesTestCase(BaseTestCase):
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 3)
 
-        redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.update")
 
 
@@ -339,8 +335,7 @@ class AudienceArchiveTestCase(BaseTestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_archive(self, redirector_upsert_audience_mock):
+    def test_archive(self):
         url = reverse("accounts_audience_archive", kwargs={"account_id": 1, "audience_id": 1})
 
         audiences = models.Audience.objects.filter(pk=1)
@@ -367,10 +362,7 @@ class AudienceArchiveTestCase(BaseTestCase):
         self.assertEqual(history.changes, None)
         self.assertEqual(history.created_by_id, 3)
 
-        redirector_upsert_audience_mock.assert_called_with(audiences[0])
-
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_archive_while_audience_used_on_adgroup(self, redirector_upsert_audience_mock):
+    def test_archive_while_audience_used_on_adgroup(self):
         audience = models.Audience.objects.get(id=1)
         adgroup = models.AdGroup.objects.get(id=125)
 
@@ -402,7 +394,6 @@ class AudienceArchiveTestCase(BaseTestCase):
 
         history_text = models.History.objects.all().first().changes_text
         self.assertNotEqual("Archived audience 'test audience 1'.", history_text)
-        redirector_upsert_audience_mock.assert_not_called()
 
 
 class AudienceRestoreTestCase(BaseTestCase):
@@ -422,8 +413,7 @@ class AudienceRestoreTestCase(BaseTestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch("utils.redirector_helper.upsert_audience")
-    def test_restore(self, redirector_upsert_audience_mock):
+    def test_restore(self):
         url = reverse("accounts_audience_restore", kwargs={"account_id": 1, "audience_id": 3})
 
         audiences = models.Audience.objects.filter(pk=3)
@@ -452,5 +442,3 @@ class AudienceRestoreTestCase(BaseTestCase):
         self.assertEqual(history[0].changes_text, "Restored audience 'test audience 3'.")
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 3)
-
-        redirector_upsert_audience_mock.assert_called_with(audiences[0])

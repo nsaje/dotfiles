@@ -468,17 +468,8 @@ class PersistBatchTestCase(TestCase):
 
     @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
     @patch("utils.sspd_client.sync_batch", Mock())
-    @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
-    def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects):
-        def redirector_response(content_ads, clickthrough_resolve):
-            return {
-                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
-                for content_ad in content_ads
-            }
-
-        mock_insert_redirects.side_effect = redirector_response
-
+    def test_valid_candidates(self, mock_s3helper_put):
         batch = models.UploadBatch.objects.get(id=2)
 
         candidate = batch.contentadcandidate_set.get()
@@ -500,7 +491,6 @@ class PersistBatchTestCase(TestCase):
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)
-        self.assertEqual("123456", content_ad.redirect_id)
         self.assertEqual(candidate.title, content_ad.title)
         self.assertEqual(candidate.display_url, content_ad.display_url)
         self.assertEqual(candidate.description, content_ad.description)
@@ -522,7 +512,6 @@ class PersistBatchTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertTrue(mock_insert_redirects.called)
 
         ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
         batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
@@ -579,16 +568,7 @@ class PersistBatchTestCase(TestCase):
 
     @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
     @patch("utils.sspd_client.sync_batch", Mock())
-    @patch("utils.redirector_helper.insert_redirects")
-    def test_valid_candidates_with_inactive_state(self, mock_insert_redirects):
-        def redirector_response(content_ads, clickthrough_resolve):
-            return {
-                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
-                for content_ad in content_ads
-            }
-
-        mock_insert_redirects.side_effect = redirector_response
-
+    def test_valid_candidates_with_inactive_state(self):
         batch = models.UploadBatch.objects.get(id=12)
 
         candidate = batch.contentadcandidate_set.get()
@@ -603,7 +583,6 @@ class PersistBatchTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertTrue(mock_insert_redirects.called)
 
         ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
         batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
@@ -652,17 +631,8 @@ class PersistBatchTestCase(TestCase):
 
     @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
     @patch("utils.sspd_client.sync_batch", Mock())
-    @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
-    def test_valid_cloned_candidates_bid_modifier(self, mock_s3helper_put, mock_insert_redirects):
-        def redirector_response(content_ads, clickthrough_resolve):
-            return {
-                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
-                for content_ad in content_ads
-            }
-
-        mock_insert_redirects.side_effect = redirector_response
-
+    def test_valid_cloned_candidates_bid_modifier(self, mock_s3helper_put):
         source_ad_group = magic_mixer.blend(models.AdGroup)
         source_content_ad = magic_mixer.blend(models.ContentAd, ad_group=source_ad_group)
         magic_mixer.blend(
@@ -714,17 +684,8 @@ class PersistBatchTestCase(TestCase):
         )
         self.assertEqual(1.5, bid_modifier.modifier)
 
-    @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
-    def test_valid_display_ad_candidates(self, mock_s3helper_put, mock_insert_redirects):
-        def redirector_response(content_ads, clickthrough_resolve):
-            return {
-                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
-                for content_ad in content_ads
-            }
-
-        mock_insert_redirects.side_effect = redirector_response
-
+    def test_valid_display_ad_candidates(self, mock_s3helper_put):
         batch = models.UploadBatch.objects.get(id=11)
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
@@ -743,7 +704,6 @@ class PersistBatchTestCase(TestCase):
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)
-        self.assertEqual("123456", content_ad.redirect_id)
         self.assertEqual(candidate.title, content_ad.title)
         self.assertEqual(candidate.display_url, content_ad.display_url)
         self.assertEqual(candidate.description, content_ad.description)
@@ -762,19 +722,9 @@ class PersistBatchTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertTrue(mock_insert_redirects.called)
 
-    @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
-    def test_valid_display_ad_tag_candidates(self, mock_s3helper_put, mock_insert_redirects):
-        def redirector_response(content_ads, clickthrough_resolve):
-            return {
-                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
-                for content_ad in content_ads
-            }
-
-        mock_insert_redirects.side_effect = redirector_response
-
+    def test_valid_display_ad_tag_candidates(self, mock_s3helper_put):
         batch = models.UploadBatch.objects.get(id=10)
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
@@ -793,7 +743,6 @@ class PersistBatchTestCase(TestCase):
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)
-        self.assertEqual("123456", content_ad.redirect_id)
         self.assertEqual(candidate.title, content_ad.title)
         self.assertEqual(candidate.display_url, content_ad.display_url)
         self.assertEqual(candidate.description, content_ad.description)
@@ -811,7 +760,6 @@ class PersistBatchTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertTrue(mock_insert_redirects.called)
 
     def test_edit_batch(self):
         batch = models.UploadBatch.objects.get(id=7)
@@ -887,8 +835,7 @@ class PersistEditBatchTestCase(TestCase):
         self.request.user = zemauth.models.User.objects.get(id=1)
 
     @patch("utils.sspd_client.sync_batch", Mock())
-    @patch("utils.redirector_helper.update_redirects", autospec=True)
-    def test_persist_edit_batch(self, mock_update_redirects):
+    def test_persist_edit_batch(self):
         batch = models.UploadBatch.objects.get(id=7)
 
         content_ad = models.ContentAd.objects.get(id=2)
@@ -915,8 +862,6 @@ class PersistEditBatchTestCase(TestCase):
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             if field != "type":
                 self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))
-
-        mock_update_redirects.assert_called_with([new_content_ad])
 
         with self.assertRaises(models.UploadBatch.DoesNotExist):
             batch.refresh_from_db()

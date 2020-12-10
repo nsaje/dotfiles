@@ -18,9 +18,7 @@ from . import exceptions
 from . import service
 
 
-@patch.object(core.models.ContentAd.objects, "insert_redirects", autospec=True)
 @patch("automation.autopilot_legacy.recalculate_budgets_ad_group", autospec=True)
-@patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
 class CloneServiceTest(BaseTestCase):
     def setUp(self):
@@ -69,7 +67,7 @@ class CloneServiceTest(BaseTestCase):
             core.features.goals.CampaignGoalValue, campaign_goal=self.campaign_goal, value="0.30", local_value="0.30"
         )
 
-    def test_clone(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone(self, mock_today, mock_autopilot):
         cloned_campaign = service.clone(
             self.request, self.campaign, "Cloned Campaign", clone_ad_groups=True, clone_ads=True
         )
@@ -99,7 +97,7 @@ class CloneServiceTest(BaseTestCase):
             [cloned_content_ad.state for cloned_content_ad in cloned_campaign.adgroup_set.get().contentad_set.all()],
         )
 
-    def test_clone_no_ad_group(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_no_ad_group(self, mock_today, mock_autopilot):
         self.ad_group.archive(None)
 
         cloned_campaign = service.clone(
@@ -119,7 +117,7 @@ class CloneServiceTest(BaseTestCase):
         self.assertTrue(cloned_campaign.conversiongoal_set.exists())
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
-    def test_clone_no_content(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_no_content(self, mock_today, mock_autopilot):
         self.ad_group.contentad_set.update(archived=True)
 
         cloned_campaign = service.clone(
@@ -139,7 +137,7 @@ class CloneServiceTest(BaseTestCase):
         self.assertTrue(cloned_campaign.conversiongoal_set.exists())
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
-    def test_clone_skip_ad_group(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_skip_ad_group(self, mock_today, mock_autopilot):
         self.assertRaises(
             exceptions.CanNotCloneAds,
             service.clone,
@@ -150,7 +148,7 @@ class CloneServiceTest(BaseTestCase):
             clone_ads=True,
         )
 
-    def test_clone_skip_content(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_skip_content(self, mock_today, mock_autopilot):
         cloned_campaign = service.clone(
             self.request, self.campaign, "Cloned Campaign", clone_ad_groups=True, clone_ads=False
         )
@@ -168,7 +166,7 @@ class CloneServiceTest(BaseTestCase):
         self.assertTrue(cloned_campaign.conversiongoal_set.exists())
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
-    def test_clone_set_adgroup_state_override(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_set_adgroup_state_override(self, mock_today, mock_autopilot):
         self.assertEqual(self.campaign.adgroup_set.get().settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
 
         cloned_campaign = service.clone(
@@ -182,7 +180,7 @@ class CloneServiceTest(BaseTestCase):
 
         self.assertEqual(cloned_campaign.adgroup_set.get().settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
 
-    def test_clone_set_ads_state_override(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+    def test_clone_set_ads_state_override(self, mock_today, mock_autopilot):
         for contend_ad in self.campaign.adgroup_set.get().contentad_set.all():
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.ACTIVE)
 

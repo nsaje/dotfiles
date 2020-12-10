@@ -6,7 +6,6 @@ import core.common
 import core.features.audiences
 from dash import constants
 from utils import k1_helper
-from utils import redirector_helper
 
 from . import exceptions
 from . import model
@@ -43,8 +42,6 @@ class AudienceManager(core.common.BaseManager):
                     audience=audience, type=rule["type"], value=rule.get("value") or ""
                 )
                 rule.save()
-
-            redirector_helper.upsert_audience(audience)
 
         k1_helper.update_account(pixel.account, msg="audience.create")
 

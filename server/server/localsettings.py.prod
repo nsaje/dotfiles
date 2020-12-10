@@ -443,12 +443,9 @@ R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret(
     "kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMM+bIgTk3Vp2WIweQAgEQgEdO7/pZM+yJASejQtrIp3IorKcBbqqBZzI8y+M9/XCYsr2RH/GZ7KxanjNCjLwG8uJb07vRwdOBZkku/z695V0UPUNXcKFGRg=="  # noqa
 ).get()
-R1_REDIRECTS_API_URL = "https://r1.zemanta.com/api/redirects/"
-R1_REDIRECTS_BATCH_API_URL = "https://r1.zemanta.com/api/redirectsbatch/"
-R1_REDIRECTS_ADGROUP_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/"
-R1_VALIDATE_API_URL = "https://r1.zemanta.com/api/validate/"
-R1_BLANK_REDIRECT_URL = "https://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/"
-R1_CUSTOM_AUDIENCE_API_URL = "https://r1.zemanta.com/api/audience/{audience_id}/"
+R1_URL_PARAMS_ENCRYPTION_KEY = Secret(
+    "kms:region=us-east-1:AQECAHhC8gMUcj7qW9Pj6PeeHpHILUyIBqdhP2AZ/Z7oJPtwPwAAAIswgYgGCSqGSIb3DQEHBqB7MHkCAQAwdAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwOHucPDslNZm76eBkCARCARxbWNJsGhEylowhhwiBLmlETyi44478VwZc5MwdWBeTH9/ouirhWlXE0Ft+lNs3uAv5Opc71vlw3iC730Cu+gGoBsdkb0zBD"
+).get()
 R1_PIXEL_TRAFFIC_URL = "https://r1.zemanta.com/api/pixeltraffic/request/"
 R1_PIXEL_TRAFFIC_RESULT_URL = "https://r1.zemanta.com/api/pixeltraffic/result/{job_id}/"
 R1_PIXEL_URL = "https://r1.zemanta.com/api/pixel/{account_id}/{slug}/"

@@ -3,7 +3,6 @@ from django.db import models
 from django.db import transaction
 
 import core.models
-import utils.redirector_helper
 from dash import constants
 
 from . import exceptions
@@ -14,7 +13,6 @@ class ContentAdManager(models.Manager):
     @transaction.atomic
     def create(self, batch, sources, r1_resolve=True, **kwargs):
         content_ad = self._create(batch, sources, **kwargs)
-        self.insert_redirects([content_ad], clickthrough_resolve=r1_resolve)
         return content_ad
 
     def _create(self, batch, sources, **updates):
@@ -112,8 +110,6 @@ class ContentAdManager(models.Manager):
                 batch.ad_group, new_modifiers_data, write_history=False, propagate_to_k1=False
             )
 
-        self.insert_redirects(content_ads, clickthrough_resolve=r1_resolve)
-
         return content_ads
 
     def bulk_clone(self, request, source_content_ads, ad_group, batch):
@@ -131,13 +127,3 @@ class ContentAdManager(models.Manager):
         )
 
         return content_ads
-
-    @transaction.atomic
-    def insert_redirects(self, content_ads, clickthrough_resolve):
-        redirector_batch = utils.redirector_helper.insert_redirects(
-            content_ads, clickthrough_resolve=clickthrough_resolve
-        )
-        for content_ad in content_ads:
-            content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
-            content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
-            content_ad.save()

@@ -19,27 +19,21 @@ class InstanceTestCase(TestCase):
         expected_changes = {"iab_category": dash.constants.IABCategory.IAB2}
         self.assertEqual(applied_changes, expected_changes)
 
-    @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_groups")
-    def test_r1_k1_propagation(self, mock_ping_adgroups, mock_insert_adgroup):
+    def test_r1_k1_propagation(self, mock_ping_adgroups):
         campaign = magic_mixer.blend(core.models.Campaign)
         magic_mixer.cycle(10).blend(core.models.AdGroup, campaign=campaign)
         campaign.settings.update_unsafe(None, enable_ga_tracking=False)
 
         campaign.settings.update(None, name="abc")
-        self.assertEqual(mock_insert_adgroup.call_count, 0)
         self.assertEqual(mock_ping_adgroups.call_count, 0)
 
-        mock_insert_adgroup.reset_mock()
         mock_ping_adgroups.reset_mock()
         campaign.settings.update(None, enable_ga_tracking=True)
-        self.assertEqual(mock_insert_adgroup.call_count, 10)
         self.assertEqual(mock_ping_adgroups.call_count, 0)
 
-        mock_insert_adgroup.reset_mock()
         mock_ping_adgroups.reset_mock()
         campaign.settings.update(None, iab_category="IAB2")
-        self.assertEqual(mock_insert_adgroup.call_count, 0)
         self.assertEqual(mock_ping_adgroups.call_count, 1)
 
     @patch("automation.autopilot_legacy.recalculate_budgets_campaign")

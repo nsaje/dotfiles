@@ -15,13 +15,11 @@ from utils import decimal_helpers
 from utils import email_helper
 from utils import exc
 from utils import k1_helper
-from utils import redirector_helper
 from utils import zlogging
 
 from . import exceptions
 from . import helpers
 
-REDIRECTOR_UPDATE_FIELDS = ("tracking_code", "click_capping_daily_ad_group_max_clicks")
 PRIORITY_UPDATE_FIELDS = ("state", "cpm", "cpc", "b1_sources_group_cpc_cc", "b1_sources_group_cpm")
 
 logger = zlogging.getLogger(__name__)
@@ -500,9 +498,6 @@ class AdGroupSettingsMixin(object):
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request, instance=new_settings, changes=changes
         )
-
-        if any(field in changes for field in REDIRECTOR_UPDATE_FIELDS):
-            redirector_helper.insert_adgroup(self.ad_group)
 
         if k1_sync:
             k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=k1_priority)

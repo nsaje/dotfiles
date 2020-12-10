@@ -9,6 +9,7 @@ from django.db import transaction
 
 import core.models.helpers
 import utils.demo_anonymizer
+import utils.redirector
 import utils.string_helper
 from core.models.image_asset import ImageAsset
 from dash import constants
@@ -37,7 +38,6 @@ class ContentAd(
         "url": utils.demo_anonymizer.fake_content_ad_url,
         "display_url": utils.demo_anonymizer.fake_display_url,
         "brand_name": utils.demo_anonymizer.fake_brand,
-        "redirect_id": lambda: "u1jvpq0wthxc",
         "tracker_urls": lambda: [],
     }
 
@@ -147,7 +147,18 @@ class ContentAd(
         return self.url
 
     def get_redirector_url(self):
-        return settings.R1_BLANK_REDIRECT_URL.format(redirect_id=self.redirect_id, content_ad_id=self.id)
+        return utils.redirector.construct_redirector_url(
+            self.ad_group_id,
+            self.id,
+            self.ad_group.campaign_id,
+            self.ad_group.campaign.account_id,
+            landing_page_url=self.url,
+            use_https=True,
+            ga_tracking_enabled=self.ad_group.campaign.settings.enable_ga_tracking,
+            adobe_tracking_enabled=self.ad_group.campaign.settings.enable_adobe_tracking,
+            tracking_codes=self.ad_group.settings.get_tracking_codes(),
+            adobe_tracking_param=self.ad_group.campaign.settings.adobe_tracking_param,
+        )
 
     def get_sspd_url(self):
         if self.id:

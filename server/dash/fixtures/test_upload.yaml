@@ -528,7 +528,6 @@
     image_width: 500
     image_height: 500
     image_hash: 'xxxxx'
-    redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
     trackers: [{
@@ -568,7 +567,6 @@
     image_height: 500
     image_hash: 'xxxxx'
     ad_tag: null
-    redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
     trackers: [{
@@ -605,7 +603,6 @@
     image_width: 300
     image_height: 250
     image_hash: 'xxxxx'
-    redirect_id: '2222'
     state: 1
     tracker_urls: ['https://zemanta.com/px1', 'https://zemanta.com/px2']
     trackers: [{

@@ -15,7 +15,6 @@ from server import celery
 from utils import csv_utils
 from utils import k1_helper
 from utils import lambda_helper
-from utils import redirector_helper
 from utils import sspd_client
 from utils import zlogging
 
@@ -255,7 +254,6 @@ def persist_edit_batch(request, batch):
     candidates = models.ContentAdCandidate.objects.filter(batch=batch)
     with transaction.atomic():
         content_ads = _update_content_ads(request, candidates)
-        redirector_helper.update_redirects(content_ads)
 
         candidates.delete()
         batch.delete()

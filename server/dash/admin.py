@@ -22,7 +22,6 @@ import core.features.source_adoption
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
-import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
 from core.models import tags
