@@ -1188,6 +1188,13 @@ angular
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
             },
+            placementId: {
+                name: 'Placement Id',
+                field: 'placement_id',
+                order: true,
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                shown: true,
+            },
             placementType: {
                 name: 'Placement Type',
                 field: 'placement_type',
@@ -1743,6 +1750,8 @@ angular
 
         var PUBLISHER_GROUP = [COLUMNS.domain, COLUMNS.domainLink];
 
+        var PLACEMENT_GROUP = [COLUMNS.placementId];
+
         var CONTENT_GROUP = [
             COLUMNS.imageUrls,
             COLUMNS.urlLink,
@@ -1886,6 +1895,7 @@ angular
             CONTENT_GROUP,
             SOURCE_GROUP,
             PUBLISHER_GROUP,
+            PLACEMENT_GROUP,
             METRICS_GROUP
         );
 
@@ -1923,6 +1933,9 @@ angular
         ]);
         configureBreakdownExceptions(PUBLISHER_GROUP, [
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
+        ]);
+        configureBreakdownExceptions(PLACEMENT_GROUP, [
             constants.breakdown.PLACEMENT,
         ]);
 
@@ -2008,6 +2021,10 @@ angular
 
         COLUMNS.exchange.exceptions.breakdowns = [
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
+        ];
+
+        COLUMNS.placementId.exceptions.breakdowns = [
             constants.breakdown.PLACEMENT,
         ];
 
@@ -2197,6 +2214,10 @@ angular
             {
                 name: 'Publisher',
                 columns: PUBLISHER_GROUP,
+            },
+            {
+                name: 'Placement',
+                columns: PLACEMENT_GROUP,
             },
             {
                 name: 'Costs',
