@@ -41,5 +41,5 @@ class Command(Z1Command):
         constant_dict = dict()
         for constant in constants_model.get_all():
             if constant:
-                constant_dict[constant] = constants_model.get_text(constant)
+                constant_dict[constants_model.get_name(constant)] = constants_model.get_text(constant)
         return constant_dict
