@@ -439,7 +439,9 @@ class AdGroupContentAdCSV(DASHAPIBaseView):
         fields = self._remove_ad_type_specific_fields(ad_group, fields)
         fields = self._remove_permissioned_fields(request, fields)
 
-        content = csv_utils.dictlist_to_csv(list(fields.values()), self._map_to_csv_column_names(content_ad_dicts))
+        content = csv_utils.dictlist_to_csv(
+            list(fields.values()), self._map_to_csv_column_names(content_ad_dicts, fields)
+        )
 
         return self.create_csv_response(filename, content=content)
 
@@ -458,11 +460,8 @@ class AdGroupContentAdCSV(DASHAPIBaseView):
                 fields.pop(field, None)
         return fields
 
-    def _map_to_csv_column_names(self, content_ads):
-        return [
-            {forms.CSV_EXPORT_COLUMN_NAMES_DICT[key]: value for key, value in list(content_ad.items())}
-            for content_ad in content_ads
-        ]
+    def _map_to_csv_column_names(self, content_ads, fields):
+        return [{fields[key]: content_ad.get(key) for key in fields.keys()} for content_ad in content_ads]
 
 
 class CampaignAdGroupArchive(BaseBulkActionView):
