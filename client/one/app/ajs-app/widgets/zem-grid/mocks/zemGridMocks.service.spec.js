@@ -63,6 +63,7 @@ angular
                 // Columns service API
                 setVisibleColumns: angular.noop,
                 getVisibleColumns: angular.noop,
+                isColumnAvailable: angular.noop,
                 getCostMode: angular.noop,
                 setCostMode: angular.noop,
                 onSelectColumn: angular.noop,

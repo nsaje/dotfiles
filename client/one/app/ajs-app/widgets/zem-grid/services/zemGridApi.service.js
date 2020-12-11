@@ -60,6 +60,7 @@ angular
             // Columns service API
             this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
             this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
+            this.isColumnAvailable = grid.meta.columnsService.isColumnAvailable;
             this.getColumnsToToggle =
                 grid.meta.columnsService.getColumnsToToggle;
             this.findColumnInCategories =

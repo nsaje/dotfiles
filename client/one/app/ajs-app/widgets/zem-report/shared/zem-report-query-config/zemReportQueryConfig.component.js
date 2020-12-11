@@ -253,7 +253,9 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         }
 
         function getAllColumns() {
-            return angular.copy($ctrl.gridApi.getColumns());
+            var columns = angular.copy($ctrl.gridApi.getColumns());
+            resetColumnsAvailability(columns);
+            return columns;
         }
 
         function getRefundColumns(columns) {
@@ -332,11 +334,17 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         function addBreakdown(breakdown) {
             $ctrl.breakdown.push(breakdown);
+            resetColumnsAvailability(allColumns);
+            $ctrl.categories = getCategories(allColumns);
+            $ctrl.selectedColumns = getSelectedColumns($ctrl.categories);
             update();
         }
 
         function removeBreakdown(breakdown) {
             $ctrl.breakdown.splice($ctrl.breakdown.indexOf(breakdown), 1);
+            resetColumnsAvailability(allColumns);
+            $ctrl.categories = getCategories(allColumns);
+            $ctrl.selectedColumns = getSelectedColumns($ctrl.categories);
             update();
         }
 
@@ -401,6 +409,19 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.config.csvDecimalSeparator,
                 LOCAL_STORAGE_NAMESPACE
             );
+        }
+
+        function resetColumnsAvailability(columns) {
+            var breakdowns = $ctrl.breakdown.map(function(breakdown) {
+                return breakdown.query;
+            });
+            columns.forEach(function(column) {
+                column.disabled = !$ctrl.gridApi.isColumnAvailable(
+                    column,
+                    $ctrl.gridApi.getMetaData().level,
+                    breakdowns
+                );
+            });
         }
     },
 });

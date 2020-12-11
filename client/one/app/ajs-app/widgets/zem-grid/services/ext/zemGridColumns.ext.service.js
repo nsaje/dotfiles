@@ -19,6 +19,7 @@ angular
             this.destroy = destroy;
             this.getVisibleColumns = getVisibleColumns;
             this.setVisibleColumns = setVisibleColumns;
+            this.isColumnAvailable = isColumnAvailable;
             this.getColumnsToToggle = getColumnsToToggle;
             this.findColumnInCategories = findColumnInCategories;
             this.getTogglableColumns = getTogglableColumns;
