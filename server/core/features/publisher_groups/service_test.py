@@ -30,7 +30,7 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
 
     def assertEntriesEqual(self, publisher_group, entries):
         self.assertCountEqual(
-            publisher_group.entries.all().values("publisher", "include_subdomains", "source"), entries
+            publisher_group.entries.all().values("publisher", "include_subdomains", "source", "placement"), entries
         )
 
     def assertWhitelistCreated(self, obj):
@@ -61,10 +61,33 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
 
         changes_text = "Blacklisted the following publishers on ad group level: cnn.com on all sources."
+        mock_email.assert_called_with(obj, self.request, changes_text)
+        self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
+
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
+    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
+    def test_blacklist_placement_ad_group(self, mock_email, mock_k1_ping):
+        obj = models.AdGroup.objects.get(pk=1)
+        service.blacklist_publishers(
+            self.request,
+            [{"publisher": "cnn.com", "source": None, "placement": "someplacement", "include_subdomains": False}],
+            obj,
+        )
+
+        self.assertEntriesEqual(
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": "someplacement", "include_subdomains": False}],
+        )
+
+        changes_text = (
+            "Blacklisted the following placements on ad group level: someplacement for cnn.com on all sources."
+        )
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
@@ -81,7 +104,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
 
         mock_email.assert_not_called()
@@ -97,7 +121,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         changes_text = "Whitelisted the following publishers on ad group level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
@@ -116,7 +141,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         mock_email.assert_not_called()
         self.assertHistoryNotWritten(history_helpers.get_ad_group_history(obj))
@@ -138,7 +164,9 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         self.assertIsNone(obj.default_whitelist)
 
         service.whitelist_publishers(
-            self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
+            self.request,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
+            obj,
         )
         self.assertWhitelistCreated(obj)
         mock_k1_ping.assert_called_once_with(obj, "publisher_group.create")
@@ -151,7 +179,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
             publisher_group=obj.default_whitelist, source=None, publisher="cnn.com"
         )
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": True}],
         )
 
         service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
@@ -170,7 +199,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
             publisher_group=obj.default_blacklist, source=None, publisher="cnn.com"
         )
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": True}],
         )
 
         service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
@@ -195,7 +225,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         self.assertBlacklistCreated(obj)
 
@@ -218,7 +249,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         self.assertWhitelistCreated(obj)
 
@@ -241,7 +273,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
             publisher_group=obj.default_whitelist, source=None, publisher="cnn.com"
         )
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": True}],
         )
 
         service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
@@ -266,7 +299,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
             publisher_group=obj.default_blacklist, source=None, publisher="cnn.com"
         )
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": True}],
         )
 
         service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
@@ -290,7 +324,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_blacklist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         self.assertBlacklistCreated(obj)
 
@@ -329,7 +364,8 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         )
 
         self.assertEntriesEqual(
-            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+            obj.default_whitelist,
+            [{"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False}],
         )
         self.assertWhitelistCreated(obj)
 

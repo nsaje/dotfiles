@@ -457,13 +457,26 @@ def write_history(request, obj, entries, status, previous_status=None):
         )
         history_actiontype = constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE
 
-    pubs_string = ", ".join(
-        "{} on {}".format(x.publisher, x.source.name if x.source else "all sources") for x in entries
-    )
+    changes = []
 
-    changes_text = "{action} the following publishers {level_description}: {pubs}.".format(
-        action=action, level_description=level_description, pubs=pubs_string
-    )
+    publisher_entries = [x for x in entries if x.placement is None]
+    if publisher_entries:
+        publishers_string = ", ".join(
+            "{} on {}".format(x.publisher, x.source.name if x.source else "all sources") for x in publisher_entries
+        )
+
+        changes.append(f"{action} the following publishers {level_description}: {publishers_string}.")
+
+    placement_entries = [x for x in entries if x.placement is not None]
+    if placement_entries:
+        placements_string = ", ".join(
+            "{} for {} on {}".format(x.placement, x.publisher, x.source.name if x.source else "all sources")
+            for x in placement_entries
+        )
+
+        changes.append(f"{action} the following placements {level_description}: {placements_string}.")
+
+    changes_text = " ".join(changes)
 
     if obj is None:
         history_helpers.write_global_history(changes_text, user=request.user, action_type=history_actiontype)
