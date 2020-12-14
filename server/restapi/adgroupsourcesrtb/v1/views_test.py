@@ -25,7 +25,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
     ):
         representation = {
             "groupEnabled": group_enabled,
-            "dailyBudget": daily_budget,
+            "dailyBudget": daily_budget.quantize(Decimal("1.0000")),
             "state": constants.AdGroupSourceSettingsState.get_name(state),
             "cpc": cpc if cpm is None else None,
             "cpm": cpm,
@@ -37,14 +37,14 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         if settings_db.ad_group.bidding_type == constants.BiddingType.CPM:
             expected = self.adgroupsourcertb_repr(
                 group_enabled=settings_db.b1_sources_group_enabled,
-                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
+                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.0000")),
                 state=settings_db.b1_sources_group_state,
                 cpm=settings_db.b1_sources_group_cpm,
             )
         else:
             expected = self.adgroupsourcertb_repr(
                 group_enabled=settings_db.b1_sources_group_enabled,
-                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
+                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.0000")),
                 state=settings_db.b1_sources_group_state,
                 cpc=settings_db.b1_sources_group_cpc_cc,
             )
@@ -100,7 +100,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         settings.save(None)
 
         test_rtbs = self.adgroupsourcertb_repr(
-            group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpc="0.1230"
+            group_enabled=True, daily_budget=Decimal("12.38"), state=constants.AdGroupSettingsState.ACTIVE, cpc="0.1230"
         )
         r = self.client.put(
             reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
@@ -125,7 +125,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         settings.save(None)
 
         test_rtbs = self.adgroupsourcertb_repr(
-            group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpm="1.1230"
+            group_enabled=True, daily_budget=Decimal("12.38"), state=constants.AdGroupSettingsState.ACTIVE, cpm="1.1230"
         )
         r = self.client.put(
             reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
@@ -249,7 +249,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         self.assertTrue("Maximum CPC on RTB Sources is" in json.loads(r.content)["details"]["cpc"][0])
 
         # min daily budget - would return 7 without rounding ceiling
-        test_agsr = self.adgroupsourcertb_repr(daily_budget="7")
+        test_agsr = self.adgroupsourcertb_repr(daily_budget=Decimal("7"))
         r = self.client.put(
             reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             test_agsr,
@@ -259,7 +259,7 @@ class AdGroupSourcesRTBTest(RESTAPITestCase):
         self.assertTrue("8" in json.loads(r.content)["details"]["dailyBudget"][0])
 
         # max daily budget - would return 90 without rounding floor
-        test_agsr = self.adgroupsourcertb_repr(daily_budget="90")
+        test_agsr = self.adgroupsourcertb_repr(daily_budget=Decimal("90"))
         r = self.client.put(
             reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             test_agsr,

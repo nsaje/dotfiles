@@ -98,7 +98,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
                 "deals": [],
-                "currentBids": {"cpc": "0.450", "cpm": "1.000"},
+                "currentBids": {"cpc": "0.4500", "cpm": "1.0000"},
             },
         )
 
@@ -189,7 +189,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
                 "deals": [],
-                "currentBids": {"cpc": "0.450", "cpm": "1.000"},
+                "currentBids": {"cpc": "0.4500", "cpm": "1.0000"},
             },
         )
 

@@ -34,14 +34,14 @@ class AdGroupViewSetTest(RESTAPITestCase):
         campaign_id=None,
         name="My test ad group",
         bidding_type=constants.BiddingType.CPC,
-        bid="0.600",
+        bid="0.6000",
         state=constants.AdGroupSettingsState.INACTIVE,
         archived=False,
         start_date=datetime.date.today(),
         end_date=None,
-        max_cpc="0.600",
+        max_cpc="0.6000",
         max_cpm=None,
-        daily_budget="50.00",
+        daily_budget="50.0000",
         tracking_code="a=b",
         target_regions={},
         exclusion_target_regions={},
@@ -55,8 +55,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         exclusion_interest_targeting=[constants.InterestCategory.POLITICS],
         demographic_targeting=[],
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
-        autopilot_daily_budget="50.00",
-        max_autopilot_bid="0.600",
+        autopilot_daily_budget="50.0000",
+        max_autopilot_bid="0.6000",
         dayparting={},
         whitelist_publisher_groups=[],
         blacklist_publisher_groups=[],
@@ -79,16 +79,16 @@ class AdGroupViewSetTest(RESTAPITestCase):
             "campaignId": str(campaign_id) if campaign_id is not None else None,
             "name": name,
             "biddingType": constants.BiddingType.get_name(bidding_type),
-            "bid": Decimal(bid).quantize(Decimal("1.000")),
+            "bid": Decimal(bid).quantize(Decimal("1.0000")),
             "state": constants.AdGroupSettingsState.get_name(state),
             "archived": archived,
             "startDate": start_date,
             "endDate": end_date if end_date else cls.expected_none_date_output,
-            "maxCpc": Decimal(max_cpc).quantize(Decimal("1.000"))
+            "maxCpc": Decimal(max_cpc).quantize(Decimal("1.0000"))
             if max_cpc and max_cpm is None
             else cls.expected_none_decimal_output,
-            "maxCpm": Decimal(max_cpm).quantize(Decimal("1.000")) if max_cpm else cls.expected_none_decimal_output,
-            "dailyBudget": Decimal(daily_budget).quantize(Decimal("1.00"))
+            "maxCpm": Decimal(max_cpm).quantize(Decimal("1.0000")) if max_cpm else cls.expected_none_decimal_output,
+            "dailyBudget": Decimal(daily_budget).quantize(Decimal("1.0000"))
             if daily_budget not in (None, "")
             else cls.expected_none_decimal_output,
             "trackingCode": tracking_code,
@@ -116,10 +116,10 @@ class AdGroupViewSetTest(RESTAPITestCase):
             },
             "autopilot": {
                 "state": constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
-                "dailyBudget": Decimal(autopilot_daily_budget).quantize(Decimal("1.00"))
+                "dailyBudget": Decimal(autopilot_daily_budget).quantize(Decimal("1.0000"))
                 if autopilot_daily_budget not in (None, "")
                 else cls.expected_none_decimal_output,
-                "maxBid": Decimal(max_autopilot_bid).quantize(Decimal("1.000"))
+                "maxBid": Decimal(max_autopilot_bid).quantize(Decimal("1.0000"))
                 if max_autopilot_bid
                 else cls.expected_none_decimal_output,
             },
@@ -385,8 +385,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
         self.assertTrue(resp_json["data"]["maxCpc"])
         self.assertFalse(resp_json["data"]["maxCpm"])
-        self.assertEqual("50.00", resp_json["data"]["dailyBudget"])
-        self.assertEqual("50.00", resp_json["data"]["autopilot"]["dailyBudget"])
+        self.assertEqual("50.0000", resp_json["data"]["dailyBudget"])
+        self.assertEqual("50.0000", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_post_bid_cpc(self):
         account = self.mix_account(
@@ -472,8 +472,8 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
-        self.assertEqual("50.00", resp_json["data"]["dailyBudget"])
-        self.assertEqual("50.00", resp_json["data"]["autopilot"]["dailyBudget"])
+        self.assertEqual("50.0000", resp_json["data"]["dailyBudget"])
+        self.assertEqual("50.0000", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_post_bid_cpm(self):
         account = self.mix_account(
@@ -764,10 +764,10 @@ class AdGroupViewSetTest(RESTAPITestCase):
 
         ad_group.refresh_from_db()
         self.assertEqual(Decimal("10"), ad_group.settings.daily_budget_cc)
-        self.assertEqual(Decimal("123.40"), ad_group.settings.local_daily_budget)
-        self.assertEqual(Decimal("123.40"), ad_group.settings.local_autopilot_daily_budget)
-        self.assertEqual("123.40", resp_json["data"]["dailyBudget"])
-        self.assertEqual("123.40", resp_json["data"]["autopilot"]["dailyBudget"])
+        self.assertEqual(Decimal("123.4000"), ad_group.settings.local_daily_budget)
+        self.assertEqual(Decimal("123.4000"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual("123.4000", resp_json["data"]["dailyBudget"])
+        self.assertEqual("123.4000", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_put_daily_budget_legacy_agency(self):
         account = self.mix_account(
@@ -797,11 +797,11 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
 
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("123.40"), ad_group.settings.daily_budget_cc)
-        self.assertEqual(Decimal("100.00"), ad_group.settings.local_daily_budget)
-        self.assertEqual(Decimal("120.00"), ad_group.settings.local_autopilot_daily_budget)
-        self.assertEqual("123.40", resp_json["data"]["dailyBudget"])
-        self.assertEqual("120.00", resp_json["data"]["autopilot"]["dailyBudget"])
+        self.assertEqual(Decimal("123.4000"), ad_group.settings.daily_budget_cc)
+        self.assertEqual(Decimal("100.0000"), ad_group.settings.local_daily_budget)
+        self.assertEqual(Decimal("120.0000"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual("123.4000", resp_json["data"]["dailyBudget"])
+        self.assertEqual("120.0000", resp_json["data"]["autopilot"]["dailyBudget"])
 
     def test_adgroups_put_name(self):
         account = self.mix_account(
@@ -1409,7 +1409,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["endDate"], self.expected_none_date_output)
         self.assertEqual(resp_json["data"]["trackingCode"], "")
-        self.assertEqual(resp_json["data"]["maxCpc"], "1.500")
+        self.assertEqual(resp_json["data"]["maxCpc"], "1.5000")
         self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["targeting"]["interest"]["included"], [])
         self.assertEqual(resp_json["data"]["targeting"]["browsers"]["included"], [])
@@ -1442,7 +1442,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
-        self.assertEqual(resp_json["data"]["maxCpc"], "1.500")
+        self.assertEqual(resp_json["data"]["maxCpc"], "1.5000")
         self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
         ad_group.refresh_from_db()
         self.assertEqual(Decimal("1.5000"), ad_group.settings.cpc)  # blank value defaults to default cpc
@@ -1472,7 +1472,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["maxCpc"], self.expected_none_decimal_output)
-        self.assertEqual(resp_json["data"]["maxCpm"], "1.500")
+        self.assertEqual(resp_json["data"]["maxCpm"], "1.5000")
         ad_group.refresh_from_db()
         self.assertEqual(Decimal("1.1000"), ad_group.settings.cpc)
         self.assertEqual(Decimal("1.5000"), ad_group.settings.cpm)  # blank value defaults to default cpc

@@ -73,20 +73,10 @@ class ExtraDataWarningSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
 
 class ExtraDataCurrentBidsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     cpc = restapi.serializers.fields.TwoWayBlankDecimalField(
-        max_digits=10,
-        decimal_places=4,
-        output_precision=3,
-        allow_null=False,
-        required=True,
-        rounding=decimal.ROUND_HALF_DOWN,
+        max_digits=10, decimal_places=4, allow_null=False, required=True, rounding=decimal.ROUND_HALF_DOWN
     )
     cpm = restapi.serializers.fields.TwoWayBlankDecimalField(
-        max_digits=10,
-        decimal_places=4,
-        output_precision=3,
-        allow_null=False,
-        required=True,
-        rounding=decimal.ROUND_HALF_DOWN,
+        max_digits=10, decimal_places=4, allow_null=False, required=True, rounding=decimal.ROUND_HALF_DOWN
     )
 
 
@@ -128,7 +118,6 @@ class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilot
         source="local_autopilot_daily_budget",
         max_digits=10,
         decimal_places=4,
-        output_precision=2,
         rounding=decimal.ROUND_HALF_DOWN,
         required=False,
         min_value=0,
@@ -174,7 +163,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
         source="local_bid",
         max_digits=10,
         decimal_places=4,
-        output_precision=3,
         allow_null=True,
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,

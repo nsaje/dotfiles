@@ -122,7 +122,7 @@ class ExtraDataSerializerTestCase(TestCase):
                     "max": 1.1,
                 },
             ],
-            "current_bids": {"cpc": "0.450", "cpm": "1.000"},
+            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
     def test_serialization(self):
