@@ -70,7 +70,8 @@ class Command(Z1Command):
 
     @retrying.retry(
         retry_on_exception=lambda e: isinstance(e, OperationalError)
-        and "canceling statement due to lock timeout" in str(e),
+        and "canceling statement due to lock timeout" in str(e)
+        or "deadlock detected" in str(e),
         stop_max_attempt_number=50,
         wait_exponential_multiplier=1000,
         wait_exponential_max=10000,
