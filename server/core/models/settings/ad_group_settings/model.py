@@ -21,7 +21,6 @@ import utils.string_helper
 from dash import constants
 from dash import region_targeting_helper
 from utils import dates_helper
-from utils import decimal_helpers
 from utils import lc_helper
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
@@ -590,17 +589,3 @@ class AdGroupSettings(
         # Strip the first '?' as we don't want to send it as a part of query
         # string
         return self.tracking_code.lstrip("?")
-
-    def _is_rounding_error(self, field, value):
-        current_value = getattr(self, field)
-        if value is None or current_value is None:
-            return False
-
-        if field in self._multicurrency_bid_fields + ["local_" + field for field in self._multicurrency_bid_fields]:
-            precision = Decimal("1.000")
-        if field in self._multicurrency_budget_fields + [
-            "local_" + field for field in self._multicurrency_budget_fields
-        ]:
-            precision = Decimal("1.00")
-
-        return decimal_helpers.equal_decimals(current_value, value, precision=precision)
