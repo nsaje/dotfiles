@@ -132,7 +132,10 @@ describe('DecimalInputComponent', () => {
 
     it('should correctly emit value on blur event', () => {
         component.onFocus();
+
+        const $event: ClipboardEvent = createClipboardEvent('12.34', 0, 5); // 67.89 => 12.34
         component.model = '12.34';
+        component.onPaste($event);
 
         component.onBlur();
         expect(component.inputBlur.emit).toHaveBeenCalledWith('12.34');

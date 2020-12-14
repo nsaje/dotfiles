@@ -54,7 +54,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
         this.validateMinMax.bind(this),
     ];
     private isModelLocked: boolean = false;
-    private originalValue: string;
+    private isModelChanged: boolean = false;
 
     constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
@@ -72,7 +72,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     }
 
     onFocus() {
-        this.originalValue = this.value;
+        this.isModelChanged = false;
     }
 
     onKeydown($event: KeyboardEvent) {
@@ -85,15 +85,16 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     }
 
     onBlur() {
+        if (!this.isModelChanged) {
+            return;
+        }
+
         const formattedModel: string = this.formatModel(this.model);
 
         if (this.isInputValid(formattedModel)) {
-            this.value = formattedModel;
-            if (this.value !== this.originalValue) {
-                this.inputBlur.emit(formattedModel);
-            }
+            this.inputBlur.emit(formattedModel);
+            this.model = formattedModel;
         }
-        this.model = this.value;
     }
 
     onModelChange() {
@@ -113,6 +114,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
 
         if (this.isInputValid(nextModel)) {
             this.isModelLocked = true;
+            this.isModelChanged = true;
             const formattedModel: string = this.formatModel(nextModel);
             this.valueChange.emit(formattedModel);
         } else {
