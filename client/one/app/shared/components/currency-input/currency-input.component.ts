@@ -96,7 +96,10 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
             this.model,
             this.fractionSize
         );
-        if (decimalValue !== this.value) {
+        if (
+            decimalValue !==
+            numericHelpers.parseDecimal(this.value, this.fractionSize)
+        ) {
             this.inputBlur.emit(decimalValue);
         } else {
             this.model = currencyHelpers.formatCurrency(

@@ -130,6 +130,28 @@ describe('CurrencyInputComponent', () => {
         expect(component.inputBlur.emit).not.toHaveBeenCalled();
     });
 
+    it('should correctly emit model on blur event for different fraction sizes', () => {
+        component.ngOnInit();
+
+        spyOn(component.inputBlur, 'emit').and.stub();
+
+        const value = '1.0011';
+        component.value = value;
+        component.fractionSize = 3;
+        component.ngOnChanges({
+            value: new SimpleChange(null, value, false),
+        });
+        expect(component.model).toEqual('1.001');
+
+        component.onBlur();
+        expect(component.model).toEqual('1.001');
+        expect(component.inputBlur.emit).not.toHaveBeenCalled();
+
+        component.model = '1.002';
+        component.onBlur();
+        expect(component.inputBlur.emit).toHaveBeenCalledWith('1.002');
+    });
+
     it('should prevent keydown event', () => {
         component.ngOnInit();
 
