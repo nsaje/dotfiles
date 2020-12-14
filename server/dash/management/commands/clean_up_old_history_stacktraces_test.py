@@ -11,7 +11,8 @@ class CleanUpOldHistoryStackTracesTest(TestCase):
     @mock.patch("django.db.connection.cursor")
     def test_generate(self, mock_cursor):
         clean_up_old_history_stacktraces.Command().handle()
-        mock_cursor().execute.assert_has_calls(
+        self.assertEqual(
+            mock_cursor().execute.call_args_list,
             [
                 mock.call(
                     """
@@ -31,9 +32,10 @@ class CleanUpOldHistoryStackTracesTest(TestCase):
             FOR VALUES FROM ('2020-09-19') TO ('2020-09-20');
         """
                 ),
-                # mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200902;"),
-                # mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200902;"),
-                # mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200901;"),
-                # mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200901;"),
-            ]
+                mock.call("SET lock_timeout TO '2s';"),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200902;"),
+                mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200902;"),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200901;"),
+                mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200901;"),
+            ],
         )
