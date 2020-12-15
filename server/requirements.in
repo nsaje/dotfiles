@@ -37,6 +37,7 @@ selenium==3.14.1
 unittest-xml-reporting==3.0.2
 freezegun==0.3.11
 mixer==6.1.3
+parameterized==0.7.4
 
 # for filetype detection(input validation)
 python-magic==0.4.15

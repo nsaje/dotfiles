@@ -3,6 +3,8 @@ from decimal import Decimal
 
 import mock
 from django.test import TestCase
+from parameterized import param
+from parameterized import parameterized
 
 import core.features.bid_modifiers
 import core.features.publisher_groups
@@ -18,112 +20,149 @@ from . import actions
 from . import exceptions
 
 
-class ActionsTest(TestCase):
-    def test_adjust_bid_modifier(self):
-        campaign = magic_mixer.blend(core.models.Campaign)
-        campaign.settings.update_unsafe(None, autopilot=False)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
-        ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
-        source = magic_mixer.blend(core.models.Source)
-        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=source)
-        magic_mixer.blend(dash.features.geolocation.Geolocation, key="USA", type="co")
-        magic_mixer.blend(dash.features.geolocation.Geolocation, key="US-01", type="re")
-        magic_mixer.blend(dash.features.geolocation.Geolocation, key="123", type="dma")
-        test_cases = [
-            {
+class BidModifiersParameterized(TestCase):
+    TEST_CASES = [
+        param(
+            "ad",
+            **{
                 "target_type": constants.TargetType.AD,
-                "target": str(ad.id),
+                "target": "9999",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.AD,
-                "bid_modifier_target": str(ad.id),
-            },
-            {
+                "bid_modifier_target": "9999",
+                "source": False,
+            }
+        ),
+        param(
+            "publisher",
+            **{
                 "target_type": constants.TargetType.PUBLISHER,
-                "target": "publisher1.com__" + str(source.id),
+                "target": "publisher1.com__" + "9999",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
                 "bid_modifier_target": "publisher1.com",
-                "source": source,
-            },
-            {
+                "source": True,
+            }
+        ),
+        param(
+            "device",
+            **{
                 "target_type": constants.TargetType.DEVICE,
                 "target": str(dash.constants.DeviceType.DESKTOP),
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.DEVICE,
                 "bid_modifier_target": str(dash.constants.DeviceType.DESKTOP),
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "country",
+            **{
                 "target_type": constants.TargetType.COUNTRY,
                 "target": "USA",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.COUNTRY,
                 "bid_modifier_target": "USA",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "state",
+            **{
                 "target_type": constants.TargetType.STATE,
                 "target": "US-01",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.STATE,
                 "bid_modifier_target": "US-01",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "dma",
+            **{
                 "target_type": constants.TargetType.DMA,
                 "target": "123",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.DMA,
                 "bid_modifier_target": "123",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "os",
+            **{
                 "target_type": constants.TargetType.OS,
                 "target": "WinPhone",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
                 "bid_modifier_target": "winphone",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "environment",
+            **{
                 "target_type": constants.TargetType.ENVIRONMENT,
                 "target": "site",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.ENVIRONMENT,
                 "bid_modifier_target": "site",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "source",
+            **{
                 "target_type": constants.TargetType.SOURCE,
-                "target": str(source.id),
+                "target": "9999",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,
-                "bid_modifier_target": str(source.id),
-            },
-            {
+                "bid_modifier_target": "9999",
+                "source": False,
+            }
+        ),
+        param(
+            "placement",
+            **{
                 "target_type": constants.TargetType.PLACEMENT,
-                "target": dash.publisher_helpers.create_placement_id("zemanta.com", source.id, "100001-1001633"),
+                "target": dash.publisher_helpers.create_placement_id("zemanta.com", "9999", "100001-1001633"),
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
                 "bid_modifier_target": dash.publisher_helpers.create_placement_id(
-                    "zemanta.com", source.id, "100001-1001633"
+                    "zemanta.com", "9999", "100001-1001633"
                 ),
-                "source": source,
-            },
-            {
+                "source": True,
+            }
+        ),
+        param(
+            "browser",
+            **{
                 "target_type": constants.TargetType.BROWSER,
                 "target": "CHROME",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.BROWSER,
                 "bid_modifier_target": "CHROME",
-            },
-            {
+                "source": False,
+            }
+        ),
+        param(
+            "connection_type",
+            **{
                 "target_type": constants.TargetType.CONNECTION_TYPE,
                 "target": "cellular",
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.CONNECTION_TYPE,
                 "bid_modifier_target": "cellular",
-            },
-        ]
-        test_functions = [
-            self._test_adjust_bid_modifier_increase_new,
-            self._test_adjust_bid_modifier_increase,
-            self._test_adjust_bid_modifier_increase_over_limit,
-            self._test_adjust_bid_modifier_decrease_new,
-            self._test_adjust_bid_modifier_decrease,
-            self._test_adjust_bid_modifier_decrease_under_limit,
-        ]
+                "source": False,
+            }
+        ),
+    ]
 
-        for case in test_cases:
-            for fn in test_functions:
-                fn(ad_group, **case)
-                core.features.bid_modifiers.BidModifier.objects.all().delete()
+    def setUp(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign.settings.update_unsafe(None, autopilot=False)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        self.ad_group.settings.update_unsafe(
+            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group, id=9999)
+        self.source = magic_mixer.blend(core.models.Source, id=9999)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        magic_mixer.blend(dash.features.geolocation.Geolocation, key="USA", type="co")
+        magic_mixer.blend(dash.features.geolocation.Geolocation, key="US-01", type="re")
+        magic_mixer.blend(dash.features.geolocation.Geolocation, key="123", type="dma")
 
-    def _test_adjust_bid_modifier_increase_new(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_increase_new(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         rule = magic_mixer.blend(
             Rule,
@@ -135,28 +174,32 @@ class ActionsTest(TestCase):
 
         self.assertFalse(core.features.bid_modifiers.BidModifier.objects.exists())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier = core.features.bid_modifiers.BidModifier.objects.get(
-            ad_group=ad_group, type=bid_modifier_type, target=bid_modifier_target, source=source
+            ad_group=self.ad_group,
+            type=bid_modifier_type,
+            target=bid_modifier_target,
+            source=self.source if source else None,
         )
         self.assertEqual(1.8, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-    def _test_adjust_bid_modifier_increase(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_increase(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         bid_modifier = magic_mixer.blend(
             core.features.bid_modifiers.BidModifier,
-            ad_group=ad_group,
+            ad_group=self.ad_group,
             type=bid_modifier_type,
             target=bid_modifier_target,
-            source=source,
-            source_slug=source.bidder_slug if source else "",
+            source=self.source if source else None,
+            source_slug=self.source.bidder_slug if source else "",
             modifier=1.7,
         )
         rule = magic_mixer.blend(
@@ -167,31 +210,32 @@ class ActionsTest(TestCase):
             change_limit=2.0,
         )
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.9, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
-    def _test_adjust_bid_modifier_increase_over_limit(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_increase_over_limit(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         bid_modifier = magic_mixer.blend(
             core.features.bid_modifiers.BidModifier,
-            ad_group=ad_group,
+            ad_group=self.ad_group,
             type=bid_modifier_type,
             target=bid_modifier_target,
-            source=source,
-            source_slug=source.bidder_slug if source else "",
+            source=self.source if source else None,
+            source_slug=self.source.bidder_slug if source else "",
             modifier=1.7,
         )
         rule = magic_mixer.blend(
@@ -202,13 +246,14 @@ class ActionsTest(TestCase):
             change_limit=1.5,
         )
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.7, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
-    def _test_adjust_bid_modifier_decrease_new(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_decrease_new(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         rule = magic_mixer.blend(
             Rule,
@@ -220,28 +265,32 @@ class ActionsTest(TestCase):
 
         self.assertFalse(core.features.bid_modifiers.BidModifier.objects.exists())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier = core.features.bid_modifiers.BidModifier.objects.get(
-            ad_group=ad_group, type=bid_modifier_type, target=bid_modifier_target, source=source
+            ad_group=self.ad_group,
+            type=bid_modifier_type,
+            target=bid_modifier_target,
+            source=self.source if source else None,
         )
         self.assertEqual(0.7, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(0.5, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-    def _test_adjust_bid_modifier_decrease(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_decrease(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         bid_modifier = magic_mixer.blend(
             core.features.bid_modifiers.BidModifier,
-            ad_group=ad_group,
+            ad_group=self.ad_group,
             type=bid_modifier_type,
             target=bid_modifier_target,
-            source=source,
-            source_slug=source.bidder_slug if source else "",
+            source=self.source if source else None,
+            source_slug=self.source.bidder_slug if source else "",
             modifier=1.9,
         )
         rule = magic_mixer.blend(
@@ -252,31 +301,32 @@ class ActionsTest(TestCase):
             change_limit=1.6,
         )
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.7, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.6, bid_modifier.modifier)
         self.assertTrue(update.has_changes())
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.6, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
-    def _test_adjust_bid_modifier_decrease_under_limit(
-        self, ad_group, target_type, target, bid_modifier_type, bid_modifier_target, source=None
+    @parameterized.expand(TEST_CASES)
+    def test_adjust_bid_modifier_decrease_under_limit(
+        self, _, target_type, target, bid_modifier_type, bid_modifier_target, source=False
     ):
         bid_modifier = magic_mixer.blend(
             core.features.bid_modifiers.BidModifier,
-            ad_group=ad_group,
+            ad_group=self.ad_group,
             type=bid_modifier_type,
             target=bid_modifier_target,
-            source=source,
-            source_slug=source.bidder_slug if source else "",
+            source=self.source if source else None,
+            source_slug=self.source.bidder_slug if source else "",
             modifier=1.7,
         )
         rule = magic_mixer.blend(
@@ -287,11 +337,13 @@ class ActionsTest(TestCase):
             change_limit=2.0,
         )
 
-        update = actions.adjust_bid_modifier(target, rule, ad_group)
+        update = actions.adjust_bid_modifier(target, rule, self.ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.7, bid_modifier.modifier)
         self.assertFalse(update.has_changes())
 
+
+class ActionsTest(TestCase):
     def test_adjust_bid_modifier_unsupported_action(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         source = magic_mixer.blend(core.models.Source)
