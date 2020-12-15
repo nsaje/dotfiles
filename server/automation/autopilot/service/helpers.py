@@ -15,7 +15,35 @@ from .. import settings
 logger = zlogging.getLogger(__name__)
 
 # TODO: RTAP: BACKFILL: remove after all agencies migrated
-MIGRATING_AGENCY_IDS = []
+MIGRATING_AGENCY_IDS = [
+    588,
+    655,
+    711,
+    361,
+    629,
+    670,
+    705,
+    663,
+    714,
+    611,
+    521,
+    769,
+    757,
+    286,
+    424,
+    660,
+    635,
+    184,
+    558,
+    448,
+    101,
+    833,
+    619,
+    561,
+    216,
+    305,
+    845,
+]
 
 
 def get_active_ad_groups_on_autopilot():
