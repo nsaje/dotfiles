@@ -16,7 +16,7 @@ export function parseDecimal(value: string, fractionSize: number = 2): string {
         return null;
     }
 
-    const holder = value.replace(/[^-+\d.]+/g, '');
+    const holder = value.toString().replace(/[^-+\d.]+/g, '');
     const chunks = holder.split('.');
     let result = chunks[0];
     if (chunks[1]) {
