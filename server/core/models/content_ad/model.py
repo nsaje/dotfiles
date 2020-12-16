@@ -71,8 +71,6 @@ class ContentAd(
     document_id = models.BigIntegerField(null=True, blank=True)
     document_features = JSONField(null=True, blank=True)
 
-    redirect_id = models.CharField(max_length=128, null=True)
-
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
 
     state = models.IntegerField(
