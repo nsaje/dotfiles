@@ -515,35 +515,11 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     amplify_account_name.description = "Amplify account name"
 
 
-# Campaign
-class AdGroupInline(admin.TabularInline):
-    verbose_name = "Ad Group"
-    verbose_name_plural = "Ad Groups"
-    model = models.AdGroup
-    extra = 0
-    max_num = 0
-    can_delete = False
-    exclude = ("users", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings", "entity_tags")
-    ordering = ("-created_dt",)
-    readonly_fields = (
-        "name",
-        "bidding_type",
-        "default_whitelist",
-        "default_blacklist",
-        "amplify_review",
-        "_entity_tags",
-        "admin_link",
-    )
-    raw_id_fields = ("default_whitelist", "default_blacklist")
-
-    def _entity_tags(self, obj):
-        return ", ".join(str(e) for e in obj.entity_tags.all())
-
-
 class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     search_fields = ("name", "id")
     list_display = ("id", "name", "created_dt", "modified_dt")
     readonly_fields = (
+        "archived",
         "name",
         "type",
         "created_dt",
@@ -556,7 +532,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     )
     raw_id_fields = ("default_whitelist", "default_blacklist")
     exclude = ("settings",)
-    inlines = (AdGroupInline, DirectDealConnectionCampaignInline)
+    inlines = (DirectDealConnectionCampaignInline,)
     form = dash_forms.CampaignAdminForm
 
     def get_form(self, request, obj=None, **kwargs):
