@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 
 import core.common
@@ -47,6 +48,7 @@ class AccountManager(core.common.BaseManager):
         hacks.apply_account_create_hack(request, account)
 
         self._log_new_account_to_slack(account)
+
         k1_helper.update_account(account, msg="account.created")
         return account
 
@@ -80,7 +82,7 @@ class AccountManager(core.common.BaseManager):
             raise exceptions.CreatingAccountNotAllowed("Currency is required on account creation.")
 
     def _log_new_account_to_slack(self, account):
-        if "New account" not in account.name:
+        if "New account" not in account.name and account.agency_id != settings.HARDCODED_AGENCY_ID_APT_ENTITY_CREATE:
             slack_msg = (
                 "Account #<https://one.zemanta.com/v2/analytics/account/{id}|{id}> {name} was created"
                 "{agency}.".format(
