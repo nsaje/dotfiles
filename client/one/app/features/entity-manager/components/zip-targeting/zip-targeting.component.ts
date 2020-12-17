@@ -125,7 +125,7 @@ export class ZipTargetingComponent implements OnChanges {
         location: Geolocation,
         zipCodesText: string
     ): void {
-        if (!isDefined(this.location)) {
+        if (!isDefined(location)) {
             return;
         }
 
