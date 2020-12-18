@@ -147,7 +147,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         settings.save(None)
 
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
-        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
 
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
@@ -192,6 +192,22 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
                 "currentBids": {"cpc": "0.4500", "cpm": "1.0000"},
             },
         )
+
+    def test_get_hide_agency_deal_id_for_account_user(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertIsNone(resp_json["data"].get("dailyBudget"))
+        self.assertFalse("dealId" in resp_json["data"]["deals"][0])
 
     @mock.patch("restapi.adgroup.internal.helpers.get_extra_data")
     def test_get_internal_deals_no_permission(self, mock_get_extra_data):
@@ -304,10 +320,10 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         settings.save(None)
 
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
-        deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal_to_be_removed, adgroup=ad_group)
 
-        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source)
 
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
@@ -349,8 +365,8 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
-        self.assertEqual(resp_json["data"]["deals"][0]["agencyId"], str(agency.id))
-        self.assertEqual(resp_json["data"]["deals"][0]["accountId"], None)
+        self.assertEqual(resp_json["data"]["deals"][1]["agencyId"], None)
+        self.assertEqual(resp_json["data"]["deals"][1]["accountId"], str(account.id))
         self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)

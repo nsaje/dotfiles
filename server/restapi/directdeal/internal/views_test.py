@@ -21,7 +21,8 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertResponseValid(r, data_type=type(None))
 
     def test_validate_error(self):
-        data = {"dealId": None, "source": None, "agencyId": None}
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        data = {"dealId": None, "source": None, "agencyId": agency.id}
         r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"), data=data, format="json")
         r = self.assertResponseError(r, "ValidationError")
         self.assertIn("This field may not be null.", r["details"]["dealId"][0])

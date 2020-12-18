@@ -6,7 +6,7 @@
         <div class="zem-deal__summary-item">
             Source: <label>{{ deal.source }}</label>
         </div>
-        <div class="zem-deal__summary-item">
+        <div class="zem-deal__summary-item" *ngIf="deal.dealId">
             Deal id: <label>{{ deal.dealId }}</label>
         </div>
         <div class="zem-deal__summary-item">

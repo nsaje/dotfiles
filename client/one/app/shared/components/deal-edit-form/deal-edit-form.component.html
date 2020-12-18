@@ -19,7 +19,7 @@
     [isDisabled]="isDisabled"
     [label]="'Deal ID'"
     [value]="deal.dealId"
-    [placeholder]="'Deal ID'"
+    [placeholder]="isDisabled ? 'Undisclosed' : 'Deal ID'"
     [errors]="dealErrors?.dealId"
     (valueChange)="onDealIdChange($event)"
 ></zem-text-form-group>

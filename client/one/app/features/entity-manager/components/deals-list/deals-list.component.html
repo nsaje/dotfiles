@@ -24,11 +24,10 @@
     </ng-template>
     <ng-template #selectItemTemplate let-item="item" let-search="search">
         <span [zemTextHighlight]="search">
-            <ng-container *ngIf="item.name">
-                {{ item.name }} / {{ item.source }} / {{ item.dealId }}
-            </ng-container>
-            <ng-container *ngIf="!item.name">
-                {{ item.source }} / {{ item.dealId }}
+            <ng-container *ngIf="item.name"> {{ item.name }} / </ng-container>
+            {{ item.source }}
+            <ng-container *ngIf="item.dealId">
+                / {{ item.dealId }}
             </ng-container>
         </span>
     </ng-template>
