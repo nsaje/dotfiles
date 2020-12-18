@@ -143,10 +143,6 @@ class AutopilotTestCase(test.TestCase):
 
     @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @patch(
-        "django.utils.timezone.now",
-        return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
-    )
-    @patch(
         "utils.dates_helper.utc_now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
     )
@@ -154,21 +150,58 @@ class AutopilotTestCase(test.TestCase):
     @patch("automation.autopilot.service.prefetch.prefetch_autopilot_data")
     @patch("automation.autopilot.service.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_daily_run_exclude_processed_entities(
-        self, mock_budgets, mock_prefetch, mock_update_budget, mock_utc_now, mock_timezone_now
+        self, mock_budgets, mock_prefetch, mock_update_budget, mock_utc_now
     ):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
-        models.AutopilotLog(
-            campaign=dash.models.Campaign.objects.get(id=3),
-            ad_group=dash.models.AdGroup.objects.get(id=3),
-            is_autopilot_job_run=True,
-        ).save()
-        models.AutopilotLog(
-            campaign=dash.models.Campaign.objects.get(id=4),
-            ad_group=dash.models.AdGroup.objects.get(id=4),
-            is_autopilot_job_run=True,
-        ).save()
+        with patch(
+            "django.utils.timezone.now",
+            return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) - datetime.timedelta(hours=15),
+        ):
+            # Create some logs from last yesterday's run (~14h)
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=1),
+                ad_group=dash.models.AdGroup.objects.get(id=1),
+                is_autopilot_job_run=True,
+            )
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=2),
+                ad_group=dash.models.AdGroup.objects.get(id=2),
+                is_autopilot_job_run=True,
+            )
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=3),
+                ad_group=dash.models.AdGroup.objects.get(id=3),
+                is_autopilot_job_run=True,
+            )
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=4),
+                ad_group=dash.models.AdGroup.objects.get(id=4),
+                is_autopilot_job_run=True,
+            )
+
+        with patch(
+            "django.utils.timezone.now",
+            return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=4),
+        ):
+            # Create some logs from first today's run (~9h)
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=3),
+                ad_group=dash.models.AdGroup.objects.get(id=3),
+                is_autopilot_job_run=True,
+            )
+            magic_mixer.blend(
+                models.AutopilotLog,
+                campaign=dash.models.Campaign.objects.get(id=4),
+                ad_group=dash.models.AdGroup.objects.get(id=4),
+                is_autopilot_job_run=True,
+            )
 
         service.run_autopilot(daily_run=True, update_metrics=False)
 
@@ -176,8 +209,15 @@ class AutopilotTestCase(test.TestCase):
             mock_update_budget.call_args_list,
             [self._update_budget_call(ad_group=1), self._update_budget_call(ad_group=2)],
         )
-        self.assertLogExists(campaign=1, ad_group=1)
-        self.assertLogExists(campaign=2, ad_group=2)
+
+        utc_now = dates_helper.get_midnight(dates_helper.utc_now())
+
+        self.assertTrue(
+            models.AutopilotLog.objects.filter(campaign_id=1, ad_group_id=1, created_dt__gte=utc_now).exists()
+        )
+        self.assertTrue(
+            models.AutopilotLog.objects.filter(campaign_id=2, ad_group_id=2, created_dt__gte=utc_now).exists()
+        )
 
     @patch("automation.autopilot.service.service.logger.info")
     def test_run_autopilot_daily_run_late_materialization(self, mock_logger_info):

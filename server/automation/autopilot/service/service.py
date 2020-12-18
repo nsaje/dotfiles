@@ -28,14 +28,13 @@ logger = zlogging.getLogger(__name__)
 def run_autopilot(campaign=None, adjust_budgets=True, update_metrics=False, dry_run=False, daily_run=False):
     processed_campaign_ids = None
     if daily_run:
-        # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
-        from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
-
         if not etl.materialization_run.etl_data_complete_for_date(dates_helper.local_yesterday()):
             logger.info("Autopilot daily run was aborted since materialized data is not yet available.")
             return
 
-        processed_campaign_ids = helpers.get_processed_autopilot_campaign_ids(from_date_time)
+        processed_campaign_ids = helpers.get_processed_autopilot_campaign_ids(
+            dates_helper.get_midnight(dates_helper.utc_now())
+        )
 
         if processed_campaign_ids:
             logger.info("Excluding processed campaigns", num_excluded=len(processed_campaign_ids))
