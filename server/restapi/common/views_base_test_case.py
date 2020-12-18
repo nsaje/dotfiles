@@ -23,7 +23,6 @@ class RESTAPITestCase(BaseTestCase):
         "can_see_all_available_sources",
         "can_manage_agency_margin",
         "can_see_deals_in_ui",
-        "can_see_direct_deals_section",
         "account_credit_view",
         "can_see_backend_hacks",
         "can_see_service_fee",

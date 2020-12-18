@@ -337,6 +337,7 @@ class CampaignViewSetTest(RESTAPITestCase):
             self.user,
             permissions=[
                 Permission.READ,
+                Permission.WRITE,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
@@ -595,6 +596,7 @@ class CampaignViewSetTest(RESTAPITestCase):
             self.user,
             permissions=[
                 Permission.READ,
+                Permission.WRITE,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
@@ -614,6 +616,29 @@ class CampaignViewSetTest(RESTAPITestCase):
 
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertFalse("dealId" in resp_json["data"]["deals"][0])
+
+    def test_get_readonly_no_deals(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.AGENCY_SPEND_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
+            ],
+            agency=agency,
+        )
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertFalse("deals" in resp_json["data"])
 
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get_limited(self, mock_get_extra_data):
@@ -794,7 +819,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         )
 
     def test_get_internal_deals_no_permission(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
@@ -805,7 +830,7 @@ class CampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(len(resp_json["data"]["deals"]), 0)
 
     def test_get_internal_deals_permission(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)

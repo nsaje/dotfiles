@@ -2,7 +2,6 @@ import decimal
 from collections import OrderedDict
 
 import rest_framework.serializers
-from django.contrib.auth.models import Permission
 
 import dash.constants
 import restapi.campaign.v1.serializers
@@ -19,6 +18,7 @@ import restapi.serializers.user
 import utils
 import zemauth.access
 import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -108,9 +108,18 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     agency_uses_realtime_autopilot = rest_framework.serializers.BooleanField(read_only=True, default=False)
 
 
-class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
+class CampaignSerializer(
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin, restapi.campaign.v1.serializers.CampaignSerializer
+):
     class Meta:
-        permissioned_fields = {"deals": "zemauth.can_see_direct_deals_section"}
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("id"),
+                "entity_access_fn": zemauth.access.get_campaign,
+            },
+            # Seeing deals requires write permission
+            "fields": {"deals": Permission.WRITE},
+        }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)
     goals = rest_framework.serializers.ListSerializer(
@@ -142,6 +151,22 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
         if data is None:
             return data
         return zemauth.models.User.objects.get(pk=data)
+
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        campaign_id = data.get("id")
+        if campaign_id is not None:
+            return super().has_entity_permission(user, permission, config, data)
+
+        account_id = data.get("account_id")
+        if account_id is not None:
+            try:
+                zemauth.access.get_account(user, permission, account_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+        return False
 
 
 class CloneCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

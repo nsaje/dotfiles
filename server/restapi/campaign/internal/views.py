@@ -177,7 +177,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         campaign.settings.goals = self._get_campaign_goals(campaign)
         campaign.settings.budgets = self._get_campaign_budgets(campaign)
         campaign.settings.deals = []
-        if request.user.has_perm("zemauth.can_see_direct_deals_section"):
+        # Seeing deals requires write permission
+        if request.user.has_perm_on(Permission.WRITE, campaign.account):
             campaign.settings.deals = campaign.get_deals(request)
 
     def _handle_campaign_goals(self, request, campaign, data):

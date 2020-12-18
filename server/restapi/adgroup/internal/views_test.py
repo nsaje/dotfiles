@@ -138,7 +138,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -195,7 +195,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
     def test_get_hide_agency_deal_id_for_account_user(self):
         agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -208,6 +208,21 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertFalse("dealId" in resp_json["data"]["deals"][0])
+
+    def test_get_readonly_no_deals(self):
+        agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertFalse("deals" in resp_json["data"])
 
     @mock.patch("restapi.adgroup.internal.helpers.get_extra_data")
     def test_get_internal_deals_no_permission(self, mock_get_extra_data):
@@ -235,7 +250,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -273,7 +288,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency, uses_realtime_autopilot=True)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 

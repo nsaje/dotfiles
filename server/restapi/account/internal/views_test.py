@@ -240,7 +240,9 @@ class AccountViewSetTest(RESTAPITestCase):
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
         agency = self.mix_agency()
-        account = self.mix_account(user=self.user, permissions=[Permission.READ], agency=agency, name="Generic account")
+        account = self.mix_account(
+            user=self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency, name="Generic account"
+        )
         default_icon = magic_mixer.blend(
             core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
@@ -481,7 +483,9 @@ class AccountViewSetTest(RESTAPITestCase):
 
     def test_get_hide_agency_deal_id_for_account_user(self):
         agency = self.mix_agency()
-        account = self.mix_account(user=self.user, permissions=[Permission.READ], agency=agency, name="Generic account")
+        account = self.mix_account(
+            user=self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency, name="Generic account"
+        )
 
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list(sources))
@@ -496,9 +500,27 @@ class AccountViewSetTest(RESTAPITestCase):
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertFalse("dealId" in resp_json["data"]["deals"][0])
 
+    def test_get_readonly_no_deals(self):
+        agency = self.mix_agency()
+        account = self.mix_account(user=self.user, permissions=[Permission.READ], agency=agency, name="Generic account")
+
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list(sources))
+        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertFalse("deals" in resp_json["data"])
+
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_internal_deals_no_permission(self, mock_get_extra_data):
-        account = self.mix_account(user=self.user, permissions=[Permission.READ], name="Generic account")
+        account = self.mix_account(
+            user=self.user, permissions=[Permission.READ, Permission.WRITE], name="Generic account"
+        )
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
@@ -509,7 +531,9 @@ class AccountViewSetTest(RESTAPITestCase):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_internal_deals_permission(self, mock_get_extra_data):
-        account = self.mix_account(user=self.user, permissions=[Permission.READ], name="Generic account")
+        account = self.mix_account(
+            user=self.user, permissions=[Permission.READ, Permission.WRITE], name="Generic account"
+        )
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)

@@ -1,4 +1,5 @@
 import decimal
+from collections import OrderedDict
 
 import rest_framework.serializers
 
@@ -13,6 +14,9 @@ import restapi.serializers.fields
 import restapi.serializers.hack
 import restapi.serializers.serializers
 import restapi.serializers.targeting
+import utils.exc
+import zemauth
+from zemauth.features.entity_permission import Permission
 
 
 class CloneAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -124,7 +128,9 @@ class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilot
     )
 
 
-class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
+class AdGroupSerializer(
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin, restapi.adgroup.v1.serializers.AdGroupSerializer
+):
     class Meta(restapi.adgroup.v1.serializers.AdGroupSerializer.Meta):
         fields = (
             "id",
@@ -150,7 +156,14 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
         permissioned_fields = {
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
             "additional_data": "zemauth.can_use_ad_additional_data",
-            "deals": "zemauth.can_see_direct_deals_section",
+        }
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("id"),
+                "entity_access_fn": zemauth.access.get_ad_group,
+            },
+            # Seeing deals requires write permission
+            "fields": {"deals": Permission.WRITE},
         }
 
     manage_rtb_sources_as_one = rest_framework.serializers.BooleanField(source="b1_sources_group_enabled")
@@ -167,6 +180,22 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
     )
+
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        ad_group_id = data.get("id")
+        if ad_group_id is not None:
+            return super().has_entity_permission(user, permission, config, data)
+
+        campaign_id = data.get("campaign_id")
+        if campaign_id is not None:
+            try:
+                zemauth.access.get_campaign(user, permission, campaign_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+        return False
 
 
 class AdGroupInternalQueryParams(

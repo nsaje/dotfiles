@@ -153,7 +153,8 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
     @staticmethod
     def _augment_ad_group(request, ad_group):
         ad_group.settings.deals = []
-        if request.user.has_perm("zemauth.can_see_direct_deals_section"):
+        # Seeing deals requires write permission
+        if request.user.has_perm_on(Permission.WRITE, ad_group.campaign.account):
             ad_group.settings.deals = ad_group.get_deals(request)
 
     @staticmethod

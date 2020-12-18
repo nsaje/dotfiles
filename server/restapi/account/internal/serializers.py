@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import rest_framework.serializers
 from drf_base64.fields import Base64ImageField
 
@@ -9,7 +11,9 @@ import restapi.serializers.deals
 import restapi.serializers.fields
 import restapi.serializers.hack
 import restapi.serializers.user
+import utils.exc
 import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 class AccountMediaSourceSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -59,7 +63,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
 
-class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
+class AccountSerializer(
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin, restapi.account.v1.serializers.AccountSerializer
+):
     class Meta:
         permissioned_fields = {
             "account_type": "zemauth.can_modify_account_type",
@@ -69,7 +75,13 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "ob_sales_representative": "zemauth.can_set_account_ob_representative",
             "ob_account_manager": "zemauth.can_set_account_ob_representative",
             "salesforce_url": "zemauth.can_see_salesforce_url",
-            "deals": "zemauth.can_see_direct_deals_section",
+        }
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("id"),
+                "entity_access_fn": zemauth.access.get_account,
+            },
+            "fields": {"deals": Permission.WRITE},
         }
 
     agency_id = restapi.serializers.fields.IdField(allow_null=False)
@@ -197,3 +209,20 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
         if data is None:
             return data
         return zemauth.models.User.objects.get_users_with_perm("can_be_ob_representative").get(pk=data)
+
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: Permission, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        account_id = data.get("id")
+        if account_id is not None:
+            return super().has_entity_permission(user, permission, config, data)
+
+        agency_id = data.get("agency_id")
+        if agency_id is not None:
+            try:
+                zemauth.access.get_agency(user, permission, agency_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+
+        return False

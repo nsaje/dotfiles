@@ -52,6 +52,7 @@ export class CampaignSettingsDrawerView
     isOpen: boolean;
     isNewEntity: boolean;
     isReadOnly: boolean;
+    canSeeDeals: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -203,7 +204,7 @@ export class CampaignSettingsDrawerView
     }
 
     private subscribeToStateUpdates() {
-        merge(this.createReadOnlyUpdater$())
+        merge(this.createReadOnlyUpdater$(), this.createCanSeeDealsUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -223,5 +224,19 @@ export class CampaignSettingsDrawerView
                     );
                 })
             );
+    }
+
+    private createCanSeeDealsUpdater$(): Observable<
+        CampaignSettingsStoreState
+    > {
+        return this.store.state$.pipe(
+            tap(state => {
+                this.canSeeDeals = this.authStore.hasPermissionOn(
+                    state.extras.agencyId,
+                    state.entity.accountId,
+                    EntityPermissionValue.WRITE
+                );
+            })
+        );
     }
 }

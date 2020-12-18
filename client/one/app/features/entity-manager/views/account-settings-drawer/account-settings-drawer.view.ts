@@ -29,6 +29,7 @@ import {
 import {Router} from '@angular/router';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {Account} from '../../../../core/entities/types/account/account';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Component({
     selector: 'zem-account-settings-drawer',
@@ -48,6 +49,7 @@ export class AccountSettingsDrawerView
     isNewEntity: boolean;
     isDefaultIconPreviewVisible: boolean;
     isReadOnly: boolean;
+    canSeeDeals: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -172,7 +174,8 @@ export class AccountSettingsDrawerView
     private subscribeToStateUpdates() {
         merge(
             this.createDefaultIconPreviewUpdater$(),
-            this.createReadOnlyUpdater$()
+            this.createReadOnlyUpdater$(),
+            this.createCanSeeDealsUpdater$()
         )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
@@ -205,5 +208,19 @@ export class AccountSettingsDrawerView
                     );
                 })
             );
+    }
+
+    private createCanSeeDealsUpdater$(): Observable<Account> {
+        return this.store.state$.pipe(
+            map(state => state.entity),
+            distinctUntilChanged(),
+            tap(entity => {
+                this.canSeeDeals = this.authStore.hasPermissionOn(
+                    entity.agencyId,
+                    entity.id,
+                    EntityPermissionValue.WRITE
+                );
+            })
+        );
     }
 }

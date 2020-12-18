@@ -43,6 +43,8 @@ import {
 } from './ad-group-settings-drawer.config';
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
 import {ExpandableSection} from './ad-group-settings.drawer.constants';
+import {CampaignSettingsStoreState} from '../../services/campaign-settings-store/campaign-settings.store.state';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -61,6 +63,7 @@ export class AdGroupSettingsDrawerView
     isOpen = false;
     isNewEntity = false;
     isReadOnly: boolean;
+    canSeeDeals: boolean = false;
     minEndDate = new Date();
     currencySymbol = '';
 
@@ -180,7 +183,8 @@ export class AdGroupSettingsDrawerView
     private subscribeToStateUpdates() {
         merge(
             this.createCurrencySymbolUpdater$(),
-            this.createReadOnlyUpdater$()
+            this.createReadOnlyUpdater$(),
+            this.createCanSeeDealsUpdater$()
         )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
@@ -253,5 +257,17 @@ export class AdGroupSettingsDrawerView
             ](entity);
         });
         return expandedSectionsByDefault;
+    }
+
+    private createCanSeeDealsUpdater$(): Observable<AdGroupSettingsStoreState> {
+        return this.store.state$.pipe(
+            tap(state => {
+                this.canSeeDeals = this.authStore.hasPermissionOn(
+                    state.extras.agencyId,
+                    state.extras.accountId,
+                    EntityPermissionValue.WRITE
+                );
+            })
+        );
     }
 }

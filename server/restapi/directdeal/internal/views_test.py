@@ -36,7 +36,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertIn("Source matching query does not exist.", r["details"])
 
     def test_get(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         deal = magic_mixer.blend(
             core.features.deals.DirectDeal, agency=agency, source=source, deal_id="DEAL_123", name="DEAL 123"
@@ -49,6 +49,16 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["name"], deal.name)
         self.assertEqual(resp_json["data"]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["source"], source.bidder_slug)
+
+    def test_get_readonly(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        source = magic_mixer.blend(core.models.Source)
+        deal = magic_mixer.blend(
+            core.features.deals.DirectDeal, agency=agency, source=source, deal_id="DEAL_123", name="DEAL 123"
+        )
+
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
+        self.assertResponseError(r, "MissingDataError")
 
     def test_put_account(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -148,7 +158,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertIn(error_message, resp_json["details"]["agencyId"])
 
     def test_list_pagination(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         magic_mixer.cycle(20).blend(core.features.deals.DirectDeal, agency=agency, source=source)
 
@@ -171,7 +181,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"][10:20], resp_json_paginated["data"])
 
     def test_list_with_agency(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         account1 = magic_mixer.blend(core.models.Account, agency=agency)
         account2 = self.mix_account(self.user, permissions=[Permission.READ])
         source = magic_mixer.blend(core.models.Source)
@@ -186,7 +196,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(len(resp_json["data"]), 7)
 
     def test_list_with_account(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         account = magic_mixer.blend(core.models.Account, agency=agency)
         account2 = magic_mixer.blend(core.models.Account, agency=agency)
         source = magic_mixer.blend(core.models.Source)
@@ -201,9 +211,9 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(len(resp_json["data"]), 7)
 
     def test_list_with_agency_only(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         account1 = magic_mixer.blend(core.models.Account, agency=agency)
-        account2 = self.mix_account(self.user, permissions=[Permission.READ])
+        account2 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         agency_deals = magic_mixer.cycle(3).blend(
             core.features.deals.DirectDeal, agency=agency, account=None, source=source
@@ -222,7 +232,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(agency_deals_ids, resp_json_ids)
 
     def test_list_with_keyword(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source, name="Test name", bidder_slug="Test bidder_slug")
 
         magic_mixer.blend(
@@ -258,7 +268,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"][0]["dealId"], "DEAL_1")
 
     def test_list_internal_no_permission(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         magic_mixer.cycle(10).blend(
             core.features.deals.DirectDeal, agency=agency, account=None, source=source, is_internal=False
@@ -272,7 +282,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["count"], 10)
 
     def test_list_internal_permission(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         magic_mixer.cycle(10).blend(
             core.features.deals.DirectDeal, agency=agency, account=None, source=source, is_internal=False
@@ -369,7 +379,7 @@ class DirectDealViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_list_connections(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
 
         account = magic_mixer.blend(core.models.Account, agency=agency, name="Demo account")
         account.settings.update_unsafe(None, name=account.name)

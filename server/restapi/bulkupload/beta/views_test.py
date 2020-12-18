@@ -138,7 +138,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -195,7 +195,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
     def test_get_hide_agency_deal_id_for_account_user(self):
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -235,7 +235,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -273,7 +273,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 

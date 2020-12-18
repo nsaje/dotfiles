@@ -207,7 +207,6 @@ class User(
             ("fea_can_create_automation_rules", "User can create automation rules."),
             ("can_see_all_nas_in_inventory_planning", "User can see all NAS sources in Inventory Planning."),
             ("settings_defaults_on_campaign_level", "Can view ad group settings defaults on campaign level"),
-            ("can_see_direct_deals_section", "User can see direct deals section."),
             ("can_see_internal_deals", "User can see and edit internal deals in the library."),
             ("can_see_mrc100_metrics", "User can see the MRC100 viewability metrics"),
             ("can_see_vast4_metrics", "User can see the VAST4 viewability metrics"),

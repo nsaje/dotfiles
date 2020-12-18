@@ -123,7 +123,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         account.allowed_media_sources = []
         account.allowed_media_sources = helpers.get_allowed_sources(account)
         account.deals = []
-        if request.user.has_perm("zemauth.can_see_direct_deals_section"):
+        # Seeing deals requires write permission
+        if request.user.has_perm_on(Permission.WRITE, account):
             account.deals = account.get_deals(request)
 
     @staticmethod

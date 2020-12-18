@@ -24,7 +24,8 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(None)
 
     def get(self, request, deal_id):
-        deal = zemauth.access.get_direct_deal(request.user, Permission.READ, deal_id)
+        # We require WRITE instead of READ permission to retrieve info about deals, this is intentional
+        deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def list(self, request):
@@ -36,14 +37,16 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         agency_only = qpe.validated_data.get("agency_only", None)
 
         if account_id is not None:
-            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            # Seeing deals requires write permission
+            account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
             deal_items = (
                 core.features.deals.DirectDeal.objects.filter_by_account(account)
                 .select_related("source", "account")
                 .order_by("-created_dt")
             )
         elif agency_id is not None:
-            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            # Seeing deals requires write permission
+            agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id)
             if agency_only is not None and agency_only:
                 deal_items = (
                     core.features.deals.DirectDeal.objects.filter_by_agency(agency)
@@ -133,7 +136,8 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(new_deal, context={"request": request}).data, status=201)
 
     def list_connections(self, request, deal_id):
-        deal = zemauth.access.get_direct_deal(request.user, Permission.READ, deal_id)
+        # Seeing deals requires write permission
+        deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
         deal_connection_items = (
             core.features.deals.DirectDealConnection.objects.filter_by_deal(deal)
             .select_related(
