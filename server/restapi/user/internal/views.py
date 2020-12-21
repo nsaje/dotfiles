@@ -13,6 +13,7 @@ from restapi.common.views_base import RESTAPIBaseViewSet
 from utils.email_helper import send_new_user_email
 from utils.exc import ValidationError
 from zemauth.features.entity_permission import EntityPermission
+from zemauth.features.entity_permission import EntityPermissionChangeNotAllowed
 from zemauth.features.entity_permission import Permission
 from zemauth.features.entity_permission.constants import REPORTING_PERMISSIONS
 from zemauth.models import User as ZemUser
@@ -102,8 +103,13 @@ class UserViewSet(RESTAPIBaseViewSet):
                 requested_user.set_entity_permissions(request, account, agency, user_data.get("entity_permissions"))
                 self._augment_user(requested_user, request, account, agency)
 
-        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
-            raise ValidationError(str(err))
+        except (
+            MixedPermissionLevels,
+            MissingReadPermission,
+            MissingRequiredPermission,
+            EntityPermissionChangeNotAllowed,
+        ) as err:
+            raise ValidationError(errors={"email": [str(err)]})
 
         return self.response_ok(self.serializer(requested_user, context={"request": request}).data)
 
@@ -154,8 +160,13 @@ class UserViewSet(RESTAPIBaseViewSet):
                     users.append(user)
                     if created:
                         created_users.append(user)
-        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
-            raise ValidationError(str(err))
+        except (
+            MixedPermissionLevels,
+            MissingReadPermission,
+            MissingRequiredPermission,
+            EntityPermissionChangeNotAllowed,
+        ) as err:
+            raise ValidationError(errors={"email": [str(err)]})
 
         for user in created_users:
             send_new_user_email(user, request)
@@ -168,8 +179,13 @@ class UserViewSet(RESTAPIBaseViewSet):
         try:
             with transaction.atomic():
                 user, created = self._handle_user(request, agency, account, changes)
-        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
-            raise ValidationError(str(err))
+        except (
+            MixedPermissionLevels,
+            MissingReadPermission,
+            MissingRequiredPermission,
+            EntityPermissionChangeNotAllowed,
+        ) as err:
+            raise ValidationError(errors={"email": [str(err)]})
 
         if created:
             send_new_user_email(user, request)
