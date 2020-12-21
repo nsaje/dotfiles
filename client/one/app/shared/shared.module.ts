@@ -84,6 +84,8 @@ import {ArchivedTagDirective} from './directives/archived-tag/archived-tag.direc
 import {PinnedRowCellComponent} from './components/smart-grid/components/cells/pinned-row-cell/pinned-row-cell.component';
 import {HeaderCellComponent} from './components/smart-grid/components/cells/header-cell/header-cell.component';
 import {CheckboxCellComponent} from './components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
+import {MultiStepComponent} from './components/multi-step/multi-step.component';
+import {MultiStepStepDirective} from './components/multi-step/multi-step-step.directive';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -160,6 +162,8 @@ const EXPORTED_DECLARATIONS = [
     PinnedRowCellComponent,
     HeaderCellComponent,
     CheckboxCellComponent,
+    MultiStepComponent,
+    MultiStepStepDirective,
 ];
 
 @NgModule({
