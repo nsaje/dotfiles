@@ -135,14 +135,7 @@ angular
         function convertSettingsToApi(settings) {
             var convertedSettings = {};
             Object.keys(settings).forEach(function(key) {
-                switch (key) {
-                    case zemGridEndpointColumns
-                        .COLUMNS.dailyBudgetSetting.field:
-                        convertedSettings.daily_budget_cc = settings[key];
-                        break;
-                    default:
-                        convertedSettings[key] = settings[key];
-                }
+                convertedSettings[key] = settings[key];
             });
             return convertedSettings;
         }

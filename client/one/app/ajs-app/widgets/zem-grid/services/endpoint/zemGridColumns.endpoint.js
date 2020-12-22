@@ -304,7 +304,6 @@ angular
                 help: 'Maximum media spend cap per day.',
                 totalRow: true,
                 order: true,
-                editable: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 defaultValue: '',
             },
@@ -1710,7 +1709,6 @@ angular
             COLUMNS.submissionStatus,
             COLUMNS.performance,
             COLUMNS.bidModifier,
-            COLUMNS.dailyBudgetSetting,
         ];
 
         // Default columns - columns present by default (non permanent can be hidden)
@@ -1786,6 +1784,7 @@ angular
             COLUMNS.etCost,
             COLUMNS.etfCost,
             COLUMNS.etfmCost,
+            COLUMNS.dailyBudgetSetting,
         ];
 
         var TRAFFIC_ACQUISITION_GROUP = [
@@ -2090,13 +2089,12 @@ angular
         COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (source editable fields)
-        COLUMNS.dailyBudgetSetting.exceptions.breakdowns = [
-            constants.breakdown.MEDIA_SOURCE,
-        ];
-        COLUMNS.dailyBudgetSetting.exceptions.levels = [
-            constants.level.AD_GROUPS,
-        ];
-        COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
+        COLUMNS.dailyBudgetSetting.exceptions = {
+            levels: [constants.level.AD_GROUPS],
+            breakdowns: [constants.breakdown.MEDIA_SOURCE],
+            breakdownBaseLevelOnly: true,
+            custom: [], // custom exceptions -> level/breakdown pairs; overwrites previous properties
+        };
 
         COLUMNS.bidModifier.exceptions.breakdowns = [
             constants.breakdown.CONTENT_AD,
