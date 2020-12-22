@@ -12,7 +12,7 @@ class Alert(ConstantBase):
         OK: "The job is executing OK now.",
         EXECUTION: "The job missed a scheduled execution. Check 'dcron' app admin or 'Z1 Cron Jobs' in Grafana.",
         DURATION: "The job is executing too long. Check 'dcron' app admin or 'Z1 Cron Jobs' in Grafana.",
-        FAILURE: "The job execution failed. Check LogDNA for details.",
+        FAILURE: "The job execution failed. Check logs for details.",
     }
 
     @classmethod

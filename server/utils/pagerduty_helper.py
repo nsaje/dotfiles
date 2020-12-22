@@ -23,9 +23,11 @@ Z1_TEAM_SCHEDULE_ID = settings.PAGER_DUTY_Z1_TEAM_SCHEDULE_ID
 class PagerDutyIncident:
     title: str
     url: str
+    assignee_id: str
+    created_at: datetime.datetime
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class PagerDutyUser:
     name: str
     email: str
@@ -133,7 +135,16 @@ def list_active_incidents():
     incidents = _call_api(
         "GET", REST_API_URL + "/incidents", {"statuses[]": ["triggered", "acknowledged"], "team_ids[]": [Z1_TEAM_ID]}
     )
-    return [PagerDutyIncident(title=incident["title"], url=incident["html_url"]) for incident in incidents["incidents"]]
+    ret = []
+    for incident in incidents["incidents"]:
+        assignee_id = incident["assignments"][0]["assignee"]["id"] if incident["assignments"] else None
+        created_at = datetime.datetime.strptime(incident["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        ret.append(
+            PagerDutyIncident(
+                title=incident["title"], url=incident["html_url"], assignee_id=assignee_id, created_at=created_at
+            )
+        )
+    return ret
 
 
 def get_on_call_user():
@@ -146,6 +157,11 @@ def get_on_call_user():
     if not users.get("users"):
         return None
     return PagerDutyUser(name=users["users"][0]["name"], email=users["users"][0]["email"])
+
+
+def get_user(id):
+    user = _call_api("GET", REST_API_URL + f"/users/{id}", {})
+    return PagerDutyUser(name=user["user"]["name"], email=user["user"]["email"])
 
 
 def _call_api(method, url, params):
