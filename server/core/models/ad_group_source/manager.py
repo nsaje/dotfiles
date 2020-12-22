@@ -132,6 +132,11 @@ class AdGroupSourceManager(core.common.BaseManager):
         )
         if sources:
             create_on_sources = create_on_sources.filter(id__in=[source.id for source in sources])
+            not_allowed = set(sources) - set(create_on_sources)
+            if not_allowed:
+                raise exceptions.SourceNotAllowed(
+                    "Source(s) %s not allowed on this account." % (", ".join([source.name for source in not_allowed]))
+                )
         added_ad_group_sources = []
 
         updates = {}

@@ -8,6 +8,8 @@ import utils.exc
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
+
 
 @patch("utils.k1_helper.update_ad_group")
 @patch("dash.views.helpers.get_source_initial_state", lambda x: True)
@@ -131,6 +133,15 @@ class AdGroupSourceCreate(TestCase):
 
         self.assertCountEqual(ad_group_sources, [])
         self.assertFalse(mock_k1.called)
+
+    def test_bulk_create_on_allowed_sources_not_allowed(self, mock_k1):
+        self.ad_group.campaign.account.allowed_sources.remove(self.default_source_settings.source)
+        request = magic_mixer.blend_request_user()
+
+        with self.assertRaises(exceptions.SourceNotAllowed):
+            core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
+                request, self.ad_group, write_history=False, sources=[self.default_source_settings.source]
+            )
 
     def test_bulk_create_on_video_sources(self, mock_k1):
         self.default_source_settings.source.supports_video = True
