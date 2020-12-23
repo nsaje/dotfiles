@@ -6,7 +6,6 @@ import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config'
 import {
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_ACTIONS_OPTIONS,
-    RULE_STATE_OPTIONS,
     RULE_NOTIFICATION_OPTIONS,
 } from '../../rules.config';
 import {
@@ -18,7 +17,6 @@ import {
 import {RuleActionsCellComponent} from '../rule-actions-cell/rule-actions-cell.component';
 import {SwitchButtonCellComponent} from '../../../../shared/components/smart-grid/components/cells/switch-button-cell/switch-button-cell.component';
 import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cells/switch-button-cell/types/switch-button.renderer-params';
-import {RulesView} from '../../views/rules/rules.view';
 import {RuleRunsOnCellComponent} from '../rule-runs-on-cell/rule-runs-on-cell.component';
 import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component';
 import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cells/icon-tooltip-cell/icon-tooltip-cell.component.constants';
@@ -86,6 +84,7 @@ export const COLUMN_NOTIFICATION: SmartGridColDef = {
 
 export const COLUMN_RUNS_ON: SmartGridColDef = {
     headerName: 'Runs on',
+    field: 'entities',
     width: 200,
     suppressSizeToFit: true,
     resizable: true,
@@ -123,6 +122,12 @@ export const COLUMN_SCOPE: SmartGridColDef = {
             return `/v2/analytics/account/${item.accountId}`;
         },
     } as ItemScopeRendererParams<Rule>,
+    valueGetter: params => {
+        return {
+            agencyId: params.data.agencyId,
+            accountId: params.data.accountId,
+        };
+    },
 };
 
 export const COLUMN_ACTIONS: SmartGridColDef = {

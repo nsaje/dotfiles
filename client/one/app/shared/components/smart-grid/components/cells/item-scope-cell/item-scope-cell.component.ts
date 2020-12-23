@@ -73,8 +73,16 @@ export class ItemScopeCellComponent<T> implements ICellRendererAngularComp {
         }
     }
 
-    refresh(): boolean {
-        return false;
+    refresh(params: ItemScopeRendererParams<T>): boolean {
+        const agencyId = params.value.agencyId;
+        const accountId = params.value.accountId;
+        if (
+            this.params.value.agencyId !== agencyId ||
+            this.params.value.accountId !== accountId
+        ) {
+            return false;
+        }
+        return true;
     }
 
     private getItemScopeState(item: T): ItemScopeState {
