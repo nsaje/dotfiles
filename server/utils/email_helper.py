@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from django.template import Context, Template
 from urllib.parse import urlparse, urlunparse
 from django.http import QueryDict
+from typing import Dict, Any
 
 import dash.constants
 import dash.models
@@ -161,7 +162,7 @@ def _send_email(email):
     email.send()
 
 
-def params_from_template(template_type, **kwargs):
+def params_from_template(template_type, **kwargs) -> Dict[Any, Any]:
     template = dash.models.EmailTemplate.objects.get(template_type=template_type)
     context = Context(kwargs)
     return dict(

@@ -1,13 +1,16 @@
 import datetime
 import http.client
+import itertools
 import operator
 from contextlib import contextmanager
 from functools import reduce
+from typing import Iterable
 
 import django.core.files
 import mock
 from django.contrib.auth.models import Permission
 from django.test.client import RequestFactory
+from parameterized import param  # type: ignore
 
 import core.models
 import zemauth.features.entity_permission
@@ -123,6 +126,19 @@ class TypeMatcher:
         return isinstance(other, self.expected_type)
 
 
+class SubstringMatcher:
+    expected_substring: str
+
+    def __init__(self, expected_substring: str):
+        self.expected_substring = expected_substring
+
+    def __eq__(self, other):
+        return self.expected_substring in other
+
+    def __repr__(self):
+        return f'<{type(self).__name__} "...{self.expected_substring}...">'
+
+
 def is_equal(val1, val2):
     if isinstance(val1, float) or isinstance(val2, float):
         return round(val1, 4) == round(val2, 4)
@@ -183,3 +199,25 @@ def disable_auto_now(cls, field_name):
     field.auto_now = False
     yield
     field.auto_now = prev_auto_now
+
+
+def params_cross_product(*params_iterables: Iterable[param]) -> Iterable[param]:
+    """ Returns a cross product of iterables of params for use in parameterized tests.
+
+        The first argument is expected to be the test case name.
+
+        For example:
+
+        >>> l1 = [param("foo", 1, a=1), param("bar", 2, a=2)]
+        >>> l2 = [param("baz", b=1)]
+        >>> list(params_cross_product(l1, l2))
+        [param(*('foo_baz', 1), **{'a': 1, 'b': 1}), param(*('bar_baz', 2), **{'a': 2, 'b': 1})]
+    """
+
+    def _params_reducer(p1, p2):
+        name = p1.args[0] + "_" + p2.args[0]
+        args = (name,) + p1.args[1:] + p2.args[1:]
+        kwargs = {**p1.kwargs, **p2.kwargs}
+        return param(*args, **kwargs)
+
+    return (reduce(_params_reducer, product) for product in itertools.product(*params_iterables))

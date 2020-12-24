@@ -113,6 +113,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def get_number_of_budgets(self):
         return len(self.budgets.all())
 
+    def get_total_budgets_spend(self):
+        return sum(budget.get_local_etfm_spend_data() for budget in self.budgets.all().annotate_spend_data())
+
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
         self.save()

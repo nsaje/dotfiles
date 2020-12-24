@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 
 import core.models
@@ -914,6 +915,8 @@ class Command(Z1Command):
             fill        - Optional  : bar fill character (Str)
             print_end   - Optional  : end character (e.g. "\r", "\r\n") (Str)
         """
+        if settings.TESTING:
+            return
         percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
         filled_length = int(length * iteration // total)
         bar = fill * filled_length + "-" * (length - filled_length)

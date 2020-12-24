@@ -1801,6 +1801,8 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGN_CLONED_ERROR = 39
     AD_GROUP_CLONED_SUCCESS = 40
     AD_GROUP_CLONED_ERROR = 41
+    CREDIT_DEPLETED_80_PERCENT = 42
+    CREDIT_DEPLETED_90_PERCENT = 43
 
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
@@ -1842,6 +1844,8 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_CLONED_ERROR: "Campaign cloned error",
         AD_GROUP_CLONED_SUCCESS: "Ad group cloned successfully",
         AD_GROUP_CLONED_ERROR: "Ad group cloned error",
+        CREDIT_DEPLETED_80_PERCENT: "Credit depleted 80 percent",
+        CREDIT_DEPLETED_90_PERCENT: "Credit depleted 90 percent",
     }
 
 
