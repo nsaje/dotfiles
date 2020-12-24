@@ -26,7 +26,7 @@ def _check_credit(credit: core.features.bcm.CreditLineItem):
     notifications, _ = models.CreditNotifications.objects.get_or_create(credit=credit)
     budgets_spend = credit.get_total_budgets_spend()
     credit_spend_percent = budgets_spend / credit.amount
-    agency_or_user = credit.agency or credit.account.settings.default_account_manager
+    # agency_or_user = credit.agency or credit.account.settings.default_account_manager
     recipients = _get_recipients(credit)
     if credit_spend_percent > 0.9:
         if not notifications.sent_90_percent:
@@ -40,7 +40,7 @@ def _check_credit(credit: core.features.bcm.CreditLineItem):
                 budgets_spend=str(budgets_spend),
                 credit_spend_percent=str(credit_spend_percent),
             )
-            _send_email_from_template(agency_or_user, recipients, template_type, template_params={"credit": credit})
+            # _send_email_from_template(agency_or_user, recipients, template_type, template_params={"credit": credit})
             notifications.set_all()
     elif credit_spend_percent > 0.8:
         if not notifications.sent_80_percent:
@@ -54,7 +54,7 @@ def _check_credit(credit: core.features.bcm.CreditLineItem):
                 budgets_spend=str(budgets_spend),
                 credit_spend_percent=str(credit_spend_percent),
             )
-            _send_email_from_template(agency_or_user, recipients, template_type, template_params={"credit": credit})
+            # _send_email_from_template(agency_or_user, recipients, template_type, template_params={"credit": credit})
             notifications.set_sent_80_percent()
         if notifications.sent_90_percent:
             notifications.unset_sent_90_percent()
