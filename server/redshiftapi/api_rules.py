@@ -2,6 +2,8 @@ import datetime
 from typing import Any
 from typing import Sequence
 
+from django.conf import settings
+
 import automation.rules.constants
 import backtosql
 import core.models
@@ -25,7 +27,9 @@ def query(target_type: int, ad_groups: Sequence[core.models.AdGroup]) -> Sequenc
         return []
 
     sql = _get_target_type_sql(target_type, ad_groups)
-    rows = redshiftapi.db.execute_query(sql, [], _get_target_type_query_name(target_type))
+    rows = redshiftapi.db.execute_query(
+        sql, [], _get_target_type_query_name(target_type), db_cluster=settings.STATS_DB_HOT_CLUSTER
+    )
 
     return rows
 
