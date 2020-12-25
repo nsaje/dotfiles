@@ -21,7 +21,7 @@ from . import queries
 from . import view_selector
 
 POSTGRES_MAX_DAYS = settings.STATS_DB_POSTGRES_MAX_DAYS
-POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_adgroup_placement")
+POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_account_placement", "mv_campaign_placement", "mv_adgroup_placement")
 POSTGRES_REPORTS_EXCLUDE_VIEWS = (
     "mv_account_pubs",
     "mv_campaign_pubs",
