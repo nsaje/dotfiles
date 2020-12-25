@@ -642,5 +642,5 @@ local_video_etfm_cpcv
         for test_case in test_cases:
             rows = api_rules.query(test_case["target_type"], ad_groups)
             self.assertEqual([123], rows)
-            mock_redshift.assert_called_once_with(mock.ANY, [], f'rule_stats__{test_case["name"]}')
+            mock_redshift.assert_called_once_with(mock.ANY, [], f'rule_stats__{test_case["name"]}', db_cluster=mock.ANY)
             mock_redshift.reset_mock()
