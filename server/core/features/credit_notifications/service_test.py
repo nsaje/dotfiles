@@ -8,6 +8,7 @@ from parameterized import parameterized
 import core.features.bcm
 import dash.constants
 import zemauth.models
+from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
@@ -178,8 +179,8 @@ class CreditNotificationsTest(TestCase):
             core.features.bcm.CreditLineItem,
             agency=self.agency,
             account=self.account,
-            start_date=datetime.date.today(),
-            end_date=datetime.date.today() + datetime.timedelta(30),
+            start_date=dates_helper.local_today(),
+            end_date=dates_helper.local_today() + datetime.timedelta(30),
             amount=1000,
             currency=dash.constants.Currency.USD,
             status=dash.constants.CreditLineItemStatus.SIGNED,
