@@ -241,7 +241,12 @@ def _get_blacklists(obj, obj_settings):
     Concats default blacklist and publisher group targeting
     """
 
-    return set(x for x in [obj.default_blacklist_id] + obj_settings.blacklist_publisher_groups if x)
+    blacklists = set()
+    if obj and obj.default_blacklist_id:
+        blacklists.add(obj.default_blacklist_id)
+    if obj_settings:
+        blacklists.update(x for x in obj_settings.blacklist_publisher_groups if x)
+    return blacklists
 
 
 def _get_whitelists(obj, obj_settings):
@@ -249,7 +254,12 @@ def _get_whitelists(obj, obj_settings):
     Concats default whitelist and publisher group targeting
     """
 
-    return set(x for x in [obj.default_whitelist_id] + obj_settings.whitelist_publisher_groups if x)
+    whitelists = set()
+    if obj and obj.default_whitelist_id:
+        whitelists.add(obj.default_whitelist_id)
+    if obj_settings:
+        whitelists.update(x for x in obj_settings.whitelist_publisher_groups if x)
+    return whitelists
 
 
 def handle_publishers(request, entry_dicts, obj, status):

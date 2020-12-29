@@ -444,6 +444,12 @@ class PublisherGroupHelpersTestCase(BaseTestCase):
         self.assertEqual(blacklist, [2, 3, 4, 5, 6, 7, 8, 9])
         self.assertEqual(whitelist, [11, 12, 13, 14, 15, 16, 17, 18])
 
+    def test_concat_publisher_targeting_none_values(self):
+        blacklist, whitelist = service.concat_publisher_group_targeting(None, None, None, None, None, None, None, None)
+
+        self.assertEqual(blacklist, [])
+        self.assertEqual(whitelist, [])
+
     def test_blacklist_outbrain_validation(self):
         outbrain = models.Source.objects.get(pk=3)
 
