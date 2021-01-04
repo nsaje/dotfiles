@@ -2807,6 +2807,7 @@ Possible values:
 ## Books closed [/rest/v1/booksclosed/]
 
 ### Get latest date with complete data [GET /rest/v1/booksclosed/]
+Get the latest date for which we have complete traffic data available (e.g. spend, clicks, impressions). Postclick data (e.g. Google Analytics, Omniture) might be complete at a later time.
 
 + Response 200 (application/json)
 
