@@ -223,26 +223,24 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
         self.fields["sales_representative"].queryset = (
             ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
         )
-        self.fields["sales_representative"].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ""
+        self.fields["sales_representative"].label_from_instance = lambda obj: "{full_name} <{email}>".format(
+            full_name=obj.get_full_name(), email=obj.email or ""
         )
         self.fields["cs_representative"].queryset = (
             ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
         )
-        self.fields["cs_representative"].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ""
+        self.fields["cs_representative"].label_from_instance = lambda obj: "{full_name} <{email}>".format(
+            full_name=obj.get_full_name(), email=obj.email or ""
         )
-        self.fields["ob_sales_representative"].queryset = (
-            ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
+        self.fields["ob_sales_representative"].queryset = ZemUser.objects.all().order_by(
+            "first_name", "last_name", "email"
         )
-        self.fields["ob_sales_representative"].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ""
+        self.fields["ob_sales_representative"].label_from_instance = lambda obj: "{full_name} <{email}>".format(
+            full_name=obj.get_full_name(), email=obj.email or ""
         )
-        self.fields["ob_account_manager"].queryset = (
-            ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
-        )
-        self.fields["ob_account_manager"].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ""
+        self.fields["ob_account_manager"].queryset = ZemUser.objects.all().order_by("first_name", "last_name", "email")
+        self.fields["ob_account_manager"].label_from_instance = lambda obj: "{full_name} <{email}>".format(
+            full_name=obj.get_full_name(), email=obj.email or ""
         )
 
 
