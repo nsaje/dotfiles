@@ -1,0 +1,32 @@
+@import 'variables';
+
+.zem-text-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.zem-text-input__text {
+    display: block;
+}
+
+.zem-text-input__text--with-icon {
+    padding-right: 30px;
+}
+
+.zem-text-input__icon {
+    position: absolute;
+    width: 24px;
+    background-size: 24px;
+    right: 4px;
+}
+
+.zem-text-input__icon--valid {
+    background-image: url('images/check-green.svg');
+    height: 24px;
+}
+
+.zem-text-input__icon--validating {
+    background-image: url('@{images-folder}/loader.gif');
+    height: 10px;
+}

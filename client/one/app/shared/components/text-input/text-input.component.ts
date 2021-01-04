@@ -9,6 +9,7 @@ import {
     Output,
     Input,
 } from '@angular/core';
+import {StatusIconType} from '../../types/status-icon-type';
 
 @Component({
     selector: 'zem-text-input',
@@ -18,6 +19,8 @@ import {
 export class TextInputComponent implements OnChanges {
     @Input()
     value: string;
+    @Input()
+    statusIcon: StatusIconType;
     @Input()
     placeholder: string;
     @Input()

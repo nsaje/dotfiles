@@ -1,6 +1,7 @@
 <input
-    class="zem-input-text"
-    [ngClass]="{'zem-input-text--error': hasError}"
+    class="zem-input-text zem-text-input__text"
+    [class.zem-input-text--error]="hasError"
+    [class.zem-text-input__text--with-icon]="statusIcon"
     type="text"
     placeholder="{{ placeholder }}"
     maxlength="{{ maxLength }}"
@@ -10,3 +11,9 @@
     [disabled]="isDisabled"
     [zemFocus]="isFocused"
 />
+<div
+    *ngIf="statusIcon"
+    class="zem-text-input__icon"
+    [class.zem-text-input__icon--valid]="statusIcon === 'valid'"
+    [class.zem-text-input__icon--validating]="statusIcon === 'validating'"
+></div>
