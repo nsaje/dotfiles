@@ -19,7 +19,9 @@ logger = zlogging.getLogger(__name__)
 def check_and_notify_depleting_credits() -> None:
     credits: Iterable[core.features.bcm.CreditLineItem] = core.features.bcm.CreditLineItem.objects.exclude(
         account_id=settings.HARDCODED_ACCOUNT_ID_OEN
-    ).filter_active().select_related("account__settings", "agency")
+    ).exclude(agency_id=settings.HARDCODED_AGENCY_ID_OUTBRAIN).filter_active().select_related(
+        "account__settings", "agency"
+    )
     for credit in credits:
         _check_credit(credit)
 
