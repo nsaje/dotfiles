@@ -3,6 +3,8 @@ from typing import Dict
 from typing import Iterable
 from typing import List
 
+from django.conf import settings
+
 import core.features.bcm
 import dash.constants
 import zemauth.models
@@ -15,9 +17,9 @@ logger = zlogging.getLogger(__name__)
 
 
 def check_and_notify_depleting_credits() -> None:
-    credits: Iterable[
-        core.features.bcm.CreditLineItem
-    ] = core.features.bcm.CreditLineItem.objects.filter_active().select_related("account__settings", "agency")
+    credits: Iterable[core.features.bcm.CreditLineItem] = core.features.bcm.CreditLineItem.objects.exclude(
+        account_id=settings.HARDCODED_ACCOUNT_ID_OEN
+    ).filter_active().select_related("account__settings", "agency")
     for credit in credits:
         _check_credit(credit)
 
