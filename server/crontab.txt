@@ -14,7 +14,7 @@
 45 * * * *       /home/ubuntu/docker-manage-py.sh refresh_partnerstats
 0 */2 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_selection
 0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_content_ad_upload
-0 * * * *        /home/ubuntu/docker-manage-py.sh send_depleting_credits_email
+0 * * * *        /home/ubuntu/docker-manage-py.sh send_depleting_credits_emails
 0 * * * *        /home/ubuntu/docker-manage-py.sh refresh_ga_linked_accounts
 0 * * * *        /home/ubuntu/docker-manage-py.sh bluekai_update_dynamic_audience
 0 * * * *        /home/ubuntu/docker-manage-py.sh execute_automation_rules --slack
