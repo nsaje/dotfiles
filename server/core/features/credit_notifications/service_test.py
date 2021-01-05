@@ -21,7 +21,7 @@ FUNCTIONAL_DECLARATIONS = [
         budget_spend_percent=0.85,
         sent_80_percent=False,
         sent_90_percent=False,
-        expect_send_email_80_percent=False,
+        expect_send_email_80_percent=True,
         expect_send_email_90_percent=False,
     ),
     param(
@@ -38,7 +38,7 @@ FUNCTIONAL_DECLARATIONS = [
         sent_80_percent=True,
         sent_90_percent=False,
         expect_send_email_80_percent=False,
-        expect_send_email_90_percent=False,
+        expect_send_email_90_percent=True,
     ),
     param(
         "90_percent_already_sent",
