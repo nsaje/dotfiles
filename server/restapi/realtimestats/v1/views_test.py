@@ -42,9 +42,9 @@ class GroupByViewTest(RESTAPITestCase):
                     "clicks": 12321,
                     "impressions": 123321,
                     "spend": "12.30",
-                    "ctr": "0.03",
-                    "cpc": "0.02",
-                    "cpm": "0.01",
+                    "ctr": "0.030",
+                    "cpc": "0.020",
+                    "cpm": "0.010",
                 }
             ],
         )
@@ -146,9 +146,9 @@ class TopNViewTest(RESTAPITestCase):
                     "clicks": 12321,
                     "impressions": 123321,
                     "spend": "12.30",
-                    "ctr": "0.03",
-                    "cpc": "0.02",
-                    "cpm": "0.01",
+                    "ctr": "0.030",
+                    "cpc": "0.020",
+                    "cpm": "0.010",
                 }
             ],
         )
