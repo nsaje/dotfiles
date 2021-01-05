@@ -638,6 +638,10 @@ class LegacySyncTest(TestCase):
         self.assertEqual(value, self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(value, self.ad_group.settings.b1_sources_group_daily_budget)
 
+    def test_daily_budget_clash(self):
+        with self.assertRaises(exceptions.LegacyFieldsUpdateMismatch):
+            self.ad_group.settings.update(None, local_daily_budget=Decimal("10.0"), daily_budget_legacy=Decimal("99.0"))
+
     def test_sync_budget_rest_api_legacy(self):
         self.ad_group.campaign.account.agency.uses_realtime_autopilot = False
         value = Decimal("99.0")

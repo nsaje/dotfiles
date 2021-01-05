@@ -226,6 +226,9 @@ class AdGroupSettingsMixin(object):
                 )
 
             if uses_realtime_autopilot:
+                if "local_daily_budget" in updates and updates["local_daily_budget"] != daily_budget_legacy:
+                    raise exceptions.LegacyFieldsUpdateMismatch("Budget updated with multiple values")
+
                 updates["local_daily_budget"] = daily_budget_legacy
             else:
                 updates["daily_budget_cc"] = daily_budget_legacy
