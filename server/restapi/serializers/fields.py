@@ -72,7 +72,7 @@ class DashConstantField(serializers.CharField):
             return getattr(self.const_cls, data)
         except (AttributeError, TypeError):
             valid_choices = self.const_cls.get_all_names()
-            raise serializers.ValidationError("Invalid choice %s! Valid choices: %s" % (data, ", ".join(valid_choices)))
+            raise serializers.ValidationError(_get_valid_choices_error_text(data, valid_choices))
 
     def to_internal_value_many(self, data):
         if data == NOT_PROVIDED:
@@ -86,6 +86,33 @@ class DashConstantField(serializers.CharField):
 
     def to_representation_many(self, data):
         return [self.to_representation(x) for x in data]
+
+
+class ChoiceField(serializers.ChoiceField):
+    def to_internal_value(self, data):
+        try:
+            return super().to_internal_value(data)
+        except serializers.ValidationError as e:
+            if e.detail[0].code != "invalid_choice":
+                # unknown error, reraise
+                raise
+            raise serializers.ValidationError(_get_valid_choices_error_text(data, self.choices))
+
+
+class OrderChoiceField(serializers.ChoiceField):
+    def to_internal_value(self, data):
+        is_descending = False
+        if data.startswith("-"):
+            data = data[1:]
+            is_descending = True
+        value = super().to_internal_value(data)
+        if is_descending:
+            value = "-" + value
+        return value
+
+
+def _get_valid_choices_error_text(choice, valid_choices):
+    return "Invalid choice %s! Valid choices: %s" % (choice, ", ".join(valid_choices))
 
 
 class SourceIdSlugField(serializers.Field):

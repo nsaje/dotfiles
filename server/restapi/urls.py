@@ -26,6 +26,7 @@ import restapi.inventory_planning.urls
 import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
 import restapi.publishers.urls
+import restapi.realtimestats.urls
 import restapi.report.urls
 import restapi.rules.urls
 import restapi.source.urls
@@ -66,3 +67,4 @@ urlpatterns += restapi.user.urls.urlpatterns
 urlpatterns += restapi.bluekai.urls.urlpatterns
 urlpatterns += restapi.booksclosed.urls.urlpatterns
 urlpatterns += restapi.bulkupload.urls.urlpatterns
+urlpatterns += restapi.realtimestats.urls.urlpatterns
