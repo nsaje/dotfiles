@@ -453,3 +453,55 @@ class RuleValidationTest(BaseTestCase):
                     ]
                 }
             )
+
+    def test_validate_update_agency_rule_with_none(self):
+        self._prepare_rule()
+        with self.assert_multiple_validation_error([exceptions.InvalidParents]):
+            self.rule.clean({"agency": None})
+
+    def test_validate_update_agency_rule_with_account(self):
+        self._prepare_rule()
+        self.rule.clean({"account": self.account, "agency": None})
+
+    def test_validate_update_account_rule_with_none(self):
+        account_rule = magic_mixer.blend(
+            model.Rule,
+            account=self.account,
+            accounts_included=[self.account],
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+        )
+
+        with self.assert_multiple_validation_error([exceptions.InvalidParents]):
+            account_rule.clean({"account": None})
+
+    def test_validate_update_account_rule_with_agency(self):
+        account_rule = magic_mixer.blend(
+            model.Rule,
+            account=self.account,
+            accounts_included=[self.account],
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+        )
+        account_rule.clean({"agency": self.agency, "account": None})
+
+    def test_validate_update_account_rule_with_agency_only(self):
+        account_rule = magic_mixer.blend(
+            model.Rule,
+            account=self.account,
+            accounts_included=[self.account],
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+        )
+        with self.assert_multiple_validation_error([exceptions.InvalidParents]):
+            account_rule.clean({"agency": self.agency})
+
+    def test_validate_update_with_agency_and_account(self):
+        self._prepare_rule()
+        with self.assert_multiple_validation_error([exceptions.InvalidParents]):
+            self.rule.clean({"agency": self.agency, "account": self.account})
+
+    def test_validate_update_without_agency_and_account(self):
+        self._prepare_rule()
+        with self.assert_multiple_validation_error([exceptions.InvalidParents]):
+            self.rule.clean({"agency": None, "account": None})

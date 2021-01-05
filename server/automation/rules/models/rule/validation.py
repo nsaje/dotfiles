@@ -308,10 +308,8 @@ class RuleValidationMixin:
     def _validate_agency_account(self, changes):
         agency = changes.get("agency", self.agency)
         account = changes.get("account", self.account)
-
         if agency and account:
             raise exceptions.InvalidParents("Only one of either account or agency must be set.")
-
         if not agency and not account:
             raise exceptions.InvalidParents("One of either account or agency must be set.")
 
