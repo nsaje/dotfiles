@@ -282,3 +282,12 @@ class ValidationTest(TestCase):
 
         with self.assertRaises(exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled):
             current_settings._validate_b1_sources_group_daily_budget(new_settings, is_create=False)
+
+    def test_validate_daily_budget(self):
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+        new_settings.daily_budget = None
+        changes = current_settings.get_setting_changes(new_settings)
+
+        with self.assertRaises(exceptions.CannotSetDailyBudgetToUndefined):
+            current_settings._validate_daily_budget(changes)

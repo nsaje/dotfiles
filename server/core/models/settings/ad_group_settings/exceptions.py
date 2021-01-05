@@ -117,6 +117,10 @@ class CannotSetBidToUndefined(ValidationError):
     pass
 
 
+class CannotSetDailyBudgetToUndefined(ValidationError):
+    pass
+
+
 class SeparateSourceManagementDeprecated(ValidationError):
     pass
 

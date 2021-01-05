@@ -22,6 +22,7 @@ export class AdGroupSettingsStoreState {
         endDate: null,
         trackingCode: null,
         bid: null,
+        dailyBudget: null,
         deliveryType: null,
         clickCappingDailyAdGroupMaxClicks: null,
         dayparting: null,
@@ -74,7 +75,6 @@ export class AdGroupSettingsStoreState {
         },
         autopilot: {
             state: null,
-            dailyBudget: null,
             maxBid: null,
         },
         manageRtbSourcesAsOne: false,

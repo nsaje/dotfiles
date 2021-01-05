@@ -432,8 +432,8 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.validateEntity();
     }
 
-    setAutopilotDailyBudget(dailyBudget: string) {
-        this.patchState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
+    setDailyBudget(dailyBudget: string) {
+        this.patchState(dailyBudget, 'entity', 'dailyBudget');
         this.validateEntity();
     }
 

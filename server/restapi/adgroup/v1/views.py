@@ -154,6 +154,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
                 elif isinstance(e, exceptions.TrackingCodeInvalid):
                     errors.setdefault("tracking_code", []).append(str(e))
 
+                elif isinstance(e, exceptions.CannotSetDailyBudgetToUndefined):
+                    errors.setdefault("daily_budget", []).append(str(e))
+
             raise utils.exc.ValidationError(errors=errors)
 
         except exceptions.CannotChangeAdGroupState as err:

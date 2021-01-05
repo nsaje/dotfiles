@@ -116,8 +116,6 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 
 class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilotSerializer):
-    # NOTE: extend daily_budget v1 field serializer to reject
-    # None or empty values and values lower than zero.
     daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
         source="local_autopilot_daily_budget",
         max_digits=10,
@@ -138,6 +136,7 @@ class AdGroupSerializer(
             "name",
             "bidding_type",
             "bid",
+            "daily_budget",
             "state",
             "archived",
             "start_date",

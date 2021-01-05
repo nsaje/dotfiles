@@ -27,6 +27,7 @@ class AdGroupSettingsValidatorMixin(object):
             self._validate_cpm,
             self._validate_end_date,
             self._validate_tracking_code,
+            self._validate_daily_budget,
             changes=self.get_setting_changes(new_settings),
         )
         self._validate_state_change(new_settings)
@@ -121,6 +122,10 @@ class AdGroupSettingsValidatorMixin(object):
                 rfc3987.parse(test_url, rule="IRI")
             except ValueError:
                 raise exceptions.TrackingCodeInvalid("Tracking code structure is not valid.")
+
+    def _validate_daily_budget(self, changes):
+        if "daily_budget" in changes and changes["daily_budget"] is None:
+            raise exceptions.CannotSetDailyBudgetToUndefined("Cannot set daily budget to undefined.")
 
     def _validate_state_change(self, new_settings):
         import dash.views.helpers

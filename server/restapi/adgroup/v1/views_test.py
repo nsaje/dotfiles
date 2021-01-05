@@ -1391,8 +1391,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
             interest_targeting=[],
             target_browsers=[],
             exclusion_target_browsers=[],
-            daily_budget="",
-            autopilot_daily_budget="",
             click_capping_daily_ad_group_max_clicks="",
             click_capping_daily_click_budget="",
             dayparting={"timezone": ""},
@@ -1405,6 +1403,7 @@ class AdGroupViewSetTest(RESTAPITestCase):
             data=put_data,
             format="json",
         )
+
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["endDate"], self.expected_none_date_output)
@@ -1414,12 +1413,31 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["targeting"]["interest"]["included"], [])
         self.assertEqual(resp_json["data"]["targeting"]["browsers"]["included"], [])
         self.assertEqual(resp_json["data"]["targeting"]["browsers"]["excluded"], [])
-        self.assertEqual(resp_json["data"]["dailyBudget"], self.expected_none_decimal_output)
-        self.assertEqual(resp_json["data"]["autopilot"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyClickBudget"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["dayparting"]["timezone"], "")
         self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
+
+    def test_adgroups_put_blank_budget(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        put_data = self.adgroup_repr(
+            id=ad_group.id, campaign_id=campaign.id, daily_budget="", autopilot_daily_budget=""
+        )
+        del put_data["maxCpc"]
+        del put_data["autopilot"]["maxBid"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"]["dailyBudget"], ["Cannot set daily budget to undefined."])
 
     def test_adgroups_put_blank_cpc(self):
         account = self.mix_account(
@@ -1492,8 +1510,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
             interest_targeting=[],
             target_browsers=None,
             exclusion_audience_targeting=None,
-            daily_budget=None,
-            autopilot_daily_budget=None,
             click_capping_daily_ad_group_max_clicks=None,
             click_capping_daily_click_budget=None,
             dayparting=None,
@@ -1511,8 +1527,6 @@ class AdGroupViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["targeting"]["interest"]["included"], [])
         self.assertEqual(resp_json["data"]["targeting"]["browsers"]["included"], [])
         self.assertEqual(resp_json["data"]["targeting"]["browsers"]["excluded"], [])
-        self.assertEqual(resp_json["data"]["dailyBudget"], self.expected_none_decimal_output)
-        self.assertEqual(resp_json["data"]["autopilot"]["dailyBudget"], self.expected_none_decimal_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyClickBudget"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["dayparting"], {})
@@ -1521,6 +1535,25 @@ class AdGroupViewSetTest(RESTAPITestCase):
             {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
         )
         self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
+
+    def test_adgroups_put_none_budget(self):
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE], agency__uses_realtime_autopilot=True
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        put_data = self.adgroup_repr(
+            id=ad_group.id, campaign_id=campaign.id, daily_budget=None, autopilot_daily_budget=None
+        )
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"]["dailyBudget"], ["Cannot set daily budget to undefined."])
 
     def test_adgroups_publisher_groups(self):
         account = self.mix_account(

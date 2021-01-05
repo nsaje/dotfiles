@@ -19,6 +19,7 @@ export interface AdGroup {
     endDate: Date;
     trackingCode: string;
     bid: string;
+    dailyBudget: string;
     deliveryType: DeliveryType;
     clickCappingDailyAdGroupMaxClicks: number;
     dayparting: AdGroupDayparting;

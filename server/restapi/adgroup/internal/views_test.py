@@ -66,7 +66,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
 
         self.assertIsNone(resp_json["data"]["id"])
         self.assertEqual(resp_json["data"]["name"], "")
-        self.assertIsNone(resp_json["data"].get("dailyBudget"))
+        self.assertEqual(resp_json["data"]["dailyBudget"], "50.0000")
         self.assertEqual(resp_json["data"]["notes"], "")
         self.assertEqual(resp_json["data"]["deals"], [])
         self.assertEqual(
@@ -153,7 +153,7 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
-        self.assertIsNone(resp_json["data"].get("dailyBudget"))
+        self.assertEqual(resp_json["data"]["dailyBudget"], "50.0000")
         self.assertEqual(resp_json["data"]["notes"], settings.notes)
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)

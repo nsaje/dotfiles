@@ -11,12 +11,12 @@ export class AdGroupSettingsStoreFieldsErrorsState {
     trackingCode: FieldErrors = [];
     biddingType: FieldErrors = [];
     bid: FieldErrors = [];
+    dailyBudget: FieldErrors = [];
     deliveryType: FieldErrors = [];
     clickCappingDailyAdGroupMaxClicks: FieldErrors = [];
     dayparting: FieldErrors = [];
     autopilot = {
         state: [] as FieldErrors,
-        dailyBudget: [] as FieldErrors,
         maxBid: [] as FieldErrors,
     };
     frequencyCapping: FieldErrors = [];

@@ -158,7 +158,7 @@
                         helpMessage="Daily budget limit for this ad group. If the ad group is having difficulties spending the daily budget in full, consider increasing the Bid {{
                             state.entity.biddingType
                         }} or remove the maximum."
-                        [value]="state.entity.autopilot.dailyBudget"
+                        [value]="state.entity.dailyBudget"
                         [currencySymbol]="currencySymbol"
                         fractionSize="0"
                         [isDisabled]="
@@ -166,8 +166,8 @@
                             !state.entity.manageRtbSourcesAsOne ||
                             isReadOnly
                         "
-                        [errors]="state.fieldsErrors.autopilot.dailyBudget"
-                        (valueChange)="store.setAutopilotDailyBudget($event)"
+                        [errors]="state.fieldsErrors.dailyBudget"
+                        (valueChange)="store.setDailyBudget($event)"
                     ></zem-currency-form-group>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
@@ -299,7 +299,7 @@
                             helpMessage="Amount of budget autopilot can operate with on this ad group every day."
                             [value]="
                                 store.isAdGroupAutopilotEnabled()
-                                    ? state.entity.autopilot.dailyBudget
+                                    ? state.entity.dailyBudget
                                     : ''
                             "
                             [currencySymbol]="currencySymbol"
@@ -307,10 +307,8 @@
                             [isDisabled]="
                                 !store.isAdGroupAutopilotEnabled() || isReadOnly
                             "
-                            [errors]="state.fieldsErrors.autopilot.dailyBudget"
-                            (valueChange)="
-                                store.setAutopilotDailyBudget($event)
-                            "
+                            [errors]="state.fieldsErrors.dailyBudget"
+                            (valueChange)="store.setDailyBudget($event)"
                         ></zem-currency-form-group>
                         <div
                             class="zem-settings-section__item zem-settings-section__item--indented"
