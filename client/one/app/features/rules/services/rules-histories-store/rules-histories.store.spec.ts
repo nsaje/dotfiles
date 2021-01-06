@@ -109,6 +109,7 @@ describe('RulesHistoriesStore', () => {
                 manageRtbSourcesAsOne: false,
                 frequencyCapping: 1,
                 notes: '',
+                dailyBudget: '50',
             },
         ];
 

@@ -5,6 +5,7 @@ export const adGroupMock: AdGroup = {
     campaignId: null,
     name: null,
     biddingType: null,
+    dailyBudget: null,
     state: null,
     archived: null,
     startDate: null,
@@ -63,7 +64,6 @@ export const adGroupMock: AdGroup = {
     },
     autopilot: {
         state: null,
-        dailyBudget: null,
         maxBid: null,
     },
     manageRtbSourcesAsOne: false,
