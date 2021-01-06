@@ -19,8 +19,8 @@ export const DEFAULT_GRID_OPTIONS: SmartGridOptions = {
         suppressMovable: true,
         resizable: false,
     },
-    cellFlashDelay: 100,
-    cellFadeDelay: 3000,
+    cellFlashDelay: 1000,
+    cellFadeDelay: 1000,
     enableCellFlashOnColumnsAdd: false,
 };
 
