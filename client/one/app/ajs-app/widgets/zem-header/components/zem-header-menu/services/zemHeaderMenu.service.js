@@ -10,7 +10,8 @@ angular
         NgRouter,
         $uibModal,
         zemAuthStore,
-        zemNavigationNewService
+        zemNavigationNewService,
+        zemDataFilterService
     ) {
         this.getMenuStructure = getMenuStructure;
 
@@ -243,7 +244,6 @@ angular
 
         function getManagementConsoleItemUrlTree(itemPath) {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-
             if (commonHelpers.isDefined(activeAccount)) {
                 return NgRouter.createUrlTree(
                     [RoutePathName.APP_BASE, itemPath],
@@ -255,6 +255,20 @@ angular
                     }
                 );
             }
+
+            var filteredAgency = (zemDataFilterService.getFilteredAgencies() ||
+                [])[0];
+            if (commonHelpers.isDefined(filteredAgency)) {
+                return NgRouter.createUrlTree(
+                    [RoutePathName.APP_BASE, itemPath],
+                    {
+                        queryParams: {
+                            agencyId: filteredAgency,
+                        },
+                    }
+                );
+            }
+
             return NgRouter.createUrlTree([RoutePathName.APP_BASE, itemPath]);
         }
     });

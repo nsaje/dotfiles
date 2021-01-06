@@ -4,9 +4,11 @@ angular.module('one.widgets').component('zemHeaderMenu', {
         config,
         zemHeaderMenuService,
         zemNavigationNewService,
-        zemAuthStore
+        zemAuthStore,
+        zemDataFilterService
     ) {
         var activeEntityUpdateHandler;
+        var agencyFilterUpdateHandler;
 
         var $ctrl = this;
         $ctrl.config = config;
@@ -18,10 +20,14 @@ angular.module('one.widgets').component('zemHeaderMenu', {
             activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
                 refreshMenu
             );
+            agencyFilterUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(
+                refreshMenu
+            );
         };
 
         $ctrl.$onDestroy = function() {
             if (activeEntityUpdateHandler) activeEntityUpdateHandler();
+            if (agencyFilterUpdateHandler) agencyFilterUpdateHandler();
         };
 
         function setUserInfo() {
