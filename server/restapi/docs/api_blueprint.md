@@ -244,12 +244,12 @@ Please cache and reuse access tokens for the duration of their validity.
 To create client credentials, first make sure you are logged in to Zemanta One. Then go to https://one.zemanta.com/o/applications/
 and click the **New Application** button. Enter a name for your application, as shown in the image, and click the "Save" button.
 
-![New application registration form](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-1-scaled.png)
+![New application registration form](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-1-scaled.jpg)
 
 After you click the "Save" button, you will see the details of your newly created application credentials. The provided
 Client ID and Client Secret are used for API authentication.
 
-![Application credentials details](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-2-scaled.png)
+![Application credentials details](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-2-scaled.jpg)
 
 ### Acquire a new authentication token [POST /o/token/]
 
