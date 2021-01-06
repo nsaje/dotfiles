@@ -131,6 +131,7 @@ export const COLUMN_AMOUNT: SmartGridColDef = {
 export const COLUMN_AMOUNT_PAST: SmartGridColDef = {
     ...COLUMN_AMOUNT,
     width: 135,
+    minWidth: 135,
     headerName: 'Total Credit Amount',
     suppressSizeToFit: true,
     resizable: true,
@@ -162,6 +163,7 @@ export const COLUMN_AVAILABLE: SmartGridColDef = {
 
 export const COLUMN_SCOPE: SmartGridColDef = {
     headerName: 'Scope',
+    width: 180,
     minWidth: 180,
     cellRendererFramework: ItemScopeCellComponent,
     cellRendererParams: {
