@@ -131,11 +131,11 @@ def mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, accou
         return
     s3_path = redshift.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
     update_threads = []
-    # for db_name in settings.STATS_DB_COLD_CLUSTERS:
-    #     async_func = partial(update_table, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id)
-    #     async_thread = threads.AsyncFunction(async_func)
-    #     async_thread.start()
-    #     update_threads.append(async_thread)
+    for db_name in settings.STATS_DB_COLD_CLUSTERS:
+        async_func = partial(update_table, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id)
+        async_thread = threads.AsyncFunction(async_func)
+        async_thread.start()
+        update_threads.append(async_thread)
     if mv_class not in (materialize.MasterView, materialize.MVAdGroupPlacement) and mv_class.TABLE_NAME not in (
         "mv_campaign_placement",
         "mv_account_placement",
