@@ -85,6 +85,8 @@ class User(
     outbrain_user_id = models.CharField(null=True, blank=True, max_length=30, help_text="Outbrain ID")
 
     status = models.IntegerField(default=constants.Status.INVITATION_PENDING, choices=constants.Status.get_choices())
+    is_externally_managed = models.BooleanField(default=False)
+    sales_office = models.CharField(null=True, max_length=255)
 
     objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 
@@ -97,6 +99,8 @@ class User(
         "start_year_of_experience",
         "programmatic_platforms",
         "status",
+        "email",
+        "sales_office",
     ]
 
     USERNAME_FIELD = "email"

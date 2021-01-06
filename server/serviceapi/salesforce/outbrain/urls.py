@@ -14,4 +14,7 @@ urlpatterns = [
         views.AccountArchiveView.as_view(),
         name="service.salesforce.account.archive",
     ),
+    url(r"^salesforce/user/$", views.UserView.as_view(), name="service.salesforce.user"),
+    url(r"^salesforce/user/(?P<user_id>\d+)$", views.UserView.as_view(), name="service.salesforce.user"),
+    url(r"^salesforce/users/$", views.UsersView.as_view(), name="service.salesforce.users"),
 ]

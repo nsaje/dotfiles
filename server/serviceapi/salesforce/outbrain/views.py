@@ -4,6 +4,8 @@ from rest_framework.serializers import ValidationError
 
 import core.models
 import utils.exc
+import zemauth.models
+from utils import email_helper
 from utils import metrics_compat
 from utils.rest_common import authentication
 
@@ -148,3 +150,56 @@ class AccountArchiveView(base.ServiceAPIBaseView):
         account.archive(request)
         metrics_compat.incr("archive_account", 1, status="ok")
         return self.response_ok(serializers.AccountSerializer(account).data, status=200)
+
+
+class UserView(base.ServiceAPIBaseView):
+    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+
+    def post(self, request):
+        serializer = serializers.UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self._check_sales_office_and_alert(serializer.validated_data.get("sales_office"))
+        try:
+            new_user = service.create_user(**serializer.validated_data)
+            metrics_compat.incr("serviceapi.salesforce.create_user", 1, status="ok")
+            return self.response_ok(serializers.UserSerializer(new_user).data, status=200)
+        except utils.exc.ValidationError as e:
+            metrics_compat.incr("serviceapi.salesforce.create_user", 1, status="validation-error")
+            raise ValidationError(e)
+
+    def put(self, request, user_id):
+        user = zemauth.models.User.objects.get(id=user_id, is_externally_managed=True)
+        serializer = serializers.UserSerializer(data=request.data, partial=True, context={"user_id": user_id})
+        serializer.is_valid(raise_exception=True)
+        self._check_sales_office_and_alert(serializer.validated_data.get("sales_office"))
+        try:
+            updated_user = service.update_user(user, **serializer.validated_data)
+            metrics_compat.incr("serviceapi.salesforce.modify_user", 1, status="ok")
+            return self.response_ok(serializers.UserSerializer(updated_user).data, status=200)
+        except utils.exc.ValidationError as e:
+            metrics_compat.incr("serviceapi.salesforce.modify_user", 1, status="validation-error")
+            raise ValidationError(e)
+
+    def get(self, request, user_id):
+        user = zemauth.models.User.objects.get(id=user_id, is_externally_managed=True)
+        return self.response_ok(serializers.UserSerializer(user).data, status=200)
+
+    @staticmethod
+    def _check_sales_office_and_alert(sales_office):
+        agency = constants.SALES_OFFICE_AGENCY_MAPPING.get(sales_office)
+        if not agency:
+            email_helper.send_unknown_sales_office_email(sales_office)
+
+
+class UsersView(base.ServiceAPIBaseView, generics.ListAPIView):
+    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    serializer_class = serializers.UserSerializer
+
+    def get_queryset(self):
+        queryset = zemauth.models.User.objects.filter(is_externally_managed=True)
+        qpe = serializers.UserQueryParams(data=self.request.query_params)
+        qpe.is_valid(raise_exception=True)
+        email = qpe.validated_data.get("email")
+        if email:
+            queryset = queryset.filter(email__iexact=email)
+        return set(queryset)

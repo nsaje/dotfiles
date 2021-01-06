@@ -422,3 +422,24 @@ SALES_REP_AGENCY_MAPPING = {
     "megarcia@outbrain.com": 518,
     "mmarom@outbrain.com": 518,
 }
+
+SALES_OFFICE_AGENCY_MAPPING = {
+    "USBIZ": 518,
+    "ILBIZ": 510,
+    "France": 508,
+    "Germany": 509,
+    "Japan": 512,
+    "Australia": 505,
+    "Italy": 511,
+    "UK": 516,
+    "Brazil": 507,
+    "Singapore": 514,
+    "India": 1429,
+    "Unknown": 517,
+    "Growth - US": 390,
+    "Spain": 515,
+    "Growth - International": 390,
+    "China": 1431,
+    "Netherlands": 513,
+    "Belgium": 506,
+}

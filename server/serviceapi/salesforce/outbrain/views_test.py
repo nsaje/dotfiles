@@ -7,6 +7,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 import core.models
+import zemauth.models
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -362,15 +363,26 @@ class AccountTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.service_user = magic_mixer.blend(User, email="outbrain-salesforce@service.zemanta.com")
-        self.user = magic_mixer.blend(User, email="salesRep@test.com")
-        self.user2 = magic_mixer.blend(User, email="accountManager@test.com")
-        self.aguser = magic_mixer.blend(User, email="agencysalesrep@test.com")
-        self.aguser2 = magic_mixer.blend(User, email="agencyaccountmgr@test.com")
-        self.outbrainAgencyUser = magic_mixer.blend(User, email="OutbrainAgencyUser@test.com")
-        self.notInMappingUser = magic_mixer.blend(User, email="notInMapping@test.com")
+        self.user = magic_mixer.blend(User, email="salesRep@test.com", is_externally_managed=True, sales_office="USBIZ")
+        self.user2 = magic_mixer.blend(
+            User, email="accountManager@test.com", is_externally_managed=True, sales_office="USBIZ"
+        )
+        self.aguser = magic_mixer.blend(
+            User, email="agencysalesrep@test.com", is_externally_managed=True, sales_office="USBIZ"
+        )
+        self.aguser2 = magic_mixer.blend(
+            User, email="agencyaccountmgr@test.com", is_externally_managed=True, sales_office="USBIZ"
+        )
+        self.outbrainAgencyUser = magic_mixer.blend(
+            User, email="OutbrainAgencyUser@test.com", is_externally_managed=True, sales_office="USBIZ"
+        )
+        self.notInMappingUser = magic_mixer.blend(
+            User, email="notInMapping@test.com", is_externally_managed=True, sales_office="ABCD"
+        )
         self.client.force_authenticate(user=self.service_user)
         self.request_mock = RequestFactory()
-        self.request_mock.user = self.user
+        self.request_mock.user = self.service_user
+
         self.agency = magic_mixer.blend(
             core.models.Agency, id=3, name="Agency 1", is_externally_managed=True, sales_representative=self.aguser
         )
@@ -380,7 +392,8 @@ class AccountTestCase(TestCase):
         self.Outbrain_unknown_Agency = magic_mixer.blend(
             core.models.Agency, id=517, name="Outbrain ZMS Unknown", is_externally_managed=True
         )
-        constants.SALES_REP_AGENCY_MAPPING = {"OutbrainAgencyUser@test.com": 3}
+
+        constants.SALES_OFFICE_AGENCY_MAPPING = {"USBIZ": 3}
 
     def test_get(self, mock_modified_dt):
         magic_mixer.blend(
@@ -586,53 +599,33 @@ class AccountTestCase(TestCase):
             },
         )
 
-    def test_post_with_sales_rep_not_in_mapping(self, mock_modified_dt):
-        url = reverse("service.salesforce.account")
-        r = self.client.post(
-            url,
-            data={
-                "is_disabled": True,
-                "name": "new Account",
-                "salesforce_url": "http://salesforce.com",
-                "currency": "CHF",
-                "sales_representative": "notInMapping@test.com",
-                "account_manager": "accountManager@test.com",
-                "tags": ["tag1", "tag2"],
-                "custom_attributes": {"country": "SI"},
-                "salesforce_id": 123,
-                "internal_marketer_id": "INTERNAL ID",
-                "external_marketer_id": "EXTERNAL ID",
-            },
-            format="json",
-        )
+    # TODO jh uncomment after out of hybrid mode
+    # def test_post_with_sales_rep_not_in_mapping(self, mock_modified_dt):
+    #     url = reverse("service.salesforce.account")
+    #     r = self.client.post(
+    #         url,
+    #         data={
+    #             "is_disabled": True,
+    #             "name": "new Account",
+    #             "salesforce_url": "http://salesforce.com",
+    #             "currency": "CHF",
+    #             "sales_representative": "notInMapping@test.com",
+    #             "account_manager": "accountManager@test.com",
+    #             "tags": ["tag1", "tag2"],
+    #             "custom_attributes": {"country": "SI"},
+    #             "salesforce_id": 123,
+    #             "internal_marketer_id": "INTERNAL ID",
+    #             "external_marketer_id": "EXTERNAL ID",
+    #         },
+    #         format="json",
+    #     )
 
-        self.assertEqual(r.status_code, 200)
-        new_account = core.models.Account.objects.filter(name="new Account").first()
-        self.assertIsNotNone(new_account)
-        self.assertEqual(
-            r.json(),
-            {
-                "data": {
-                    "id": new_account.id,
-                    "name": "new Account",
-                    "salesforceUrl": "http://salesforce.com",
-                    "salesforceId": 123,
-                    "isDisabled": True,
-                    "customAttributes": {"country": "SI"},
-                    "currency": "CHF",
-                    "agencyId": 517,
-                    "salesRepresentative": "notInMapping@test.com",
-                    "accountManager": "accountManager@test.com",
-                    "tags": ["tag1", "tag2"],
-                    "isArchived": False,
-                    "modifiedDt": "02-03-2019",
-                    "isExternallyManaged": True,
-                    "externalMarketerId": "EXTERNAL ID",
-                    "internalMarketerId": "INTERNAL ID",
-                    "amplifyReview": True,
-                }
-            },
-        )
+    #     self.assertEqual(r.status_code, 400)
+    #     new_account = core.models.Account.objects.filter(name="new Account").first()
+    #     self.assertIsNone(new_account)
+    #     self.assertEqual(
+    #         r.json(), {"errorCode": "ValidationError", "details": ["Agency for this sales office doesn't exist"]}
+    #     )
 
     def test_post_valid_no_sales_representative(self, mock_modified_dt):
         # If no sales rep set on account, the one from the agency must be set as default
@@ -1314,3 +1307,261 @@ class AccountTestCase(TestCase):
                 }
             },
         )
+
+
+class UserTestCase(TestCase):
+    def setUp(self):
+        self.maxDiff = None
+        self.client = APIClient()
+        self.service_user = magic_mixer.blend(User, email="outbrain-salesforce@service.zemanta.com")
+        self.client.force_authenticate(user=self.service_user)
+        self.request_mock = RequestFactory()
+        constants.SALES_OFFICE_AGENCY_MAPPING = {"USBIZ": 1, "Spain": 2}
+
+    def test_get_valid(self):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1})
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": 1,
+                    "firstName": "John",
+                    "lastName": "Doe",
+                    "email": "john@doe.com",
+                    "salesOffice": "USBIZ",
+                }
+            },
+        )
+
+    def test_get_invalid_is_not_externally_managed(self):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=False,
+        )
+
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1})
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json(), {"errorCode": "DoesNotExist", "details": "User matching query does not exist."})
+
+    def test_get_invalid_does_not_exist(self):
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1234})
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json(), {"errorCode": "DoesNotExist", "details": "User matching query does not exist."})
+
+    @mock.patch("utils.email_helper.send_unknown_sales_office_email")
+    def test_post_valid(self, send_email_mock):
+        url = reverse("service.salesforce.user")
+        r = self.client.post(
+            url,
+            data={"email": "john@doe.com", "first_name": "John", "last_name": "Doe", "sales_office": "USBIZ"},
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        user = zemauth.models.User.objects.filter(email__iexact="john@doe.com").first()
+        self.assertIsNotNone(user)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": user.id,
+                    "firstName": "John",
+                    "lastName": "Doe",
+                    "email": "john@doe.com",
+                    "salesOffice": "USBIZ",
+                }
+            },
+        )
+        send_email_mock.assert_not_called()
+
+    @mock.patch("utils.email_helper.send_unknown_sales_office_email")
+    def test_post_valid_unkown_sales_office(self, send_email_mock):
+        url = reverse("service.salesforce.user")
+        r = self.client.post(
+            url,
+            data={"email": "john@doe.com", "first_name": "John", "last_name": "Doe", "sales_office": "ABCD"},
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        user = zemauth.models.User.objects.filter(email__iexact="john@doe.com").first()
+        self.assertIsNotNone(user)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": user.id,
+                    "firstName": "John",
+                    "lastName": "Doe",
+                    "email": "john@doe.com",
+                    "salesOffice": "ABCD",
+                }
+            },
+        )
+        send_email_mock.assert_called_once()
+
+    def test_post_invalid_email_exists(self):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+
+        url = reverse("service.salesforce.user")
+        r = self.client.post(
+            url,
+            data={"email": "john@doe.com", "first_name": "John", "last_name": "Doe", "sales_office": "USBIZ"},
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(
+            r.json(), {"errorCode": "ValidationError", "details": {"email": ["User with this email already exists."]}}
+        )
+
+    @mock.patch("utils.email_helper.send_unknown_sales_office_email")
+    def test_put_valid(self, send_email_mock):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1})
+        r = self.client.put(
+            url,
+            data={"email": "jane@deen.com", "first_name": "Jane", "last_name": "Deen", "sales_office": "Spain"},
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": 1,
+                    "email": "jane@deen.com",
+                    "firstName": "Jane",
+                    "lastName": "Deen",
+                    "salesOffice": "Spain",
+                }
+            },
+        )
+        send_email_mock.assert_not_called()
+
+    @mock.patch("utils.email_helper.send_unknown_sales_office_email")
+    def test_put_valid_unkown_sales_office(self, send_email_mock):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1})
+        r = self.client.put(url, data={"sales_office": "ABCD"}, format="json")
+
+        self.assertEqual(r.status_code, 200)
+        user = zemauth.models.User.objects.filter(email__iexact="john@doe.com").first()
+        self.assertIsNotNone(user)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": user.id,
+                    "firstName": "John",
+                    "lastName": "Doe",
+                    "email": "john@doe.com",
+                    "salesOffice": "ABCD",
+                }
+            },
+        )
+        send_email_mock.assert_called_once()
+
+    def test_put_invalid_email_exists(self):
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@doe.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+        magic_mixer.blend(
+            zemauth.models.User,
+            id=2,
+            first_name="Jane",
+            last_name="Deen",
+            email="jane@deen.com",
+            is_active=True,
+            sales_office="USBIZ",
+            is_externally_managed=True,
+        )
+
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1})
+        r = self.client.put(url, data={"email": "jane@deen.com"}, format="json")
+
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(
+            r.json(), {"errorCode": "ValidationError", "details": {"email": ["User with this email already exists."]}}
+        )
+
+    def test_put_invalid_does_not_exist(self):
+        url = reverse("service.salesforce.user", kwargs={"user_id": 1234})
+        r = self.client.put(url)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json(), {"errorCode": "DoesNotExist", "details": "User matching query does not exist."})
+
+    def test_get_all(self):
+        magic_mixer.cycle(3).blend(zemauth.models.User, is_externally_managed=True)
+        magic_mixer.cycle(4).blend(zemauth.models.User, is_externally_managed=False)
+        url = reverse("service.salesforce.users")
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.json()), 3)
+
+    def test_get_all_email_filter(self):
+        magic_mixer.cycle(3).blend(zemauth.models.User, is_externally_managed=True)
+        magic_mixer.cycle(4).blend(zemauth.models.User, is_externally_managed=False)
+        magic_mixer.blend(zemauth.models.User, email="new@doe.com", is_externally_managed=True)
+        url = reverse("service.salesforce.users")
+        r = self.client.get(url, data={"email": "new@doe.com"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.json()), 1)

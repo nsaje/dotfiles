@@ -27,3 +27,7 @@ class ListAllAndDateFilters(ValidationError):
 
 class ListNoParametersProvided(ValidationError):
     pass
+
+
+class UserAlreadyExists(ValidationError):
+    pass

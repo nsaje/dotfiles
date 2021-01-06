@@ -60,6 +60,11 @@ def set_entity_permissions_on_user(requested_user, request, account, agency, new
     requested_user.validate_entity_permissions(final_entity_permissions)
 
 
+def add_entity_permissions(user, agency, account, permissions):
+    for permission in permissions:
+        _add_entity_permission(user, agency, account, permission)
+
+
 def _map_dicts_to_entity_permissions(requested_user, entity_permission_dicts):
     for ep_dict in entity_permission_dicts:
         if "readonly" in ep_dict:

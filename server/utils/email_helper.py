@@ -783,3 +783,10 @@ def send_ad_group_cloned_error_email(request, source_ad_group_name, cloned_ad_gr
         recipient_list=[request.user.email],
         **params_from_template(dash.constants.EmailTemplateType.AD_GROUP_CLONED_ERROR, **args),
     )
+
+
+def send_unknown_sales_office_email(sales_office):
+
+    args = {"sales_office": sales_office}
+
+    send_internal_email(**params_from_template(dash.constants.EmailTemplateType.UNKNOWN_SALES_OFFICE, **args))

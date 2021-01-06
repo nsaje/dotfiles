@@ -1803,6 +1803,7 @@ class EmailTemplateType(ConstantBase):
     AD_GROUP_CLONED_ERROR = 41
     CREDIT_DEPLETED_80_PERCENT = 42
     CREDIT_DEPLETED_90_PERCENT = 43
+    UNKNOWN_SALES_OFFICE = 44
 
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
@@ -1846,6 +1847,7 @@ class EmailTemplateType(ConstantBase):
         AD_GROUP_CLONED_ERROR: "Ad group cloned error",
         CREDIT_DEPLETED_80_PERCENT: "Credit depleted 80 percent",
         CREDIT_DEPLETED_90_PERCENT: "Credit depleted 90 percent",
+        UNKNOWN_SALES_OFFICE: "Externally managed user was created with unknown sales office",
     }
 
 

@@ -65,13 +65,13 @@ class AccountSerializer(serializers.ModelSerializer):
         return agency
 
     def validate_sales_representative(self, value):
-        sales_rep = zemUser.objects.filter(email=value).first()
+        sales_rep = zemUser.objects.filter(email__iexact=value, is_externally_managed=True).first()
         if not sales_rep:
             raise exc.SalesRepresentativeNotFound("Sales representative e-mail not found.")
         return sales_rep
 
     def validate_account_manager(self, value):
-        account_manager = zemUser.objects.filter(email=value).first()
+        account_manager = zemUser.objects.filter(email__iexact=value, is_externally_managed=True).first()
         if not account_manager:
             raise exc.SalesRepresentativeNotFound("Account manager e-mail not found.")
         return account_manager
@@ -82,3 +82,25 @@ class DateRangeSerializer(serializers.Serializer):
     modified_dt_end = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
     created_dt_start = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
     created_dt_end = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    sales_office = serializers.CharField(required=True)
+
+    class Meta:
+        model = zemUser
+        fields = ("id", "email", "first_name", "last_name", "sales_office")
+
+    def validate_email(self, email):
+        user_id = self.context.get("user_id")
+        user = zemUser.objects.filter(email__iexact=email).first()
+        if user and user.id != user_id:
+            raise exc.UserAlreadyExists("User with this email already exists.")
+        return email
+
+
+class UserQueryParams(serializers.Serializer):
+    email = serializers.EmailField(required=False)
