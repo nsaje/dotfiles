@@ -21,6 +21,7 @@ import {UsersModule} from './users/users.module';
 import {AlertsModule} from './alerts/alerts.module';
 import {AuthModule} from './auth/auth.module';
 import {PosthogService} from './posthog/posthog.service';
+import {LocalStorageService} from './local-storage/local-storage.service';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -59,6 +60,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         PostAsGetRequestService,
         NotificationService,
         ExceptionHandlerService,
+        LocalStorageService,
         HTTP_INTERCEPTOR_PROVIDERS,
     ],
 })

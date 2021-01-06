@@ -18,6 +18,7 @@ import {ExternalLinkColumnMapper} from '../mappers/external-link.mapper';
 import {ThumbnailColumnMapper} from '../mappers/thumbnail.mapper';
 import {BidModifierColumnMapper} from '../mappers/bid-modifier.mapper';
 import {CurrencyColumnMapper} from '../mappers/currency.mapper';
+import {getColumnsInOrder} from '../../helpers/grid-bridge.helpers';
 
 export class SetColumnsAction extends StoreAction<GridColumn[]> {}
 
@@ -113,7 +114,7 @@ export class SetColumnsActionReducer extends StoreReducer<
 
         return {
             ...state,
-            columns: columns,
+            columns: getColumnsInOrder(columns, state.columnsOrder),
         };
     }
 

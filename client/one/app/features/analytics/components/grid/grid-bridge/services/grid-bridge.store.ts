@@ -15,6 +15,10 @@ import {SetDataAction, SetDataActionReducer} from './reducers/set-data.reducer';
 import {SetGridAction, SetGridActionReducer} from './reducers/set-grid.reducer';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import {Subject} from 'rxjs';
+import {
+    SetColumnsOrderAction,
+    SetColumnsOrderActionReducer,
+} from './reducers/set-columns-order.reducer';
 
 @Injectable()
 export class GridBridgeStore extends Store<GridBridgeStoreState>
@@ -66,10 +70,14 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
                 provide: SetDataAction,
                 useClass: SetDataActionReducer,
             },
+            {
+                provide: SetColumnsOrderAction,
+                useClass: SetColumnsOrderActionReducer,
+            },
         ];
     }
 
-    initStore(grid: Grid): void {
+    setGrid(grid: Grid): void {
         this.dispatch(new SetGridAction(grid));
     }
 
@@ -93,6 +101,10 @@ export class GridBridgeStore extends Store<GridBridgeStoreState>
             scope,
             this.handleDataUpdate.bind(this)
         );
+    }
+
+    setColumnsOrder(columns: string[]) {
+        this.dispatch(new SetColumnsOrderAction(columns));
     }
 
     private handleColumnsUpdate(): void {

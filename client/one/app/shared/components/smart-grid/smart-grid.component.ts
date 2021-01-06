@@ -15,7 +15,6 @@ import {
 import {
     DetailGridInfo,
     GridApi,
-    GridOptions,
     RowSelectedEvent,
     SelectionChangedEvent,
     GridSizeChangedEvent,
@@ -25,6 +24,8 @@ import {
     RowDataUpdatedEvent,
     ColumnApi,
     Column,
+    ColumnState,
+    DragStoppedEvent,
 } from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
@@ -43,6 +44,7 @@ import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {SmartGridColDef} from './types/smart-grid-col-def';
 import {distinct} from '../../helpers/array.helpers';
+import {SmartGridOptions} from './types/smart-grid-options';
 
 @Component({
     selector: 'zem-smart-grid',
@@ -51,7 +53,7 @@ import {distinct} from '../../helpers/array.helpers';
 })
 export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     @Input('gridOptions')
-    options: GridOptions;
+    options: SmartGridOptions;
     @Input()
     columnDefs: SmartGridColDef[];
     @Input()
@@ -81,10 +83,12 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     @Output()
     rowDataUpdate = new EventEmitter<RowDataUpdatedEvent>();
     @Output()
+    dragStop = new EventEmitter<DragStoppedEvent>();
+    @Output()
     paginationChange = new EventEmitter<PaginationState>();
 
     isGridReady: boolean;
-    gridOptions: GridOptions;
+    gridOptions: SmartGridOptions;
     gridApi: GridApi;
 
     paginationPage: number;
@@ -93,6 +97,9 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
 
     private gridWidth$: Subject<number> = new Subject<number>();
     private ngUnsubscribe$: Subject<void> = new Subject();
+
+    private previousColumnStateCache: ColumnState[] = [];
+    private columnStateCache: ColumnState[] = [];
 
     ngOnInit(): void {
         this.gridOptions = {
@@ -127,16 +134,18 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.previousColumnStateCache = null;
+        this.columnStateCache = null;
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
 
-    onRowSelected(event: RowSelectedEvent) {
-        this.rowSelected.emit(event.data);
+    onRowSelected($event: RowSelectedEvent) {
+        this.rowSelected.emit($event.data);
     }
 
-    onSelectionChanged(event: SelectionChangedEvent) {
-        this.selectionChange.emit(event.api.getSelectedRows());
+    onSelectionChanged($event: SelectionChangedEvent) {
+        this.selectionChange.emit($event.api.getSelectedRows());
     }
 
     onGridReady(params: DetailGridInfo) {
@@ -174,7 +183,14 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onGridColumnsChanged($event: GridColumnsChangedEvent) {
+        this.previousColumnStateCache = [...this.columnStateCache];
+        this.columnStateCache = [...$event.columnApi.getColumnState()];
         this.gridColumnsChange.emit($event);
+        if (this.gridOptions.enableCellFlashOnColumnsAdd) {
+            setTimeout(() => {
+                this.handleCellFlashOnColumnsAdd();
+            }, 250);
+        }
     }
 
     onRowDataChanged($event: RowDataChangedEvent) {
@@ -183,6 +199,10 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
 
     onRowDataUpdated($event: RowDataUpdatedEvent) {
         this.rowDataUpdate.emit($event);
+    }
+
+    onDragStopped($event: DragStoppedEvent) {
+        this.dragStop.emit($event);
     }
 
     onPageChange(page: number) {
@@ -304,5 +324,26 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
                     columnApi.setColumnPinned(setting.colId, pinColumn);
                 })
             );
+    }
+
+    private handleCellFlashOnColumnsAdd() {
+        if (arrayHelpers.isEmpty(this.previousColumnStateCache)) {
+            return;
+        }
+
+        const colIds = this.columnStateCache
+            .map(column => column.colId)
+            .filter(
+                colId =>
+                    !this.previousColumnStateCache
+                        .map(p => p.colId)
+                        .includes(colId)
+            );
+        if (!arrayHelpers.isEmpty(colIds)) {
+            this.gridApi.ensureColumnVisible(colIds[colIds.length - 1]);
+            this.gridApi.flashCells({
+                columns: colIds,
+            });
+        }
     }
 }

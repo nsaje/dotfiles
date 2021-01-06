@@ -10,10 +10,11 @@ import * as moment from 'moment';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import * as numericHelpers from '../../../../../../shared/helpers/numeric.helpers';
 import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
+import * as arrayHelpers from '../../../../../../shared/helpers/array.helpers';
 import {GridRow} from '../types/grid-row';
 import {GridRowDataStatsValue} from '../types/grid-row-data';
 import {AUTOPILOT_BREAKDOWNS} from '../grid-bridge.component.config';
-
+import {SmartGridColDef} from '../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 export interface FormatGridColumnValueOptions {
     type: GridColumnTypes;
     fractionSize?: number;
@@ -76,6 +77,70 @@ export function formatGridColumnValue(
                 'N/A'
             );
     }
+}
+
+export function getColumnsInOrder(
+    columns: SmartGridColDef[],
+    columnsOrder: string[]
+): SmartGridColDef[] {
+    if (arrayHelpers.isEmpty(columns) || arrayHelpers.isEmpty(columnsOrder)) {
+        return columns;
+    }
+
+    const columnsInOrder: SmartGridColDef[] = [];
+
+    columnsOrder.forEach(field => {
+        const column: SmartGridColDef = columns.find(
+            column => column.field === field
+        );
+        if (commonHelpers.isDefined(column)) {
+            columnsInOrder.push(column);
+        }
+    });
+
+    columns
+        .filter(column => {
+            return !columnsInOrder.includes(column);
+        })
+        .forEach(column => {
+            const columnRightNeighbor: SmartGridColDef = getRightNeighbor(
+                columns,
+                columnsInOrder,
+                column
+            );
+            commonHelpers.isDefined(columnRightNeighbor)
+                ? columnsInOrder.splice(
+                      columnsInOrder.indexOf(columnRightNeighbor),
+                      0,
+                      column
+                  )
+                : columnsInOrder.push(column);
+        });
+    return columnsInOrder;
+}
+
+function getRightNeighbor(
+    columns: SmartGridColDef[],
+    columnsInOrder: SmartGridColDef[],
+    column: SmartGridColDef
+): SmartGridColDef {
+    if (arrayHelpers.isEmpty(columns) || arrayHelpers.isEmpty(columnsInOrder)) {
+        return null;
+    }
+    if (!columns.includes(column)) {
+        return null;
+    }
+
+    const columnIndex: number = columns.indexOf(column);
+    if (columnIndex === columns.length - 1) {
+        return null;
+    }
+
+    const columnRightNeighbor: SmartGridColDef =
+        columns
+            .slice(columnIndex + 1)
+            .find(column => columnsInOrder.includes(column)) || null;
+    return columnRightNeighbor;
 }
 
 function formatGridColumnValueAsText(

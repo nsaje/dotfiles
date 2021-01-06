@@ -7,6 +7,7 @@ import {GridRow} from '../types/grid-row';
 export class GridBridgeStoreState {
     grid: Grid = null;
     columns: SmartGridColDef[] = [];
+    columnsOrder: string[] = [];
     data = {
         rows: [] as GridRow[],
         totals: [] as GridRow[],

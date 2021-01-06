@@ -19,6 +19,8 @@
     [grid]="$ctrl.grid"
     [is-meta-data-ready]="$ctrl.grid.meta.initialized"
     [is-data-loading]="$ctrl.grid.meta.loading"
+    [level]="$ctrl.level"
+    [breakdown]="$ctrl.breakdown"
     (pagination-change)="
         $ctrl.onPaginationChange({page: $event.page, pageSize: $event.pageSize})
     "

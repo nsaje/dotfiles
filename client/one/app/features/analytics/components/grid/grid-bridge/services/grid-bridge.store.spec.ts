@@ -17,6 +17,10 @@ import {GridColumnOrder} from '../types/grid-column-order';
 import {GridBridgeStore} from './grid-bridge.store';
 import {GridBridgeStoreState} from './grid-bridge.store.state';
 import {
+    SetColumnsOrderAction,
+    SetColumnsOrderActionReducer,
+} from './reducers/set-columns-order.reducer';
+import {
     SetColumnsAction,
     SetColumnsActionReducer,
 } from './reducers/set-columns.reducer';
@@ -61,6 +65,10 @@ class TestGridBridgeStore extends GridBridgeStore {
             {
                 provide: SetDataAction,
                 useClass: SetDataActionReducer,
+            },
+            {
+                provide: SetColumnsOrderAction,
+                useClass: SetColumnsOrderActionReducer,
             },
         ];
     }
@@ -179,12 +187,12 @@ describe('GridBridgeStore', () => {
 
     it('should correctly reduce grid', () => {
         expect(store.state.grid).toEqual(null);
-        store.initStore(mockedGrid);
+        store.setGrid(mockedGrid);
         expect(store.state.grid).toEqual(mockedGrid);
     });
 
     it('should correctly reduce grid columns', () => {
-        store.initStore(mockedGrid);
+        store.setGrid(mockedGrid);
         store.connect();
         expect(store.state.columns).toEqual([
             {
@@ -195,7 +203,7 @@ describe('GridBridgeStore', () => {
     });
 
     it('should correctly reduce grid data', () => {
-        store.initStore(mockedGrid);
+        store.setGrid(mockedGrid);
         store.connect();
         expect(store.state.data).toEqual({
             rows: [
@@ -246,5 +254,11 @@ describe('GridBridgeStore', () => {
                 count: 1,
             },
         });
+    });
+
+    it('should correctly reduce grid columns order', () => {
+        const mockedColumns: string[] = ['one', 'three', 'two'];
+        store.setColumnsOrder(mockedColumns);
+        expect(store.state.columnsOrder).toEqual(['one', 'three', 'two']);
     });
 });

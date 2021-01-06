@@ -27,6 +27,9 @@ export const SMART_GRID_CELL_CURRENCY_CLASS =
 export const SMART_GRID_CELL_CURRENCY_REFUND_CLASS =
     'zem-grid-bridge__ag-cell--currency-refund';
 
+export const LOCAL_STORAGE_NAMESPACE = 'zemGridBridge';
+export const LOCAL_STORAGE_COLUMNS_KEY = 'columns';
+
 export enum EntityStatus {
     ACTIVE = 'Active',
     PAUSED = 'Paused',

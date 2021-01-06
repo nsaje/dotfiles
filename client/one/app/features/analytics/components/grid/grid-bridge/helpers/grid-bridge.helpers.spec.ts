@@ -1,4 +1,5 @@
 import {Currency} from '../../../../../../app.constants';
+import {SmartGridColDef} from '../../../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {GridColumnTypes} from '../../../../analytics.constants';
 import * as gridBridgeHelpers from './grid-bridge.helpers';
 
@@ -237,5 +238,84 @@ describe('GridBridgeHelpers', () => {
                 currency: Currency.EUR,
             })
         ).toEqual('€10.00');
+    });
+
+    it('should correctly apply columns order for edge case', () => {
+        expect(gridBridgeHelpers.getColumnsInOrder(null, null)).toEqual(null);
+        expect(gridBridgeHelpers.getColumnsInOrder(undefined, null)).toEqual(
+            undefined
+        );
+        expect(gridBridgeHelpers.getColumnsInOrder([], null)).toEqual([]);
+
+        const columns: Partial<SmartGridColDef>[] = [{field: '1'}];
+        expect(
+            gridBridgeHelpers.getColumnsInOrder(columns, undefined)
+        ).toEqual([{field: '1'}]);
+        expect(gridBridgeHelpers.getColumnsInOrder(columns, null)).toEqual([
+            {field: '1'},
+        ]);
+        expect(gridBridgeHelpers.getColumnsInOrder(columns, [])).toEqual([
+            {field: '1'},
+        ]);
+    });
+
+    it('should correctly apply columns order when adding columns', () => {
+        let columns: Partial<SmartGridColDef>[] = [
+            {field: '1'},
+            {field: '2'},
+            {field: '5'},
+            {field: '6'},
+            {field: '8'},
+        ];
+        let columnsOrder: string[] = ['5', '2', '8', '6'];
+        expect(
+            gridBridgeHelpers.getColumnsInOrder(columns, columnsOrder)
+        ).toEqual([
+            {field: '5'},
+            {field: '1'},
+            {field: '2'},
+            {field: '8'},
+            {field: '6'},
+        ]);
+
+        columns = [
+            {field: '1'},
+            {field: '2'},
+            {field: '5'},
+            {field: '6'},
+            {field: '7'},
+            {field: '8'},
+        ];
+        columnsOrder = ['5', '1', '2', '8', '6'];
+        expect(
+            gridBridgeHelpers.getColumnsInOrder(columns, columnsOrder)
+        ).toEqual([
+            {field: '5'},
+            {field: '1'},
+            {field: '2'},
+            {field: '7'},
+            {field: '8'},
+            {field: '6'},
+        ]);
+    });
+
+    it('should correctly apply columns order when removing columns', () => {
+        const columns: Partial<SmartGridColDef>[] = [
+            {field: '1'},
+            {field: '2'},
+            {field: '5'},
+            {field: '6'},
+            {field: '8'},
+        ];
+        const columnsOrder: string[] = ['5', '1', '2', '7', '8', '6'];
+        expect(
+            gridBridgeHelpers.getColumnsInOrder(columns, columnsOrder)
+        ).toEqual([
+            {field: '5'},
+            {field: '1'},
+            {field: '2'},
+            {field: '8'},
+            {field: '6'},
+        ]);
     });
 });

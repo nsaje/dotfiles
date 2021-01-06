@@ -1,7 +1,7 @@
-import {GridOptions} from 'ag-grid-community';
 import {PageSizeConfig} from './types/page-size-config';
+import {SmartGridOptions} from './types/smart-grid-options';
 
-export const DEFAULT_GRID_OPTIONS: GridOptions = {
+export const DEFAULT_GRID_OPTIONS: SmartGridOptions = {
     headerHeight: 40,
     rowHeight: 40,
     domLayout: 'autoHeight',
@@ -20,7 +20,8 @@ export const DEFAULT_GRID_OPTIONS: GridOptions = {
         resizable: false,
     },
     cellFlashDelay: 100,
-    cellFadeDelay: 1000,
+    cellFadeDelay: 3000,
+    enableCellFlashOnColumnsAdd: false,
 };
 
 export const DEFAULT_PAGE_SIZE_OPTIONS: PageSizeConfig[] = [

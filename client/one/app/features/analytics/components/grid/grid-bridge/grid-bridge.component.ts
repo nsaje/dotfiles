@@ -17,9 +17,9 @@ import {downgradeComponent} from '@angular/upgrade/static';
 import {
     ColumnApi,
     DetailGridInfo,
+    DragStoppedEvent,
     GridApi,
     GridColumnsChangedEvent,
-    GridOptions,
     RowDataUpdatedEvent,
 } from 'ag-grid-community';
 import {merge, Observable, Subject} from 'rxjs';
@@ -39,11 +39,15 @@ import {
     SMART_GRID_ROW_ARCHIVED_CLASS,
     GRID_API_DEBOUNCE_TIME,
     GRID_API_LOADING_DATA_ERROR_MESSAGE,
+    LOCAL_STORAGE_COLUMNS_KEY,
+    LOCAL_STORAGE_NAMESPACE,
 } from './grid-bridge.component.constants';
 import {NotificationService} from '../../../../../core/notification/services/notification.service';
-import {DOCUMENT} from '@angular/common';
 import {GridRow} from './types/grid-row';
 import {Router} from '@angular/router';
+import {SmartGridOptions} from '../../../../../shared/components/smart-grid/types/smart-grid-options';
+import {LocalStorageService} from '../../../../../core/local-storage/local-storage.service';
+import {Breakdown, Level} from '../../../../../app.constants';
 
 @Component({
     selector: 'zem-grid-bridge',
@@ -58,10 +62,14 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     isMetaDataReady: boolean = false;
     @Input()
     isDataLoading: boolean = false;
+    @Input()
+    level: Level;
+    @Input()
+    breakdown: Breakdown;
     @Output()
     paginationChange = new EventEmitter<PaginationState>();
 
-    gridOptions: GridOptions;
+    gridOptions: SmartGridOptions;
     context: any;
 
     private gridApi: GridApi;
@@ -78,13 +86,16 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
         public store: GridBridgeStore,
         private router: Router,
         private zone: NgZone,
-        @Inject(DOCUMENT) private document: Document,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any,
+        private localStorageService: LocalStorageService
     ) {
         this.gridOptions = {
             immutableData: true,
             getRowNodeId: this.getRowNodeId,
             suppressChangeDetection: true,
+            applyColumnDefOrder: true,
+            enableCellFlashOnColumnsAdd: true,
             rowClassRules: {
                 [SMART_GRID_ROW_ARCHIVED_CLASS]: this.isRowArchived.bind(this),
             },
@@ -104,7 +115,8 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
                 this.handleSelectionUpdate();
             });
 
-        this.store.initStore(this.grid);
+        this.store.setGrid(this.grid);
+        this.store.setColumnsOrder(this.getColumnsFromLocalStorage());
         this.subscribeToStoreStateUpdates();
     }
 
@@ -137,19 +149,18 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onGridColumnsChange($event: GridColumnsChangedEvent) {
-        if (!commonHelpers.isDefined(this.gridApi)) {
-            return;
-        }
+        this.setColumnsOrder();
         setTimeout(() => {
-            this.gridApi.sizeColumnsToFit();
+            $event.api.sizeColumnsToFit();
         }, 250);
     }
 
+    onDragStop($event: DragStoppedEvent) {
+        this.setColumnsOrder();
+    }
+
     onRowDataUpdate($event: RowDataUpdatedEvent) {
-        if (!commonHelpers.isDefined(this.gridApi)) {
-            return;
-        }
-        this.gridApi.refreshCells({
+        $event.api.refreshCells({
             columns: [GridColumnTypes.ACTIONS],
             force: true,
         });
@@ -249,6 +260,66 @@ export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
             rowNodes: [rowNode],
             force: true,
         });
+    }
+
+    private setColumnsOrder() {
+        if (
+            !commonHelpers.isDefined(this.columnApi) ||
+            !commonHelpers.isDefined(this.gridApi)
+        ) {
+            return;
+        }
+        const columnsState = this.columnApi.getColumnState();
+        const columns = columnsState.map(x => {
+            return this.gridApi.getColumnDef(x.colId).field;
+        });
+        this.store.setColumnsOrder(columns);
+        this.saveColumnsToLocalStorage(columns);
+    }
+
+    //
+    // COLUMNS - LOCAL STORAGE
+    //
+
+    private getColumnsFromLocalStorage(): string[] {
+        const columnsState =
+            this.localStorageService.getItem(
+                LOCAL_STORAGE_COLUMNS_KEY,
+                LOCAL_STORAGE_NAMESPACE
+            ) || {};
+        const key = this.getColumnsStateKey();
+        return columnsState[key] || [];
+    }
+
+    private saveColumnsToLocalStorage(columnsOrder: string[]): void {
+        const columnsState =
+            this.localStorageService.getItem(
+                LOCAL_STORAGE_COLUMNS_KEY,
+                LOCAL_STORAGE_NAMESPACE
+            ) || {};
+        const key = this.getColumnsStateKey();
+        this.localStorageService.setItem(
+            LOCAL_STORAGE_COLUMNS_KEY,
+            {
+                ...columnsState,
+                [key]: [...columnsOrder],
+            },
+            LOCAL_STORAGE_NAMESPACE
+        );
+    }
+
+    private getColumnsStateKey(): string {
+        const account: any = this.zemNavigationNewService.getActiveAccount();
+        const accountKey: string = commonHelpers.isDefined(account?.id)
+            ? account.id.toString()
+            : null;
+
+        return [
+            ...(commonHelpers.isDefined(accountKey) ? [accountKey] : []),
+            ...(commonHelpers.isDefined(this.breakdown)
+                ? [this.breakdown]
+                : []),
+        ].join('.');
     }
 }
 

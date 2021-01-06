@@ -7,6 +7,8 @@ angular.module('one.widgets').component('zemGrid', {
         renderingEngine: '<',
         page: '<',
         pageSize: '<',
+        level: '<',
+        breakdown: '<',
         onInitialized: '&',
         onPaginationChange: '&',
     },
