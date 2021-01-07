@@ -16,6 +16,7 @@ from core.features.videoassets.models import *
 from core.features.entity_status.models import *
 from core.features.publisher_groups.models import *
 from core.features.credit_notifications.models import *
+from core.features.creatives.models import *
 
 # Core helpers
 from core.features.bcm.helpers import *

@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 import utils.demo_anonymizer
-from core.models import Source
 
 from . import constants
 from . import entity_permission
@@ -79,7 +78,7 @@ class User(
         default=False, help_text=_("Designates whether a user represents an internal service.")
     )
 
-    sspd_sources = models.ManyToManyField(Source, blank=True)
+    sspd_sources = models.ManyToManyField("dash.Source", blank=True)
 
     sspd_sources_markets = JSONField(null=True, blank=True, validators=[validators.validate_sspd_sources_markets])
     outbrain_user_id = models.CharField(null=True, blank=True, max_length=30, help_text="Outbrain ID")

@@ -5,6 +5,7 @@ from django.test import TestCase
 
 import automation.rules
 import core.features.bcm
+import core.features.creatives
 import core.features.deals
 import core.features.publisher_groups
 import core.models
@@ -425,3 +426,27 @@ class ConversionPixelAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
             self._for_all_entities(user, permission, entity_access.get_conversion_pixel, pixel)
             self._for_account(user, permission, entity_access.get_conversion_pixel, account, pixel, False)
             self._for_none(user, permission, entity_access.get_conversion_pixel, pixel)
+
+
+class CreativeAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
+    def test_get_creative(self):
+        agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
+        account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
+        creative_with_agency_scope: core.features.creatives.Creative = magic_mixer.blend(
+            core.features.creatives.Creative, agency=agency
+        )
+        creative_with_account_scope: core.features.creatives.Creative = magic_mixer.blend(
+            core.features.creatives.Creative, account=account
+        )
+        user: zemauth.models.User = magic_mixer.blend_user()
+
+        for permission in zemauth.features.entity_permission.Permission.get_all():
+            self._for_all_entities(user, permission, entity_access.get_creative, creative_with_agency_scope)
+            self._for_agency(user, permission, entity_access.get_creative, agency, creative_with_agency_scope)
+            self._for_account(user, permission, entity_access.get_creative, account, creative_with_agency_scope, True)
+            self._for_none(user, permission, entity_access.get_creative, creative_with_agency_scope)
+
+            self._for_all_entities(user, permission, entity_access.get_creative, creative_with_account_scope)
+            self._for_agency(user, permission, entity_access.get_creative, agency, creative_with_account_scope)
+            self._for_account(user, permission, entity_access.get_creative, account, creative_with_account_scope, False)
+            self._for_none(user, permission, entity_access.get_creative, creative_with_account_scope)

@@ -18,6 +18,7 @@ import restapi.campaigngoal.urls
 import restapi.campaignstats.urls
 import restapi.contentad.urls
 import restapi.conversion_pixel.urls
+import restapi.creatives.urls
 import restapi.credit.urls
 import restapi.creditrefund.urls
 import restapi.directdeal.urls
@@ -68,3 +69,4 @@ urlpatterns += restapi.bluekai.urls.urlpatterns
 urlpatterns += restapi.booksclosed.urls.urlpatterns
 urlpatterns += restapi.bulkupload.urls.urlpatterns
 urlpatterns += restapi.realtimestats.urls.urlpatterns
+urlpatterns += restapi.creatives.urls.urlpatterns

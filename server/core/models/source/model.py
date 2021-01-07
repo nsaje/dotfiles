@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 import dash.constants
 from core.common import BaseManager
-from core.models.tags import EntityTag
 
 from . import instance
 from . import queryset
@@ -75,6 +74,6 @@ class Source(instance.SourceMixin, models.Model):
         max_digits=10, decimal_places=4, default=Decimal("10.00"), verbose_name="Default daily spend cap"
     )
 
-    entity_tags = tagulous.models.TagField(to=EntityTag, blank=True)
+    entity_tags = tagulous.models.TagField(to="EntityTag", blank=True)
 
     objects = BaseManager.from_queryset(queryset.SourceQuerySet)()

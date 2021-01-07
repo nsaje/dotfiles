@@ -7,6 +7,7 @@ import dash.models
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import restapi.serializers.trackers
 
 
 class ApprovalStatusSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -15,53 +16,6 @@ class ApprovalStatusSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         dash.constants.ContentAdSubmissionStatus, required=True, source="submission_status"
     )
     reason = rest_framework.serializers.CharField(required=True, allow_null=True, source="submission_errors")
-
-
-class TrackerSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    event_type = restapi.serializers.fields.DashConstantField(dash.constants.TrackerEventType, required=True)
-    method = restapi.serializers.fields.DashConstantField(dash.constants.TrackerMethod, required=True)
-    url = restapi.serializers.fields.HttpsURLField(
-        required=True,
-        error_messages={"invalid": "Invalid tracker URL", "invalid_schema": "Tracker URL has to be HTTPS"},
-    )
-    fallback_url = restapi.serializers.fields.HttpsURLField(
-        required=False,
-        default=None,
-        error_messages={
-            "invalid": "Invalid fallback tracker URL",
-            "invalid_schema": "Fallback tracker URL has to be HTTPS",
-        },
-    )
-    tracker_optional = rest_framework.fields.BooleanField(required=False, default=False)
-
-    def validate(self, data):
-        data = super().validate(data)
-        if (
-            data.get("event_type") != dash.constants.TrackerEventType.IMPRESSION
-            and data.get("method") == dash.constants.TrackerMethod.JS
-        ):
-            raise rest_framework.serializers.ValidationError(
-                {"method": "Javascript Tag method cannot be used together with Viewability type."}
-            )
-        return data
-
-    def to_internal_value(self, data):
-        value = super().to_internal_value(data)
-        value["supported_privacy_frameworks"] = dash.features.contentupload.get_privacy_frameworks(
-            data.get("url"), data.get("fallback_url")
-        )
-        return value
-
-
-class TrackersSerializer(rest_framework.serializers.ListSerializer):
-    def __init__(self, *args, **kwargs):
-        self.child = TrackerSerializer()
-        super().__init__(*args, **kwargs)
-
-    def validate(self, trackers):
-        if len(trackers) > 3:
-            raise rest_framework.serializers.ValidationError("A maximum of three trackers is supported.")
-        return trackers
 
 
 class ContentAdSerializer(
@@ -133,7 +87,7 @@ class ContentAdSerializer(
     ad_tag = rest_framework.serializers.CharField(required=False)
     video_asset_id = rest_framework.serializers.UUIDField(source="video_asset.id", required=False)
     approval_status = ApprovalStatusSerializer(read_only=True, many=True, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
+    trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
 
 
 class ContentAdCandidateSerializer(
@@ -175,7 +129,7 @@ class ContentAdCandidateSerializer(
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     video_asset_id = rest_framework.serializers.UUIDField(required=False)
     state = restapi.serializers.fields.DashConstantField(dash.constants.ContentAdSourceState, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
+    trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
 
     def to_internal_value(self, external_data):
         internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)
@@ -207,7 +161,7 @@ class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     image_url = restapi.serializers.fields.PlainCharField(required=True)
     display_url = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
-    trackers = TrackersSerializer(allow_null=True, required=False)
+    trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
 
 
 class AdTagCandidateSerializer(ContentAdCandidateSerializer):
@@ -232,7 +186,7 @@ class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     ad_tag = rest_framework.serializers.CharField(required=True)
     ad_width = rest_framework.serializers.IntegerField(source="image_width", required=True)
     ad_height = rest_framework.serializers.IntegerField(source="image_height", required=True)
-    trackers = TrackersSerializer(allow_null=True, required=False)
+    trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
 
 
 class AdTypeSerializer(rest_framework.serializers.Serializer):

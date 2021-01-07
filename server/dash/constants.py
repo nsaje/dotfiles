@@ -1475,6 +1475,14 @@ class UploadBatchType(ConstantBase):
     _VALUES = {INSERT: "Insert", EDIT: "Edit", CLONE: "Clone"}
 
 
+class CreativeBatchStatus(ConstantBase):
+    DONE = 1
+    FAILED = 2
+    IN_PROGRESS = 3
+
+    _VALUES = {DONE: "Done", FAILED: "Failed", IN_PROGRESS: "In progress"}
+
+
 class RegionType(ConstantBase):
     COUNTRY = 1
     SUBDIVISION = 2

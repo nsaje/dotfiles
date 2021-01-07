@@ -10,6 +10,7 @@ from .entity_access import get_campaigns
 from .entity_access import get_content_ad
 from .entity_access import get_content_ads
 from .entity_access import get_conversion_pixel
+from .entity_access import get_creative
 from .entity_access import get_credit_line_item
 from .entity_access import get_direct_deal
 from .entity_access import get_direct_deal_connection

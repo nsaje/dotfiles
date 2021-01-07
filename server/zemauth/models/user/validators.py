@@ -2,7 +2,7 @@
 
 from django.core.exceptions import ValidationError
 
-from core.models import Source
+from core.models.source import Source
 
 
 def validate_sspd_sources_markets(sources_markets):

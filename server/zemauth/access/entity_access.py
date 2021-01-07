@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 
 import automation.rules
 import core.features.bcm
+import core.features.creatives
 import core.features.deals
 import core.features.publisher_groups
 import core.models
@@ -258,3 +259,13 @@ def get_conversion_pixel(user: zemauth.models.User, permission: str, pixel_id: s
         return pixel
     except (core.models.ConversionPixel.DoesNotExist, utils.exc.MissingDataError):
         raise utils.exc.MissingDataError("Conversion pixel does not exist")
+
+
+def get_creative(user: zemauth.models.User, permission: str, creative_id: str) -> core.features.creatives.Creative:
+    try:
+        queryset = core.features.creatives.Creative.objects.filter_by_entity_permission(
+            user, permission
+        ).select_related("agency", "account")
+        return queryset.get(id=creative_id)
+    except core.features.creatives.Creative.DoesNotExist:
+        raise utils.exc.MissingDataError("Creative does not exist")

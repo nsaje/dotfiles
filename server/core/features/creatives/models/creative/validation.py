@@ -1,0 +1,2 @@
+class CreativeValidatorMixin(object):
+    pass

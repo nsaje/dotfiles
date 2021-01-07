@@ -1,7 +1,7 @@
 import datetime
 import json
 
-import tagulous
+import tagulous.admin
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -1963,6 +1963,27 @@ class EntityTagAdmin(admin.ModelAdmin):
     model = tags.EntityTag
 
 
+class CreativeTagAdmin(admin.ModelAdmin):
+    model = tags.CreativeTag
+
+    fields = ("name", "slug", "agency", "account")
+    search_fields = ("id", "name", "agency__name", "account__name")
+    list_display = ("id", "name", "agency", "account")
+    autocomplete_fields = ("agency", "account")
+
+    def get_queryset(self, request):
+        qs = super(CreativeTagAdmin, self).get_queryset(request)
+        qs = qs.select_related("agency", "account")
+        return qs
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        try:
+            return super(CreativeTagAdmin, self).changeform_view(request, object_id, form_url, extra_context)
+        except utils.exc.ValidationError as e:
+            self.message_user(request, str(e.errors), level=messages.ERROR)
+            return HttpResponseRedirect(request.path)
+
+
 class WhiteLabelAdmin(admin.ModelAdmin):
     model = models.WhiteLabel
 
@@ -2001,3 +2022,4 @@ admin.site.register(models.DirectDeal, DirectDealAdmin)
 admin.site.register(models.DirectDealConnection, DirectDealConnectionAdmin)
 admin.site.register(models.WhiteLabel, WhiteLabelAdmin)
 tagulous.admin.register(tags.EntityTag, EntityTagAdmin)
+tagulous.admin.register(tags.CreativeTag, CreativeTagAdmin)
