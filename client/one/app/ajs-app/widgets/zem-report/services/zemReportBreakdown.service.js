@@ -23,25 +23,27 @@ angular
                 );
             }
 
+            if (!deliveryInBreakdown(breakdown)) {
+                availableBreakdowns = availableBreakdowns.concat(
+                    zemGridEndpointBreakdowns.DELIVERY_BREAKDOWNS
+                );
+            }
+
             return availableBreakdowns;
         }
 
         function timeInBreakdown(breakdown) {
-            for (
-                var i = 0;
-                i < zemGridEndpointBreakdowns.TIME_BREAKDOWNS.length;
-                i++
+            zemGridEndpointBreakdowns.TIME_BREAKDOWNS.some(function(element) {
+                return isInBreakdown(breakdown, element);
+            });
+        }
+
+        function deliveryInBreakdown(breakdown) {
+            zemGridEndpointBreakdowns.DELIVERY_BREAKDOWNS.some(function(
+                element
             ) {
-                if (
-                    isInBreakdown(
-                        breakdown,
-                        zemGridEndpointBreakdowns.TIME_BREAKDOWNS[i]
-                    )
-                ) {
-                    return true;
-                }
-            }
-            return false;
+                return isInBreakdown(breakdown, element);
+            });
         }
 
         function isInBreakdown(breakdown, dimension) {

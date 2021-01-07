@@ -51,21 +51,21 @@ angular
                 shown: true,
             },
             age: {
-                name: 'Age',
+                name: 'By Age',
                 query: 'age',
                 report_query: 'Age',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
                 internal: 'zemauth.can_view_breakdown_by_delivery_extended',
             },
             gender: {
-                name: 'Gender',
+                name: 'By Gender',
                 query: 'gender',
                 report_query: 'Gender',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
                 internal: 'zemauth.can_view_breakdown_by_delivery_extended',
             },
             ageGender: {
-                name: 'Age and Gender',
+                name: 'By Age and Gender',
                 query: 'age_gender',
                 report_query: 'Age and Gender',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
@@ -73,38 +73,38 @@ angular
             },
 
             country: {
-                name: 'Country',
+                name: 'By Country',
                 query: 'country',
                 report_query: 'Country',
                 shown: true,
             },
             region: {
-                name: 'State / Region',
+                name: 'By State / Region',
                 query: 'region',
                 report_query: 'State / Region',
                 shown: true,
             },
             dma: {
-                name: 'DMA',
+                name: 'By DMA',
                 query: 'dma',
                 report_query: 'DMA',
                 shown: true,
             },
 
             device: {
-                name: 'Device',
+                name: 'By Device',
                 query: 'device_type',
                 report_query: 'Device',
                 shown: true,
             },
             deviceOs: {
-                name: 'Operating System',
+                name: 'By Operating System',
                 query: 'device_os',
                 report_query: 'Operating System',
                 shown: true,
             },
             deviceOsVersion: {
-                name: 'Operating System Version',
+                name: 'By Operating System Version',
                 query: 'device_os_version',
                 report_query: 'Operating System Version',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
@@ -112,35 +112,35 @@ angular
             },
 
             environment: {
-                name: 'Environment',
+                name: 'By Environment',
                 query: 'environment',
                 report_query: 'Environment',
                 shown: true,
             },
 
             browser: {
-                name: 'Browser',
+                name: 'By Browser',
                 query: 'browser',
                 report_query: 'Browser',
                 shown: true,
             },
 
             connectionType: {
-                name: 'Connection Type',
+                name: 'By Connection Type',
                 query: 'connection_type',
                 report_query: 'Connection Type',
                 shown: true,
             },
 
             zemPlacementType: {
-                name: 'Zemanta Placement Type',
+                name: 'By Zemanta Placement Type',
                 query: 'zem_placement_type',
                 report_query: 'Zemanta Placement Type',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
                 internal: 'zemauth.can_view_breakdown_by_delivery_extended',
             },
             videoPlaybackMethod: {
-                name: 'Video Playback Method',
+                name: 'By Video Playback Method',
                 query: 'video_playback_method',
                 report_query: 'Video Playback Method',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
@@ -363,6 +363,7 @@ angular
             BREAKDOWNS: BREAKDOWNS,
             ENTITY_BREAKDOWNS: ENTITY_BREAKDOWNS,
             TIME_BREAKDOWNS: TIME_BREAKDOWNS,
+            DELIVERY_BREAKDOWNS: DELIVERY_BREAKDOWNS,
             getEntityLevelBreakdown: getEntityLevelBreakdown,
             createBreakdownGroups: createBreakdownGroups,
         };

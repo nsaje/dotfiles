@@ -28,7 +28,11 @@
                 repeat="breakdown in $ctrl.availableBreakdowns"
                 class="ui-select-choices"
             >
-                <div ng-click="$ctrl.addBreakdown(breakdown)">
+                <div
+                    ng-if="breakdown.shown"
+                    ng-click="$ctrl.addBreakdown(breakdown)"
+                    is-internal="breakdown.internal"
+                >
                     {{ breakdown.name }}
                 </div>
             </ui-select-choices>
