@@ -8,7 +8,7 @@ import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
 import {Geolocation} from '../../../../core/geolocations/types/geolocation';
 import {GeolocationsByType} from '../../types/geolocations-by-type';
-import {GeolocationType} from '../../../../app.constants';
+import {GeolocationType, IncludeExcludeType} from '../../../../app.constants';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -140,7 +140,13 @@ export class AdGroupSettingsStoreState {
         [GeolocationType.CITY]: [],
         [GeolocationType.ZIP]: [],
     };
-    selectedZipTargetingLocation: Geolocation = null;
+    selectedZipTargeting: {
+        location: Geolocation;
+        includeExcludeType: IncludeExcludeType;
+    } = {
+        location: null,
+        includeExcludeType: IncludeExcludeType.INCLUDE,
+    };
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     dealsRequests = {
         list: {} as RequestState,

@@ -36,6 +36,8 @@ export class ZipTargetingComponent implements OnChanges {
     @Input()
     selectedLocation: Geolocation;
     @Input()
+    includeExcludeType: IncludeExcludeType;
+    @Input()
     searchedLocations: Geolocation[] = [];
     @Input()
     errors: string[] = [];
@@ -55,27 +57,22 @@ export class ZipTargetingComponent implements OnChanges {
     includeExcludeTypes = INCLUDE_EXCLUDE_TYPES;
     availableLocations: Geolocation[] = [];
 
-    includeExcludeType: IncludeExcludeType = IncludeExcludeType.INCLUDE;
-    location: Geolocation;
     zipCodesText: string = '';
 
     sameCountryTargeted = false;
     apiOnlySettings = false;
 
     ngOnChanges(): void {
-        this.location = clone(this.selectedLocation);
         this.availableLocations = this.getAvailableLocations(
-            this.location,
+            this.selectedLocation,
             this.searchedLocations
         );
 
         if (isEmpty(this.excludedLocations.postalCodes)) {
-            this.includeExcludeType = IncludeExcludeType.INCLUDE;
             this.zipCodesText = getZipCodesText(
                 this.includedLocations.postalCodes
             );
         } else {
-            this.includeExcludeType = IncludeExcludeType.EXCLUDE;
             this.zipCodesText = getZipCodesText(
                 this.excludedLocations.postalCodes
             );
@@ -90,7 +87,7 @@ export class ZipTargetingComponent implements OnChanges {
             this.includedLocations,
             this.excludedLocations,
             this.includeExcludeType,
-            this.location
+            this.selectedLocation
         );
     }
 
@@ -106,7 +103,11 @@ export class ZipTargetingComponent implements OnChanges {
     }
 
     onTypeChange(includeExcludeType: IncludeExcludeType): void {
-        this.update(includeExcludeType, this.location, this.zipCodesText);
+        this.update(
+            includeExcludeType,
+            this.selectedLocation,
+            this.zipCodesText
+        );
     }
 
     onLocationChange(locationKey: string): void {
@@ -117,7 +118,11 @@ export class ZipTargetingComponent implements OnChanges {
     }
 
     onZipCodesBlur(zipCodesText: string): void {
-        this.update(this.includeExcludeType, this.location, zipCodesText);
+        this.update(
+            this.includeExcludeType,
+            this.selectedLocation,
+            zipCodesText
+        );
     }
 
     private update(

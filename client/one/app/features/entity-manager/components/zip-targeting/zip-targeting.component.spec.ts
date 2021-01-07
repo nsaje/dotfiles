@@ -41,6 +41,7 @@ describe('ZipTargetingComponent', () => {
         spyOn(component.locationSearch, 'emit').and.stub();
 
         component.selectedLocation = slovenia;
+        component.includeExcludeType = IncludeExcludeType.EXCLUDE;
         component.includedLocations = {
             countries: [],
             regions: [],
@@ -63,7 +64,7 @@ describe('ZipTargetingComponent', () => {
     });
 
     it('should correctly set locations, zip code text and include/exclude type', () => {
-        expect(component.location).toEqual(slovenia);
+        expect(component.selectedLocation).toEqual(slovenia);
         expect(component.availableLocations).toEqual([slovenia]);
         expect(component.zipCodesText).toEqual('1000,2000');
         expect(component.includeExcludeType).toEqual(
@@ -163,6 +164,7 @@ describe('ZipTargetingComponent', () => {
             dma: [],
             postalCodes: ['SI:1000'],
         };
+        component.includeExcludeType = IncludeExcludeType.INCLUDE;
         component.ngOnChanges();
 
         expect(component.sameCountryTargeted).toEqual(true);
@@ -184,6 +186,7 @@ describe('ZipTargetingComponent', () => {
             dma: [],
             postalCodes: [],
         };
+        component.includeExcludeType = IncludeExcludeType.EXCLUDE;
         component.ngOnChanges();
 
         expect(component.sameCountryTargeted).toEqual(false);

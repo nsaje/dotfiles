@@ -13,7 +13,7 @@
         </zem-select-input>
         <zem-select-input
             class="zem-select-input zem-zip-targeting__select-location"
-            [value]="location ? location.key : null"
+            [value]="selectedLocation ? selectedLocation.key : null"
             [items]="availableLocations"
             [bindLabel]="'name'"
             [bindValue]="'key'"
@@ -45,9 +45,9 @@
     customer success manager or via Zemanta One API.
 </div>
 <div
-    *ngIf="sameCountryTargeted && location"
+    *ngIf="sameCountryTargeted && selectedLocation"
     class="zem-zip-targeting__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
 >
-    Please remove {{ location.name }} from general location targeting or pick a
-    different country for ZIP / postal code targeting.
+    Please remove {{ selectedLocation.name }} from general location targeting or
+    pick a different country for ZIP / postal code targeting.
 </div>

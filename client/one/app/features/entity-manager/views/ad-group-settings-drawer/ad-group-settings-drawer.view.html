@@ -742,7 +742,10 @@
                             "
                             [searchedLocations]="state.searchedLocations"
                             [selectedLocation]="
-                                state.selectedZipTargetingLocation
+                                state.selectedZipTargeting.location
+                            "
+                            [includeExcludeType]="
+                                state.selectedZipTargeting.includeExcludeType
                             "
                             [isDisabled]="isReadOnly"
                             (locationSearch)="store.searchLocations($event)"

@@ -778,7 +778,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             geo,
             selectedIncludedLocationsByType,
             selectedExcludedLocationsByType,
-            this.state.selectedZipTargetingLocation
+            this.state.selectedZipTargeting
         );
     }
 
@@ -833,7 +833,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             geo,
             selectedIncludedLocationsByType,
             selectedExcludedLocationsByType,
-            this.state.selectedZipTargetingLocation
+            this.state.selectedZipTargeting
         );
     }
 
@@ -867,7 +867,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             geo,
             selectedIncludedLocationsByType,
             selectedExcludedLocationsByType,
-            zipTargeting.selectedLocation
+            {
+                location: zipTargeting.selectedLocation,
+                includeExcludeType: zipTargeting.includeExcludeType,
+            }
         );
     }
 
@@ -926,7 +929,14 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
             this.setState({
                 ...this.state,
-                selectedZipTargetingLocation: selectedZipTargetingLocation,
+                selectedZipTargeting: {
+                    location: selectedZipTargetingLocation,
+                    includeExcludeType: isEmpty(
+                        this.state.entity.targeting.geo.excluded.postalCodes
+                    )
+                        ? IncludeExcludeType.INCLUDE
+                        : IncludeExcludeType.EXCLUDE,
+                },
                 selectedIncludedLocationsByType: selectedIncludedLocationsByType,
                 selectedExcludedLocationsByType: selectedExcludedLocationsByType,
             });
@@ -1177,7 +1187,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         geo: IncludedExcluded<TargetRegions>,
         selectedIncludedLocationsByType: GeolocationsByType,
         selectedExcludedLocationsByType: GeolocationsByType,
-        selectedZipTargetingLocation: Geolocation
+        selectedZipTargeting: {
+            location: Geolocation;
+            includeExcludeType: IncludeExcludeType;
+        }
     ) {
         this.setState({
             ...this.state,
@@ -1190,7 +1203,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             },
             selectedIncludedLocationsByType: selectedIncludedLocationsByType,
             selectedExcludedLocationsByType: selectedExcludedLocationsByType,
-            selectedZipTargetingLocation: selectedZipTargetingLocation,
+            selectedZipTargeting: selectedZipTargeting,
         });
         this.validateEntity();
     }

@@ -1098,9 +1098,10 @@ describe('AdGroupSettingsStore', () => {
         };
 
         store.setZipTargeting(mockedGeotargeting);
-        expect(store.state.selectedZipTargetingLocation).toEqual(
-            mockedLocations[0]
-        );
+        expect(store.state.selectedZipTargeting).toEqual({
+            location: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: [],
@@ -1124,9 +1125,10 @@ describe('AdGroupSettingsStore', () => {
             zipCodes: ['AU:5000', 'AU:6000'],
         };
         store.setZipTargeting(mockedGeotargeting);
-        expect(store.state.selectedZipTargetingLocation).toEqual(
-            mockedLocations[0]
-        );
+        expect(store.state.selectedZipTargeting).toEqual({
+            location: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: [],
