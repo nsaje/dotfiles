@@ -8,7 +8,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-@mock.patch("realtimeapi.api.groupby")
+@mock.patch("stats.api_realtimestats.groupby")
 class GroupByViewTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
@@ -110,7 +110,7 @@ class GroupByViewTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
 
-@mock.patch("realtimeapi.api.topn")
+@mock.patch("stats.api_realtimestats.topn")
 class TopNViewTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()

@@ -1,6 +1,6 @@
 import rest_framework.permissions
 
-import realtimeapi.api
+import stats.api_realtimestats
 import zemauth.access
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils import exc
@@ -20,14 +20,14 @@ class RealtimeStatsViewSet(RESTAPIBaseViewSet):
     def groupby(self, request):
         serializer = serializers.GroupByQueryParamsExpectations
         query_params = self._extract_query_params(request, serializer=serializer)
-        stats = realtimeapi.api.groupby(**query_params)
-        return self.response_ok(serializers.RealtimeStatsSerializer(stats, many=True).data)
+        rows = stats.api_realtimestats.groupby(**query_params)
+        return self.response_ok(serializers.RealtimeStatsSerializer(rows, many=True).data)
 
     def topn(self, request):
         serializer = serializers.TopNQueryParamsExpectations
         query_params = self._extract_query_params(request, serializer=serializer)
-        stats = realtimeapi.api.topn(**query_params)
-        return self.response_ok(serializers.RealtimeStatsSerializer(stats, many=True).data)
+        rows = stats.api_realtimestats.topn(**query_params)
+        return self.response_ok(serializers.RealtimeStatsSerializer(rows, many=True).data)
 
     def _extract_query_params(self, request, *, serializer):
         qpe = serializer(data=request.query_params)
