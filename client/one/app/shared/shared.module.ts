@@ -86,6 +86,7 @@ import {HeaderCellComponent} from './components/smart-grid/components/cells/head
 import {CheckboxCellComponent} from './components/smart-grid/components/cells/checkbox-cell/checkbox-cell.component';
 import {MultiStepComponent} from './components/multi-step/multi-step.component';
 import {MultiStepStepDirective} from './components/multi-step/multi-step-step.directive';
+import {TagPickerComponent} from './components/tag-picker/tag-picker.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -164,6 +165,7 @@ const EXPORTED_DECLARATIONS = [
     CheckboxCellComponent,
     MultiStepComponent,
     MultiStepStepDirective,
+    TagPickerComponent,
 ];
 
 @NgModule({

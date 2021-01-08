@@ -1,0 +1,17 @@
+<zem-select-input
+    class="zem-select-input"
+    [placeholder]="placeholder"
+    [items]="formattedItems"
+    [value]="value"
+    [bindLabel]="'tag'"
+    [bindValue]="'tag'"
+    [isSearchable]="true"
+    [isMultiple]="true"
+    [isDisabled]="isDisabled"
+    [appendTo]="appendTo"
+    [debounceTime]="0"
+    (search)="onSearch($event)"
+    (valueChange)="valueChange.emit($event)"
+    (keydown.enter)="canCreateTags && onKeyEnter()"
+>
+</zem-select-input>
