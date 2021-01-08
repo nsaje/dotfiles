@@ -32,7 +32,7 @@ import {CanActivateUserGuard} from './route-guards/canActivateUser.guard';
 import {SidebarContentModule} from './features/sidebar-content/sidebar-content.module';
 import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 import {UsersModule} from './features/users/users.module';
-import {CreativeLibraryModule} from './features/creative-library/creative-library.module';
+import {CreativesModule} from './features/creatives/creatives.module';
 import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
 import {ContentAdModule} from './features/content-ad/content-ad.module';
 
@@ -93,7 +93,7 @@ if (APP_CONFIG.env.prod) {
         SidebarContentModule,
         NewEntityAnalyticsMockModule,
         UsersModule,
-        CreativeLibraryModule,
+        CreativesModule,
         ContentAdModule,
 
         // App router

@@ -237,9 +237,7 @@ angular
         }
 
         function getCreativeLibraryUrlTree() {
-            return getManagementConsoleItemUrlTree(
-                RoutePathName.CREATIVE_LIBRARY
-            );
+            return getManagementConsoleItemUrlTree(RoutePathName.CREATIVES);
         }
 
         function getManagementConsoleItemUrlTree(itemPath) {

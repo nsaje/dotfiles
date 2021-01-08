@@ -4,5 +4,5 @@ export enum ListGroupItemIcon {
     User = 'zem-list-group-item__icon--user',
     PublisherGroups = 'zem-list-group-item__icon--publisher-groups',
     AutomationRules = 'zem-list-group-item__icon--automation-rules',
-    CreativeLibrary = 'zem-list-group-item__icon--creative-library',
+    Creatives = 'zem-list-group-item__icon--creatives',
 }

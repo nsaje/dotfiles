@@ -16,7 +16,7 @@ import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard
 import {USERS_ROUTES} from './features/users/users.routes';
 import {RULES_ROUTES} from './features/rules/rules.routes';
 import {CanActivateUserGuard} from './route-guards/canActivateUser.guard';
-import {CREATIVE_LIBRARY_ROUTES} from './features/creative-library/creative-library.routes';
+import {CREATIVES_ROUTES} from './features/creatives/creatives.routes';
 import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
 
 export const APP_ROUTES: Routes = [
@@ -75,8 +75,8 @@ export const APP_ROUTES: Routes = [
                 children: INVENTORY_PLANNING_ROUTES,
             },
             {
-                path: RoutePathName.CREATIVE_LIBRARY,
-                children: CREATIVE_LIBRARY_ROUTES,
+                path: RoutePathName.CREATIVES,
+                children: CREATIVES_ROUTES,
                 canActivate: [CanActivatePermissionGuard],
                 data: {permissions: ['zemauth.can_see_creative_library']},
             },
