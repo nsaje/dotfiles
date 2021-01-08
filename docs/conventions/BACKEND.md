@@ -236,6 +236,27 @@ adgroup/
   model_test.py
 ```
 
+## Unit tests
+### Readability and maintainability
+A test should only confirm the assumptions about one specific action in the functionality that is being tested. Having many small tests as opposed to a big one containing multiple actions and assertions is much clearer to the potential reader as well as easier to maintain.
+
+### Make the intention clear
+What is being tested has to be as clear as possible. To improve the readability the tests should contain the minimal possible setup. Only the relevant values should be set/mocked as well as assertions made only about relevant changes. 
+
+### Test the right thing
+A test can pass for the wrong reasons. When testing if a change occurred, assert that the initial value (e.g. a default in the mocked object) is different than what is expected as a result. 
+
+### Test at the appropriate abstraction layer
+Unit tests are the most efficient when testing small units. Downstream dependencies should be mocked. E.g. when testing a REST view, we test the responsibility of that layer - serialization and error handling. All calls to the business logic should be mocked. However when mocking a dependency we need to make sure that it is itself thoroughly tested.
+
+### Use test cases to your advantage
+
+When adding tests for a feature, use as many `TestCase`s as necessary to cleanly separate the functionalities being tested. Since test cases provide a way to group setup for all tests in the suite, a new one should be created once two or more tests require similar set up (they can of course differ in key details for a specific test). 
+
+### Tests *are* real code
+Tests should be written with the same care as the rest of the codebase. They must have descriptive function and variable names, self explainatory code and when refactoring the related code, the tests should be included in that effort.
+
+
 ## Best practices
 
 ### Pass objects, not ids
@@ -265,6 +286,28 @@ Pass `request` to functions that require the knowledge of the current request co
 ### Filter by user
 
 Whenever accessing or modifying objects, make sure the current user has object access to all of the entities you touch.
+
+### Make use of keyword-only arguments
+
+When designing an interface for your feature you can make use of python's built in feature to make sure specific arguments are always specified by name when the function is called. For example:
+
+```python
+do_something(request, ad_group, True)
+```
+
+is ambigous - you can't assume what the bool parameter does without knowing the function's implementation. A better alternative is calling the funtion with the parameter named:
+
+```python
+do_something(request, ad_group, k1_ping=True)
+```
+
+Requiring this at call time can be done in the function defintion:
+```python
+def do_something(request, ad_group, *, k1_ping=True):
+  pass
+```
+
+(Note: this is not needed in the case when you collect all positional arguments using `*args` when it's enforced automatically)
 
 ## Using QuerySets effectively
 
