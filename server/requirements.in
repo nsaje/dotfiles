@@ -108,6 +108,9 @@ python-crontab==2.3.5
 # for BigQuery integration
 google-cloud-bigquery==1.7.0
 
+# druid
+pydruid==0.6.1
+
 # Prometheus
 prometheus_client
 

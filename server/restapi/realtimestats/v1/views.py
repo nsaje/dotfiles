@@ -20,7 +20,7 @@ class RealtimeStatsViewSet(RESTAPIBaseViewSet):
     def groupby(self, request):
         serializer = serializers.GroupByQueryParamsExpectations
         query_params = self._extract_query_params(request, serializer=serializer)
-        stats = realtimeapi.api.query(**query_params)
+        stats = realtimeapi.api.groupby(**query_params)
         return self.response_ok(serializers.RealtimeStatsSerializer(stats, many=True).data)
 
     def topn(self, request):

@@ -395,3 +395,7 @@ except ImportError:
 LOGGING_FORMATTER = "readable"
 
 KAFKA_BOOTSTRAP_RTB_IN = ""
+
+DRUID_HOST = "http://druidtest-18002.lcl.outbrain.com:8082"
+DRUID_USERNAME = ""
+DRUID_PASSWORD = ""

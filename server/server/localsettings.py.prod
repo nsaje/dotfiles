@@ -735,6 +735,16 @@ LOGGING_FORMATTER = "json"
 
 KAFKA_BOOTSTRAP_RTB_IN = "kafka-rtb-in.service.consul"
 
+DRUID_HOST = "http://druidonline-query.service.nydc1.consul:8082"
+DRUID_USERNAME = "p_z1"
+DRUID_PASSWORD = (
+    Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAGwwagYJKoZIhvcNAQcGoF0wWwIBADBWBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBP/6VaE0i/PCVteFAIBEIApYiYpSoVXzdPi/iamekiu6Khk/ymtoVJQRjkL73Tk0RqZUsznOsSGhKw="
+    )
+    .get()
+    .decode("utf-8")
+)
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 

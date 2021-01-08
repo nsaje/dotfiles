@@ -25,13 +25,13 @@ class RealtimeStatsSerializer(serializers.Serializer):
 
 
 class BaseQueryParamsExpectations(restapi.serializers.serializers.QueryParamsExpectations):
-    account_id = restapi.serializers.fields.IdField(required=False)
     campaign_id = restapi.serializers.fields.IdField(required=False)
     ad_group_id = restapi.serializers.fields.IdField(required=False)
     content_ad_id = restapi.serializers.fields.IdField(required=False)
 
 
 class GroupByQueryParamsExpectations(BaseQueryParamsExpectations):
+    account_id = restapi.serializers.fields.IdField(required=False)
     limit = fields.IntegerField(max_value=100, default=10)
     marker = restapi.serializers.fields.IdField(default=None)
     breakdown = restapi.serializers.fields.ChoiceField(

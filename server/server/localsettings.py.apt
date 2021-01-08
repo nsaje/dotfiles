@@ -362,3 +362,7 @@ METRICS_PUSH_GATEWAY = "http://promscraper-aws-us-east-1.int.zemanta.com:9091"
 LOGGING_FORMATTER = "readable"
 
 KAFKA_BOOTSTRAP_RTB_IN = ""
+
+DRUID_HOST = ""
+DRUID_USERNAME = ""
+DRUID_PASSWORD = ""
