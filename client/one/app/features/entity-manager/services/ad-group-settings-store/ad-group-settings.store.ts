@@ -110,6 +110,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                             extras: adGroupWithExtras.extras,
                         });
                         this.loadSources(this.state.extras.agencyId);
+                        this.loadSelectedLocations([]);
                         resolve();
                     },
                     error => {}

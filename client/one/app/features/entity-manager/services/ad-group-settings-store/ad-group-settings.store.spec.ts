@@ -98,6 +98,10 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
+            .calls.reset();
+
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
         expect(store.state.fieldsErrors).toEqual(
