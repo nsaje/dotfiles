@@ -17,6 +17,7 @@ REDIRECT_URL_TEMPLATE = (
     "{protocol}://r1-usc1.zemanta.com/rp2/{sourceDomain}/{ad_group_id}/{content_ad_id}/{enc_protobuf_data}/"
 )
 REDIRECT_URL_WITH_QUERY_PARAMS_TEMPLATE = "{protocol}://r1-usc1.zemanta.com/rp2/{sourceDomain}/{ad_group_id}/{content_ad_id}/{enc_protobuf_data}/?{query_params}"
+SOURCE_Z1 = "z1"
 
 
 def construct_redirector_url(
@@ -59,7 +60,7 @@ def construct_redirector_url(
     url_template = REDIRECT_URL_WITH_QUERY_PARAMS_TEMPLATE if len(url_params_seq) > 0 else REDIRECT_URL_TEMPLATE
     redirect_url = url_template.format(
         protocol="https" if use_https else "http",
-        sourceDomain="{sourceDomain}",
+        sourceDomain=SOURCE_Z1,
         ad_group_id=ad_group_id,
         content_ad_id=content_ad_id,
         enc_protobuf_data=enc_protobuf_data,
