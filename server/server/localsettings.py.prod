@@ -735,7 +735,7 @@ LOGGING_FORMATTER = "json"
 
 KAFKA_BOOTSTRAP_RTB_IN = "kafka-rtb-in.service.consul"
 
-DRUID_HOST = "http://druidonline-query.int.zemanta.com:80"
+DRUID_HOST = "http://druidonline-query.int.zemanta.com:80/"
 DRUID_USERNAME = "p_z1"
 DRUID_PASSWORD = (
     Secret(
