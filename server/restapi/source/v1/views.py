@@ -2,7 +2,7 @@ import rest_framework.permissions
 import rest_framework.response
 
 from core import models
-from restapi.common.pagination import StandardPagination
+from restapi.common.pagination import StandardLimitOffsetPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 
 from . import serializers
@@ -14,7 +14,7 @@ class SourceViewSet(RESTAPIBaseViewSet):
 
     def list(self, request):
         sources = models.Source.objects.filter(deprecated=False, released=True)
-        paginator = StandardPagination()
+        paginator = StandardLimitOffsetPagination()
         sources_paginated = paginator.paginate_queryset(sources, request)
 
         return paginator.get_paginated_response(
