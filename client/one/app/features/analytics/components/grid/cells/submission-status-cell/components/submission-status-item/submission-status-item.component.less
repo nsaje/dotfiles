@@ -4,16 +4,24 @@
 }
 
 .zem-submission-status-item__full-name {
-    flex: 1 1 auto;
-    font-size: 11px;
+    flex: 0 0 auto;
+    max-width: 150px;
+    margin-right: 5px;
 }
 
 .zem-submission-status-item__status {
     display: flex;
+    flex: 1 1 auto;
+    overflow: hidden;
+    flex-direction: row-reverse;
 }
 
+.zem-submission-status-item__full-name,
 .zem-submission-status-item__status-text {
     font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .zem-submission-status-item__status-text--strong {
@@ -21,7 +29,7 @@
 }
 
 .zem-submission-status-item__status-item:not(:last-child) {
-    margin-right: 5px;
+    margin-left: 2px;
 }
 
 .zem-submission-status-item__icon {

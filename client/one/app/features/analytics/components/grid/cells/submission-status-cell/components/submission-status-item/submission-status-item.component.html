@@ -1,10 +1,7 @@
-<span class="zem-submission-status-item__full-name">{{ fullName }}</span>
+<span class="zem-submission-status-item__full-name" title="{{ fullName }}">{{
+    fullName
+}}</span>
 <div class="zem-submission-status-item__status">
-    <span
-        class="zem-submission-status-item__status-text zem-submission-status-item__status-item"
-        [class.zem-submission-status-item__status-text--strong]="isTextStrong"
-        >{{ text }}</span
-    >
     <a
         *ngIf="isSourceLinkVisible && sourceLink"
         class="zem-submission-status-item__status-link zem-submission-status-item__status-item"
@@ -14,4 +11,10 @@
     >
         <img class="zem-submission-status-item__icon" src="{{ iconUrl }}" />
     </a>
+    <span
+        class="zem-submission-status-item__status-text zem-submission-status-item__status-item"
+        [class.zem-submission-status-item__status-text--strong]="isTextStrong"
+        title="{{ text }}"
+        >{{ text }}</span
+    >
 </div>
