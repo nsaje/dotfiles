@@ -26,6 +26,7 @@ import {
     Column,
     ColumnState,
     DragStoppedEvent,
+    DragStartedEvent,
 } from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
@@ -82,6 +83,8 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     rowDataChange = new EventEmitter<RowDataChangedEvent>();
     @Output()
     rowDataUpdate = new EventEmitter<RowDataUpdatedEvent>();
+    @Output()
+    dragStart = new EventEmitter<DragStartedEvent>();
     @Output()
     dragStop = new EventEmitter<DragStoppedEvent>();
     @Output()
@@ -201,7 +204,13 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
         this.rowDataUpdate.emit($event);
     }
 
+    onDragStarted($event: DragStartedEvent) {
+        document.body.classList.add('zem-smart-grid--no-select');
+        this.dragStart.emit($event);
+    }
+
     onDragStopped($event: DragStoppedEvent) {
+        document.body.classList.remove('zem-smart-grid--no-select');
         this.dragStop.emit($event);
     }
 

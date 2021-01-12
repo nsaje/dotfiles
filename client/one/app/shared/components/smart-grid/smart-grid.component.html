@@ -19,6 +19,7 @@
     (gridColumnsChanged)="onGridColumnsChanged($event)"
     (rowDataChanged)="onRowDataChanged($event)"
     (rowDataUpdated)="onRowDataUpdated($event)"
+    (dragStarted)="onDragStarted($event)"
     (dragStopped)="onDragStopped($event)"
 ></ag-grid-angular>
 <div class="zem-smart-grid__pagination-container" *ngIf="canRenderPagination()">
