@@ -210,8 +210,10 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onDragStopped($event: DragStoppedEvent) {
-        document.body.classList.remove('zem-smart-grid--no-select');
         this.dragStop.emit($event);
+        setTimeout(() => {
+            document.body.classList.remove('zem-smart-grid--no-select');
+        }, 500);
     }
 
     onPageChange(page: number) {
