@@ -940,20 +940,17 @@
                 </zem-expandable-section>
             </div>
 
-            <div class="zem-panel zem-settings__panel" *ngIf="!canSeeDeals">
-                <div class="zem-settings-section">
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
+                </div>
+                <div class="zem-settings-section" *ngIf="!canSeeDeals">
                     <div class="zem-settings-section__description">
                         Deals might apply, please reach out to your agency for
                         details.
                     </div>
                 </div>
-            </div>
-
-            <div class="zem-panel zem-settings__panel" *ngIf="canSeeDeals">
-                <div class="zem-panel__header">
-                    <h2 class="zem-settings__panel-header-title">Deals</h2>
-                </div>
-                <div class="zem-settings-section">
+                <div class="zem-settings-section" *ngIf="canSeeDeals">
                     <div class="zem-settings-section__description">
                         Connect deals from the deal library to this ad group or
                         create a new deal.
