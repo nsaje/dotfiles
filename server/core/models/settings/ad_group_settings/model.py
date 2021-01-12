@@ -313,7 +313,7 @@ class AdGroupSettings(
                 ("target_regions", []),
                 ("exclusion_target_regions", []),
                 ("autopilot_state", constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET),
-                ("autopilot_daily_budget", Decimal("100.00")),
+                ("autopilot_daily_budget", cls.DEFAULT_DAILY_BUDGET),
                 ("b1_sources_group_enabled", True),
                 ("b1_sources_group_state", constants.AdGroupSourceSettingsState.ACTIVE),
                 ("b1_sources_group_daily_budget", cls.DEFAULT_DAILY_BUDGET),

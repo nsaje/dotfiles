@@ -45,6 +45,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_cpc_cc = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
         new_settings.daily_budget = Decimal("100.0")
+        new_settings.autopilot_daily_budget = Decimal("100.0")
         new_settings.cpc = Decimal("0.5")
         new_settings.save(None)
 
@@ -87,6 +88,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_cpm = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
         new_settings.daily_budget = Decimal("100.0")
+        new_settings.autopilot_daily_budget = Decimal("100.0")
         new_settings.cpm = Decimal("0.8")
         new_settings.save(None)
 
@@ -213,6 +215,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_cpc_cc = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
         new_settings.daily_budget = Decimal("100.0")
+        new_settings.autopilot_daily_budget = Decimal("100.0")
         new_settings.cpc = Decimal("0.5")
         new_settings.save(None)
 
@@ -259,6 +262,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_cpm = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
         new_settings.daily_budget = Decimal("100.0")
+        new_settings.autopilot_daily_budget = Decimal("100.0")
         new_settings.cpm = Decimal("0.8")
         new_settings.save(None)
 
