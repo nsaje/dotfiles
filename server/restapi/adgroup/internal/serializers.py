@@ -115,14 +115,17 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     agency_uses_realtime_autopilot = rest_framework.serializers.BooleanField(read_only=True, default=False)
 
 
-class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilotSerializer):
-    daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="local_autopilot_daily_budget",
+class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    state = restapi.serializers.fields.DashConstantField(
+        dash.constants.AdGroupSettingsAutopilotState, source="autopilot_state", required=False
+    )
+    max_bid = restapi.serializers.fields.TwoWayBlankDecimalField(
+        source="local_max_autopilot_bid",
         max_digits=10,
         decimal_places=4,
-        rounding=decimal.ROUND_HALF_DOWN,
+        allow_null=True,
         required=False,
-        min_value=0,
+        rounding=decimal.ROUND_HALF_DOWN,
     )
 
 
