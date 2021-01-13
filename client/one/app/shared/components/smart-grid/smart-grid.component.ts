@@ -11,7 +11,6 @@ import {
     OnChanges,
     SimpleChanges,
     OnDestroy,
-    ElementRef,
 } from '@angular/core';
 import {
     DetailGridInfo,
@@ -104,8 +103,6 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
 
     private previousColumnStateCache: ColumnState[] = [];
     private columnStateCache: ColumnState[] = [];
-
-    constructor(private elementRef: ElementRef) {}
 
     ngOnInit(): void {
         this.gridOptions = {
@@ -208,19 +205,11 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onDragStarted($event: DragStartedEvent) {
-        this.elementRef.nativeElement.classList.add(
-            'zem-smart-grid--no-select'
-        );
         this.dragStart.emit($event);
     }
 
     onDragStopped($event: DragStoppedEvent) {
         this.dragStop.emit($event);
-        setTimeout(() => {
-            this.elementRef.nativeElement.classList.remove(
-                'zem-smart-grid--no-select'
-            );
-        }, 250);
     }
 
     onPageChange(page: number) {

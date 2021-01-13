@@ -10,7 +10,8 @@
     margin-bottom: @spacing--default;
 }
 
-.zem-smart-grid--no-select * {
+// https://github.com/ag-grid/ag-grid/issues/846
+body.ag-unselectable * {
     user-select: none;
 }
 
