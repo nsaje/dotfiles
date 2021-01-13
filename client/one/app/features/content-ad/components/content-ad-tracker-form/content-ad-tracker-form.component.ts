@@ -8,14 +8,17 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {ContentAdTracker} from '../../types/content-ad-tracker';
+import {Tracker} from '../../../../core/creatives/types/tracker';
 import {
     TRACKER_EVENT_TYPE_NAMES,
     TRACKER_EVENT_TYPE_OPTIONS,
     TRACKER_METHOD_EVENT_TYPES,
     TRACKER_METHOD_OPTIONS,
 } from '../../content-ad.config';
-import {TrackerEventType, TrackerMethod} from '../../content-ad.constants';
+import {
+    TrackerEventType,
+    TrackerMethod,
+} from '../../../../core/creatives/creatives.constants';
 import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 
@@ -26,15 +29,15 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 })
 export class ContentAdTrackerFormComponent implements OnChanges {
     @Input()
-    contentAdTracker: ContentAdTracker;
+    contentAdTracker: Tracker;
     @Input()
     contentAdTrackerErrors: ContentAdTrackerErrors;
     @Input()
     isDisabled: boolean = false;
     @Output()
     contentAdTrackerChange: EventEmitter<
-        ChangeEvent<ContentAdTracker>
-    > = new EventEmitter<ChangeEvent<ContentAdTracker>>();
+        ChangeEvent<Tracker>
+    > = new EventEmitter<ChangeEvent<Tracker>>();
 
     allTrackerEventTypes = TRACKER_EVENT_TYPE_OPTIONS;
     availableTrackerEventTypes: {

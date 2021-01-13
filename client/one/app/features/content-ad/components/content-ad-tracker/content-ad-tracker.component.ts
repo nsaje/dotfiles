@@ -7,7 +7,7 @@ import {
     EventEmitter,
     OnChanges,
 } from '@angular/core';
-import {ContentAdTracker} from '../../types/content-ad-tracker';
+import {Tracker} from '../../../../core/creatives/types/tracker';
 import {TRACKER_EVENT_TYPE_NAMES} from '../../content-ad.config';
 import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
@@ -19,7 +19,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 })
 export class ContentAdTrackerComponent implements OnChanges {
     @Input()
-    contentAdTracker: ContentAdTracker;
+    contentAdTracker: Tracker;
     @Input()
     contentAdTrackerErrors: ContentAdTrackerErrors;
     @Input()

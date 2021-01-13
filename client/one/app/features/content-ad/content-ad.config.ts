@@ -1,4 +1,7 @@
-import {TrackerEventType, TrackerMethod} from './content-ad.constants';
+import {
+    TrackerEventType,
+    TrackerMethod,
+} from '../../core/creatives/creatives.constants';
 
 export const TRACKER_EVENT_TYPE_NAMES: {
     [key in TrackerEventType]: string;

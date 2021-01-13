@@ -10,7 +10,7 @@ import {
     EventEmitter,
 } from '@angular/core';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {ContentAdTracker} from '../../types/content-ad-tracker';
+import {Tracker} from '../../../../core/creatives/types/tracker';
 import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {MAX_TRACKERS_LIMIT} from '../../content-ad.config';
@@ -24,7 +24,7 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 })
 export class ContentAdTrackersComponent implements OnChanges {
     @Input()
-    contentAdTrackers: ContentAdTracker[];
+    contentAdTrackers: Tracker[];
     @Input()
     contentAdTrackersErrors: ContentAdTrackerErrors[];
     @Input()
@@ -32,12 +32,12 @@ export class ContentAdTrackersComponent implements OnChanges {
     @Input()
     isLoading: boolean = false;
     @Output()
-    contentAdTrackersChange: EventEmitter<
-        ContentAdTracker[]
-    > = new EventEmitter<ContentAdTracker[]>();
+    contentAdTrackersChange: EventEmitter<Tracker[]> = new EventEmitter<
+        Tracker[]
+    >();
 
     maxTrackersLimit: number = MAX_TRACKERS_LIMIT;
-    trackers: ContentAdTracker[] = [];
+    trackers: Tracker[] = [];
     hasErrors: boolean[] = [];
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -55,7 +55,7 @@ export class ContentAdTrackersComponent implements OnChanges {
     }
 
     onContentAdTrackerChange(
-        changeEvent: ChangeEvent<ContentAdTracker>,
+        changeEvent: ChangeEvent<Tracker>,
         index: number
     ): void {
         const previousTrackerState = clone(this.trackers[index]);
