@@ -14,7 +14,8 @@ angular.module('one.widgets').component('zemInfobox', {
         zemAuthStore,
         zemUtils,
         $location,
-        $window
+        $window,
+        zemEntitiesUpdatesService
     ) {
         var $ctrl = this;
         $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
@@ -26,6 +27,7 @@ angular.module('one.widgets').component('zemInfobox', {
         var dataFilterUpdateHandler;
         var activeEntityChangeHandler;
         var bidModifierUpdateHandler;
+        var entitiesUpdates$;
 
         var legacyActiveEntityUpdateHandler;
         var legacyEntityUpdateHandler;
@@ -41,9 +43,13 @@ angular.module('one.widgets').component('zemInfobox', {
             bidModifierUpdateHandler = zemNavigationNewService.onBidModifierUpdate(
                 reloadInfoboxData
             );
-            entityUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
-                reloadInfoboxData
-            );
+            entitiesUpdates$ = zemEntitiesUpdatesService
+                .getAllUpdates$()
+                .subscribe(function(entityUpdate) {
+                    if (entityUpdate.action === constants.entityAction.EDIT) {
+                        reloadInfoboxData();
+                    }
+                });
         };
 
         $ctrl.$onChanges = function(changes) {
@@ -64,6 +70,7 @@ angular.module('one.widgets').component('zemInfobox', {
             }
         };
 
+        // eslint-disable-next-line complexity
         $ctrl.$onDestroy = function() {
             if (entityUpdateHandler) entityUpdateHandler();
             if (actionExecutedHandler) actionExecutedHandler();
@@ -71,6 +78,7 @@ angular.module('one.widgets').component('zemInfobox', {
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
             if (activeEntityChangeHandler) activeEntityChangeHandler();
             if (bidModifierUpdateHandler) bidModifierUpdateHandler();
+            if (entitiesUpdates$) entitiesUpdates$.unsubscribe();
 
             if (legacyActiveEntityUpdateHandler)
                 legacyActiveEntityUpdateHandler();
