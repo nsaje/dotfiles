@@ -380,6 +380,21 @@ class ReportsGetReportCSVTestCase(BaseTestCase):
         expected = """"Account Id","Total Spend","Clicks","Currency"\r\n"1","15.4000","5","EUR"\r\n"2","16.4000","8","USD"\r\n"""
         self.assertEqual(expected, output)
 
+    @mock.patch("stats.api_reports.query")
+    def test_all_accounts_delivery_not_in_local_currency(self, mock_query):
+        self.reportJob.query = self.build_query(
+            ["Media Source Id", "Total Spend", "Clicks"],
+            filters=[{"field": "Media Source Id", "operator": "IN", "values": ["1", "2"]}],
+            all_accounts_in_local_currency=True,
+        )
+        mock_query.return_value = [
+            {"source_id": 1, "etfm_cost": Decimal("12.3"), "local_etfm_cost": Decimal("15.4"), "clicks": 5},
+            {"source_id": 2, "etfm_cost": Decimal("13.4"), "local_etfm_cost": Decimal("16.4"), "clicks": 8},
+        ]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Media Source Id","Total Spend","Clicks","Currency"\r\n"1","12.3000","5","USD"\r\n"2","13.4000","8","USD"\r\n"""
+        self.assertEqual(expected, output)
+
     @mock.patch("stats.api_reports.totals")
     @mock.patch("stats.api_reports.query")
     def test_csv_config(self, mock_query, mock_totals):
