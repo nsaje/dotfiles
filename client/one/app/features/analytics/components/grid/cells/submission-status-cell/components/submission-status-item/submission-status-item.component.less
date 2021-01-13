@@ -4,8 +4,7 @@
 }
 
 .zem-submission-status-item__full-name {
-    flex: 0 0 auto;
-    max-width: 150px;
+    flex: 1 1 auto;
     margin-right: 5px;
 }
 
@@ -14,6 +13,11 @@
     flex: 1 1 auto;
     overflow: hidden;
     flex-direction: row-reverse;
+}
+
+.zem-submission-status-item__full-name:hover,
+.zem-submission-status-item__status:hover {
+    min-width: fit-content;
 }
 
 .zem-submission-status-item__full-name,
