@@ -1,6 +1,6 @@
 from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.realtimestats.v1.urls
+import restapi.realtimestats.beta.urls
 
-urlpatterns = [url(r"^v1/", include(restapi.realtimestats.v1.urls, namespace="restapi.realtimestats.v1"))]
+urlpatterns = [url(r"^beta/", include(restapi.realtimestats.beta.urls, namespace="restapi.realtimestats.beta"))]

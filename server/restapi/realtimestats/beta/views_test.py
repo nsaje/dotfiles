@@ -29,8 +29,8 @@ class GroupByViewTest(RESTAPITestCase):
             }
         ]
         r = self.client.get(
-            reverse("restapi.realtimestats.v1:groupby")
-            + f"?content_ad_id={self.content_ad.id}&breakdown=content_ad_id&marker=1234&limit=50"
+            reverse("restapi.realtimestats.beta:groupby")
+            + f"?contentAdId={self.content_ad.id}&breakdown=contentAdId&marker=1234&limit=50"
         )
 
         resp_json = self.assertResponseValid(r, data_type=list)
@@ -61,36 +61,36 @@ class GroupByViewTest(RESTAPITestCase):
 
     def test_invalid_account_id(self, mock_groupby):
         account = self.mix_account()
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + f"?account_id={account.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + f"?account_id={account.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_invalid_campaign_id(self, mock_groupby):
         account = self.mix_account()
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + f"?campaign_id={campaign.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + f"?campaign_id={campaign.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_invalid_ad_group_id(self, mock_groupby):
         account = self.mix_account()
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + f"?ad_group_id={ad_group.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + f"?adGroupId={ad_group.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_invalid_content_ad_id(self, mock_groupby):
         account = self.mix_account()
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group__campaign__account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + f"?content_ad_id={content_ad.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + f"?contentAdId={content_ad.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_limit_too_high(self, mock_groupby):
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + "?limit=9999999")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + "?limit=9999999")
         self.assertResponseError(r, "ValidationError")
         response = self.assertResponseError(r, "ValidationError")
         self.assertEqual(response["details"]["limit"], ["Ensure this value is less than or equal to 100."])
 
     def test_topn_invalid_breakdown(self, mock_groupby):
         r = self.client.get(
-            reverse("restapi.realtimestats.v1:topn") + f"?content_ad_id={self.content_ad.id}&breakdown=foo"
+            reverse("restapi.realtimestats.beta:topn") + f"?contentAdId={self.content_ad.id}&breakdown=foo"
         )
         response = self.assertResponseError(r, "ValidationError")
         self.assertCountEqual(
@@ -100,12 +100,12 @@ class GroupByViewTest(RESTAPITestCase):
 
     def test_missing_permission(self, mock_groupby):
         test_helper.remove_permissions(self.user, ["can_use_realtimestats_api"])
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby") + f"?content_ad_id={self.content_ad.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby") + f"?contentAdId={self.content_ad.id}")
 
         self.assertResponseError(r, "PermissionDenied")
 
     def test_missing_filter(self, mock_groupby):
-        r = self.client.get(reverse("restapi.realtimestats.v1:groupby"))
+        r = self.client.get(reverse("restapi.realtimestats.beta:groupby"))
 
         self.assertResponseError(r, "ValidationError")
 
@@ -131,8 +131,8 @@ class TopNViewTest(RESTAPITestCase):
             }
         ]
         r = self.client.get(
-            reverse("restapi.realtimestats.v1:topn")
-            + f"?content_ad_id={self.content_ad.id}&breakdown=content_ad_id&order=-spend"
+            reverse("restapi.realtimestats.beta:topn")
+            + f"?contentAdId={self.content_ad.id}&breakdown=contentAdId&order=-spend"
         )
 
         resp_json = self.assertResponseValid(r, data_type=list)
@@ -162,24 +162,24 @@ class TopNViewTest(RESTAPITestCase):
     def test_invalid_campaign_id(self, mock_topn):
         account = self.mix_account()
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:topn") + f"?campaign_id={campaign.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:topn") + f"?campaign_id={campaign.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_invalid_ad_group_id(self, mock_topn):
         account = self.mix_account()
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:topn") + f"?ad_group_id={ad_group.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:topn") + f"?adGroupId={ad_group.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_invalid_content_ad_id(self, mock_topn):
         account = self.mix_account()
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group__campaign__account=account)
-        r = self.client.get(reverse("restapi.realtimestats.v1:topn") + f"?content_ad_id={content_ad.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:topn") + f"?contentAdId={content_ad.id}")
         self.assertResponseError(r, "MissingDataError")
 
     def test_topn_invalid_breakdown(self, mock_topn):
         r = self.client.get(
-            reverse("restapi.realtimestats.v1:topn") + f"?content_ad_id={self.content_ad.id}&breakdown=foo"
+            reverse("restapi.realtimestats.beta:topn") + f"?contentAdId={self.content_ad.id}&breakdown=foo"
         )
         response = self.assertResponseError(r, "ValidationError")
         self.assertCountEqual(
@@ -189,11 +189,11 @@ class TopNViewTest(RESTAPITestCase):
 
     def test_missing_permission(self, mock_topn):
         test_helper.remove_permissions(self.user, ["can_use_realtimestats_api"])
-        r = self.client.get(reverse("restapi.realtimestats.v1:topn") + f"?content_ad_id={self.content_ad.id}")
+        r = self.client.get(reverse("restapi.realtimestats.beta:topn") + f"?contentAdId={self.content_ad.id}")
 
         self.assertResponseError(r, "PermissionDenied")
 
     def test_missing_filter(self, mock_topn):
-        r = self.client.get(reverse("restapi.realtimestats.v1:topn"))
+        r = self.client.get(reverse("restapi.realtimestats.beta:topn"))
 
         self.assertResponseError(r, "ValidationError")
