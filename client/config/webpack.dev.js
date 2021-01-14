@@ -133,6 +133,9 @@ function generateMainConfig(appEnvironment) {
             aggregateTimeout: 300,
             poll: 1000,
         },
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
     };
 
     config.devtool = 'inline-source-map';

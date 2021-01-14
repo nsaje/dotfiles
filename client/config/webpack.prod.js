@@ -159,6 +159,10 @@ function generateMainConfig(appEnvironment) {
                     from: common.root('./one/assets'),
                     to: 'assets',
                 },
+                {
+                    from: common.root('./one/fonts'),
+                    to: 'fonts',
+                },
             ],
         }),
     ]);

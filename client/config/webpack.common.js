@@ -178,6 +178,12 @@ function generateStyleConfig(appEnvironment, themeName) {
                         },
                     },
                 },
+                {
+                    loader: 'style-resources-loader',
+                    options: {
+                        patterns: [root('./one/app/styles/icons/icons.less')],
+                    },
+                },
             ],
         },
     ];
