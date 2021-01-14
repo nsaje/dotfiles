@@ -85,7 +85,7 @@ class User(
 
     status = models.IntegerField(default=constants.Status.INVITATION_PENDING, choices=constants.Status.get_choices())
     is_externally_managed = models.BooleanField(default=False)
-    sales_office = models.CharField(null=True, max_length=255)
+    sales_office = models.CharField(null=True, blank=True, max_length=255)
 
     objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 

@@ -81,6 +81,8 @@ class UserAdmin(authadmin.UserAdmin):
                     "start_year_of_experience",
                     "programmatic_platforms",
                     "outbrain_user_id",
+                    "is_externally_managed",
+                    "sales_office",
                 )
             },
         ),
