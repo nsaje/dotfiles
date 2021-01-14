@@ -126,12 +126,12 @@ describe('GeoTargetingComponent', () => {
     });
 
     it('should emit search event', () => {
-        component.onLocationSearch('cze');
+        component.onLocationSearch('cze', IncludeExcludeType.INCLUDE);
         expect(component.locationSearch.emit).toHaveBeenCalled();
     });
 
     it('should not emit search event (search term too short)', () => {
-        component.onLocationSearch('c');
+        component.onLocationSearch('c', IncludeExcludeType.INCLUDE);
         expect(component.locationSearch.emit).not.toHaveBeenCalled();
     });
 

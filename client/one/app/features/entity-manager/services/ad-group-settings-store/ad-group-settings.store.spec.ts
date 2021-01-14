@@ -1248,6 +1248,7 @@ describe('AdGroupSettingsStore', () => {
                 GeolocationType.DMA,
                 GeolocationType.ZIP,
             ],
+            target: 'include',
         });
         tick();
 
