@@ -702,6 +702,24 @@
                         "
                         [searchedLocations]="state.searchedLocations"
                         [isDisabled]="isReadOnly"
+                        [isIncludedLocationSearchLoading]="
+                            state.includedLocationsRequests.listCountry
+                                .inProgress ||
+                            state.includedLocationsRequests.listRegion
+                                .inProgress ||
+                            state.includedLocationsRequests.listDma
+                                .inProgress ||
+                            state.includedLocationsRequests.listCity.inProgress
+                        "
+                        [isExcludedLocationSearchLoading]="
+                            state.excludedLocationsRequests.listCountry
+                                .inProgress ||
+                            state.excludedLocationsRequests.listRegion
+                                .inProgress ||
+                            state.excludedLocationsRequests.listDma
+                                .inProgress ||
+                            state.excludedLocationsRequests.listCity.inProgress
+                        "
                         (locationSearch)="store.searchLocations($event)"
                         (locationOpen)="store.clearSearchedLocations()"
                         (addGeotargeting)="store.addGeotargeting($event)"
@@ -748,6 +766,10 @@
                                 state.selectedZipTargeting.includeExcludeType
                             "
                             [isDisabled]="isReadOnly"
+                            [isLocationSearchLoading]="
+                                state.zipLocationsRequests.listCountry
+                                    .inProgress
+                            "
                             (locationSearch)="store.searchLocations($event)"
                             (locationOpen)="store.clearSearchedLocations()"
                             (targetingUpdate)="store.setZipTargeting($event)"

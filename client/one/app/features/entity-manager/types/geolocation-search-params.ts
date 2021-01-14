@@ -5,4 +5,5 @@ export interface GeolocationSearchParams {
     types: GeolocationType[];
     limit?: number;
     offset?: number;
+    target: 'include' | 'exclude' | 'zip';
 }

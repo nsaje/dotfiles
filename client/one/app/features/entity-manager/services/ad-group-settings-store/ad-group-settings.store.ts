@@ -65,7 +65,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     private dealsRequestStateUpdater: RequestStateUpdater;
     private sourcesRequestStateUpdater: RequestStateUpdater;
     private bidModifierRequestStateUpdater: RequestStateUpdater;
-    private locationsRequestStateUpdater: RequestStateUpdater;
+    private includedLocationsRequestStateUpdater: RequestStateUpdater;
+    private excludedLocationsRequestStateUpdater: RequestStateUpdater;
+    private zipLocationsRequestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
     constructor(
@@ -91,9 +93,17 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             this,
             'bidModifiersRequests'
         );
-        this.locationsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+        this.includedLocationsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
-            'locationsRequests'
+            'includedLocationsRequests'
+        );
+        this.excludedLocationsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'excludedLocationsRequests'
+        );
+        this.zipLocationsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'zipLocationsRequests'
         );
     }
 
@@ -945,6 +955,12 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     searchLocations(searchParameters: GeolocationSearchParams): void {
+        const requestStateUpdaters = {
+            include: this.includedLocationsRequestStateUpdater,
+            exclude: this.excludedLocationsRequestStateUpdater,
+            zip: this.zipLocationsRequestStateUpdater,
+        };
+
         const requestsByType = searchParameters.types.map(type => {
             return this.locationService.list(
                 searchParameters.nameContains,
@@ -952,7 +968,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 null,
                 commonHelpers.getValueOrDefault(searchParameters.limit, 20),
                 commonHelpers.getValueOrDefault(searchParameters.offset, 0),
-                this.locationsRequestStateUpdater
+                requestStateUpdaters[searchParameters.target]
             );
         });
 

@@ -31,11 +31,14 @@ export class GeoTargetingComponent implements OnChanges {
     includedLocationsByType: GeolocationsByType;
     @Input()
     excludedLocationsByType: GeolocationsByType;
-
     @Input()
     searchedLocations: Geolocation[] = [];
     @Input()
     isDisabled: boolean;
+    @Input()
+    isIncludedLocationSearchLoading: boolean = false;
+    @Input()
+    isExcludedLocationSearchLoading: boolean = false;
     @Output()
     locationSearch: EventEmitter<GeolocationSearchParams> = new EventEmitter<
         GeolocationSearchParams
@@ -107,13 +110,20 @@ export class GeoTargetingComponent implements OnChanges {
                 this.includedLocationsByType.DMA.length > 0);
     }
 
-    onLocationSearch(nameContains: string): void {
+    onLocationSearch(
+        nameContains: string,
+        includeExcludeType: IncludeExcludeType
+    ): void {
         if (nameContains.length > 1) {
             this.locationSearch.emit({
                 nameContains: nameContains,
                 types: this.geolocationTypes,
                 limit: 10,
                 offset: 0,
+                target:
+                    includeExcludeType === IncludeExcludeType.INCLUDE
+                        ? 'include'
+                        : 'exclude',
             });
         }
     }

@@ -43,6 +43,8 @@ export class ZipTargetingComponent implements OnChanges {
     errors: string[] = [];
     @Input()
     isDisabled: boolean;
+    @Input()
+    isLocationSearchLoading: boolean = false;
     @Output()
     locationSearch: EventEmitter<GeolocationSearchParams> = new EventEmitter<
         GeolocationSearchParams
@@ -98,6 +100,7 @@ export class ZipTargetingComponent implements OnChanges {
                 types: [GeolocationType.COUNTRY],
                 limit: 20,
                 offset: 0,
+                target: 'zip',
             });
         }
     }

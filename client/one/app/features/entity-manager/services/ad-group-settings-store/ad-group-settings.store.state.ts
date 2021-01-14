@@ -147,6 +147,9 @@ export class AdGroupSettingsStoreState {
         location: null,
         includeExcludeType: IncludeExcludeType.INCLUDE,
     };
+    includedLocationsSearchLoading: boolean = false;
+    excludedLocationsSearchLoading: boolean = false;
+    zipLocationsSearchLoading: boolean = false;
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     dealsRequests = {
         list: {} as RequestState,
@@ -168,7 +171,23 @@ export class AdGroupSettingsStoreState {
         import: {} as RequestState,
         validateFile: {} as RequestState,
     };
-    locationsRequests = {
+    excludedLocationsRequests = {
+        list: {} as RequestState,
+        listCountry: {} as RequestState,
+        listRegion: {} as RequestState,
+        listDma: {} as RequestState,
+        listCity: {} as RequestState,
+        listZip: {} as RequestState,
+    };
+    includedLocationsRequests = {
+        list: {} as RequestState,
+        listCountry: {} as RequestState,
+        listRegion: {} as RequestState,
+        listDma: {} as RequestState,
+        listCity: {} as RequestState,
+        listZip: {} as RequestState,
+    };
+    zipLocationsRequests = {
         list: {} as RequestState,
         listCountry: {} as RequestState,
         listRegion: {} as RequestState,

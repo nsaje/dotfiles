@@ -9,10 +9,11 @@
         [selectPlaceholder]="'Add location'"
         [selectIsDisabled]="isDisabled"
         [selectGroupByValue]="'type'"
+        [selectIsLoading]="isIncludedLocationSearchLoading"
         [groupByValue]="'type'"
         [itemListLimitByGroup]="includedItemListLimit"
         (itemSelect)="onAddIncludedGeotargeting($event)"
-        (search)="onLocationSearch($event)"
+        (search)="onLocationSearch($event, includeExcludeType.INCLUDE)"
         (open)="locationOpen.emit()"
     >
         <ng-template #headerTemplate>
@@ -75,10 +76,11 @@
         [selectPlaceholder]="'Add location'"
         [selectIsDisabled]="isDisabled"
         [selectGroupByValue]="'type'"
+        [selectIsLoading]="isExcludedLocationSearchLoading"
         [groupByValue]="'type'"
         [itemListLimitByGroup]="excludedItemListLimit"
         (itemSelect)="onAddExcludedGeotargeting($event)"
-        (search)="onLocationSearch($event)"
+        (search)="onLocationSearch($event, includeExcludeType.EXCLUDE)"
         (open)="locationOpen.emit()"
     >
         <ng-template #headerTemplate>
