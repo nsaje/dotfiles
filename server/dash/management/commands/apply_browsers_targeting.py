@@ -4,6 +4,7 @@ from django.db import transaction
 import core.models
 import dash.constants
 import utils.k1_helper
+import utils.progress_bar
 from utils import zlogging
 from utils.command_helpers import Z1Command
 
@@ -741,77 +742,77 @@ class Command(Z1Command):
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling EXCLUDE_BROWSERS_AD_GROUPS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(EXCLUDE_BROWSERS_AD_GROUPS.items()):
                     qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
                     self._handle_excluded_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling EXCLUDE_BROWSERS_AD_GROUPS...", count=count)
 
         count = len(EXCLUDE_BROWSERS_CAMPAIGNS.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(EXCLUDE_BROWSERS_CAMPAIGNS.items()):
                     qs = core.models.AdGroup.objects.filter(campaign_id=key).exclude_archived()
                     self._handle_excluded_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling EXCLUDE_BROWSERS_CAMPAIGNS...", count=count)
 
         count = len(EXCLUDE_BROWSERS_ACCOUNTS.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling EXCLUDE_BROWSERS_ACCOUNTS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(EXCLUDE_BROWSERS_ACCOUNTS.items()):
                     qs = core.models.AdGroup.objects.filter(campaign__account_id=key).exclude_archived()
                     self._handle_excluded_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling EXCLUDE_BROWSERS_ACCOUNTS...", count=count)
 
         count = len(EXCLUDE_BROWSERS_AGENCIES.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling EXCLUDE_BROWSERS_AGENCIES...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(EXCLUDE_BROWSERS_AGENCIES.items()):
                     qs = core.models.AdGroup.objects.filter(campaign__account__agency_id=key).exclude_archived()
                     self._handle_excluded_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling EXCLUDE_BROWSERS_AGENCIES...", count=count)
 
         count = len(INCLUDED_BROWSERS_AD_GROUPS.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling INCLUDED_BROWSERS_AD_GROUPS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(INCLUDED_BROWSERS_AD_GROUPS.items()):
                     qs = core.models.AdGroup.objects.filter(pk=key).exclude_archived()
                     self._handle_included_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling INCLUDED_BROWSERS_AD_GROUPS...", count=count)
 
         count = len(INCLUDED_BROWSERS_CAMPAIGNS.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling INCLUDED_BROWSERS_CAMPAIGNS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(INCLUDED_BROWSERS_CAMPAIGNS.items()):
                     qs = core.models.AdGroup.objects.filter(campaign_id=key).exclude_archived()
                     self._handle_included_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling INCLUDED_BROWSERS_CAMPAIGNS...", count=count)
 
         count = len(INCLUDED_BROWSERS_ACCOUNTS.items())
         if count > 0:
             with transaction.atomic():
                 logger.info("Start handling INCLUDED_BROWSERS_ACCOUNTS...", count=count)
-                self._print_progress_bar(0, count)
+                utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(INCLUDED_BROWSERS_ACCOUNTS.items()):
                     qs = core.models.AdGroup.objects.filter(campaign__account_id=key).exclude_archived()
                     self._handle_included_browsers_targeting(qs, value)
-                    self._print_progress_bar(index + 1, count)
+                    utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finish handling INCLUDED_BROWSERS_ACCOUNTS...", count=count)
 
     def _revert_browsers_targeting(self):
@@ -890,36 +891,11 @@ class Command(Z1Command):
         count = ad_group_qs.count()
         if count == 0:
             return
-        self._print_progress_bar(0, count)
+        utils.progress_bar.print_progress_bar(0, count)
         for index, ad_group in enumerate(ad_group_qs):
             target_browsers = ad_group.settings.target_browsers or []
             exclusion_target_browsers = ad_group.settings.exclusion_target_browsers or []
             if len(target_browsers) > 0 or len(exclusion_target_browsers) > 0:
                 ad_group.settings.update(None, target_browsers=None, exclusion_target_browsers=None)
                 utils.k1_helper.update_ad_group(ad_group, priority=True)
-            self._print_progress_bar(index + 1, count)
-
-    @staticmethod
-    def _print_progress_bar(
-        iteration, total, prefix="Progress", suffix="Complete", decimals=1, length=100, fill="█", print_end="\r"
-    ):
-        """
-        Call in a loop to create terminal progress bar
-        @params:
-            iteration   - Required  : current iteration (Int)
-            total       - Required  : total iterations (Int)
-            prefix      - Optional  : prefix string (Str)
-            suffix      - Optional  : suffix string (Str)
-            decimals    - Optional  : positive number of decimals in percent complete (Int)
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-            print_end   - Optional  : end character (e.g. "\r", "\r\n") (Str)
-        """
-        if settings.TESTING:
-            return
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filled_length = int(length * iteration // total)
-        bar = fill * filled_length + "-" * (length - filled_length)
-        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
-        if iteration == total:
-            print()
+            utils.progress_bar.print_progress_bar(index + 1, count)
