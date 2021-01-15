@@ -1,0 +1,13 @@
+<ng-container *ngIf="store.state$ | async as state">
+    <div class="zem-panel zem-panel--with-padding">
+        <zem-creatives-actions
+            class="zem-creatives-actions zem-creatives__item"
+            [searchParams]="searchParams"
+            [availableTags]="availableTags"
+            [isReadOnly]="isReadOnly"
+            [isDisabled]="!state.scope?.agencyId"
+            (searchParamsChange)="this.searchParamsChange.emit($event)"
+        >
+        </zem-creatives-actions>
+    </div>
+</ng-container>

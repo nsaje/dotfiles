@@ -16,7 +16,7 @@ export class SetScopeActionReducer extends StoreReducer<
     ): CreativesStoreState {
         return {
             ...state,
-            scope: action.payload,
+            scope: {...action.payload},
         };
     }
 }

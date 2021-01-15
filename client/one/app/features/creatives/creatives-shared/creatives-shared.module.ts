@@ -1,12 +1,15 @@
 import {NgModule} from '@angular/core';
 
 import {SharedModule} from '../../../shared/shared.module';
-import {FetchCreativesActionEffect} from './services/creatives-store/effects/fetch-creatives.effect';
+import {CreativesComponent} from './components/creatives/creatives.component';
+import {CreativesActionsComponent} from './components/creatives-actions/creatives-actions.component';
+
+const EXPORTED_DECLARATIONS = [CreativesComponent, CreativesActionsComponent];
 
 @NgModule({
-    declarations: [],
     imports: [SharedModule],
     entryComponents: [],
-    providers: [FetchCreativesActionEffect],
+    declarations: EXPORTED_DECLARATIONS,
+    exports: EXPORTED_DECLARATIONS,
 })
 export class CreativesSharedModule {}

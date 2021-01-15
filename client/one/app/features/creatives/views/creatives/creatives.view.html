@@ -1,1 +1,10 @@
 <h1 class="zem-main-container__view-title">Creative Library</h1>
+
+<zem-creatives
+    class="zem-creatives zem-creatives-view__panel"
+    [scopeParams]="scopeParams"
+    [searchParams]="searchParams"
+    [pagination]="paginationState"
+    (paginationChange)="onPaginationChange($event)"
+    (searchParamsChange)="onSearchParamsChange($event)"
+></zem-creatives>

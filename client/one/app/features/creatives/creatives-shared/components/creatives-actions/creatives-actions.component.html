@@ -1,0 +1,33 @@
+<div
+    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-creatives-actions__search zem-creatives-actions__action"
+>
+    <zem-text-input
+        class="zem-text-input zem-prefixed-input__input"
+        [value]="searchParams?.keyword"
+        [isDisabled]="isDisabled"
+        [placeholder]="'Search by title or description'"
+        (valueChange)="onKeywordChange($event)"
+    ></zem-text-input>
+</div>
+<div class="zem-creatives-actions__action">
+    <zem-select-input
+        class="zem-select-input"
+        placeholder="Filter by creative type"
+        [items]="creativeTypes"
+        [bindLabel]="'name'"
+        [bindValue]="'id'"
+        [value]="searchParams?.creativeType"
+        (valueChange)="onCreativeTypeChange($event)"
+    >
+    </zem-select-input>
+</div>
+<div class="zem-creatives-actions__action">
+    <zem-tag-picker
+        class="zem-tag-picker"
+        placeholder="Filter by tags"
+        [value]="searchParams?.tags"
+        [items]="availableTags"
+        (valueChange)="onTagsChange($event)"
+    ></zem-tag-picker>
+</div>
+<div class="zem-creatives-actions__buttons zem-creatives-actions__action"></div>
