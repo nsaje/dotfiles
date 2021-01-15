@@ -1,5 +1,6 @@
 import rest_framework.permissions
 import rest_framework.response
+from django.db import transaction
 from django.db.models import Q
 
 import core.features.creatives
@@ -80,3 +81,51 @@ class CreativeViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _filter_by_tags(queryset, value):
         return queryset.filter(tags__name__in=value)
+
+
+class CreativeBatchViewSet(RESTAPIBaseViewSet):
+    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
+    serializer = serializers.CreativeBatchSerializer
+
+    def validate(self, request):
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        return self.response_ok(None)
+
+    def create(self, request):
+        serializer = self.serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        agency_id = data.get("agency_id")
+        data["agency"] = (
+            zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+        )
+
+        account_id = data.get("account_id")
+        data["account"] = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
+
+        with transaction.atomic():
+            batch = core.features.creatives.CreativeBatch.objects.create(
+                request, data.get("name"), agency=data.get("agency"), account=data.get("account")
+            )
+            batch.update(request, **data)
+            batch.set_creative_tags(request, data.get("tags"))
+
+        return self.response_ok(self.serializer(batch, context={"request": request}).data, status=201)
+
+    def put(self, request, batch_id):
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        batch = zemauth.access.get_creative_batch(request.user, Permission.WRITE, batch_id)
+        batch.update(request, **data)
+
+        tags = data.get("tags")
+        if tags:
+            batch.set_creative_tags(request, tags)
+
+        return self.response_ok(self.serializer(batch, context={"request": request}).data)

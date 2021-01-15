@@ -450,3 +450,31 @@ class CreativeAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
             self._for_agency(user, permission, entity_access.get_creative, agency, creative_with_account_scope)
             self._for_account(user, permission, entity_access.get_creative, account, creative_with_account_scope, False)
             self._for_none(user, permission, entity_access.get_creative, creative_with_account_scope)
+
+
+class CreativeBatchAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
+    def test_get_creative_batch(self):
+        agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
+        account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
+        batch_with_agency_scope: core.features.creatives.CreativeBatch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=agency
+        )
+        batch_with_account_scope: core.features.creatives.CreativeBatch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, account=account
+        )
+        user: zemauth.models.User = magic_mixer.blend_user()
+
+        for permission in zemauth.features.entity_permission.Permission.get_all():
+            self._for_all_entities(user, permission, entity_access.get_creative_batch, batch_with_agency_scope)
+            self._for_agency(user, permission, entity_access.get_creative_batch, agency, batch_with_agency_scope)
+            self._for_account(
+                user, permission, entity_access.get_creative_batch, account, batch_with_agency_scope, True
+            )
+            self._for_none(user, permission, entity_access.get_creative_batch, batch_with_agency_scope)
+
+            self._for_all_entities(user, permission, entity_access.get_creative_batch, batch_with_account_scope)
+            self._for_agency(user, permission, entity_access.get_creative_batch, agency, batch_with_account_scope)
+            self._for_account(
+                user, permission, entity_access.get_creative_batch, account, batch_with_account_scope, False
+            )
+            self._for_none(user, permission, entity_access.get_creative_batch, batch_with_account_scope)

@@ -269,3 +269,15 @@ def get_creative(user: zemauth.models.User, permission: str, creative_id: str) -
         return queryset.get(id=creative_id)
     except core.features.creatives.Creative.DoesNotExist:
         raise utils.exc.MissingDataError("Creative does not exist")
+
+
+def get_creative_batch(
+    user: zemauth.models.User, permission: str, batch_id: str
+) -> core.features.creatives.CreativeBatch:
+    try:
+        queryset = core.features.creatives.CreativeBatch.objects.filter_by_entity_permission(
+            user, permission
+        ).select_related("agency", "account")
+        return queryset.get(id=batch_id)
+    except core.features.creatives.CreativeBatch.DoesNotExist:
+        raise utils.exc.MissingDataError("Creative batch does not exist")

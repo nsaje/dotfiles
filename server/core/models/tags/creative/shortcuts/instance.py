@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import transaction
 
 import core.models.tags.creative
 
@@ -9,6 +10,7 @@ class CreativeTagMixin(models.Model):
 
     tags = models.ManyToManyField("CreativeTag")
 
+    @transaction.atomic
     def set_creative_tags(self, request, data):
         tags = []
         for item in data or []:
