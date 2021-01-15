@@ -18,6 +18,9 @@ class TestCaseFunc(BaseTestCase):
     def test_pg_quote_escape_string_literal_ampersand(self):
         self.assertEqual(postgres_tags.pg_quote_escape_string_literal("goal with & signs"), "'goal with & signs'")
 
+    def test_pg_quote_escape_string_literal_unicode(self):
+        self.assertEqual(postgres_tags.pg_quote_escape_string_literal("ga__カートイン"), "'ga__カートイン'")
+
 
 class TestCaseRender(BaseTestCase):
     @classmethod
