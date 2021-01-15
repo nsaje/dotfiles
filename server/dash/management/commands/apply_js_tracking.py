@@ -4612,7 +4612,7 @@ AGENCY_TRACKERS = {
     }
 }
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 10000
 
 applied_trackers_contentad_ids = []
 
@@ -4637,7 +4637,9 @@ class Command(Z1Command):
             self._apply_bidder_hacks()
 
     def _backfill_trackers(self):
-        contentad_qs = core.models.ContentAd.objects.exclude(tracker_urls__len=0).exclude(tracker_urls__isnull=True)
+        contentad_qs = core.models.ContentAd.objects.filter(tracker_urls__len__gt=0).extra(
+            where=["coalesce(jsonb_array_length(trackers), 0) = 0"]
+        )
         chunk_number = 0
         for contentads_chunk in chunk_iterator(contentad_qs, chunk_size=BATCH_SIZE):
             chunk_number += 1
@@ -4658,7 +4660,7 @@ class Command(Z1Command):
                 logger.info("Started migrating CONTENT AD trackers...", count=count)
                 utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(CONTENT_AD_TRACKERS.items()):
-                    qs = core.models.ContentAd.objects.filter(id=key).exclude_archived()
+                    qs = core.models.ContentAd.objects.filter(id=key)
                     self._insert_trackers(qs, value)
                     utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finished migrating CONTENT AD trackers...", count=count)
@@ -4669,7 +4671,7 @@ class Command(Z1Command):
                 logger.info("Started migrating AD GROUP trackers...", count=count)
                 utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(AD_GROUP_TRACKERS.items()):
-                    qs = core.models.ContentAd.objects.filter(ad_group_id=key).exclude_archived()
+                    qs = core.models.ContentAd.objects.filter(ad_group_id=key)
                     self._insert_trackers(qs, value)
                     utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finished migrating AD GROUP trackers...", count=count)
@@ -4680,7 +4682,7 @@ class Command(Z1Command):
                 logger.info("Started migrating ACCOUNT trackers...", count=count)
                 utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(ACCOUNT_TRACKERS.items()):
-                    qs = core.models.ContentAd.objects.filter(ad_group__campaign__account_id=key).exclude_archived()
+                    qs = core.models.ContentAd.objects.filter(ad_group__campaign__account_id=key)
                     self._insert_trackers(qs, value)
                     utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finished migrating ACCOUNT trackers...", count=count)
@@ -4691,9 +4693,7 @@ class Command(Z1Command):
                 logger.info("Started migrating AGENCY trackers...", count=count)
                 utils.progress_bar.print_progress_bar(0, count)
                 for index, (key, value) in enumerate(AGENCY_TRACKERS.items()):
-                    qs = core.models.ContentAd.objects.filter(
-                        ad_group__campaign__account__agency_id=key
-                    ).exclude_archived()
+                    qs = core.models.ContentAd.objects.filter(ad_group__campaign__account__agency_id=key)
                     self._insert_trackers(qs, value)
                     utils.progress_bar.print_progress_bar(index + 1, count)
                 logger.info("Finished migrating AGENCY trackers...", count=count)
