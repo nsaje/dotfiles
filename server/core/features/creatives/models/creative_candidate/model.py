@@ -1,4 +1,3 @@
-import tagulous.models
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
@@ -24,7 +23,7 @@ class CreativeCandidate(validation.CreativeCandidateValidatorMixin, models.Model
     description = models.TextField(null=True, blank=True, default="")
     call_to_action = models.TextField(null=True, blank=True, default="")
 
-    tags = tagulous.models.TagField(to="CreativeTag", blank=True)
+    tags = models.ManyToManyField("CreativeTag")
 
     batch = models.ForeignKey("CreativeBatch", on_delete=models.PROTECT)
 

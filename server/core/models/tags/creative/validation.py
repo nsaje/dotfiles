@@ -3,7 +3,7 @@ from utils.exc import ValidationError
 
 class CreativeTagValidatorMixin(object):
     def clean(self):
-        super().clean()
+        super(CreativeTagValidatorMixin, self).clean()
         self._validate_agency_account()
 
     def _validate_agency_account(self):

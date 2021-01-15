@@ -1,11 +1,10 @@
 from django.db import models
-from tagulous.models.models import TagTreeModelQuerySet
 
 import zemauth.features.entity_permission.shortcuts
 
 
 class CreativeTagQuerySet(
-    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, TagTreeModelQuerySet
+    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet
 ):
     def filter_by_agency(self, agency):
         return self.filter(models.Q(agency=agency))

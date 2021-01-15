@@ -45,14 +45,14 @@ class CreativeViewSetTestCase(RESTAPITestCase):
         creative = magic_mixer.blend(core.features.creatives.Creative, account=account)
         tag_one = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_one", account=account)
         tag_two = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_two", account=account)
-        creative.tags = [tag_one, tag_two]
+        creative.tags.set([tag_one, tag_two])
         creative.save(None)
 
         r = self.client.get(reverse("restapi.creatives.internal:creative_details", kwargs={"creative_id": creative.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(resp_json["data"]["id"], str(creative.id))
-        self.assertEqual(resp_json["data"]["tags"], ["tag_one", "tag_two"])
+        self.assertEqual(resp_json["data"]["tags"], [{"name": "tag_one"}, {"name": "tag_two"}])
 
     def test_list_pagination(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
@@ -139,15 +139,15 @@ class CreativeViewSetTestCase(RESTAPITestCase):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         creative = magic_mixer.blend(core.features.creatives.Creative, agency=agency)
         tag_one = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_one", agency=agency)
-        creative.tags = [tag_one]
+        creative.tags.set([tag_one])
         creative.save(None)
         tag_two = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_two", agency=agency)
         creative2 = magic_mixer.blend(core.features.creatives.Creative, agency=agency)
-        creative2.tags = [tag_two]
+        creative2.tags.set([tag_two])
         creative2.save(None)
         tag_three = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_three", agency=agency)
         creative3 = magic_mixer.blend(core.features.creatives.Creative, agency=agency)
-        creative3.tags = [tag_three]
+        creative3.tags.set([tag_three])
         creative3.save(None)
 
         r = self.client.get(
@@ -168,11 +168,11 @@ class CreativeViewSetTestCase(RESTAPITestCase):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         creative = magic_mixer.blend(core.features.creatives.Creative, agency=agency)
         tag_one = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_one", agency=agency)
-        creative.tags = [tag_one]
+        creative.tags.set([tag_one])
         creative.save(None)
         tag_two = magic_mixer.blend(core.models.tags.CreativeTag, name="tag_two", agency=agency)
         creative2 = magic_mixer.blend(core.features.creatives.Creative, agency=agency)
-        creative2.tags = [tag_two]
+        creative2.tags.set([tag_two])
         creative2.save(None)
 
         r = self.client.get(

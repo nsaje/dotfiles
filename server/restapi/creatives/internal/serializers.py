@@ -8,12 +8,16 @@ import restapi.serializers.trackers
 from core.models.tags import CreativeTag
 
 
+class CreativeTagSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    name = rest_framework.serializers.CharField(max_length=255)
+
+
 class CreativeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
 
     agency_id = restapi.serializers.fields.IdField(read_only=True)
     agency_name = rest_framework.serializers.CharField(source="agency.name", read_only=True)
-    account_id = restapi.serializers.fields.IdField(allow_null=True, read_only=True)
+    account_id = restapi.serializers.fields.IdField(read_only=True)
     account_name = rest_framework.serializers.CharField(source="account.settings.name", read_only=True)
 
     type = restapi.serializers.fields.DashConstantField(
@@ -27,9 +31,7 @@ class CreativeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     description = rest_framework.serializers.CharField(read_only=True)
     call_to_action = rest_framework.serializers.CharField(read_only=True)
 
-    tags = rest_framework.serializers.ListSerializer(
-        child=rest_framework.serializers.CharField(), default=[], read_only=True
-    )
+    tags = rest_framework.serializers.ListSerializer(child=CreativeTagSerializer(), default=[], read_only=True)
 
     image_url = rest_framework.serializers.URLField(source="get_image_url", read_only=True)
     icon_url = rest_framework.serializers.URLField(source="get_icon_url", read_only=True)

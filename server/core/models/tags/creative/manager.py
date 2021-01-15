@@ -1,12 +1,7 @@
-import tagulous.models.models
-
-from . import queryset
+from django.db import models
 
 
-class CreativeTagManager(tagulous.models.models.TagTreeModelManager):
-    def get_queryset(self):
-        return queryset.CreativeTagQuerySet(self.model, using=self._db)
-
+class CreativeTagManager(models.Manager):
     def create(self, name, agency=None, account=None):
         """
         Create a new object with the given params, saving it to the database if necessary

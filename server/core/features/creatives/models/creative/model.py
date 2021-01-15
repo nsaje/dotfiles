@@ -1,4 +1,3 @@
-import tagulous.models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -37,7 +36,7 @@ class Creative(
     description = models.CharField(max_length=150, blank=True, default="")
     call_to_action = models.CharField(max_length=25, blank=True, default="")
 
-    tags = tagulous.models.TagField(to="CreativeTag", blank=True)
+    tags = models.ManyToManyField("CreativeTag")
 
     batch = models.ForeignKey("CreativeBatch", null=True, blank=True, on_delete=models.PROTECT)
 

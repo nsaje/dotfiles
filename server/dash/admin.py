@@ -1966,7 +1966,7 @@ class EntityTagAdmin(admin.ModelAdmin):
 class CreativeTagAdmin(admin.ModelAdmin):
     model = tags.CreativeTag
 
-    fields = ("name", "slug", "agency", "account")
+    fields = ("name", "agency", "account")
     search_fields = ("id", "name", "agency__name", "account__name")
     list_display = ("id", "name", "agency", "account")
     autocomplete_fields = ("agency", "account")
@@ -2021,5 +2021,5 @@ admin.site.register(models.SubmissionFilter, SubmissionFilterAdmin)
 admin.site.register(models.DirectDeal, DirectDealAdmin)
 admin.site.register(models.DirectDealConnection, DirectDealConnectionAdmin)
 admin.site.register(models.WhiteLabel, WhiteLabelAdmin)
+admin.site.register(tags.CreativeTag, CreativeTagAdmin)
 tagulous.admin.register(tags.EntityTag, EntityTagAdmin)
-tagulous.admin.register(tags.CreativeTag, CreativeTagAdmin)
