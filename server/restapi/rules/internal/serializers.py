@@ -183,17 +183,21 @@ class RuleSerializer(rest_framework.serializers.Serializer):
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
 
-        value["agency"] = (
-            zemauth.access.get_agency(self.context["request"].user, Permission.WRITE, value.get("agency_id"))
-            if value.get("agency_id")
-            else None
-        )
+        if "agency_id" in value:
+            agency_id = value["agency_id"]
+            value["agency"] = (
+                zemauth.access.get_agency(self.context["request"].user, Permission.WRITE, agency_id)
+                if agency_id
+                else None
+            )
 
-        value["account"] = (
-            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, value.get("account_id"))
-            if value.get("account_id")
-            else None
-        )
+        if "account_id" in value:
+            account_id = value["account_id"]
+            value["account"] = (
+                zemauth.access.get_account(self.context["request"].user, Permission.WRITE, account_id)
+                if account_id
+                else None
+            )
 
         publisher_group = value.get("publisher_group", {})
         if publisher_group:
