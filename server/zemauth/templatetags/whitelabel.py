@@ -13,6 +13,8 @@ def _get_whitelabel_from_host(context=None):
     host = context["request"].META.get("HTTP_HOST", "")
     if host == "newscorp.zemanta.com":
         return dash.constants.Whitelabel.NEWSCORP
+    if host == "nativeocean.zdsp.io":
+        return dash.constants.Whitelabel.DAS
     return None
 
 

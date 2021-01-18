@@ -424,6 +424,7 @@ h2.set-new-user__page_title{
 }
 
 .newscorp .set-new-user__start_button{
+    color: white;
     background-color: #040707;
 }
 
@@ -452,6 +453,7 @@ h2.set-new-user__page_title{
 }
 
 .das .set-new-user__start_button{
+    color: white;
     background-color: #e35519;
 }
 

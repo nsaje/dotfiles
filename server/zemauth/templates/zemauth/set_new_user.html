@@ -98,12 +98,14 @@
                     <h2>Oops.</h2>
                     {% if wl.base == "newscorp" %}
                         <p class="bigger">Your link to Newscorp Dashboard expired.</p>
+                        <p><strong>Need help?</strong> <a class="link" href="mailto:help@zemanta.com?Subject=Help%20Needed" target="_blank">Contact us</a></p>
                     {% elif wl.base == "das" %}
                         <p class="bigger">Your link to Native Ocean Dashboard expired.</p>
+                        <p><strong>Need help?</strong> <a class="link" href="mailto:info_nativeocean@accelerators.jp?Subject=Help%20Needed" target="_blank">Contact us</a></p>
                     {% else %}
                         <p class="bigger">Your link to Zemanta One expired.</p>
+                        <p><strong>Need help?</strong> <a class="link" href="mailto:help@zemanta.com?Subject=Help%20Needed" target="_blank">Contact us</a></p>
                     {% endif %}
-                    <p><strong>Need help?</strong> <a class="link" href="mailto:help@zemanta.com?Subject=Help%20Needed" target="_blank">Contact us</a></p>
                 </div>
             </div>
         {% endif %}

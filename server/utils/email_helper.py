@@ -33,6 +33,8 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.DAS: "Native Ocean",
 }
 
+WHITELABEL_FROM_EMAILS = {dash.constants.Whitelabel.DAS: "info_nativeocean@accelerators.jp"}
+
 URLS_RE = re.compile(
     r"((https?):((//)|(\\\\))+[\w\d:#@%/;$()~_?\+\-=\\\.&]*[\w\d#@%/$()~_\+\-=\\&])", re.MULTILINE | re.UNICODE
 )
@@ -66,6 +68,7 @@ def create_official_email(
     if whitelabel:
         subject = _adjust_product_name(whitelabel, subject)
         body = _adjust_product_name(whitelabel, body)
+        from_email = WHITELABEL_FROM_EMAILS.get(whitelabel)
 
     return _create_email(
         whitelabel=whitelabel,
@@ -144,7 +147,7 @@ def _create_email(
     email = EmailMultiAlternatives(
         subject=html.unescape(subject),
         body=html.unescape(body),
-        from_email="Zemanta <{}>".format(from_email),
+        from_email="{} <{}>".format(WHITELABEL_PRODUCTS.get(whitelabel, "Zemanta"), from_email),
         to=recipient_list,
         bcc=additional_recipients,
         headers={"X-Mailgun-Tag": tags},
