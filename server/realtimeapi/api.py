@@ -154,7 +154,9 @@ def _prepare_aggregations():
     return {
         "impressions": longsum("impressions"),
         "clicks": filtered(
-            (Dimension("account_id_filter") != None) & (Dimension("blacklisted") != "true"),  # noqa: E711
+            (Dimension("account_id_filter") != None)
+            & (Dimension("blacklisted") != "true")
+            & (Dimension("publisher") != ""),  # noqa: E711
             count("account_id_filter"),
         ),
         "price_nano": doublesum("billing_price_sum"),
