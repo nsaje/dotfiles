@@ -27,6 +27,10 @@ class Q(object):
         self.query = None
         self.prefix = None
 
+    def __str__(self):
+        children = ",".join(str(child) for child in self.children)
+        return f"Q({children})"
+
     def _combine(self, other, join_operator):
         parent = type(self)(self.model, *[self, other])
         parent.join_operator = join_operator
