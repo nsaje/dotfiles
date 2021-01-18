@@ -25,6 +25,7 @@ angular.module('one.widgets').component('zemNavigation', {
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
         var hierarchyUpdateHandler;
+        var hierarchyPartialUpdateHandler;
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
@@ -44,6 +45,9 @@ angular.module('one.widgets').component('zemNavigation', {
             hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
                 initializeList
             );
+            hierarchyPartialUpdateHandler = zemNavigationNewService.onHierarchyPartialUpdate(
+                initializePartialList
+            );
             $element.keydown(handleKeyDown);
             initializeList();
         };
@@ -56,6 +60,7 @@ angular.module('one.widgets').component('zemNavigation', {
 
         $ctrl.$onDestroy = function() {
             if (hierarchyUpdateHandler) hierarchyUpdateHandler();
+            if (hierarchyPartialUpdateHandler) hierarchyPartialUpdateHandler();
             $element.unbind();
         };
 
@@ -164,34 +169,21 @@ angular.module('one.widgets').component('zemNavigation', {
             }
         }
 
+        function initializePartialList(event, hierarchy) {
+            $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
+            if ($ctrl.isOpen) {
+                $timeout(doFilter);
+            }
+        }
+
         function filterList() {
             if (!$ctrl.list) return;
 
             $ctrl.filterInProgress = true;
             $timeout(function() {
-                var showArchived = zemDataFilterService.getShowArchived();
-                var activeAccount = zemNavigationNewService.getActiveAccount();
+                doFilter();
 
                 $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
-                $ctrl.entityList = activeAccount
-                    ? zemNavigationUtils.convertToEntityList(activeAccount)
-                    : null;
-
-                var list = [];
-                if ($ctrl.entityList && $ctrl.query.length === 0) {
-                    list = $ctrl.entityList;
-                } else {
-                    list = $ctrl.list;
-                }
-
-                $ctrl.filteredList = zemNavigationUtils.filterEntityList(
-                    list,
-                    $ctrl.query,
-                    activeAccount,
-                    showArchived,
-                    true
-                );
-
                 $ctrl.selectedEntity = null;
                 $ctrl.filterInProgress = false;
 
@@ -206,6 +198,30 @@ angular.module('one.widgets').component('zemNavigation', {
                     }); // Wait for list to be rendered first
                 }
             }, 250);
+        }
+
+        function doFilter() {
+            var showArchived = zemDataFilterService.getShowArchived();
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+
+            $ctrl.entityList = activeAccount
+                ? zemNavigationUtils.convertToEntityList(activeAccount)
+                : null;
+
+            var list = [];
+            if ($ctrl.entityList && $ctrl.query.length === 0) {
+                list = $ctrl.entityList;
+            } else {
+                list = $ctrl.list;
+            }
+
+            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
+                list,
+                $ctrl.query,
+                activeAccount,
+                showArchived,
+                true
+            );
         }
 
         function scrollToTop() {
