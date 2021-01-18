@@ -15,8 +15,8 @@ from utils import dates_helper
 
 from . import constants
 
-WINNOTICE_DATASOURCES = ["b1-lcl-winnotice1", "b1-lcl-winnotice1-chi"]
-CLICK_DATASOURCES = ["r1-click"]
+WINNOTICE_DATASOURCES = ["b1-lcl-winnotice1-ny", "b1-lcl-winnotice1-chi"]
+CLICK_DATASOURCES = ["r1-click-ny"]
 
 INTERVAL_TEMPLATE = "{from_:%Y-%m-%dT%H:%M:%S}/{to:%Y-%m-%dT%H:%M:%S}"
 
