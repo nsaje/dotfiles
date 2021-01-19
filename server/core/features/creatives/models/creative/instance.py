@@ -21,17 +21,6 @@ class CreativeInstanceMixin(object):
         self._apply_updates(request, cleaned_updates)
         self.save(request)
 
-    def _clean_updates(self, updates):
-        new_updates = {}
-        for field, value in list(updates.items()):
-            if field in set(self._update_fields) and value != getattr(self, field):
-                new_updates[field] = value
-        return new_updates
-
-    def _apply_updates(self, updates):
-        for field, value in list(updates.items()):
-            setattr(self, field, value)
-
     def get_image_url(self, width=None, height=None):
         if not self.image:
             return None
@@ -47,3 +36,14 @@ class CreativeInstanceMixin(object):
         if size is None:
             size = self.icon.width
         return self.icon.get_url(width=size, height=size)
+
+    def _clean_updates(self, updates):
+        new_updates = {}
+        for field, value in list(updates.items()):
+            if field in set(self._update_fields) and value != getattr(self, field):
+                new_updates[field] = value
+        return new_updates
+
+    def _apply_updates(self, updates):
+        for field, value in list(updates.items()):
+            setattr(self, field, value)
