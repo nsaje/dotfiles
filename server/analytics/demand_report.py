@@ -33,6 +33,7 @@ from redshiftapi import db
 from utils import bigquery_helper
 from utils import converters
 from utils import dates_helper
+from utils import db_aggregates
 from utils import queryset_helper
 from utils import zlogging
 from zemauth.models import User
@@ -144,6 +145,8 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
 
         rules_by_ad_group_id = _compute_active_rules_by_ad_group(ad_group_data_chunk, campaign_data_dict)
         bid_modifiers_by_ad_group_id = _get_bid_modifier_count_by_ad_group(ad_group_ids)
+        trackers_count_by_ad_group_id = _get_trackers_count_by_ad_group(ad_group_ids)
+
         for ad_group_data_row in ad_group_data_chunk:
             row = ad_group_data_row.copy()
             row.update(campaign_data_dict[row["campaign_id"]])
@@ -166,6 +169,7 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
             row["sales_email"] = user_email_dict.get(row["sales_representative_id"], "N/A")
             row["rules"] = rules_by_ad_group_id[row["adgroup_id"]]
             row["rules_count"] = len(rules_by_ad_group_id[row["adgroup_id"]])
+            row["js_tracking"] = trackers_count_by_ad_group_id[row["adgroup_id"]]
 
             _normalize_row(row)
             yield row
@@ -416,6 +420,7 @@ def _normalize_row(row):
     _normalize_field(row, "target_browsers")
     _normalize_field(row, "exclusion_target_browsers")
     _normalize_field(row, "target_connection_types")
+    _normalize_field(row, "js_tracking")
 
     row["agency_tags"] = tag_helpers.entity_tag_names_to_string(row["agency_tags"])
     row["account_tags"] = tag_helpers.entity_tag_names_to_string(row["account_tags"])
@@ -802,6 +807,22 @@ def _get_bid_modifier_count_by_ad_group(ad_group_ids):
     for ad_group_id, type_, count in qs:
         field_name = bid_modifiers.BidModifierType.get_name(type_).lower() + "_bid_modifiers_count"
         result[ad_group_id][field_name] = count
+    return result
+
+
+def _get_trackers_count_by_ad_group(ad_group_ids):
+    qs = (
+        models.ContentAd.objects.filter(ad_group_id__in=ad_group_ids)
+        .values("ad_group_id")
+        .annotate(trackers_count=db_aggregates.SumJSONLength("trackers"))
+        .values_list("ad_group_id", "trackers_count")
+    )
+
+    trackers_count_by_ad_group = dict(qs)
+    result = {}
+    for ad_group_id in ad_group_ids:
+        result[ad_group_id] = trackers_count_by_ad_group.get(ad_group_id, 0)
+
     return result
 
 

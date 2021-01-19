@@ -28,3 +28,7 @@ class IsSumNull(aggregates.Aggregate):
 
     def __init__(self, col, **extra):
         super(IsSumNull, self).__init__(col, **extra)
+
+
+class SumJSONLength(aggregates.Aggregate):
+    template = "SUM(JSONB_ARRAY_LENGTH(%(expressions)s))"

@@ -248,6 +248,9 @@ class DemandReportTestCase(test.TestCase):
             "placement_bid_modifiers_count": ad_group.bidmodifier_set.filter(
                 type=core.features.bid_modifiers.BidModifierType.PLACEMENT
             ).count(),
+            "js_tracking": _repr_bool_normalized_value(
+                sum(len(contentad.trackers) for contentad in ad_group.contentad_set.all())
+            ),
         }
 
         for column, value in checks.items():
@@ -496,6 +499,10 @@ class DemandReportTestCase(test.TestCase):
         self.rule_campaign_2 = magic_mixer.blend(automation.models.Rule, campaigns_included=[self.campaign_2])
         self.rule_account_1 = magic_mixer.blend(automation.models.Rule, accounts_included=[self.account_1])
 
+        magic_mixer.cycle(3).blend(core.models.ContentAd, ad_group=self.ad_group_1_1, trackers=[{}, {}])
+        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group_1_1, trackers=[{}, {}, {}])
+        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group_1_1, trackers=[])
+
         magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_1)
         magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_2)
         magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_2_2)
@@ -530,7 +537,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
@@ -711,7 +718,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(20):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
