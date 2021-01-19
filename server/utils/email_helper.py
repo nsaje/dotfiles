@@ -355,10 +355,10 @@ def send_password_reset_email(user, request, next_param=""):
     )
 
 
-def send_new_user_email(user, request, agency=None):
+def send_new_user_email(user, request):
     args = {"user": user, "link_url": _generate_new_user_url(user, request)}
     send_official_email(
-        agency_or_user=agency,
+        agency_or_user=user,
         recipient_list=[user.email],
         **params_from_template(dash.constants.EmailTemplateType.USER_NEW, **args),
     )
