@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import transaction
 
 import core.models
@@ -4623,6 +4625,7 @@ class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--backfill", action="store_true", help="Backfill trackers")
         parser.add_argument("--hacks", action="store_true", help="Migrate bidder hacks")
+        parser.add_argument("--fixoptional", action="store_true", help="Fix tracker optional property")
 
     def handle(self, *args, **options):
         """
@@ -4635,6 +4638,28 @@ class Command(Z1Command):
 
         if options.get("hacks"):
             self._apply_bidder_hacks()
+
+        if options.get("fixoptional"):
+            self._fix_tracker_optional()
+
+    def _fix_tracker_optional(self):
+        contentad_qs = core.models.ContentAd.objects.filter(created_dt__gt=datetime.date(2020, 11, 1)).filter(
+            trackers__contains=[{"tracker_optional": False}]
+        )
+        chunk_number = 0
+        for contentads_chunk in chunk_iterator(contentad_qs, chunk_size=BATCH_SIZE):
+            chunk_number += 1
+            logger.info("Processing contentad chunk number %s...", chunk_number)
+            with transaction.atomic():
+                for contentad in contentads_chunk:
+                    trackers = contentad.trackers
+                    for tracker in trackers:
+                        tracker["tracker_optional"] = True
+                    contentad.trackers = trackers
+                    contentad.save()
+
+            logger.info("Chunk number %s processed...", chunk_number)
+        logger.info("Fix of contentad tracker optional field completed")
 
     def _backfill_trackers(self):
         contentad_qs = core.models.ContentAd.objects.filter(tracker_urls__len__gt=0).extra(

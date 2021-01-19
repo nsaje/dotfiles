@@ -740,7 +740,8 @@ class ContentAdCandidateForm(forms.ModelForm):
         trackers = self.cleaned_data.get("trackers")
         if trackers is None:
             self.cleaned_data["trackers"] = dash.features.contentupload.convert_legacy_trackers(
-                [self.cleaned_data.get("primary_tracker_url"), self.cleaned_data.get("secondary_tracker_url")]
+                [self.cleaned_data.get("primary_tracker_url"), self.cleaned_data.get("secondary_tracker_url")],
+                tracker_optional=True,
             )
         else:
             self.cleaned_data["trackers"] = [dash.features.contentupload.get_tracker(**tracker) for tracker in trackers]

@@ -36,13 +36,13 @@ valid_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "https://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -61,13 +61,13 @@ invalid_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "https://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -87,13 +87,13 @@ valid_display_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "https://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -111,13 +111,13 @@ invalid_display_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "https://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -139,13 +139,13 @@ valid_display_ad_tag_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "https://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "https://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -163,13 +163,13 @@ invalid_display_ad_tag_candidate = {
             "method": constants.TrackerMethod.JS,
             "url": "http://t.test.com/tracker.js",
             "fallback_url": "https://t.test.com/fallback.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
         {
             "event_type": constants.TrackerEventType.VIEWABILITY,
             "method": constants.TrackerMethod.IMG,
             "url": "http://t.test.com/tracker.png",
-            "tracker_optional": False,
+            "tracker_optional": True,
         },
     ],
 }
@@ -217,7 +217,7 @@ class InsertCandidatesTestCase(TestCase):
                     "method": constants.TrackerMethod.JS,
                     "url": "https://t.test.com/tracker.js",
                     "fallback_url": "https://t.test.com/fallback.png",
-                    "tracker_optional": False,
+                    "tracker_optional": True,
                     "supported_privacy_frameworks": [],
                 },
                 {
@@ -225,7 +225,7 @@ class InsertCandidatesTestCase(TestCase):
                     "method": constants.TrackerMethod.IMG,
                     "url": "https://t.test.com/tracker.png",
                     "fallback_url": None,
-                    "tracker_optional": False,
+                    "tracker_optional": True,
                     "supported_privacy_frameworks": [],
                 },
             ],
@@ -1121,7 +1121,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "https://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1129,7 +1129,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "https://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1227,7 +1227,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "https://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1235,7 +1235,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "https://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1311,7 +1311,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "https://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1319,7 +1319,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "https://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1405,7 +1405,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "https://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1413,7 +1413,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "https://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1489,7 +1489,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "https://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1497,7 +1497,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "https://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1587,7 +1587,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.JS,
                             "url": "http://t.test.com/tracker.js",
                             "fallback_url": "https://t.test.com/fallback.png",
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                         {
@@ -1595,7 +1595,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                             "method": constants.TrackerMethod.IMG,
                             "url": "http://t.test.com/tracker.png",
                             "fallback_url": None,
-                            "tracker_optional": False,
+                            "tracker_optional": True,
                             "supported_privacy_frameworks": [],
                         },
                     ],
@@ -1875,7 +1875,7 @@ class GetCandidatesCsvTestCase(TestCase):
             '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg","zemanta.com",'
             '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png","https://t.zemanta.com/px2.png",'
-            '"impression","img","https://t.zemanta.com/px1.png","","false","impression","img","https://t.zemanta.com/px2.png","","false","","","","",""\r\n',
+            '"impression","img","https://t.zemanta.com/px1.png","","true","impression","img","https://t.zemanta.com/px2.png","","true","","","","",""\r\n',
             content,
         )
 
@@ -1892,7 +1892,7 @@ class GetCandidatesCsvTestCase(TestCase):
             '"Tracker 3 Event type","Tracker 3 Method","Tracker 3 URL","Tracker 3 Fallback URL","Tracker 3 Optional"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog",'
             '"Read more","content ad 1","entropy","https://t.zemanta.com/px1.png","https://t.zemanta.com/px2.png","500x500","",'
-            '"impression","img","https://t.zemanta.com/px1.png","","false","impression","img","https://t.zemanta.com/px2.png","","false","","","","",""\r\n',
+            '"impression","img","https://t.zemanta.com/px1.png","","true","impression","img","https://t.zemanta.com/px2.png","","true","","","","",""\r\n',
             content,
         )
 

@@ -536,14 +536,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://zemanta.com/px2',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
   model: dash.contentad
   pk: 1
@@ -575,14 +575,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://zemanta.com/px2',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
   model: dash.contentad
   pk: 2
@@ -611,14 +611,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://zemanta.com/px2',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     ad_tag: null
   model: dash.contentad
@@ -691,14 +691,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
@@ -727,14 +727,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://secondary.tracker.com',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_crop: 'entropy'
     display_url: 'zemanta.com'
@@ -781,7 +781,7 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     icon_url: 'http://zemanta.com/icon.jpg'
@@ -857,14 +857,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     original_content_ad_id: 2
@@ -905,14 +905,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
@@ -953,14 +953,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: null
     icon_url: ''
@@ -1002,14 +1002,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     icon_url: 'http://zemanta.com/icon.jpg'
@@ -1057,14 +1057,14 @@
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }, {
         'url': 'https://t.zemanta.com/px2.png',
         'fallback_url': null,
         'method': 'img',
         'event_type': 'impression',
         'supported_privacy_frameworks': [],
-        'tracker_optional': false
+        'tracker_optional': true
     }]
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
