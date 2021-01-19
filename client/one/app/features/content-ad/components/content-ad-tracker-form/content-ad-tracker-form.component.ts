@@ -50,6 +50,7 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     trackerMethod = TrackerMethod;
 
     showFallbackUrlInput: boolean = false;
+    showMacroFormatWarning: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.contentAdTracker && this.contentAdTracker.fallbackUrl) {
@@ -88,6 +89,7 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onUrlChanged(url: string): void {
+        this.showMacroFormatWarning = url.includes('${');
         this.contentAdTrackerChange.emit({
             target: this.contentAdTracker,
             changes: {

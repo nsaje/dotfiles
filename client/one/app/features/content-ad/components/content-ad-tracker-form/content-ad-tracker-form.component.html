@@ -43,6 +43,18 @@
         {{ contentAdTrackerErrors?.url }}
     </div>
     <div
+        *ngIf="showMacroFormatWarning"
+        class="zem-content-ad-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+    >
+        There is a “$” before the macro in the URL. Are you sure this was
+        intended? Learn more about how to use macros
+        <a
+            href="https://help.zemanta.com/article/show/12985-tracking-parameters--macros"
+            target="_blank"
+            >here</a
+        >.
+    </div>
+    <div
         *ngIf="contentAdTracker.method === trackerMethod.JS"
         class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__input-help"
     >
