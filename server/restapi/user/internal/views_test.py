@@ -1050,7 +1050,7 @@ class UserViewSetResendEmail(UserViewSetTestBase):
 
         r = self._call_resend_email(requested_user, agency)
         mock_send.assert_called_with(
-            agency_or_user=None,
+            agency_or_user=requested_user,
             recipient_list=[requested_user.email],
             additional_recipients=[],
             subject="Welcome to Zemanta!",
