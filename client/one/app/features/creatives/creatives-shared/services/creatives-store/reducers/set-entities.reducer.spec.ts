@@ -1,7 +1,7 @@
 import {
-    SetCreativesActionReducer,
-    SetCreativesAction,
-} from './set-creatives.reducer';
+    SetEntitiesActionReducer,
+    SetEntitiesAction,
+} from './set-entities.reducer';
 import {CreativesStoreState} from '../creatives.store.state';
 import {AdType} from '../../../../../../app.constants';
 import {
@@ -10,8 +10,8 @@ import {
 } from '../../../../../../core/creatives/creatives.constants';
 import {Creative} from '../../../../../../core/creatives/types/creative';
 
-describe('SetCreativesActionReducer', () => {
-    let reducer: SetCreativesActionReducer;
+describe('SetEntitiesActionReducer', () => {
+    let reducer: SetEntitiesActionReducer;
     const mockedCreatives: Creative[] = [
         {
             id: '10000000',
@@ -72,13 +72,13 @@ describe('SetCreativesActionReducer', () => {
     ];
 
     beforeEach(() => {
-        reducer = new SetCreativesActionReducer();
+        reducer = new SetEntitiesActionReducer();
     });
 
     it('should correctly reduce state', () => {
         const state = reducer.reduce(
             new CreativesStoreState(),
-            new SetCreativesAction(mockedCreatives)
+            new SetEntitiesAction(mockedCreatives)
         );
 
         expect(state.entities).toEqual(mockedCreatives);

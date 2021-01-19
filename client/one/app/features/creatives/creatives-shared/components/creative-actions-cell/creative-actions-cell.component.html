@@ -1,0 +1,19 @@
+<div class="zem-creative-actions-cell">
+    <button
+        [ngClass]="
+            isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
+        "
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-creative-actions-cell__item"
+        (click)="edit()"
+    ></button>
+    <button
+        [disabled]="isReadOnly"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--copy-icon zem-creative-actions-cell__item"
+        (click)="clone()"
+    ></button>
+    <button
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--download-icon zem-creative-actions-cell__item"
+        title="Download"
+        (click)="exportToCsv()"
+    ></button>
+</div>

@@ -35,6 +35,7 @@ export class CreativesStoreState {
         isReadOnly: null as boolean,
         fieldsErrors: new CreativesStoreFieldsErrorsState(),
     };
+    selectedEntityIds: string[] = [];
     requests = {
         list: {} as RequestState,
     };

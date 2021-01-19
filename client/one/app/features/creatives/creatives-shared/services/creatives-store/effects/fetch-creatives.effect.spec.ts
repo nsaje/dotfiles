@@ -3,7 +3,7 @@ import {
     FetchCreativesAction,
 } from './fetch-creatives.effect';
 import {of, asapScheduler} from 'rxjs';
-import {SetCreativesAction} from '../reducers/set-creatives.reducer';
+import {SetEntitiesAction} from '../reducers/set-entities.reducer';
 import {fakeAsync, tick} from '@angular/core/testing';
 import {CreativesService} from '../../../../../../core/creatives/services/creatives.service';
 import {Creative} from '../../../../../../core/creatives/types/creative';
@@ -18,6 +18,7 @@ import {ScopeParams} from '../../../../../../shared/types/scope-params';
 import {CreativesSearchParams} from '../../../types/creatives-search-params';
 import {SetScopeAction} from '../reducers/set-scope.reducer';
 import {PaginationState} from '../../../../../../shared/components/smart-grid/types/pagination-state';
+import {SetAllEntitiesSelectedAction} from '../reducers/set-all-entities-selected.reducer';
 
 describe('FetchCreativesActionEffect', () => {
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -100,10 +101,13 @@ describe('FetchCreativesActionEffect', () => {
             requestStateUpdater
         );
 
-        expect(effect.dispatch).toHaveBeenCalledTimes(2);
+        expect(effect.dispatch).toHaveBeenCalledTimes(3);
         expect(effect.dispatch).toHaveBeenCalledWith(
-            new SetCreativesAction([mockedCreative])
+            new SetEntitiesAction([mockedCreative])
         );
         expect(effect.dispatch).toHaveBeenCalledWith(new SetScopeAction(scope));
+        expect(effect.dispatch).toHaveBeenCalledWith(
+            new SetAllEntitiesSelectedAction(false)
+        );
     }));
 });

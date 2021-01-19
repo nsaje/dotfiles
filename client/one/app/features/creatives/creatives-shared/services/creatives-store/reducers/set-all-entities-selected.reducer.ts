@@ -1,22 +1,23 @@
 import {StoreAction} from '../../../../../../shared/services/store/store.action';
-import {Creative} from '../../../../../../core/creatives/types/creative';
 import {StoreReducer} from '../../../../../../shared/services/store/store.reducer';
 import {CreativesStoreState} from '../creatives.store.state';
 
-export class SetCreativesAction extends StoreAction<Creative[]> {}
+export class SetAllEntitiesSelectedAction extends StoreAction<boolean> {}
 
 // tslint:disable-next-line: max-classes-per-file
-export class SetCreativesActionReducer extends StoreReducer<
+export class SetAllEntitiesSelectedActionReducer extends StoreReducer<
     CreativesStoreState,
-    SetCreativesAction
+    SetAllEntitiesSelectedAction
 > {
     reduce(
         state: CreativesStoreState,
-        action: SetCreativesAction
+        action: SetAllEntitiesSelectedAction
     ): CreativesStoreState {
         return {
             ...state,
-            entities: action.payload,
+            selectedEntityIds: action.payload
+                ? state.entities.map(entity => entity.id)
+                : [],
         };
     }
 }

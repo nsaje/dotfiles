@@ -9,15 +9,15 @@ export interface Creative {
     accountName: string | null;
     type: AdType;
     url: string;
-    title: string;
+    title: string | null;
     displayUrl: string;
-    brandName: string;
-    description: string;
-    callToAction: string;
+    brandName: string | null;
+    description: string | null;
+    callToAction: string | null;
     tags: string[];
-    imageUrl: string;
-    iconUrl: string;
-    adTag: string;
-    videoAssetId: string;
+    imageUrl: string | null;
+    iconUrl: string | null;
+    adTag: string | null;
+    videoAssetId: string | null;
     trackers: Tracker[];
 }

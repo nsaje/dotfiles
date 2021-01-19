@@ -9,5 +9,15 @@
             (searchParamsChange)="this.searchParamsChange.emit($event)"
         >
         </zem-creatives-actions>
+        <zem-creatives-grid
+            class="zem-creatives-grid zem-creatives__item"
+            [creatives]="state.entities"
+            [context]="context"
+            [isLoading]="state.requests.list.inProgress"
+            [paginationOptions]="paginationOptions"
+            [paginationCount]="state.requests.list.count"
+            (paginationChange)="this.paginationChange.emit($event)"
+        >
+        </zem-creatives-grid>
     </div>
 </ng-container>

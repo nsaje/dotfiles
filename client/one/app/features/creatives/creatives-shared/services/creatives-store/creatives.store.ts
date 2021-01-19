@@ -9,9 +9,9 @@ import {StoreAction} from '../../../../../shared/services/store/store.action';
 import {StoreReducer} from '../../../../../shared/services/store/store.reducer';
 import {StoreEffect} from '../../../../../shared/services/store/store.effect';
 import {
-    SetCreativesAction,
-    SetCreativesActionReducer,
-} from './reducers/set-creatives.reducer';
+    SetEntitiesAction,
+    SetEntitiesActionReducer,
+} from './reducers/set-entities.reducer';
 import {
     FetchCreativesAction,
     FetchCreativesActionEffect,
@@ -32,6 +32,17 @@ import {
     FetchCreativeTagsAction,
     FetchCreativeTagsActionEffect,
 } from './effects/fetch-creative-tags.effect';
+import {
+    SetEntitySelectedAction,
+    SetEntitySelectedActionReducer,
+} from './reducers/set-entity-selected.reducer';
+import {Creative} from '../../../../../core/creatives/types/creative';
+import {AuthStore} from '../../../../../core/auth/services/auth.store';
+import {isNotEmpty} from '../../../../../shared/helpers/common.helpers';
+import {
+    SetAllEntitiesSelectedAction,
+    SetAllEntitiesSelectedActionReducer,
+} from './reducers/set-all-entities-selected.reducer';
 
 @Injectable()
 export class CreativesStore extends Store<CreativesStoreState> {
@@ -40,6 +51,7 @@ export class CreativesStore extends Store<CreativesStoreState> {
     constructor(
         private creativesService: CreativesService,
         private creativeTagsService: CreativeTagsService,
+        private authStore: AuthStore,
         injector: Injector
     ) {
         super(new CreativesStoreState(), injector);
@@ -53,8 +65,8 @@ export class CreativesStore extends Store<CreativesStoreState> {
     >[] {
         return [
             {
-                provide: SetCreativesAction,
-                useClass: SetCreativesActionReducer,
+                provide: SetEntitiesAction,
+                useClass: SetEntitiesActionReducer,
             },
             {
                 provide: SetCreativeTagsAction,
@@ -63,6 +75,14 @@ export class CreativesStore extends Store<CreativesStoreState> {
             {
                 provide: SetScopeAction,
                 useClass: SetScopeActionReducer,
+            },
+            {
+                provide: SetEntitySelectedAction,
+                useClass: SetEntitySelectedActionReducer,
+            },
+            {
+                provide: SetAllEntitiesSelectedAction,
+                useClass: SetAllEntitiesSelectedActionReducer,
             },
             {
                 provide: FetchCreativesAction,
@@ -89,6 +109,34 @@ export class CreativesStore extends Store<CreativesStoreState> {
         searchParams: CreativesSearchParams
     ) {
         this.loadCreatives(this.state.scope, pagination, searchParams);
+    }
+
+    isEntitySelected(entityId: string) {
+        return this.state.selectedEntityIds.includes(entityId);
+    }
+
+    setEntitySelected(entityId: string, setSelected: boolean) {
+        this.dispatch(new SetEntitySelectedAction({entityId, setSelected}));
+    }
+
+    areAllEntitiesSelected() {
+        return (
+            isNotEmpty(this.state.entities) &&
+            this.state.entities
+                .map(entity => entity.id)
+                .every(this.isEntitySelected.bind(this))
+        );
+    }
+
+    setAllEntitiesSelected(setSelected: boolean) {
+        this.dispatch(new SetAllEntitiesSelectedAction(setSelected));
+    }
+
+    isReadOnly(creative: Creative): boolean {
+        return this.authStore.hasReadOnlyAccessOn(
+            this.state.scope.agencyId,
+            creative.accountId
+        );
     }
 
     private loadCreatives(
