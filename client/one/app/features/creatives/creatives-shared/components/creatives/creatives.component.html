@@ -3,7 +3,7 @@
         <zem-creatives-actions
             class="zem-creatives-actions zem-creatives__item"
             [searchParams]="searchParams"
-            [availableTags]="availableTags"
+            [availableTags]="state.availableTags"
             [isReadOnly]="isReadOnly"
             [isDisabled]="!state.scope?.agencyId"
             (searchParamsChange)="this.searchParamsChange.emit($event)"

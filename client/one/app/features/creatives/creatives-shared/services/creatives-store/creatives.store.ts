@@ -23,6 +23,15 @@ import {
 import {ScopeParams} from '../../../../../shared/types/scope-params';
 import {CreativesSearchParams} from '../../types/creatives-search-params';
 import {PaginationState} from '../../../../../shared/components/smart-grid/types/pagination-state';
+import {CreativeTagsService} from '../../../../../core/creative-tags/services/creative-tags.service';
+import {
+    SetCreativeTagsAction,
+    SetCreativeTagsActionReducer,
+} from './reducers/set-creative-tags.reducer';
+import {
+    FetchCreativeTagsAction,
+    FetchCreativeTagsActionEffect,
+} from './effects/fetch-creative-tags.effect';
 
 @Injectable()
 export class CreativesStore extends Store<CreativesStoreState> {
@@ -30,6 +39,7 @@ export class CreativesStore extends Store<CreativesStoreState> {
 
     constructor(
         private creativesService: CreativesService,
+        private creativeTagsService: CreativeTagsService,
         injector: Injector
     ) {
         super(new CreativesStoreState(), injector);
@@ -47,12 +57,20 @@ export class CreativesStore extends Store<CreativesStoreState> {
                 useClass: SetCreativesActionReducer,
             },
             {
+                provide: SetCreativeTagsAction,
+                useClass: SetCreativeTagsActionReducer,
+            },
+            {
                 provide: SetScopeAction,
                 useClass: SetScopeActionReducer,
             },
             {
                 provide: FetchCreativesAction,
                 useClass: FetchCreativesActionEffect,
+            },
+            {
+                provide: FetchCreativeTagsAction,
+                useClass: FetchCreativeTagsActionEffect,
             },
         ];
     }
@@ -61,27 +79,40 @@ export class CreativesStore extends Store<CreativesStoreState> {
         scope: ScopeParams,
         pagination: PaginationState,
         searchParams: CreativesSearchParams
-    ): Promise<boolean> {
-        return this.loadCreatives(scope, pagination, searchParams);
+    ) {
+        this.loadCreatives(scope, pagination, searchParams);
+        this.loadTags(scope);
     }
 
     loadEntities(
         pagination: PaginationState,
         searchParams: CreativesSearchParams
-    ): Promise<boolean> {
-        return this.loadCreatives(this.state.scope, pagination, searchParams);
+    ) {
+        this.loadCreatives(this.state.scope, pagination, searchParams);
     }
 
     private loadCreatives(
         scope: ScopeParams,
         pagination: PaginationState,
         searchParams: CreativesSearchParams
-    ): Promise<boolean> {
-        return this.dispatch(
+    ) {
+        this.dispatch(
             new FetchCreativesAction({
                 scope,
                 pagination,
                 searchParams,
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
+    }
+
+    private loadTags(scope: ScopeParams) {
+        // TODO: Load only first 100 tags on store init, then load 100 matches when search keyword changes
+        this.dispatch(
+            new FetchCreativeTagsAction({
+                scope,
+                pagination: null,
+                searchParams: null,
                 requestStateUpdater: this.requestStateUpdater,
             })
         );

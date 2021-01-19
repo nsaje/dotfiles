@@ -18,12 +18,17 @@ import {DEFAULT_PAGINATION_OPTIONS} from '../../creatives-shared.config';
 import * as deepEqual from 'fast-deep-equal';
 import {FetchCreativesActionEffect} from '../../services/creatives-store/effects/fetch-creatives.effect';
 import {isDefined} from '../../../../../shared/helpers/common.helpers';
+import {FetchCreativeTagsActionEffect} from '../../services/creatives-store/effects/fetch-creative-tags.effect';
 
 @Component({
     selector: 'zem-creatives',
     templateUrl: './creatives.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [CreativesStore, FetchCreativesActionEffect],
+    providers: [
+        CreativesStore,
+        FetchCreativesActionEffect,
+        FetchCreativeTagsActionEffect,
+    ],
 })
 export class CreativesComponent implements OnChanges {
     @Input()
@@ -44,7 +49,6 @@ export class CreativesComponent implements OnChanges {
     context: any;
     isReadOnly: boolean = true;
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
-    availableTags: string[] = ['a', 'b', 'c']; // TODO: retrieve this from backend
 
     constructor(public store: CreativesStore) {
         this.context = {

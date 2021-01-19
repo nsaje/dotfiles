@@ -21,8 +21,8 @@ export class CreativeTagsEndpoint {
     ): Observable<string[]> {
         const request = CREATIVE_TAGS_CONFIG.requests.creatives.list;
         const params = {
-            offset: `${offset}`,
-            limit: `${limit}`,
+            ...(commonHelpers.isDefined(offset) && {offset: `${offset}`}),
+            ...(commonHelpers.isDefined(limit) && {limit: `${limit}`}),
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
             ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(keyword) && {keyword}),

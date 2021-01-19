@@ -9,6 +9,7 @@ export class CreativesStoreState {
     hasAgencyScope: boolean = null;
     entities: Creative[] = [];
     fieldsErrors: CreativesStoreFieldsErrorsState[] = [];
+    availableTags: string[] = [];
     activeEntity = {
         entity: {
             id: null,
