@@ -57,6 +57,12 @@ export class ContentAdTrackerFormComponent implements OnChanges {
             this.showFallbackUrlInput = true;
         }
 
+        if (changes.contentAdTracker && this.contentAdTracker.url) {
+            this.showMacroFormatWarning = this.contentAdTracker.url.includes(
+                '${'
+            );
+        }
+
         if (changes.contentAdTracker && this.contentAdTracker.method) {
             this.availableTrackerEventTypes = this.getAvailableTrackerEventTypes(
                 this.contentAdTracker.method,
@@ -89,7 +95,6 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onUrlChanged(url: string): void {
-        this.showMacroFormatWarning = url.includes('${');
         this.contentAdTrackerChange.emit({
             target: this.contentAdTracker,
             changes: {
