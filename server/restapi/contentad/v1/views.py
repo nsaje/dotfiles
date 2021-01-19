@@ -71,6 +71,12 @@ class ContentAdViewSet(RESTAPIBaseViewSet):
             and content_ad.ad_group.campaign.account_id not in ACCOUNTS_CAN_EDIT_BRAND_NAME
         ):
             del serializer.validated_data["brand_name"]
+
+        if "tracker_urls" in serializer.validated_data and "trackers" not in serializer.validated_data:
+            serializer.validated_data["trackers"] = dash.features.contentupload.convert_legacy_trackers(
+                serializer.validated_data.get("tracker_urls", []), tracker_optional=True
+            )
+
         try:
             content_ad.update(request, **serializer.validated_data)
         except core.models.content_ad.exceptions.CampaignAdTypeMismatch as err:
