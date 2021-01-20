@@ -220,7 +220,7 @@ class UserViewSetTestBase(RESTAPITestCase):
         if account is not None:
             query_params["accountId"] = account.id
 
-        url = "%s?%s" % (
+        url = u"%s?%s" % (
             reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
             urlencode(query_params),
         )
@@ -253,7 +253,7 @@ class UserViewSetTestBase(RESTAPITestCase):
         if account is not None:
             query_params["accountId"] = account.id
 
-        url = "%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
+        url = u"%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
 
         r = self.client.post(url, data=post_data, format="json")
         return r
@@ -265,7 +265,7 @@ class UserViewSetTestBase(RESTAPITestCase):
         if account is not None:
             query_params["account_id"] = account.id
 
-        url = "%s?%s" % (
+        url = u"%s?%s" % (
             reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
             urlencode(query_params),
         )
@@ -279,7 +279,7 @@ class UserViewSetTestBase(RESTAPITestCase):
         if account is not None:
             query_params["accountId"] = account.id
 
-        url = "%s?%s" % (
+        url = u"%s?%s" % (
             reverse("restapi.user.internal:user_resendemail", kwargs={"user_id": requested_user.id}),
             urlencode(query_params),
         )

@@ -1,23 +1,22 @@
 --extra-index-url=https://artifactory-proxy.outbrain.com/artifactory/api/pypi/ob-pypi/simple
 
-Django==2.2.17
+Django==2.1.11
 pylibmc==1.5.2
 jsonfield==2.0.2
-psycopg2-binary==2.8.6
-psycogreen==1.0.2
+psycopg2-binary==2.7.5
+psycogreen==1.0
 python-dateutil==2.7.3
 pytz==2018.5
 PyYAML==5.1
 gunicorn==19.9.0
-gevent==20.12.1
+gevent==1.3.7
 httplib2==0.11.3
 oauth2client==4.1.3
 rfc3987==1.3.8
 pycryptodome==3.7.3
 unicodecsv==0.14.1
 XlsxWriter==1.1.1
-xlrd==2.0.1
-openpyxl==3.0.5
+xlrd==1.1.0
 python-slugify==1.2.6
 newrelic==4.4.1.104
 boto==2.49.0
@@ -33,10 +32,10 @@ retrying==1.3.3
 drf-yasg==1.17.0
 
 # Tests
-mock==4.0.3
+mock==2.0.0
 selenium==3.14.1
 unittest-xml-reporting==3.0.2
-freezegun==1.0.0
+freezegun==0.3.11
 mixer==6.1.3
 parameterized==0.7.4
 
@@ -62,7 +61,7 @@ Faker==0.9.1
 sqlparse==0.2.4
 
 # handling image uploads in forms
-Pillow==8.0.1
+Pillow==5.3.0
 
 # REST framework
 djangorestframework==3.8.2
@@ -77,10 +76,10 @@ drf-base64==2.0
 django-ratelimit==1.1.0
 
 # Django tagging
-django-tagulous==1.1.0
+django-tagulous==0.14.0
 
 # Traceback support for running tests in parallel
-tblib==1.7.0
+tblib==1.3.2
 
 # terminal colors
 termcolor==1.1.0
@@ -96,11 +95,11 @@ ua-parser==0.8.0
 
 # rss parser for product sync
 feedparser==5.2.1
-beautifulsoup4==4.9.3
-lxml==4.6.2
+beautifulsoup4==4.8.0
+lxml==4.4.1
 
 # defusedxml for safer xml parsing
-defusedxml==0.6.0
+defusedxml==0.5.0
 
 # distributed cron jobs
 croniter==0.3.25
@@ -131,9 +130,8 @@ Fabric==2.4.0
 haikunator==2.1.0
 
 # devx
-ipython==7.19.0
-jedi==0.17.2  # newer version was breaking ipython autocomplete
-ipdb==0.13.4
+ipython==7.16.1
+ipdb==0.13.3
 yappi==1.0
 
 confluent-kafka==1.5.0

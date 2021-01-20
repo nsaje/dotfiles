@@ -13,16 +13,16 @@ class DetailedDeliveryStatus(ConstantBase):
     CAMPAIGNSTOP_STOPPED = "campaignstop-stopped"
     CAMPAIGNSTOP_LOW_BUDGET = "campaignstop-low-budget"
     CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT = (
-        "campaignstop-pending-budget-autopilot"  # TODO: RTAP: remove this after Phase 1
-    )
+        "campaignstop-pending-budget-autopilot"
+    )  # TODO: RTAP: remove this after Phase 1
     CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION = "campaignstop-pending-budget-budget-optimization"
     CAMPAIGNSTOP_PENDING_BUDGET_OPTIMAL_BID = "campaignstop-pending-budget-optimal-bid"
     CAMPAIGNSTOP_PENDING_BUDGET_BUDGET_OPTIMIZATION_OPTIMAL_BID = (
         "campaignstop-pending-budget-budget-optimization-optimal-bid"
     )
     CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY = (
-        "campaignstop-pending-budget-active-price-discovery"  # TODO: RTAP: remove this after Phase 1
-    )
+        "campaignstop-pending-budget-active-price-discovery"
+    )  # TODO: RTAP: remove this after Phase 1
     CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE = "campaignstop-pending-budget-active"
     DISABLED = "disabled"
 

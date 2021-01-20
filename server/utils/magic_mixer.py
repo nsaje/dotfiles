@@ -69,7 +69,7 @@ class MagicMixer(mixer_base.__class__):
             end_date=end_date,
             amount=amount,
             campaign=campaign,
-            **kwargs,
+            **kwargs
         )
 
     def postprocess(self, target):

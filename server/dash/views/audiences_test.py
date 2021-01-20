@@ -206,7 +206,7 @@ class AudiencesTestCase(BaseTestCase):
     @mock.patch("utils.k1_helper.update_account")
     def test_post(self, k1_update_account_mock):
         data = self._get_valid_post_data()
-        del data["prefill_days"]
+        del (data["prefill_days"])
         url = reverse("accounts_audiences", kwargs={"account_id": 1})
 
         audiences = models.Audience.objects.filter(pk=6)

@@ -49,7 +49,7 @@ class Command(utils.command_helpers.Z1Command):
                 and dash.constants.ContentAdSubmissionStatus.APPROVED
                 or dash.constants.ContentAdSubmissionStatus.REJECTED
             ),
-            **lookup,
+            **lookup
         ).select_related("source"):
             print("Updating ad {} on source {} to PENDING".format(cas.content_ad_id, cas.source))
             cas.submission_status = dash.constants.ContentAdSubmissionStatus.PENDING

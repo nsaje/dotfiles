@@ -1,4 +1,4 @@
-FROM python:3.9.1-slim
+FROM python:3.7.5-slim
 
 RUN useradd -m -u 1000 ubuntu
 
@@ -36,18 +36,11 @@ ADD server/requirements.txt /requirements.txt
 
 # Install build dependencies + requirements.txt
 # FIXME(nsaje): cd to /opt so pip install -e installs packages there. Can remove once pip-freeze supports git requirements properly
-# FIXME(luka): librdkafka-dev is built manually, move to apt when the version is >= 1.4.x
 RUN set -ex && \
-    kafkaBuildDeps="g++ pkg-config make" && \
-    buildDeps="gcc python3-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev libcurl4-openssl-dev zlib1g-dev $kafkaBuildDeps" && \
+    cd /opt && \
+    buildDeps='gcc python3-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev libcurl4-openssl-dev zlib1g-dev' && \
     apt-get update && \
     apt-get install -y --no-install-recommends $buildDeps && \
-    curl -L https://github.com/edenhill/librdkafka/archive/v1.5.3.tar.gz | tar xzf - &&\
-    cd librdkafka-1.5.3/ &&\
-    ./configure --prefix=/usr &&\
-    make -j &&\
-    make install &&\
-    cd /opt && \
     pip install -r /requirements.txt && \
     mv /requirements.txt /requirements.txt-installed && \
     rm -fr ~/.cache/ && \

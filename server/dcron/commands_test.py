@@ -88,7 +88,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dummy_command = DummyCommand()
 
         def run_command():
-            dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         dcron_job_qs = models.DCronJob.objects.filter(command_name=DUMMY_COMMAND)
 
@@ -166,7 +166,7 @@ class DCronCommandTestCase(TransactionTestCase):
 
         dummy_command = DummyCommand()
 
-        dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         dcron_job_qs = models.DCronJob.objects.filter(command_name=DUMMY_COMMAND)
 
@@ -222,7 +222,7 @@ class DCronCommandTestCase(TransactionTestCase):
         models.DCronJobSettings.objects.create(job=dcron_job, pause_execution=False, schedule="", full_command="")
 
         dummy_command = DummyCommand()
-        dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         self.assertTrue(dummy_command.called_1)
         self.assertTrue(dummy_command.called_2)
@@ -231,7 +231,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dcron_job.dcronjobsettings.save()
 
         dummy_command = DummyCommand()
-        dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         self.assertTrue(dummy_command.called_1)
         self.assertFalse(dummy_command.called_2)
@@ -255,7 +255,7 @@ class DCronCommandTestCase(TransactionTestCase):
         models.DCronJobSettings.objects.create(job=dcron_job, schedule="", full_command="")
 
         with self.assertNumQueries(1):
-            dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         mock_influx_incr.assert_has_calls([])
         self.assertEqual(len(mock_influx_timing.call_args_list), 0)
@@ -283,7 +283,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dummy_command = DummyCommand()
 
         def run_command():
-            dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         now_dt = timezone.now()
         executed_dt = now_dt - datetime.timedelta(seconds=45)
@@ -361,7 +361,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dummy_command = DummyCommand()
 
         def run_command():
-            dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         now_dt = timezone.now()
         executed_dt = now_dt - datetime.timedelta(seconds=45)
@@ -439,7 +439,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dummy_command = DummyCommand()
 
         def run_command():
-            dummy_command.execute(**{"no_color": None, "force_color": None, "stdout": None, "stderr": None})
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         now_dt = timezone.now()
         executed_dt = now_dt - datetime.timedelta(seconds=45)

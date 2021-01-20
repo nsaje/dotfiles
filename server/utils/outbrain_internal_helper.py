@@ -77,7 +77,7 @@ def _get_api_token():
     r = requests.request(method="GET", url=settings.AMELIA_BASE_URL + URL_LOGIN, headers=headers, timeout=TIMEOUT)
 
     if r.status_code != 200:
-        raise OutbrainInternalAPIException("Unable to obtain API token. Response: {}".format(r.text))
+        raise OutbrainInternalAPIException(u"Unable to obtain API token. Response: {}".format(r.text))
 
     api_token = json.loads(r.text)["OB-TOKEN-V1"]
 

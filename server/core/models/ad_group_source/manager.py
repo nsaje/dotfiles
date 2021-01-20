@@ -40,7 +40,7 @@ class AdGroupSourceManager(core.common.BaseManager):
         ad_review_only=False,
         skip_notification=False,
         is_adgroup_creation=False,
-        **updates,
+        **updates
     ):
         try:
             # TODO: fix the problem of duplicated entries for "source, adgroup" pairs
@@ -92,7 +92,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                 skip_notification=skip_notification,
                 write_history=write_history and not ad_review_only,
                 is_adgroup_creation=is_adgroup_creation,
-                **updates,
+                **updates
             )
         elif ad_group_source.ad_review_only and not ad_review_only:
             self._handle_ad_review_only(ad_group_source, skip_notification)
@@ -167,7 +167,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                     skip_validation=True,
                     skip_notification=True,
                     is_adgroup_creation=True,
-                    **updates,
+                    **updates
                 )
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:

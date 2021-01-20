@@ -17,13 +17,9 @@ class Command(Z1Command):
     def handle(self, *args, **options):
         running_ad_groups = models.AdGroup.objects.filter_running().select_related("campaign__account", "settings")
         for account, ad_groups in self._group_by_account(running_ad_groups).items():
-            (
-                num_running_ad_groups,
-                num_running_b1_sources,
-                num_running_ob_sources,
-                num_running_y_sources,
-                num_running_ads,
-            ) = self._get_metrics(ad_groups)
+            num_running_ad_groups, num_running_b1_sources, num_running_ob_sources, num_running_y_sources, num_running_ads = self._get_metrics(
+                ad_groups
+            )
             self._log_for_account(
                 options,
                 account,

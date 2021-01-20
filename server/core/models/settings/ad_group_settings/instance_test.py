@@ -717,7 +717,7 @@ class LegacySyncTest(TestCase):
                     **{
                         "local_" + field1: getattr(self.ad_group.settings, "local_" + field1),
                         "local_" + field2: value + Decimal("0.02"),
-                    },
+                    }
                 )
                 self.assertEqual(value + Decimal("0.02"), getattr(self.ad_group.settings, "local_" + field1))
 

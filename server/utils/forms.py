@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 class EmptyChoiceField(forms.ChoiceField):
     def __init__(self, *, choices=(), empty_label=None, **kwargs):
         if empty_label is not None:
-            choices = tuple([("", empty_label)] + list(choices))
+            choices = tuple([(u"", empty_label)] + list(choices))
         super().__init__(choices=choices, **kwargs)
 
 

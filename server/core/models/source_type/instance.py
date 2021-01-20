@@ -5,8 +5,8 @@ import dash.constants
 
 class SourceTypeMixin:
     def get_min_cpc(self, ad_group_settings, bcm_modifiers=None):
-        """Some source types have different minimal CPCs depending on the settings.
-        Encode these special cases here."""
+        """ Some source types have different minimal CPCs depending on the settings.
+            Encode these special cases here. """
         min_cpc = self.get_etfm_min_cpc(bcm_modifiers)
         if self.type == dash.constants.SourceType.YAHOO and ad_group_settings.target_devices == [
             dash.constants.AdTargetDevice.DESKTOP
@@ -15,8 +15,8 @@ class SourceTypeMixin:
         return min_cpc
 
     def get_min_cpm(self, ad_group_settings, bcm_modifiers=None):
-        """Some source types have different minimal CPMs depending on the settings.
-        Encode these special cases here."""
+        """ Some source types have different minimal CPMs depending on the settings.
+            Encode these special cases here. """
         min_cpm = self.get_etfm_min_cpm(bcm_modifiers)
         if self.type == dash.constants.SourceType.YAHOO:
             min_cpm = max(min_cpm, Decimal("0.25")) if min_cpm else Decimal("0.25")
@@ -90,19 +90,19 @@ class SourceTypeMixin:
             )
 
     def can_modify_targeting_for_region_type_manually(self, region_type):
-        """Assume automatic targeting support implies manual targeting support
+        """ Assume automatic targeting support implies manual targeting support
 
-        This addresses the following situation: Imagine targeting
-        GB (country) and 693 (DMA) and a SourceType that supports automatic
-        DMA targeting and manual country targeting.
+            This addresses the following situation: Imagine targeting
+            GB (country) and 693 (DMA) and a SourceType that supports automatic
+            DMA targeting and manual country targeting.
 
-        Automatically setting the targeting would be impossible because
-        the SourceType does not support modifying country targeting
-        automatically.
+            Automatically setting the targeting would be impossible because
+            the SourceType does not support modifying country targeting
+            automatically.
 
-        Manually setting the targeting would also be impossible because
-        the SourceType does not support modifying DMA targeting manually.
-        """
+            Manually setting the targeting would also be impossible because
+            the SourceType does not support modifying DMA targeting manually.
+            """
         if self.can_modify_targeting_for_region_type_automatically(region_type):
             return True
         if region_type == dash.constants.RegionType.COUNTRY:

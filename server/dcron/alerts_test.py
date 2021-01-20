@@ -551,19 +551,19 @@ class HandleAlertsTestCase(TestCase):
                     "",
                     **alerts._create_slack_publish_params(
                         models.DCronJob.objects.get(command_name="command_03"), constants.Alert.EXECUTION
-                    ),
+                    )
                 ),
                 mock.call(
                     "",
                     **alerts._create_slack_publish_params(
                         models.DCronJob.objects.get(command_name="command_05"), constants.Alert.DURATION
-                    ),
+                    )
                 ),
                 mock.call(
                     "",
                     **alerts._create_slack_publish_params(
                         models.DCronJob.objects.get(command_name="command_07"), constants.Alert.DURATION
-                    ),
+                    )
                 ),
             ]
         )

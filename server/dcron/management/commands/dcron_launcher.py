@@ -9,10 +9,10 @@ from dcron.commands import DCronCommand
 class Command(DCronCommand):
     help = "DCronCommand launcher is a proxy to another management command that does not extend DCronCommand."
 
-    def __init__(self, stdout=None, stderr=None, no_color=False, force_color=None):
+    def __init__(self, stdout=None, stderr=None, no_color=False):
         self.proxy_command_name = helpers.get_command(sys.argv)
         self._execute_recursion_check()
-        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color, force_color=None)
+        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
     def add_arguments(self, parser):
         parser.add_argument("proxy_command_name", help="The name of management command to run.")

@@ -26,7 +26,7 @@ class User(
     auth_models.AbstractBaseUser,
     auth_models.PermissionsMixin,
 ):
-    """Describes custom Zemanta user.
+    """ Describes custom Zemanta user.
 
     IMPORTANT: Default unique constraint on the email created by Django is deleted and
     replaced by case-insensitive unique index created by one of migrations.

@@ -79,7 +79,7 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
             prev_spends=prev_spends,
             threshold_op="<" if obj.context.get("is_below_threshold") else ">",
             remaining_amount=float(obj.context["available_budget"]) - float(obj.context["current_rt_spend"]),
-            **obj.context,
+            **obj.context
         ).replace("\n", "<br />")
 
     def _get_max_allowed_end_date_update_description(self, obj):

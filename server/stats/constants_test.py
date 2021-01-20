@@ -1,3 +1,4 @@
+
 from django.test import TestCase
 
 from stats import constants

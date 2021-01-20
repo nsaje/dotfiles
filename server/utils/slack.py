@@ -74,7 +74,7 @@ def publish(
     msg_type=MESSAGE_TYPE_INFO,
     username=USER_DEFAULT,
     attachments=None,
-    **kwargs,
+    **kwargs
 ):
     data = {}
     data.update(kwargs)

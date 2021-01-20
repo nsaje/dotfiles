@@ -1,6 +1,6 @@
 class BaseValidator(object):
 
-    """Make `save` call `full_clean`.
+    """ Make `save` call `full_clean`.
     .. warning:
         This should be the left-most mixin/super-class of a model.
     """

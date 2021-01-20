@@ -176,7 +176,7 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None):
         skip_automation=True,
         skip_validation=True,
         skip_notification=True,
-        **changes,
+        **changes
     )
 
 
@@ -201,7 +201,7 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
         skip_notification=True,
         system_user=system_user,
         write_source_history=False,
-        **kwargs,
+        **kwargs
     )
 
 

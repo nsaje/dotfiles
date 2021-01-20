@@ -530,7 +530,7 @@ class TestGetMinMaxFactorsDetailed(TestCase):
 
 
 def _multiply_modifiers(min_max_fn, *bid_modifiers):
-    return functools.reduce(operator.mul, [min_max_fn(e.modifier, 1.0) for e in bid_modifiers], 1.0)
+    return functools.reduce(operator.mul, [min_max_fn(e.modifier, 1.) for e in bid_modifiers], 1.)
 
 
 class TestGetTypeSummaries(BaseOverviewTestCase):

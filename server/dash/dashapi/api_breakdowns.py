@@ -86,14 +86,10 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
             if row[target_dimension] in dash_rows_by_id:
                 selected_rows.append(dash_rows_by_id[row[target_dimension]])
 
-            elif (
-                target_dimension
-                in (
-                    "publisher_id",
-                    "placement_id",
-                )
-                or stats.constants.is_top_level_delivery_dimension(target_dimension)
-            ):
+            elif target_dimension in (
+                "publisher_id",
+                "placement_id",
+            ) or stats.constants.is_top_level_delivery_dimension(target_dimension):
                 # when dealing with publishers, placement or delivery create dash rows from stats rows - not everything
                 # can be queried out of dash database as in other dimensions that are augmented by dash.
 

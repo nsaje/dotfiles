@@ -51,7 +51,7 @@ def update_publisher_classsifications_from_oen(date_from=None):
                     When(**{"publisher_group_id": k, "then": Value(v)})
                     for k, v in constants.PUBLISHER_GROUP_CATEGORY_MAPPING.items()
                 ],
-                output_field=CharField(),
+                output_field=CharField()
             )
         )
         .values("publisher", "category")

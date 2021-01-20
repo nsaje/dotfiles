@@ -24,7 +24,7 @@ def urllib2_to_wsgi_request(request):
         **{
             header_sig: request.get_header(request_signer.SIGNATURE_HEADER).decode("utf-8"),
             header_ts: request.get_header(request_signer.TS_HEADER),
-        },
+        }
     )
     return wsgi_request
 

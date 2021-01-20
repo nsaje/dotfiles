@@ -37,9 +37,7 @@ class DCronLauncherTestCase(TransactionTestCase):
     def test_launcher(self, mock_influx_timing, mock_influx_incr, mock_load_command_class, mock_get_commands):
         launcher_command = dcron_launcher.Command()
 
-        launcher_command.execute(
-            *sys.argv[2:], **{"no_color": None, "force_color": None, "stdout": None, "stderr": None}
-        )
+        launcher_command.execute(*sys.argv[2:], **{"no_color": None, "stdout": None, "stderr": None})
 
         dcron_job_qs = models.DCronJob.objects.filter(command_name="othercommand")
 
@@ -66,7 +64,6 @@ class DCronLauncherTestCase(TransactionTestCase):
                 "arg1": "5",
                 "arg2": True,
                 "no_color": False,
-                "force_color": False,
                 "pythonpath": None,
                 "settings": None,
                 "traceback": False,

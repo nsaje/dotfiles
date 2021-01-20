@@ -43,7 +43,7 @@ def get_tracker(
     method: str,
     tracker_optional: bool = False,
     fallback_url: Union[None, str] = None,
-    **kwargs,
+    **kwargs
 ) -> ContentAdTracker:
     return {
         "event_type": event_type,

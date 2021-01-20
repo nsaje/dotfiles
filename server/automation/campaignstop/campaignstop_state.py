@@ -87,7 +87,7 @@ class CampaignStopState(models.Model):
             email_helper.send_official_email(
                 recipient_list=manager_list,
                 agency_or_user=zemauth.models.User.objects.get(email=manager_list[0]),
-                **email_helper.params_from_template(dash.constants.EmailTemplateType.CAMPAIGNSTOP_DEPLETING, **args),
+                **email_helper.params_from_template(dash.constants.EmailTemplateType.CAMPAIGNSTOP_DEPLETING, **args)
             )
         except Exception:
             logger.exception("Exception while sending campaign stop email")
