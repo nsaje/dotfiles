@@ -133,7 +133,6 @@ haikunator==2.1.0
 # devx
 ipython==7.19.0
 jedi==0.17.2  # newer version was breaking ipython autocomplete
-ipdb3==1.0.2
 ipdb==0.13.4
 yappi==1.0
 
