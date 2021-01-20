@@ -57,7 +57,7 @@ class StrFieldWidget(forms.Widget):
 
 
 class AbstractUserForm(forms.ModelForm):
-    """ Ugly hack to bring ManyToMany related object data into a "through" object inline
+    """Ugly hack to bring ManyToMany related object data into a "through" object inline
     WARNING: DOES NOT SAVE THE DATA
     """
 

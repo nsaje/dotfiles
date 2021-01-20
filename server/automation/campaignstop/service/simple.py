@@ -132,7 +132,7 @@ def _send_depleting_budget_notification_email(
             agency_or_user=campaign.account.agency,
             recipient_list=emails,
             from_email=DEPLETING_CAMPAIGN_BUDGET_EMAIL,
-            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.BUDGET_DEPLETING, **args)
+            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.BUDGET_DEPLETING, **args),
         )
     except Exception:
         logger.exception(
@@ -153,7 +153,7 @@ def _send_campaign_stopped_notification_email(campaign, campaign_url, emails):
             agency_or_user=campaign.account.agency,
             recipient_list=emails,
             from_email=DEPLETING_CAMPAIGN_BUDGET_EMAIL,
-            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_STOPPED, **args)
+            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_STOPPED, **args),
         )
     except Exception:
         logger.exception(

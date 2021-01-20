@@ -11,11 +11,11 @@ class SettingsLazyProxy(django.utils.functional.SimpleLazyObject):
 
 
 class SettingsProxyMixin(object):
-    """ A mixin that enables an entity to access (& update if supported)
-        its settings, normally accessable via get_current_settings, via
-        .settings property.
+    """A mixin that enables an entity to access (& update if supported)
+    its settings, normally accessable via get_current_settings, via
+    .settings property.
 
-        Should become obsolete if/when we introduce FKs to latest settings.
+    Should become obsolete if/when we introduce FKs to latest settings.
     """
 
     _current_settings = None

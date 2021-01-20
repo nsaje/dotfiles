@@ -71,8 +71,8 @@ def get_min_max_factors(
         for e in _get_overview_queryset(ad_group_id, included_types=included_types, excluded_types=excluded_types)
     ]
 
-    min_factor = functools.reduce(operator.mul, [e["min"] for e in min_max_list], 1.)
-    max_factor = functools.reduce(operator.mul, [e["max"] for e in min_max_list], 1.)
+    min_factor = functools.reduce(operator.mul, [e["min"] for e in min_max_list], 1.0)
+    max_factor = functools.reduce(operator.mul, [e["max"] for e in min_max_list], 1.0)
 
     return min_factor, max_factor
 

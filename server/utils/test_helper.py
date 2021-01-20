@@ -202,16 +202,16 @@ def disable_auto_now(cls, field_name):
 
 
 def params_cross_product(*params_iterables: Iterable[param]) -> Iterable[param]:
-    """ Returns a cross product of iterables of params for use in parameterized tests.
+    """Returns a cross product of iterables of params for use in parameterized tests.
 
-        The first argument is expected to be the test case name.
+    The first argument is expected to be the test case name.
 
-        For example:
+    For example:
 
-        >>> l1 = [param("foo", 1, a=1), param("bar", 2, a=2)]
-        >>> l2 = [param("baz", b=1)]
-        >>> list(params_cross_product(l1, l2))
-        [param(*('foo_baz', 1), **{'a': 1, 'b': 1}), param(*('bar_baz', 2), **{'a': 2, 'b': 1})]
+    >>> l1 = [param("foo", 1, a=1), param("bar", 2, a=2)]
+    >>> l2 = [param("baz", b=1)]
+    >>> list(params_cross_product(l1, l2))
+    [param(*('foo_baz', 1), **{'a': 1, 'b': 1}), param(*('bar_baz', 2), **{'a': 2, 'b': 1})]
     """
 
     def _params_reducer(p1, p2):

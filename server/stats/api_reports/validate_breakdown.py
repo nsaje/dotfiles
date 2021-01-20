@@ -1,4 +1,3 @@
-
 from dash.constants import Level
 from stats import constants
 from utils import exc

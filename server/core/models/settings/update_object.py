@@ -1,6 +1,6 @@
 class UpdateObject(object):
-    """ An object returned by `SettingsBase.copy_settings()` that keeps track of proposed
-        changes to the settings. Ensures backward compatibility with old settings style.
+    """An object returned by `SettingsBase.copy_settings()` that keeps track of proposed
+    changes to the settings. Ensures backward compatibility with old settings style.
     """
 
     def __init__(self, settings):

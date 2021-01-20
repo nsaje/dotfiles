@@ -318,6 +318,7 @@ if TESTING:
     GOOGLE_OAUTH_ENABLED = False
     PAGER_DUTY_ENABLED = False
     USE_HASH_CACHE = False
+    SLACK_LOG_ENABLE = False
 
     CACHES = {
         "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},

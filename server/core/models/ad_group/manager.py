@@ -24,7 +24,7 @@ class AdGroupManager(core.common.BaseManager):
         bidding_type=dash.constants.BiddingType.CPC,
         initial_settings=None,
         sources=None,
-        **kwargs
+        **kwargs,
     ):
         self._validate_archived(campaign)
         self._validate_entity_limits(campaign)
@@ -70,7 +70,7 @@ class AdGroupManager(core.common.BaseManager):
                     **settings_updates,
                     skip_field_change_validation_autopilot=True,
                     skip_automation=True,
-                    is_create=True
+                    is_create=True,
                 )  # automation is ran in _post_create
 
             if campaign.account_id != settings.HARDCODED_ACCOUNT_ID_OEN:

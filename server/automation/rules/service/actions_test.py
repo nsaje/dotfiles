@@ -30,7 +30,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.AD,
                 "bid_modifier_target": "9999",
                 "source": False,
-            }
+            },
         ),
         param(
             "publisher",
@@ -40,7 +40,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
                 "bid_modifier_target": "publisher1.com",
                 "source": True,
-            }
+            },
         ),
         param(
             "device",
@@ -50,7 +50,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.DEVICE,
                 "bid_modifier_target": str(dash.constants.DeviceType.DESKTOP),
                 "source": False,
-            }
+            },
         ),
         param(
             "country",
@@ -60,7 +60,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.COUNTRY,
                 "bid_modifier_target": "USA",
                 "source": False,
-            }
+            },
         ),
         param(
             "state",
@@ -70,7 +70,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.STATE,
                 "bid_modifier_target": "US-01",
                 "source": False,
-            }
+            },
         ),
         param(
             "dma",
@@ -80,7 +80,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.DMA,
                 "bid_modifier_target": "123",
                 "source": False,
-            }
+            },
         ),
         param(
             "os",
@@ -90,7 +90,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
                 "bid_modifier_target": "winphone",
                 "source": False,
-            }
+            },
         ),
         param(
             "environment",
@@ -100,7 +100,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.ENVIRONMENT,
                 "bid_modifier_target": "site",
                 "source": False,
-            }
+            },
         ),
         param(
             "source",
@@ -110,7 +110,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,
                 "bid_modifier_target": "9999",
                 "source": False,
-            }
+            },
         ),
         param(
             "placement",
@@ -122,7 +122,7 @@ class BidModifiersParameterized(TestCase):
                     "zemanta.com", "9999", "100001-1001633"
                 ),
                 "source": True,
-            }
+            },
         ),
         param(
             "browser",
@@ -132,7 +132,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.BROWSER,
                 "bid_modifier_target": "CHROME",
                 "source": False,
-            }
+            },
         ),
         param(
             "connection_type",
@@ -142,7 +142,7 @@ class BidModifiersParameterized(TestCase):
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.CONNECTION_TYPE,
                 "bid_modifier_target": "cellular",
                 "source": False,
-            }
+            },
         ),
     ]
 
