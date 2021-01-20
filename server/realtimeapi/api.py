@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from pydruid.client import PyDruid
 from pydruid.utils.aggregators import count
 from pydruid.utils.aggregators import doublesum
@@ -11,6 +10,7 @@ from pydruid.utils.filters import Filter
 from pydruid.utils.having import Having
 from pydruid.utils.postaggregator import Const
 from pydruid.utils.postaggregator import Field
+
 from utils import dates_helper
 
 from . import constants
