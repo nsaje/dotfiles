@@ -3,7 +3,7 @@ import core.common
 from dash import constants
 from utils import dates_helper
 
-LEGACY_AGENCY_IDS = [705, 635, 779, 208, 490, 448, 561, 670]
+LEGACY_AGENCY_IDS = [705, 635, 779, 208, 490, 448, 670]
 
 
 class AdGroupSettingsManager(core.common.QuerySetManager):
