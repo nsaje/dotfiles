@@ -3,8 +3,6 @@ import core.common
 from dash import constants
 from utils import dates_helper
 
-LEGACY_AGENCY_IDS = [779, 670]
-
 
 class AdGroupSettingsManager(core.common.QuerySetManager):
     def create_default(self, ad_group, name):
@@ -24,14 +22,8 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.ad_group_name = name
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_daily_budget = 0
-
-        # TODO: RTAP: Remove after defaults updated for everyone
-        if ad_group.campaign.account.agency_id in LEGACY_AGENCY_IDS:
-            new_settings.b1_sources_group_enabled = False
-            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
-        else:
-            new_settings.b1_sources_group_enabled = True
-            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
+        new_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
 
         new_settings.update_unsafe(None)
         return new_settings
