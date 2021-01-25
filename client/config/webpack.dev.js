@@ -141,7 +141,7 @@ function generateConfig(appEnvironment) {
         },
     };
 
-    config.devtool = 'eval';
+    config.devtool = 'eval-cheap-module-source-map';
     config.mode = 'development';
 
     return config;
