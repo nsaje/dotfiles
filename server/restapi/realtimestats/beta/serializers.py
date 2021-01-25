@@ -6,6 +6,7 @@ from rest_framework import serializers
 import realtimeapi.constants
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import utils.camel_case
 
 
 class RealtimeStatsSerializer(serializers.Serializer):
@@ -35,14 +36,21 @@ class GroupByQueryParamsExpectations(BaseQueryParamsExpectations):
     limit = fields.IntegerField(max_value=100, default=10)
     marker = restapi.serializers.fields.IdField(default=None)
     breakdown = restapi.serializers.fields.ChoiceField(
-        choices=realtimeapi.constants.ValidGroupByBreakdown.get_all(), required=False
+        choices=[
+            utils.camel_case.snake_to_camel(const) for const in realtimeapi.constants.ValidGroupByBreakdown.get_all()
+        ],
+        required=False,
     )
 
 
 class TopNQueryParamsExpectations(BaseQueryParamsExpectations):
     breakdown = restapi.serializers.fields.ChoiceField(
-        choices=realtimeapi.constants.ValidTopNBreakdown.get_all(), required=False
+        choices=[
+            utils.camel_case.snake_to_camel(const) for const in realtimeapi.constants.ValidTopNBreakdown.get_all()
+        ],
+        required=False,
     )
     order = restapi.serializers.fields.OrderChoiceField(
-        choices=realtimeapi.constants.ValidOrder.get_all(), required=False
+        choices=[utils.camel_case.snake_to_camel(const) for const in realtimeapi.constants.ValidOrder.get_all()],
+        required=False,
     )

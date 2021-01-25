@@ -95,7 +95,7 @@ class GroupByViewTest(RESTAPITestCase):
         response = self.assertResponseError(r, "ValidationError")
         self.assertCountEqual(
             response["details"]["breakdown"],
-            ["Invalid choice foo! Valid choices: campaign_id, ad_group_id, content_ad_id, media_source, publisher"],
+            ["Invalid choice foo! Valid choices: campaignId, adGroupId, contentAdId, mediaSource, publisher"],
         )
 
     def test_missing_permission(self, mock_groupby):
@@ -184,7 +184,7 @@ class TopNViewTest(RESTAPITestCase):
         response = self.assertResponseError(r, "ValidationError")
         self.assertCountEqual(
             response["details"]["breakdown"],
-            ["Invalid choice foo! Valid choices: campaign_id, ad_group_id, content_ad_id, media_source, publisher"],
+            ["Invalid choice foo! Valid choices: campaignId, adGroupId, contentAdId, mediaSource, publisher"],
         )
 
     def test_missing_permission(self, mock_topn):

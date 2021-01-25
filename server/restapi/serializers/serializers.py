@@ -2,13 +2,13 @@ import warnings
 from collections import OrderedDict
 
 from django.http.request import QueryDict
-from djangorestframework_camel_case.util import camel_to_underscore
 from rest_framework import serializers
 
 import restapi.serializers.fields
 import utils.exc
 import utils.list_helper
 import zemauth.models
+from utils.camel_case import camel_to_snake
 from zemauth.features.entity_permission import Permission
 
 
@@ -20,7 +20,7 @@ class QueryParamsExpectations(serializers.Serializer):
         if data:
             snake_cased_data = QueryDict(mutable=True)
             for key in data:
-                snake_cased_key = camel_to_underscore(key)
+                snake_cased_key = camel_to_snake(key)
                 value = data.getlist(key)
                 if isinstance(self.fields.get(snake_cased_key), serializers.ListField):
                     value = utils.list_helper.flatten(x.split(",") for x in value)

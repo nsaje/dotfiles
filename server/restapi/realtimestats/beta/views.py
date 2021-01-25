@@ -1,6 +1,7 @@
 import rest_framework.permissions
 
 import stats.api_realtimestats
+import utils.camel_case
 import zemauth.access
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils import exc
@@ -38,7 +39,8 @@ class RealtimeStatsViewSet(RESTAPIBaseViewSet):
 
         query_params["breakdown"] = []
         if qpe.validated_data.get("breakdown"):
-            query_params["breakdown"].append(qpe.validated_data.get("breakdown"))
+            breakdown = utils.camel_case.camel_to_snake(qpe.validated_data.get("breakdown"))
+            query_params["breakdown"].append(breakdown)
 
         marker = qpe.validated_data.get("marker")
         if marker:
