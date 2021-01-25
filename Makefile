@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 # this is private Docker registry URL hosted on AWS
 ECR_BASE = 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta
+PULL_TAG = master
 GIT_HASH := $(shell git rev-parse --verify HEAD)
 TIMESTAMP := $(shell date +"Created_%Y-%m-%d_%H.%M")
 
@@ -23,6 +24,7 @@ endif
 
 # Exported because docker-compose.*.yml uses it
 export ECR_BASE
+export PULL_TAG
 export Z1_CLIENT_IMAGE
 export Z1_SERVER_IMAGE
 export ACCEPTANCE_IMAGE
@@ -238,9 +240,9 @@ build_e2e_utils:	## builds e2e utility images for CI
 	docker build -t zemanta/deno -f docker/Dockerfile.z1-deno docker/
 
 pull: login	## pulls zemanta docker images
-	docker pull $(ECR_BASE)/z1-base:master && docker tag $(ECR_BASE)/z1-base:master $(ECR_BASE)/z1-base:latest
-	docker pull $(ECR_BASE)/z1:master && docker tag $(ECR_BASE)/z1:master $(ECR_BASE)/z1:latest
-	docker pull $(ECR_BASE)/z1-client:master && docker tag $(ECR_BASE)/z1-client:master $(ECR_BASE)/z1-client:latest
+	docker pull $(ECR_BASE)/z1-base:$(PULL_TAG) && docker tag $(ECR_BASE)/z1-base:$(PULL_TAG) $(ECR_BASE)/z1-base:latest
+	docker pull $(ECR_BASE)/z1:$(PULL_TAG) && docker tag $(ECR_BASE)/z1:$(PULL_TAG) $(ECR_BASE)/z1:latest
+	docker pull $(ECR_BASE)/z1-client:$(PULL_TAG) && docker tag $(ECR_BASE)/z1-client:$(PULL_TAG) $(ECR_BASE)/z1-client:latest
 
 push_baseimage:	## pushes zemanta/z1-base docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH)

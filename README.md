@@ -41,6 +41,24 @@ The code you have locally is mounted into the docker containers, so you can edit
 first `exec` into the appropriate container (`docker-compose exec server bash` for server, `docker-compose exec client bash` for client) and
 then run the appropriate test commands (`./manage.py test` for server, `npm run tests` for client).
 
+### Utilities
+
+#### Run without the client container
+
+Due to high memory usage of the client container there is an option to run the project without it (e.g. when working on backend only):
+
+```
+make run_clientless
+```
+
+#### Pull images from a specific branch
+
+Sometimes it is tedious to rebuild images locally thus there is an option to pull images from a specific branch:
+
+```
+make pull PULL_TAG=the_branch_name
+```
+
 ### Server specifics
 
 #### Work with a copy of the production DB (pg01)
