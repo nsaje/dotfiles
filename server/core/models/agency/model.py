@@ -39,6 +39,7 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
         "is_externally_managed",
         "is_disabled",
         "uses_realtime_autopilot",
+        "uses_source_groups",
         "entity_tags",
         "custom_attributes",
         "allowed_sources",
@@ -92,6 +93,7 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
     is_externally_managed = models.BooleanField(default=False, help_text="Agency is managed via SalesForce API.")
     is_disabled = models.BooleanField(default=False, help_text="Agency can be disabled only if is externally managed.")
     uses_realtime_autopilot = models.BooleanField(default=True)
+    uses_source_groups = models.BooleanField(default=False)
 
     settings = CachedOneToOneField(
         "AgencySettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"

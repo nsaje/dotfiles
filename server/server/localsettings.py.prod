@@ -335,6 +335,7 @@ HARDCODED_ACCOUNT_ID_INPOWERED_2 = 512
 HARDCODED_ACCOUNT_ID_INPOWERED_3 = 513
 HARDCODED_AGENCY_ID_OUTBRAIN = 55
 HARDCODED_AGENCY_ID_APT_ENTITY_CREATE = 782
+HARDCODED_SOURCE_ID_OUTBRAINRTB = 85
 
 # S3 related settings
 S3_BUCKET_STATS = "z1-stats"
@@ -476,6 +477,22 @@ ENABLE_DJANGO_EXTENSIONS = False
 
 CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE = "campaignstop-updates"
 DISABLE_CAMPAIGNSTOP_SIGNALS = False
+
+# Source groups
+SOURCE_GROUPS = {
+    HARDCODED_SOURCE_ID_OUTBRAINRTB: [
+        120,  # MSN Premium Header Bidding
+        165,  # Outbrain Social
+        170,  # MSN via Media.net
+        180,  # Outbrain Search
+        184,  # Outbrain Header Bidding
+        187,  # Outbrain RTB Display
+        193,  # Samsung
+        198,  # Outbrain Header Bidding Display
+        199,  # Opera
+        200,  # Outbrain Social (New)
+    ]
+}
 
 # k1
 K1_DEMO_MODE = False
