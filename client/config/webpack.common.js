@@ -1,7 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
-var FilterChunkWebpackPlugin = require('filter-chunk-webpack-plugin');
 
 var APP_ENVIRONMENT = null;
 var THEMES = {
@@ -193,18 +192,6 @@ function generateStyleConfig(appEnvironment, themeName) {
         // This plugin extracts CSS into separate files.
         new MiniCssExtractPlugin({
             filename: '[name].css',
-        }),
-
-        // https://www.npmjs.com/package/filter-chunk-webpack-plugin
-        // Include or exclude files / chunks from the final webpack output based on a list of patterns.
-        new FilterChunkWebpackPlugin({
-            patterns: [
-                '*.js',
-                '*.txt',
-                '*.map',
-                '*.polyfills.css',
-                '*.lib.css',
-            ],
         }),
     ];
 

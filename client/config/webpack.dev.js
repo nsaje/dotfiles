@@ -2,29 +2,31 @@ var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
 var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
     .BundleAnalyzerPlugin;
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
-var mainConfig = generateMainConfig(appEnvironment);
-configs.push(mainConfig);
-
-var styleConfig = generateStyleConfig(
-    appEnvironment,
-    appEnvironment.theme.name
-);
-configs.push(styleConfig);
+var config = generateConfig(appEnvironment);
+configs.push(config);
 
 module.exports = configs;
 
-function generateMainConfig(appEnvironment) {
-    var config = common.generateMainConfig(appEnvironment);
+function generateConfig(appEnvironment) {
+    var mainConfig = common.generateMainConfig(appEnvironment);
+    var styleConfig = common.generateStyleConfig(
+        appEnvironment,
+        appEnvironment.theme.name
+    );
+
+    var config = merge.smart(mainConfig, styleConfig);
 
     if (appEnvironment.aot) {
         config.entry = {
             'zemanta-one': [
+                common.root('./one/app/styles/main.less'),
                 common.root('./one/polyfills.ts'),
                 common.root('./one/vendor.ts'),
                 common.root('./one/main.aot.ts'),
@@ -33,6 +35,7 @@ function generateMainConfig(appEnvironment) {
     } else {
         config.entry = {
             'zemanta-one': [
+                common.root('./one/app/styles/main.less'),
                 common.root('./one/polyfills.ts'),
                 common.root('./one/vendor.ts'),
                 common.root('./one/main.jit.ts'),
@@ -42,13 +45,18 @@ function generateMainConfig(appEnvironment) {
 
     config.output = {
         path: common.root('./dist/one'),
-        publicPath: 'one/',
+        publicPath: appEnvironment.staticUrl + '/one/',
         filename: '[name].js',
         sourceMapFilename: '[file].map',
     };
 
     config.optimization = {
-        minimize: false,
+        minimize: true,
+        minimizer: [
+            // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+            // A Webpack plugin to optimize \ minimize CSS assets.
+            new OptimizeCSSAssetsPlugin({}),
+        ],
         splitChunks: {
             cacheGroups: {
                 polyfills: {
@@ -68,12 +76,6 @@ function generateMainConfig(appEnvironment) {
             },
         },
     };
-
-    // Skip loading styles as they are extracted separately
-    config.module.rules.push({
-        test: /\.less$/,
-        loader: 'null-loader',
-    });
 
     if (appEnvironment.aot) {
         config.module.rules.push({
@@ -127,6 +129,7 @@ function generateMainConfig(appEnvironment) {
     config.devServer = {
         contentBase: './',
         stats: 'minimal',
+        hot: true,
         disableHostCheck: true,
         watchOptions: {
             ignored: /node_modules|.*spec\.js|.*mock\.js|.*spec\.ts|.*mock\.ts|\.DS_Store|\.#.*/,
@@ -138,73 +141,7 @@ function generateMainConfig(appEnvironment) {
         },
     };
 
-    config.devtool = 'inline-source-map';
-    config.mode = 'development';
-
-    return config;
-}
-
-function generateStyleConfig(appEnvironment, themeName) {
-    var mainConfig = common.generateMainConfig(appEnvironment);
-    var styleConfig = common.generateStyleConfig(appEnvironment, themeName);
-
-    var config = merge.smart(mainConfig, styleConfig);
-
-    var entryName = 'zemanta-one';
-    if (themeName !== common.DEFAULT_THEME.name) {
-        entryName = entryName + '-' + themeName;
-    }
-
-    config.entry = {};
-    config.entry[entryName] = [
-        common.root('./one/app/styles/main.less'),
-        common.root('./one/main.jit.ts'),
-    ];
-
-    config.output = {
-        path: common.root('./dist/one'),
-        publicPath: 'one/',
-    };
-
-    config.optimization = {
-        minimize: false,
-        splitChunks: {
-            cacheGroups: {
-                polyfills: {
-                    test: /(core-js\/es|core-js\/proposals\/reflect-metadata|zone.js\/dist\/zone)/,
-                    chunks: 'all',
-                    name: 'zemanta-one.polyfills',
-                    priority: 20,
-                    enforce: true,
-                },
-                vendor: {
-                    test: /(node_modules|lib\/components)/,
-                    chunks: 'all',
-                    name: 'zemanta-one.lib',
-                    priority: 10,
-                    enforce: true,
-                },
-            },
-        },
-    };
-
-    config.module.rules.push({
-        // Angular TypeScript and template loaders
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: [
-            {
-                loader: 'awesome-typescript-loader',
-                options: {
-                    transpileOnly: true,
-                    configFileName: 'tsconfig.jit.json',
-                },
-            },
-            {loader: 'angular2-template-loader'},
-        ],
-    });
-
-    config.devtool = 'none';
+    config.devtool = 'eval';
     config.mode = 'development';
 
     return config;

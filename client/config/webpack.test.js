@@ -4,12 +4,12 @@ var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
-var mainConfig = generateMainConfig(appEnvironment, appEnvironment.theme.name);
-configs.push(mainConfig);
+var config = generateConfig(appEnvironment, appEnvironment.theme.name);
+configs.push(config);
 
 module.exports = configs;
 
-function generateMainConfig(appEnvironment) {
+function generateConfig(appEnvironment) {
     var config = common.generateMainConfig(appEnvironment);
 
     config.module.rules = [

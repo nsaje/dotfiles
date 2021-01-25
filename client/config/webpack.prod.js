@@ -8,6 +8,7 @@ var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var TerserPlugin = require('terser-webpack-plugin');
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 var SentryPlugin = require('webpack-sentry-plugin');
+var FilterChunkWebpackPlugin = require('filter-chunk-webpack-plugin');
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
@@ -261,6 +262,17 @@ function generateStyleConfig(appEnvironment, themeName) {
     });
 
     config.plugins = config.plugins.concat([
+        // https://www.npmjs.com/package/filter-chunk-webpack-plugin
+        // Include or exclude files / chunks from the final webpack output based on a list of patterns.
+        new FilterChunkWebpackPlugin({
+            patterns: [
+                '*.js',
+                '*.txt',
+                '*.map',
+                '*.polyfills.css',
+                '*.lib.css',
+            ],
+        }),
         // https://github.com/mzgoddard/hard-source-webpack-plugin
         // Provides an intermediate caching step for modules.
         new HardSourceWebpackPlugin({
