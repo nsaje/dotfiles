@@ -44,7 +44,6 @@ class ColumnNamesTest(TestCase):
     fixtures = ["test_augmenter.yaml"]
 
     def test_get_pixel_field_names_mapping(self):
-        self.maxDiff = None
         self.assertDictEqual(
             columns._get_pixel_field_names_mapping(dash.models.ConversionPixel.objects.all()),
             {

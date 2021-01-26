@@ -191,7 +191,6 @@ class PlacementBreakdownQueryTestCase(BaseTestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         test_helper.add_permissions(self.user, permissions=["can_see_sspd_url"])
-        self.maxDiff = None
 
     def _convert_to_placement_entries(self):
         # convert existing PublisherGroupEntry objects into placement ones

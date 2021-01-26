@@ -64,8 +64,6 @@ class AdGroupSourceStateTestCase(BaseTestCase):
 
         response = self._post_source_state(ad_group_id, data)
 
-        self.maxDiff = None
-
         self.assertJSONEqual(
             response.content,
             {
@@ -128,8 +126,6 @@ class AdGroupSourceStateTestCase(BaseTestCase):
         mock_table_update.return_value = {"rows": {"1": {"bid_cpc": 3}, "2": {"bid_cpc": 4}}}
 
         response = self._post_source_state(ad_group_id, data)
-
-        self.maxDiff = None
 
         self.assertJSONEqual(
             response.content,
@@ -783,7 +779,6 @@ class AdGroupContentAdCSVTestCase(BaseTestCase):
         )
 
     def test_get_all(self):
-        self.maxDiff = None
         data = {"select_all": True}
         response = self._get_csv_from_server(data)
         expected_content = (

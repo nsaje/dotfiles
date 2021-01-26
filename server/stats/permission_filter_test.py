@@ -26,7 +26,6 @@ class FilterTestCase(BaseTestCase):
         return rows
 
     def setUp(self):
-        self.maxDiff = None
         self.superuser = magic_mixer.blend_user(is_superuser=True)
         self.account = models.Account.objects.get(pk=1)
 

@@ -150,7 +150,6 @@ class AutopilotPlusTestCase(test.TestCase):
 
         service.run_autopilot(daily_run=True, report_to_influx=True)
 
-        self.maxDiff = None
         self.assertCountEqual(
             mock_update.call_args_list,
             [

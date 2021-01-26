@@ -25,7 +25,6 @@ class ApiBreakdownQueryTest(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.maxDiff = None
         account = models.Account.objects.get(pk=1)
         test_helper.add_entity_permissions(
             self.user,

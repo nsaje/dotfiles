@@ -1685,7 +1685,6 @@ class QueryForRowsTestCase(BaseTestCase):
 
     @patch("utils.redirector.construct_redirector_url")
     def test_query_for_rows_ad_groups_break_content_ad(self, mock_construct_redirector_url):
-        self.maxDiff = None
         mock_construct_redirector_url.return_value = R1_CREATIVE_REDIRECT_URL
         rows = api_breakdowns.query_for_rows(
             [{"content_ad_id": 1, "clicks": 11}, {"content_ad_id": 2, "clicks": 22}],

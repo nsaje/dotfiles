@@ -501,7 +501,6 @@ class ContentAdLoaderTest(TestCase):
             1: {1: {"status": constants.ContentAdSubmissionStatus.REJECTED, "reason": "Inappropriate content"}}
         }
         loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
-        self.maxDiff = None
         self.assertDictEqual(
             loader.per_source_status_map,
             {
@@ -524,7 +523,6 @@ class ContentAdLoaderTest(TestCase):
 
         sspd_client.get_content_ad_status.return_value = None
         loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
-        self.maxDiff = None
         self.assertDictEqual(
             loader.per_source_status_map,
             {
@@ -665,7 +663,6 @@ class AdGroupSourcesLoaderTest(TestCase):
         self.assertEqual(rtb_source["editable_fields"]["daily_budget"]["enabled"], False)
 
     def test_settings_map(self):
-        self.maxDiff = None
         self.assertDictEqual(
             self.loader.settings_map,
             {

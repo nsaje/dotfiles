@@ -156,7 +156,6 @@ class AugmenterTestCase(TestCase):
         )
 
     def test_augment_region(self):
-        self.maxDiff = None
         magic_mixer.blend(models.Geolocation, key="US-TX", name="Texas, United States")
         magic_mixer.blend(models.Geolocation, key="IT-25", name="Lombardy, Italy")
 

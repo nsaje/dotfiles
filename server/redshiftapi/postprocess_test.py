@@ -105,9 +105,6 @@ class PostprocessTest(TestCase):
 class PostprocessGoalsTest(TestCase):
     fixtures = ["test_augmenter.yaml"]
 
-    def setUp(self):
-        self.maxDiff = None
-
     def test_apply_conversion_goal_columns(self):
         rows = [
             {

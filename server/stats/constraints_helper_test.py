@@ -83,7 +83,6 @@ class PrepareConstraintsTestCase(BaseTestCase):
         )
 
     def test_prepare_account_constraints(self):
-        self.maxDiff = None
         sources = dash.models.Source.objects.all()
         user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
@@ -222,7 +221,6 @@ class PrepareConstraintsTestCase(BaseTestCase):
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
 
-        self.maxDiff = None
         self.assertDictEqual(
             constraints_helper.prepare_ad_group_constraints(
                 user,

@@ -394,7 +394,6 @@ class CreditsListTestCase(TestCase):
 
 class AgencyTestCase(TestCase):
     def setUp(self):
-        self.maxDiff = None
         self.client = APIClient()
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)

@@ -41,8 +41,6 @@ class K1APIBaseTest(TestCase):
 
         self.campaign = dash.models.Campaign.objects.all().first()
 
-        self.maxDiff = None
-
     def tearDown(self):
         if self.test_signature:
             self.mock_verify_wsgi_request.assert_any_call(ANY, settings.K1_API_SIGN_KEY)

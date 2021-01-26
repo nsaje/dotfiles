@@ -306,7 +306,6 @@ class AdGroupAdsUploadFormTest(TestCase):
         form = self._init_form(csv_file, None)
 
         self.assertTrue(form.is_valid())
-        self.maxDiff = None
         self.assertEqual(
             form.cleaned_data,
             {
@@ -676,7 +675,6 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertEqual(f.errors["trackers"], ["A maximum of three trackers is supported."])
 
     def test_invalid_url_trackers(self):
-        self.maxDiff = None
         data, files = self._get_valid_data()
         data["trackers"] = [
             {

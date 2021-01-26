@@ -855,7 +855,6 @@ class CandidateTestCase(BaseTestCase):
 
     def test_get_candidate_list(self):
         batch_id = 1
-        self.maxDiff = None
 
         user = User.objects.get(pk=1)
         client = Client()

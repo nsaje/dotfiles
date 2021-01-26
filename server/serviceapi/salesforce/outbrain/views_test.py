@@ -549,7 +549,6 @@ class AccountTestCase(TestCase):
         )
 
     def test_post_valid_with_advertiserAccountType(self, mock_modified_dt):
-        self.maxDiff = None
         url = reverse("service.salesforce.account")
         r = self.client.post(
             url,
@@ -996,7 +995,6 @@ class AccountTestCase(TestCase):
             url, data={"internal_marketer_id": "NEW INTERNAL", "external_marketer_id": "NEW EXTERNAL"}, format="json"
         )
         self.assertEqual(response.status_code, 200)
-        self.maxDiff = None
         self.assertEqual(response.data["data"]["internal_marketer_id"], "NEW INTERNAL")
         self.assertEqual(response.data["data"]["external_marketer_id"], "NEW EXTERNAL")
 
@@ -1311,7 +1309,6 @@ class AccountTestCase(TestCase):
 
 class UserTestCase(TestCase):
     def setUp(self):
-        self.maxDiff = None
         self.client = APIClient()
         self.service_user = magic_mixer.blend(User, email="outbrain-salesforce@service.zemanta.com")
         self.client.force_authenticate(user=self.service_user)

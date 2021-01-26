@@ -88,7 +88,6 @@ class BaseDailyStatsTestCase(BaseTestCase):
         currency=constants.Currency.USD,
     ):
         json_blob = json.loads(response.content)
-        self.maxDiff = None
         expected_response = {
             "data": {
                 "chart_data": [

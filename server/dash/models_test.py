@@ -26,9 +26,6 @@ from zemauth.models import User
 class AdGroupSettingsTest(TestCase):
     fixtures = ["test_models.yaml", "test_geolocations"]
 
-    def setUp(self):
-        self.maxDiff = None
-
     def test_settings_fields(self):
         meta_fields = [
             "id",
@@ -941,7 +938,6 @@ class HistoryTest(TestCase):
         self.u = User.objects.get(pk=1)
         self.acc = models.Account.objects.get(pk=1)
         self.su = constants.SystemUserType.AUTOPILOT
-        self.maxDiff = None
 
     def _latest_ad_group_history(self, ad_group=None):
         return (
@@ -1021,7 +1017,6 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
-        self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual({"local_cpc": "5.103"}, adg_hist.changes)
         self.assertEqual('Bid CPC set from "$4.999" to "$5.103"', adg_hist.changes_text)
@@ -1047,7 +1042,6 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
-        self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual({"local_cpm": "5.103"}, adg_hist.changes)
         self.assertEqual('Bid CPM set from "$4.999" to "$5.103"', adg_hist.changes_text)
@@ -1170,7 +1164,6 @@ class HistoryTest(TestCase):
         )
 
         history = models.History.objects.all().first()
-        self.maxDiff = None
         self.assertEqual(
             textwrap.dedent(
                 """

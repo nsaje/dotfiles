@@ -35,7 +35,6 @@ class RESTAPITestCase(BaseTestCase):
         super().setUp()
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
-        self.maxDiff = None
 
     def assertResponseValid(self, r, status_code=200, data_type=dict):
         resp_json = json.loads(r.content)

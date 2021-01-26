@@ -184,7 +184,6 @@ class MarkerOffsetPaginationTestCase(TestCase):
         page = self.pagination.paginate_queryset(account_qs, request)
         content = self.pagination.get_paginated_response(page).data
         accounts = list(account_qs[0:100])
-        self.maxDiff = None
         self.assertDictEqual(
             content,
             {
@@ -200,7 +199,6 @@ class MarkerOffsetPaginationTestCase(TestCase):
         page = self.pagination.paginate_queryset(account_qs, request)
         content = self.pagination.get_paginated_response(page).data
         accounts = list(account_qs[0:100])
-        self.maxDiff = None
         self.assertDictEqual(
             content,
             {

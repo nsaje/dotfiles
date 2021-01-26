@@ -85,7 +85,6 @@ class ReportsConstraintsTestCase(BaseTestCase):
         )
 
     def test_archived_ad_group_explicit(self):
-        self.maxDiff = None
         sources = core.models.Source.objects.all()
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)

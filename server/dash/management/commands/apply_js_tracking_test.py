@@ -36,7 +36,6 @@ class ApplyJsTrackingTestCase(BaseTestCase):
         )
 
     def test_command(self):
-        self.maxDiff = None
         command = apply_js_tracking.Command()
         command._apply_bidder_hacks()
 

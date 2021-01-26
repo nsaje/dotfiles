@@ -382,7 +382,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
 
-            self.maxDiff = None
             self.assertCountEqual(
                 rows,
                 [
@@ -608,7 +607,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
         mv.prefetch()
 
-        self.maxDiff = None
         self.assertCountEqual(
             list(mv.get_postclickstats(None, date)),
             [

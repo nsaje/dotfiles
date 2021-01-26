@@ -62,7 +62,6 @@ class AutopilotTestCase(test.TestCase):
 
         service.run_autopilot(daily_run=True, update_metrics=True)
 
-        self.maxDiff = None
         self.assertCountEqual(
             mock_update_budget.call_args_list,
             [

@@ -779,7 +779,6 @@ class AdGroupBreakdownTestCase(BaseTestCase):
             5,
         )
 
-        self.maxDiff = None
         self.assertDictEqual(
             json.loads(response.content),
             {
@@ -1087,7 +1086,6 @@ class BreakdownHelperTest(BaseTestCase):
             rows, Goals(campaign_goals, [], [], [], [campaign_goals[0]]), constants.Currency.USD
         )
 
-        self.maxDiff = None
         self.assertEqual(
             rows,
             test_helper.ListMatcher(

@@ -84,7 +84,6 @@ class ApiRulesTest(TestCase):
             },
         ]
 
-        self.maxDiff = None
         for test_case in test_cases:
             target_type_sql = api_rules._get_target_type_sql(test_case["target_type"], ad_groups)
 

@@ -64,6 +64,7 @@ class SplitTestsRunner(FilterSuiteMixin, django.test.runner.DiscoverRunner):
         **kwargs,
     ):
         logging.disable(logging.CRITICAL)
+        unittest.TestCase.maxDiff = None  # HACK: set globally
 
         if integration_tests:
             os.environ["INTEGRATION_TESTS"] = "1"
