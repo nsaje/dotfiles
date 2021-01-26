@@ -19,7 +19,7 @@ XlsxWriter==1.1.1
 xlrd==2.0.1
 openpyxl==3.0.5
 python-slugify==1.2.6
-newrelic==4.4.1.104
+newrelic==6.0.1.155
 boto==2.49.0
 celery==4.4.0
 requests==2.21.0

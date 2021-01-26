@@ -92,7 +92,7 @@ lxml==4.6.2
 markupsafe==1.1.1
 mixer==6.1.3
 mock==4.0.3
-newrelic==4.4.1.104
+newrelic==6.0.1.155
 oauth2client==4.1.3
 oauthlib==2.1.0
 odfpy==1.4.0
