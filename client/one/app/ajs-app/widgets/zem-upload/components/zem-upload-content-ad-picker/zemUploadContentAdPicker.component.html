@@ -8,11 +8,15 @@
             <td
                 class="content-upload__ad-status"
                 ng-class="{
-                'content-upload__ad-status--loading': $ctrl.isCandidateStatusLoading(candidate),
                 'content-upload__ad-status--ok': $ctrl.isCandidateStatusOk(candidate),
                 'content-upload__ad-status--error': $ctrl.isCandidateStatusError(candidate)
             }"
-            ></td>
+            >
+                <zem-loader
+                    class="zem-loader zem-loader--smaller"
+                    ng-if="$ctrl.isCandidateStatusLoading(candidate)"
+                ></zem-loader>
+            </td>
             <td class="content-upload__ad-image-container">
                 <img
                     class="content-upload__ad-image"
@@ -57,10 +61,10 @@
                 >
                     Something went wrong. Please try again.
                 </div>
-                <div
-                    class="loader"
+                <zem-loader
+                    class="zem-loader zem-loader--small zem-loader--inline"
                     ng-if="candidate.removeRequestInProgress"
-                ></div>
+                ></zem-loader>
                 <a
                     href
                     ng-click="$ctrl.toggleEditForm(candidate, $event)"
@@ -97,7 +101,10 @@
         >
             Download Ads Snapshot
         </button>
-        <div class="loader" ng-if="$ctrl.addCandidateRequestInProgress"></div>
+        <zem-loader
+            class="zem-loader zem-loader--small"
+            ng-if="$ctrl.addCandidateRequestInProgress"
+        ></zem-loader>
         <div
             class="message message--error"
             ng-if="$ctrl.addCandidateRequestFailed"

@@ -1,0 +1,273 @@
+@import 'variables';
+
+.zem-button {
+    display: inline-block;
+}
+
+.zem-button--full-width {
+    width: 100%;
+}
+
+.zem-button__button {
+    position: relative;
+    height: @input__height--default;
+    line-height: @input__height--default;
+    padding: 0 10px;
+    background-color: tint(@color--secondary, 90%);
+    border: 0;
+    box-shadow: none;
+    border-radius: @border-radius--default;
+    color: @color--secondary;
+    font-size: 14px;
+    font-weight: 400;
+    outline: none;
+    width: 100%;
+
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: tint(@color--secondary, 80%);
+            box-shadow: 0px 0px 6px 0px fade(@color--secondary, 10%);
+            outline: none;
+        }
+    }
+}
+
+.zem-button__button[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.zem-button__button--outlined {
+    background-color: transparent;
+    border: 1px solid tint(@color--secondary, 80%);
+    line-height: (@input__height--default)-2;
+}
+
+.zem-button__button--highlighted {
+    background-color: @color--primary;
+    color: white;
+
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: darken(@color--primary, 8%);
+            box-shadow: 0px 0px 6px 0px fade(@color--primary, 60%);
+            color: white;
+        }
+    }
+}
+
+.zem-button__button--danger {
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: @color--danger;
+            box-shadow: 0px 0px 6px 0px fade(@color--danger, 40%);
+            color: white;
+        }
+    }
+}
+
+.zem-button__button--small {
+    height: 24px;
+    line-height: 24px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.zem-button__button--with-icon::before,
+.zem-button__button--icon-only::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    background-size: 16px;
+    background-repeat: no-repeat;
+}
+
+.zem-button__button--small.zem-button__button--with-icon::before,
+.zem-button__button--small.zem-button__button--icon-only::before {
+    left: 8px;
+    width: 12px;
+    height: 12px;
+    background-size: 12px;
+}
+
+.zem-button__button--with-icon {
+    padding-left: 34px; // 10px icon left (button left padding) + 16px icon width + 8px spacing before text
+}
+
+.zem-button__button--small.zem-button__button--with-icon {
+    padding-left: 26px; // 8px icon left (button left padding) + 12px icon width + 6px spacing before text
+}
+
+.zem-button__button--icon-only {
+    padding-left: 26px; // 10px icon left (button left padding) + 16px icon width
+}
+
+.zem-button__button--small.zem-button__button--icon-only {
+    padding-left: 20px; // 8px icon left (button left padding) + 12px icon width
+}
+
+.zem-button__button--download-icon::before {
+    background-image: url('@{images-folder}/download-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--download-icon::before {
+    background-image: url('images/download-white.svg');
+}
+
+.zem-button__button--connections-icon::before {
+    background-image: url('@{images-folder}/connections-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--connections-icon::before {
+    background-image: url('images/connections-white.svg');
+}
+
+.zem-button__button--edit-icon::before {
+    background-image: url('@{images-folder}/edit-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--edit-icon::before {
+    background-image: url('images/edit-white.svg');
+}
+
+.zem-button__button--expand-icon::before {
+    background-image: url('@{images-folder}/arrow-wide-sec.svg');
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button__button--highlighted.zem-button__button--expand-icon::before {
+    background-image: url('images/arrow-wide-white.svg');
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button__button--expand-icon.zem-button__button--with-icon::before,
+.zem-button__button--expand-icon.zem-button__button--icon-only::before {
+    height: 9px;
+}
+
+.zem-button__button--expand-icon.zem-button__button--small.zem-button__button--with-icon::before,
+.zem-button__button--expand-icon.zem-button__button--small.zem-button__button--icon-only::before {
+    height: 8px;
+}
+
+.zem-button__button--collapse-icon::before {
+    background-image: url('@{images-folder}/arrow-wide-sec.svg');
+    transform: translateY(-50%) rotate(-180deg);
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button__button--highlighted.zem-button__button--collapse-icon::before {
+    background-image: url('images/arrow-wide-white.svg');
+    transform: translateY(-50%) rotate(-180deg);
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button__button--collapse-icon.zem-button__button--with-icon::before,
+.zem-button__button--collapse-icon.zem-button__button--icon-only::before {
+    height: 9px;
+}
+
+.zem-button__button--collapse-icon.zem-button__button--small.zem-button__button--with-icon::before,
+.zem-button__button--collapse-icon.zem-button__button--small.zem-button__button--icon-only::before {
+    height: 8px;
+}
+
+.zem-button__button--copy-icon::before {
+    background-image: url('@{images-folder}/copy-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--copy-icon::before {
+    background-image: url('images/copy-white.svg');
+}
+
+.zem-button__button--magnifier-icon::before {
+    background-image: url('@{images-folder}/magnifier-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--magnifier-icon::before {
+    background-image: url('images/magnifier-white.svg');
+}
+
+.zem-button__button--check-icon::before {
+    background-image: url('@{images-folder}/check-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--check-icon::before {
+    background-image: url('images/check-white.svg');
+}
+
+.zem-button__button--add-icon::before {
+    background-image: url('@{images-folder}/add-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--add-icon::before {
+    background-image: url('images/add-white.svg');
+}
+
+.zem-button__button--send-icon::before {
+    background-image: url('@{images-folder}/send-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--send-icon::before {
+    background-image: url('images/send-white.svg');
+}
+
+.zem-button__button--remove-icon::before {
+    background-image: url('@{images-folder}/remove-sec.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--remove-icon::before,
+.zem-button__button--danger.zem-button__button--remove-icon:hover:not([disabled])::before {
+    background-image: url('images/remove-white.svg');
+}
+
+.zem-button__button--remove-red-icon::before {
+    background-image: url('images/remove-red.svg');
+}
+
+.zem-button__button--highlighted.zem-button__button--remove-red-icon::before,
+.zem-button__button--danger.zem-button__button--remove-red-icon:hover:not([disabled])::before {
+    background-image: url('images/remove-white.svg');
+}
+
+.zem-button__button--dropdown-toggle-icon {
+    padding-right: 30px;
+}
+
+.zem-button__button--dropdown-toggle-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    right: 10px;
+    width: 6px;
+    height: 10px;
+    background-image: url('@{images-folder}/arrow-sec.svg');
+    background-repeat: no-repeat;
+}
+
+.zem-button__button--dropdown-toggle-icon.zem-button__button--highlighted::after {
+    background-image: url('images/arrow-white.svg');
+}
+
+.zem-button__button-loader {
+    display: inline-block;
+    position: absolute;
+    top: 9px;
+    left: 8px;
+}
+
+.zem-button__button-loader--small {
+    top: 7px;
+    left: 7px;
+}

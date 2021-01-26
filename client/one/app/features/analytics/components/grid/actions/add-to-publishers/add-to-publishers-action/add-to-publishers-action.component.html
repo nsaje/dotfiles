@@ -1,5 +1,5 @@
 <button
-    class="zem-button"
+    class="zem-button-legacy"
     (click)="addToPublishersModal.open()"
     [disabled]="buttonDisabled"
 >
@@ -51,29 +51,24 @@
         <div
             class="zem-modal__footer zem-buttons-panel zem-add-to-publishers-action__buttons-panel"
         >
-            <button
-                *ngIf="state.requests.addEntries.inProgress"
-                class="zem-button zem-button--highlighted zem-button--loading zem-add-to-publishers-action__loading-button"
-                disabled
-            ></button>
-            <button
-                *ngIf="!state.requests.addEntries.inProgress"
-                class="zem-button zem-button--highlighted zem-button--with-icon"
-                [ngClass]="{
-                    'zem-button--add-icon': state.mode === 'add',
-                    'zem-button--check-icon': state.mode === 'create'
-                }"
+            <zem-button
+                class="zem-button"
+                [isHighlighted]="true"
+                [isLoading]="state.requests.addEntries.inProgress"
+                [isDisabled]="state.requests.addEntries.inProgress"
+                [icon]="state.mode === 'add' ? 'add' : 'check'"
                 (click)="save()"
             >
                 {{ state.mode === 'add' ? 'Add' : 'Save' }}
-            </button>
-            <button
-                class="zem-button zem-button--outlined"
-                [disabled]="state.requests.addEntries.inProgress"
+            </zem-button>
+            <zem-button
+                class="zem-button"
+                [isOutlined]="true"
+                [isDisabled]="state.requests.addEntries.inProgress"
                 (click)="close()"
             >
                 Cancel
-            </button>
+            </zem-button>
             <div
                 *ngIf="
                     state.activeEntity.fieldsErrors.id ||

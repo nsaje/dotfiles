@@ -66,7 +66,9 @@
                     ng-if="$ctrl.state.loadReportsRequestInProgress && !$ctrl.state.reports.length"
                 >
                     <td colspan="8">
-                        <div class="loader loader--full-width"></div>
+                        <zem-loader
+                            class="zem-loader zem-loader--small"
+                        ></zem-loader>
                     </td>
                 </tr>
                 <tr

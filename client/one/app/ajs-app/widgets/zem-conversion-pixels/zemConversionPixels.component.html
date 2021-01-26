@@ -76,10 +76,10 @@
                         {{ item.notes }}
                     </td>
                     <td>
-                        <span
-                            class="loader"
+                        <zem-loader
+                            class="zem-loader zem-loader--small"
                             ng-if="$ctrl.state.requests.archive[item.id].inProgress || $ctrl.state.requests.restore[item.id].inProgress"
-                        ></span>
+                        ></zem-loader>
                         <span
                             ng-if="$ctrl.state.requests.archive[item.id].error || $ctrl.state.requests.restore[item.id].error"
                             class="message message--error"
@@ -133,7 +133,9 @@
                 </tr>
                 <tr ng-if="$ctrl.state.requests.list.inProgress">
                     <td colspan="7">
-                        <div class="loader loader--full-width"></div>
+                        <zem-loader
+                            class="zem-loader zem-loader--small"
+                        ></zem-loader>
                     </td>
                 </tr>
                 <tr

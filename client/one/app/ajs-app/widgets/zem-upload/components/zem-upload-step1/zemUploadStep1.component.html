@@ -103,7 +103,10 @@
         >
             Cancel
         </button>
-        <div class="loader text-right" ng-if="ctrl.requestInProgress"></div>
+        <zem-loader
+            class="zem-loader zem-loader--small zem-loader--inline"
+            ng-if="ctrl.requestInProgress"
+        ></zem-loader>
         <span
             class="message message--error"
             ng-if="ctrl.requestFailed && !ctrl.formErrors && !ctrl.requestInProgress"

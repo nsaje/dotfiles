@@ -28,7 +28,7 @@
             </zem-checkbox-input>
             <div class="zem-credits-view__buttons zem-credits-view__action">
                 <button
-                    class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-credits-view__button"
+                    class="zem-button-legacy zem-button-legacy--with-icon zem-button-legacy--highlighted zem-button-legacy--add-icon zem-credits-view__button"
                     (click)="addCreditItem()"
                     [disabled]="isReadOnly"
                 >
@@ -175,35 +175,34 @@
                 </ng-container>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
-                <button
-                    *ngIf="
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="
                         state.requests.create.inProgress ||
                         state.requests.edit.inProgress
                     "
-                    class="zem-button zem-button--highlighted zem-button--loading"
-                    disabled
-                ></button>
-                <button
-                    *ngIf="
-                        !state.requests.create.inProgress &&
-                        !state.requests.edit.inProgress
+                    [icon]="'check'"
+                    [isDisabled]="
+                        state.requests.create.inProgress ||
+                        state.requests.edit.inProgress ||
+                        state.creditActiveEntity.isReadOnly
                     "
-                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                    [disabled]="state.creditActiveEntity.isReadOnly"
                     (click)="saveCreditItem()"
                 >
                     Save
-                </button>
-                <button
-                    class="zem-button zem-button--outlined"
-                    [disabled]="
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="
                         state.requests.create.inProgress ||
                         state.requests.edit.inProgress
                     "
                     (click)="creditItemModal.close()"
                 >
                     Cancel
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>
@@ -236,25 +235,24 @@
                 </zem-refund-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
-                <button
-                    *ngIf="state.requests.createRefund.inProgress"
-                    class="zem-button zem-button--highlighted zem-button--loading"
-                    disabled
-                ></button>
-                <button
-                    *ngIf="!state.requests.createRefund.inProgress"
-                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="state.requests.createRefund.inProgress"
+                    [icon]="'check'"
+                    [isDisabled]="state.requests.createRefund.inProgress"
                     (click)="saveCreditRefund()"
                 >
                     Save
-                </button>
-                <button
-                    class="zem-button zem-button--outlined"
-                    [disabled]="state.requests.createRefund.inProgress"
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="state.requests.createRefund.inProgress"
                     (click)="creditRefundCreateModal.close()"
                 >
                     Cancel
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>
@@ -285,7 +283,7 @@
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button
-                    class="zem-button zem-button--outlined"
+                    class="zem-button-legacy zem-button-legacy--outlined"
                     (click)="creditRefundListModal.close()"
                 >
                     Close

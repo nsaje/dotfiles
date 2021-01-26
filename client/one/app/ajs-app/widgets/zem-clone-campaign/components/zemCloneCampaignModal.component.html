@@ -9,20 +9,23 @@
 </div>
 <div class="modal__footer buttons-panel">
     <button
-        class="zem-button zem-button--highlighted zem-button--with-icon zem-button--copy-icon"
+        class="zem-button-legacy zem-button-legacy--highlighted zem-button-legacy--with-icon zem-button-legacy--copy-icon"
         ng-disabled="!!$ctrl.requestInProgress"
         ng-click="$ctrl.submit()"
     >
         Clone
     </button>
     <button
-        class="zem-button zem-button--outlined"
+        class="zem-button-legacy zem-button-legacy--outlined"
         ng-disabled="!!$ctrl.requestInProgress"
         ng-click="$ctrl.modalInstance.dismiss()"
     >
         Cancel
     </button>
-    <div class="loader" ng-show="$ctrl.requestInProgress"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader--inline"
+        ng-show="$ctrl.requestInProgress"
+    ></zem-loader>
     <span ng-show="$ctrl.errors.message" class="message message--error">{{
         $ctrl.errors.message
     }}</span>

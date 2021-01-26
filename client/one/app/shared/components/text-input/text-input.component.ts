@@ -8,6 +8,8 @@ import {
     EventEmitter,
     Output,
     Input,
+    ContentChild,
+    TemplateRef,
 } from '@angular/core';
 import {StatusIconType} from '../../types/status-icon-type';
 
@@ -35,6 +37,9 @@ export class TextInputComponent implements OnChanges {
     valueChange = new EventEmitter<string>();
     @Output()
     inputBlur = new EventEmitter<string>();
+
+    @ContentChild('loaderTemplate', {read: TemplateRef, static: false})
+    loaderTemplate: TemplateRef<any>;
 
     model: string;
 

@@ -1,11 +1,13 @@
 <div class="zem-content-ad-tracker-form__item">
     <button
         *ngFor="let method of availableTrackerMethods"
-        class="zem-button zem-content-ad-tracker-form__method-button"
-        [class.zem-button--highlighted]="
+        class="zem-button-legacy zem-content-ad-tracker-form__method-button"
+        [class.zem-button-legacy--highlighted]="
             contentAdTracker.method === method.value
         "
-        [class.zem-button--outlined]="contentAdTracker.method !== method.value"
+        [class.zem-button-legacy--outlined]="
+            contentAdTracker.method !== method.value
+        "
         [disabled]="isDisabled"
         (click)="onMethodChanged(method.value)"
     >

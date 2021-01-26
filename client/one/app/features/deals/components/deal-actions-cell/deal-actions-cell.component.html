@@ -1,14 +1,16 @@
 <div class="zem-deal-actions-cell">
     <button
         [ngClass]="
-            isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
+            isReadOnly
+                ? 'zem-button-legacy--magnifier-icon'
+                : 'zem-button-legacy--edit-icon'
         "
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-deal-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-deal-actions-cell__item"
         (click)="openEditDealModal()"
     ></button>
     <button
         [disabled]="isReadOnly"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-deal-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--remove-icon zem-button-legacy--danger zem-deal-actions-cell__item"
         (click)="removeDeal()"
     ></button>
 </div>

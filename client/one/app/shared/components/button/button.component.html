@@ -1,0 +1,14 @@
+<button [ngClass]="buttonClass" [disabled]="isDisabled">
+    <ng-container *ngIf="isLoading">
+        <ng-container
+            *ngTemplateOutlet="
+                loaderTemplate ? loaderTemplate : defaultLoaderTemplate
+            "
+        ></ng-container>
+    </ng-container>
+    <ng-content></ng-content>
+</button>
+
+<ng-template #defaultLoaderTemplate>
+    <zem-loader [ngClass]="loaderClass"></zem-loader>
+</ng-template>

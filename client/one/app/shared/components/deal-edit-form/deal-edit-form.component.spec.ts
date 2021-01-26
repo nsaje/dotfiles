@@ -20,6 +20,7 @@ import {DecimalFormGroupComponent} from '../decimal-form-group/decimal-form-grou
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event/filter-keydown-event.directive';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('DealEditFormComponent', () => {
     let component: DealEditFormComponent;
@@ -46,6 +47,7 @@ describe('DealEditFormComponent', () => {
                 SelectFormGroupComponent,
                 DateFormGroupComponent,
                 DealEditFormComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule, NgbDatepickerModule],
         });

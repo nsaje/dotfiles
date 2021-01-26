@@ -113,37 +113,35 @@
                 </zem-deal-edit-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
-                <button
-                    *ngIf="
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
-                    class="zem-button zem-button--highlighted zem-button--loading"
-                    disabled
-                ></button>
-                <button
-                    *ngIf="
-                        !state.requests.edit.inProgress &&
-                        !state.requests.create.inProgress
+                    [isDisabled]="
+                        state.requests.edit.inProgress ||
+                        state.requests.create.inProgress ||
+                        !canSaveActiveEntity ||
+                        state.activeEntity.isReadOnly
                     "
-                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                    [disabled]="
-                        !canSaveActiveEntity || state.activeEntity.isReadOnly
-                    "
+                    [icon]="'check'"
                     (click)="saveDeal()"
                 >
                     Save
-                </button>
-                <button
-                    class="zem-button zem-button--outlined"
-                    [disabled]="
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
                     (click)="editDealModal.close()"
                 >
                     Cancel
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>
@@ -170,7 +168,7 @@
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button
-                    class="zem-button zem-button--outlined"
+                    class="zem-button-legacy zem-button-legacy--outlined"
                     (click)="connectionsModal.close()"
                 >
                     Close

@@ -70,7 +70,10 @@
         >
             Cancel
         </button>
-        <div class="loader" ng-if="ctrl.isLoading()"></div>
+        <zem-loader
+            class="zem-loader zem-loader--small zem-loader--inline"
+            ng-if="ctrl.isLoading()"
+        ></zem-loader>
         <div class="message message--error" ng-if="ctrl.getSaveErrorMsg()">
             {{ ctrl.getSaveErrorMsg() }}
         </div>

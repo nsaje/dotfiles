@@ -1,7 +1,7 @@
-<div
-    class="loader loader--full-width"
+<zem-loader
+    class="zem-loader zem-loader--small"
     ng-if="$ctrl.state.requests.list.inProgress && $ctrl.state.audiencesList.length"
-></div>
+></zem-loader>
 <div class="custom-table__mobile-container">
     <table class="custom-table">
         <thead>
@@ -81,7 +81,9 @@
             </tr>
             <tr ng-if="$ctrl.state.requests.list.inProgress">
                 <td colspan="6">
-                    <span class="loader loader--full-width"></span>
+                    <zem-loader
+                        class="zem-loader zem-loader--small"
+                    ></zem-loader>
                 </td>
             </tr>
             <tr

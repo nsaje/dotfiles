@@ -1,14 +1,9 @@
 <h2 class="zem-inventory-planning-breakdown__title">{{ breakdownName }}</h2>
-<div
-    class="zem-inventory-planning-breakdown__container"
-    [ngClass]="{
-        'zem-inventory-planning-breakdown__container--loading': isLoading
-    }"
->
-    <div
+<div class="zem-inventory-planning-breakdown__container">
+    <zem-loader
         *ngIf="isLoading"
-        class="loader zem-inventory-planning-breakdown__loader"
-    ></div>
+        class="zem-loader zem-loader__overlay"
+    ></zem-loader>
 
     <div class="zem-inventory-planning-breakdown__search-container">
         <input

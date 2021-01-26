@@ -35,6 +35,7 @@ import {UsersModule} from './features/users/users.module';
 import {CreativesModule} from './features/creatives/creatives.module';
 import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
 import {ContentAdModule} from './features/content-ad/content-ad.module';
+import {SharedModule} from './shared/shared.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -95,6 +96,7 @@ if (APP_CONFIG.env.prod) {
         UsersModule,
         CreativesModule,
         ContentAdModule,
+        SharedModule,
 
         // App router
         RouterModule.forRoot(APP_ROUTES),

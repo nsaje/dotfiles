@@ -103,7 +103,10 @@
     >
         Close
     </button>
-    <div class="loader" ng-show="$ctrl.jobPosted && !$ctrl.jobDone"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader--inline"
+        ng-show="$ctrl.jobPosted && !$ctrl.jobDone"
+    ></zem-loader>
     <span ng-show="$ctrl.reportSent"
         >Requested report will be sent to your inbox shortly.</span
     >

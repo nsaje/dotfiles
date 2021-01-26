@@ -1,5 +1,8 @@
 <div class="content-insights">
-    <div class="loader loader--full-width" ng-show="$ctrl.loading"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small"
+        ng-show="$ctrl.loading"
+    ></zem-loader>
 
     <div ng-if="!$ctrl.loading" class="clearfix">
         <div class="content-insights__container">

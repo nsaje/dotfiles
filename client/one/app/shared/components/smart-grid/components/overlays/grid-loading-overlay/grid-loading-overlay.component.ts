@@ -1,5 +1,3 @@
-import './grid-loading-overlay.component.less';
-
 import {Component, HostBinding} from '@angular/core';
 import {ILoadingOverlayAngularComp} from 'ag-grid-angular';
 import {ILoadingOverlayParams} from 'ag-grid-community';

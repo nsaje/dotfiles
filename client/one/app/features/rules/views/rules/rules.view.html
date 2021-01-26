@@ -49,29 +49,27 @@
                 >
                 </zem-rule-edit-form>
             </div>
-            <div class="zem-modal__footer buttons-panel">
-                <button
-                    *ngIf="isRuleSaveInProgress"
-                    class="button button--highlight button--disabled"
-                    disabled
-                >
-                    <span class="loader loader--white"></span>
-                </button>
-                <button
-                    *ngIf="!isRuleSaveInProgress"
-                    [disabled]="state.activeEntity.isReadOnly"
-                    class="button button--highlight button--with-icon check-icon"
+            <div class="zem-modal__footer zem-buttons-panel">
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="isRuleSaveInProgress"
+                    [isDisabled]="
+                        isRuleSaveInProgress || state.activeEntity.isReadOnly
+                    "
+                    [icon]="'check'"
                     (click)="saveRule()"
                 >
                     Save
-                </button>
-                <button
-                    class="button button--outline"
-                    [disabled]="isRuleSaveInProgress"
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="isRuleSaveInProgress"
                     (click)="editRuleModal.close()"
                 >
                     Cancel
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>

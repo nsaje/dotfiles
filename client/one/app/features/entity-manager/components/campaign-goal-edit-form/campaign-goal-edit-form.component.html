@@ -180,38 +180,41 @@
                     class="zem-campaign-goal-edit-form__pixel-action"
                     *ngIf="!isConversionPixelNameVisible"
                 >
-                    <button
-                        class="zem-button zem-button--with-icon zem-button--only-icon zem-button--add-icon"
+                    <zem-button
+                        class="zem-button"
+                        [isDisabled]="!!campaignGoal.id || isDisabled"
+                        [icon]="'add'"
                         (click)="addConversionPixel()"
-                        [disabled]="!!campaignGoal.id || isDisabled"
                     >
                         Add pixel
-                    </button>
+                    </zem-button>
                 </div>
                 <ng-container *ngIf="isConversionPixelNameVisible">
                     <div class="zem-campaign-goal-edit-form__pixel-action">
-                        <button
-                            class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                            [class.zem-button--loading]="
-                                conversionPixelIsLoading
+                        <zem-button
+                            class="zem-button"
+                            [isHighlighted]="true"
+                            [isLoading]="conversionPixelIsLoading"
+                            [isDisabled]="
+                                !conversionPixelName ||
+                                conversionPixelIsLoading ||
+                                isDisabled
                             "
-                            [disabled]="
-                                !conversionPixelName || conversionPixelIsLoading
-                            "
+                            [icon]="'check'"
                             (click)="createConversionPixel()"
-                            [disabled]="isDisabled"
                         >
                             Save
-                        </button>
+                        </zem-button>
                     </div>
                     <div class="zem-campaign-goal-edit-form__pixel-action">
-                        <button
-                            class="zem-button zem-button--outlined"
+                        <zem-button
+                            class="zem-button"
+                            [isOutlined]="true"
+                            [isDisabled]="conversionPixelIsLoading"
                             (click)="cancelConversionPixel()"
-                            [disabled]="conversionPixelIsLoading"
                         >
                             Cancel
-                        </button>
+                        </zem-button>
                     </div>
                 </ng-container>
             </div>

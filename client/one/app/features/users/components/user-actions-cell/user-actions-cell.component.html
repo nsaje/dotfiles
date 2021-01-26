@@ -2,19 +2,19 @@
     <button
         [ngClass]="
             isReadOnlyUser
-                ? 'zem-button--magnifier-icon'
-                : 'zem-button--edit-icon'
+                ? 'zem-button-legacy--magnifier-icon'
+                : 'zem-button-legacy--edit-icon'
         "
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-user-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-user-actions-cell__item"
         (click)="openEditUserModal()"
     ></button>
     <button
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--send-icon zem-user-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--send-icon zem-user-actions-cell__item"
         (click)="resendEmail()"
     ></button>
     <button
         [disabled]="isReadOnlyUser || isCurrentUser"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-user-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--remove-icon zem-button-legacy--danger zem-user-actions-cell__item"
         (click)="removeUser()"
     ></button>
 </div>

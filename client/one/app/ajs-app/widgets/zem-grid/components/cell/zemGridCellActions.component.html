@@ -1,8 +1,8 @@
 <div class="zem-grid-cell-actions clearfix" ng-show="ctrl.isFieldVisible">
-    <span
+    <zem-loader
         ng-show="ctrl.showLoader || ctrl.isToggleStateInProgress"
-        class="loader loader--small"
-    ></span>
+        class="zem-loader zem-loader--small zem-loader--inline"
+    ></zem-loader>
     <span
         class="switch-button"
         ng-show="ctrl.showStateSwitch && !ctrl.showLoader"

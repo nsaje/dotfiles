@@ -4,18 +4,22 @@
 ></zem-infobox-header>
 
 <div class="zem-infobox__content custom-scroller">
-    <div class="loader" ng-show="$ctrl.loadRequestInProgress"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader__overlay"
+        ng-show="$ctrl.loadRequestInProgress"
+    >
+    </zem-loader>
     <div
         ng-if="$ctrl.delivery"
         class="zem-infobox__delivery-container zem-infobox-data-row"
         ng-class="{
-            'zem-infobox__delivery--active': 
+            'zem-infobox__delivery--active':
                 $ctrl.delivery.status === 'active' ||
                 $ctrl.delivery.status === 'active-price-discovery' ||
                 $ctrl.delivery.status === 'campaignstop-low-budget' ||
                 $ctrl.delivery.status === 'campaignstop-pending-budget-active-price-discovery' ||
                 $ctrl.delivery.status === 'campaignstop-pending-budget-active',
-            'zem-infobox__delivery--autopilot': 
+            'zem-infobox__delivery--autopilot':
                 $ctrl.delivery.status === 'autopilot' ||
                 $ctrl.delivery.status === 'campaignstop-pending-budget-autopilot' ||
                 $ctrl.delivery.status === 'budget-optimization' ||
@@ -27,11 +31,11 @@
             'zem-infobox__delivery--inactive':
                 $ctrl.delivery.status === 'disabled' ||
                 $ctrl.delivery.status === 'inactive',
-            'zem-infobox__delivery--paused': 
+            'zem-infobox__delivery--paused':
                 $ctrl.delivery.status === 'stopped' ||
-                $ctrl.delivery.status === 'campaignstop-stopped' || 
+                $ctrl.delivery.status === 'campaignstop-stopped' ||
                 $ctrl.delivery.status === 'campaignstop-pending-budget-updates',
-            'zem-infobox__delivery--landing-mode': 
+            'zem-infobox__delivery--landing-mode':
                 $ctrl.delivery.status === 'landing-mode',
         }"
     >

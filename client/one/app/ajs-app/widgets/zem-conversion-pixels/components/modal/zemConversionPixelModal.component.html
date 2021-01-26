@@ -109,7 +109,10 @@
     >
         Cancel
     </button>
-    <div class="loader" ng-show="$ctrl.getRequest().inProgress"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader--inline"
+        ng-show="$ctrl.getRequest().inProgress"
+    ></zem-loader>
     <span class="message message--error" ng-if="$ctrl.getRequest().error">
         An error has occurred. Please contact support at
         <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error

@@ -10,25 +10,13 @@
 }
 
 .zem-inventory-planning-summary__loader {
-    position: absolute;
-    .position-properties(0);
-    z-index: 2;
-    width: 100%;
-    height: auto;
+    background-color: rgba(255, 255, 255, 0.75);
 }
 
 .zem-inventory-planning-summary__section {
     position: relative;
     display: table-cell;
     padding: @spacing--default;
-}
-
-.zem-inventory-planning-summary__section--loading:before {
-    content: '';
-    position: absolute;
-    .position-properties(0);
-    z-index: 1;
-    background-color: fade(white, 75%);
 }
 
 .zem-inventory-planning-summary__info-container {

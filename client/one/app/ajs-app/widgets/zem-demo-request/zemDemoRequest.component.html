@@ -2,7 +2,7 @@
 <div class="modal__body">
     <div ng-if="$ctrl.requestInProgress">
         <p>Requesting demo instance</p>
-        <div class="loader"></div>
+        <zem-loader class="zme-loader zem-loader--small"></zem-loader>
     </div>
 
     <div ng-if="!$ctrl.requestInProgress && !$ctrl.error">

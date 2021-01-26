@@ -3,10 +3,10 @@
     class="zem-grid"
     zem-grid-copy
 >
-    <div
-        class="loader loader--takeover"
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader__overlay zem-loader__overlay--transparent"
         ng-show="$ctrl.grid.meta.loading"
-    ></div>
+    ></zem-loader>
     <div ng-if="$ctrl.grid.meta.initialized">
         <zem-grid-header grid="$ctrl.grid"></zem-grid-header>
         <zem-grid-body grid="$ctrl.grid"></zem-grid-body>

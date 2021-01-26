@@ -52,7 +52,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.url,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.url && !ctrl.fieldsHaveErrors('url')}"
                         >
                             <span class="content-upload__count-characters"
@@ -60,6 +59,10 @@
                                     ctrl.MAX_URL_LENGTH
                                 }}</span
                             >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.url"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -103,7 +106,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.title,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
                         >
                             <span class="content-upload__count-characters"
@@ -111,6 +113,10 @@
                                     ctrl.MAX_TITLE_LENGTH
                                 }}</span
                             >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.title"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -159,9 +165,13 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.image,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.image && !ctrl.fieldsHaveErrors('image')}"
-                        ></div>
+                        >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.image"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
+                        </div>
                         <div
                             class="message message--error"
                             for="image-input"
@@ -228,9 +238,13 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.imageUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}"
-                        ></div>
+                        >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.imageUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
+                        </div>
                         <div
                             class="message message--error"
                             for="image-url-input"
@@ -319,7 +333,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status content-upload__change-status--dropdown-on-the-left"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.imageCrop,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.imageCrop && !ctrl.fieldsHaveErrors('imageCrop')}"
                         >
                             <a
@@ -331,6 +344,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.imageCrop"
+                                class="zem-loader zem-loader--small content-upload__loader content-upload__loader--dropdown-offset"
+                            ></zem-loader>
                         </div>
                     </div>
 
@@ -359,9 +376,13 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.icon,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.icon && !ctrl.fieldsHaveErrors('icon')}"
-                        ></div>
+                        >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.icon"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
+                        </div>
                         <div
                             class="message message--error"
                             for="icon-input"
@@ -428,9 +449,13 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.iconUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.iconUrl && !ctrl.fieldsHaveErrors('iconUrl')}"
-                        ></div>
+                        >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.iconUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
+                        </div>
                         <div
                             class="message message--error"
                             for="icon-url-input"
@@ -547,8 +572,10 @@
                                     class="content-upload__video-uploader-processing"
                                     ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING"
                                 >
-                                    <span class="loader"></span>Processing
-                                    uploaded video
+                                    <zem-loader
+                                        class="zem-loader zem-loader--small zem-loader--inline"
+                                    ></zem-loader>
+                                    Processing uploaded video
                                 </div>
                                 <div
                                     class="content-upload__video-uploader-preview"
@@ -639,8 +666,10 @@
                                     class="content-upload__video-uploader-processing"
                                     ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING"
                                 >
-                                    <span class="loader"></span>Processing
-                                    uploaded vast
+                                    <zem-loader
+                                        class="zem-loader zem-loader--small zem-loader--inline"
+                                    ></zem-loader>
+                                    Processing uploaded vast
                                 </div>
                                 <div
                                     class="content-upload__video-uploader-preview"
@@ -690,7 +719,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.vastUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.vastUrl && !ctrl.fieldsHaveErrors('vastUrl')}"
                         >
                             <span class="content-upload__count-characters"
@@ -699,6 +727,10 @@
                                         .length || 0
                                 }}/{{ ctrl.MAX_URL_LENGTH }}</span
                             >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.vastUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -730,7 +762,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.description,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.description && !ctrl.fieldsHaveErrors('description')}"
                         >
                             <span class="content-upload__count-characters"
@@ -747,6 +778,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.description"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -789,7 +824,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.displayUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}"
                         >
                             <span class="content-upload__count-characters"
@@ -806,6 +840,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.displayUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -848,7 +886,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.brandName,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.brandName && !ctrl.fieldsHaveErrors('brandName')}"
                         >
                             <span class="content-upload__count-characters"
@@ -865,6 +902,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.brandName"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -907,7 +948,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status content-upload__change-status--dropdown-on-the-left"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.callToAction,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.callToAction && !ctrl.fieldsHaveErrors('callToAction')}"
                         >
                             <span class="content-upload__count-characters"
@@ -924,6 +964,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.callToAction"
+                                class="zem-loader zem-loader--small content-upload__loader content-upload__loader--dropdown-offset"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -966,7 +1010,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.url,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.url && !ctrl.fieldsHaveErrors('url')}"
                         >
                             <span class="content-upload__count-characters"
@@ -974,6 +1017,10 @@
                                     ctrl.MAX_URL_LENGTH
                                 }}</span
                             >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.url"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -1017,7 +1064,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.title,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
                         >
                             <span class="content-upload__count-characters"
@@ -1025,6 +1071,10 @@
                                     ctrl.MAX_TITLE_LENGTH
                                 }}</span
                             >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.title"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -1099,9 +1149,13 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status content-upload__change-status--dropdown-on-the-left"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.adType,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.adType && !ctrl.fieldsHaveErrors('adType')}"
-                        ></div>
+                        >
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.adType"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
+                        </div>
                     </div>
 
                     <div
@@ -1132,9 +1186,13 @@
                             <div
                                 class="content-upload__field-additional-info content-upload__change-status"
                                 ng-class="{
-                                'content-upload__change-status--loading': ctrl.fieldsLoading.image,
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.image && !ctrl.fieldsHaveErrors('image')}"
-                            ></div>
+                            >
+                                <zem-loader
+                                    ng-if="ctrl.fieldsLoading.image"
+                                    class="zem-loader zem-loader--small content-upload__loader"
+                                ></zem-loader>
+                            </div>
                             <div
                                 class="message message--error"
                                 for="image-input"
@@ -1209,9 +1267,13 @@
                             <div
                                 class="content-upload__field-additional-info content-upload__change-status"
                                 ng-class="{
-                                'content-upload__change-status--loading': ctrl.fieldsLoading.imageUrl,
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}"
-                            ></div>
+                            >
+                                <zem-loader
+                                    ng-if="ctrl.fieldsLoading.imageUrl"
+                                    class="zem-loader zem-loader--small content-upload__loader"
+                                ></zem-loader>
+                            </div>
                             <div
                                 class="message message--error"
                                 for="image-url-input"
@@ -1295,7 +1357,6 @@
                             <div
                                 class="content-upload__field-additional-info content-upload__change-status content-upload__change-status--dropdown-on-the-left"
                                 ng-class="{
-                                'content-upload__change-status--loading': ctrl.fieldsLoading.adSize,
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.adSize && !ctrl.fieldsHaveErrors('adSize')}"
                             >
                                 <a
@@ -1307,6 +1368,10 @@
                                 >
                                     Use as default
                                 </a>
+                                <zem-loader
+                                    ng-if="ctrl.fieldsLoading.adSize"
+                                    class="zem-loader zem-loader--small content-upload__loader"
+                                ></zem-loader>
                             </div>
                             <div
                                 class="message message--error"
@@ -1351,9 +1416,13 @@
                             <div
                                 class="content-upload__field-additional-info content-upload__change-status"
                                 ng-class="{
-                                'content-upload__change-status--loading': ctrl.fieldsLoading.adTag,
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.adTag && !ctrl.fieldsHaveErrors('adTag')}"
-                            ></div>
+                            >
+                                <zem-loader
+                                    ng-if="ctrl.fieldsLoading.adTag"
+                                    class="zem-loader zem-loader--small content-upload__loader"
+                                ></zem-loader>
+                            </div>
                             <div
                                 class="message message--error"
                                 for="ad-tag-input"
@@ -1406,7 +1475,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.displayUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}"
                         >
                             <span class="content-upload__count-characters"
@@ -1423,6 +1491,10 @@
                             >
                                 Use as default
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.displayUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div
                             class="message message--error"
@@ -1470,7 +1542,6 @@
                     <div
                         class="content-upload__field-additional-info content-upload__change-status"
                         ng-class="{
-                         'content-upload__change-status--loading': ctrl.fieldsLoading.label,
                          'content-upload__change-status--successful': ctrl.fieldsSaved.label && !ctrl.fieldsHaveErrors('label')}"
                     >
                         <span class="content-upload__count-characters"
@@ -1478,6 +1549,10 @@
                                 ctrl.MAX_LABEL_LENGTH
                             }}</span
                         >
+                        <zem-loader
+                            ng-if="ctrl.fieldsLoading.label"
+                            class="zem-loader zem-loader--small content-upload__loader"
+                        ></zem-loader>
                     </div>
                     <div class="form__text--small">
                         Label is an internal field and is not part of the ad
@@ -1547,7 +1622,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.primaryTrackerUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
                         >
                             <a
@@ -1558,6 +1632,10 @@
                             >
                                 Remove
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.primaryTrackerUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div class="form__text--small">
                             Paste your impression tracker link to track
@@ -1613,7 +1691,6 @@
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
-                            'content-upload__change-status--loading': ctrl.fieldsLoading.secondaryTrackerUrl,
                             'content-upload__change-status--successful': ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
                         >
                             <a
@@ -1623,6 +1700,10 @@
                             >
                                 Remove
                             </a>
+                            <zem-loader
+                                ng-if="ctrl.fieldsLoading.secondaryTrackerUrl"
+                                class="zem-loader zem-loader--small content-upload__loader"
+                            ></zem-loader>
                         </div>
                         <div class="form__text--small">
                             Paste your impression tracker link to track
@@ -1711,15 +1792,15 @@
                 ng-if="!ctrl.showDisplayUpload"
             >
                 <button
-                    class="zem-button"
-                    ng-class="{'zem-button--outlined': !ctrl.showDesktop, 'zem-button--highlighted': ctrl.showDesktop}"
+                    class="zem-button-legacy"
+                    ng-class="{'zem-button-legacy--outlined': !ctrl.showDesktop, 'zem-button-legacy--highlighted': ctrl.showDesktop}"
                     ng-click="ctrl.showDesktop = true"
                 >
                     Desktop
                 </button>
                 <button
-                    class="zem-button"
-                    ng-class="{'zem-button--outlined': ctrl.showDesktop, 'zem-button--highlighted': !ctrl.showDesktop}"
+                    class="zem-button-legacy"
+                    ng-class="{'zem-button-legacy--outlined': ctrl.showDesktop, 'zem-button-legacy--highlighted': !ctrl.showDesktop}"
                     ng-click="ctrl.showDesktop = false"
                 >
                     Mobile
@@ -1732,15 +1813,15 @@
                 ng-if="!ctrl.showDisplayUpload"
             >
                 <button
-                    class="zem-button"
-                    ng-class="{'zem-button--outlined': !ctrl.showDesktop, 'zem-button--highlighted': ctrl.showDesktop}"
+                    class="zem-button-legacy"
+                    ng-class="{'zem-button-legacy--outlined': !ctrl.showDesktop, 'zem-button-legacy--highlighted': ctrl.showDesktop}"
                     ng-click="ctrl.showDesktop = true"
                 >
                     Desktop
                 </button>
                 <button
-                    class="zem-button"
-                    ng-class="{'zem-button--outlined': ctrl.showDesktop, 'zem-button--highlighted': !ctrl.showDesktop}"
+                    class="zem-button-legacy"
+                    ng-class="{'zem-button-legacy--outlined': ctrl.showDesktop, 'zem-button-legacy--highlighted': !ctrl.showDesktop}"
                     ng-click="ctrl.showDesktop = false"
                 >
                     Mobile

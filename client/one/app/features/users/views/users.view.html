@@ -205,50 +205,51 @@
                 </zem-user-edit-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
-                <button
-                    *ngIf="
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
-                    class="zem-button zem-button--highlighted zem-button--loading"
-                    disabled
-                ></button>
-                <button
-                    *ngIf="
-                        !state.requests.edit.inProgress &&
-                        !state.requests.create.inProgress
+                    [isDisabled]="
+                        state.requests.edit.inProgress ||
+                        state.requests.create.inProgress ||
+                        !canSaveActiveEntity ||
+                        state.activeEntity.isReadOnly
                     "
-                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                    [disabled]="
-                        !canSaveActiveEntity || state.activeEntity.isReadOnly
-                    "
+                    [icon]="'check'"
                     (click)="saveUser()"
                 >
                     Save
-                </button>
-                <button
-                    class="zem-button zem-button--outlined"
-                    [disabled]="
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
                     (click)="editUserModal.close()"
                 >
                     Cancel
-                </button>
-                <button
-                    class="zem-button zem-button--outlined zem-button--danger zem-button--with-icon zem-button--remove-icon zem-users-view__remove_button"
+                </zem-button>
+                <zem-button
                     *ngIf="state.activeEntity.entity.id"
-                    [disabled]="
+                    class="zem-button zem-users-view__remove_button"
+                    [isOutlined]="true"
+                    [isDanger]="true"
+                    [isDisabled]="
                         state.activeEntity.isReadOnly ||
                         state.activeEntity.isCurrentUser ||
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
+                    [icon]="'remove'"
                     (click)="removeUser(state.activeEntity.entity)"
                 >
                     Remove user
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>

@@ -1,4 +1,10 @@
-<div class="splash" *ngIf="!isInitialized"><div class="loader"></div></div>
+<div class="splash" *ngIf="!isInitialized">
+    <zem-loader
+        class="zem-loader zem-loader__overlay"
+        [description]="'Loading interface'"
+    >
+    </zem-loader>
+</div>
 <ng-container *ngIf="isInitialized">
     <router-outlet></router-outlet>
     <router-outlet name="drawer"></router-outlet>

@@ -13,7 +13,7 @@
             >
         </select>
         <button
-            class="zem-button zem-button--full-width zem-media-sources__item"
+            class="zem-button-legacy zem-button-legacy--full-width zem-media-sources__item"
             [disabled]="
                 selectedAvailableMediaSources.length === 0 || isDisabled
             "
@@ -37,7 +37,7 @@
             >
         </select>
         <button
-            class="zem-button zem-button--full-width zem-media-sources__item"
+            class="zem-button-legacy zem-button-legacy--full-width zem-media-sources__item"
             [disabled]="selectedAllowedMediaSources.length === 0 || isDisabled"
             (click)="removeFromAllowedMediaSources()"
         >

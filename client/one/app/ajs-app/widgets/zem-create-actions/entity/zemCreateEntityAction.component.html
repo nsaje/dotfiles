@@ -6,4 +6,7 @@
 >
     {{ $ctrl.mainAction.name }}
 </button>
-<div class="loader" ng-show="$ctrl.createInProgress"></div>
+<zem-loader
+    class="zem-loader zem-loader--inline"
+    ng-show="$ctrl.createInProgress"
+></zem-loader>

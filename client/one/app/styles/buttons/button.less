@@ -1,6 +1,6 @@
 @import 'variables';
 
-.zem-button {
+.zem-button-legacy {
     position: relative;
     height: @input__height--default;
     line-height: @input__height--default;
@@ -25,18 +25,18 @@
     }
 }
 
-.zem-button[disabled] {
+.zem-button-legacy[disabled] {
     opacity: 0.4;
     cursor: default;
 }
 
-.zem-button--outlined {
+.zem-button-legacy--outlined {
     background-color: transparent;
     border: 1px solid tint(@color--secondary, 80%);
     line-height: (@input__height--default)-2;
 }
 
-.zem-button--highlighted {
+.zem-button-legacy--highlighted {
     background-color: @color--primary;
     color: white;
 
@@ -51,7 +51,7 @@
     }
 }
 
-.zem-button--danger {
+.zem-button-legacy--danger {
     &:not([disabled]) {
         &:hover,
         &:focus,
@@ -63,15 +63,15 @@
     }
 }
 
-.zem-button--small {
+.zem-button-legacy--small {
     height: 24px;
     line-height: 24px;
     padding: 0 8px;
     font-size: 12px;
 }
 
-.zem-button--with-icon::before,
-.zem-button--icon-only::before {
+.zem-button-legacy--with-icon::before,
+.zem-button-legacy--icon-only::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -83,153 +83,153 @@
     background-repeat: no-repeat;
 }
 
-.zem-button--small.zem-button--with-icon::before,
-.zem-button--small.zem-button--icon-only::before {
+.zem-button-legacy--small.zem-button-legacy--with-icon::before,
+.zem-button-legacy--small.zem-button-legacy--icon-only::before {
     left: 8px;
     width: 12px;
     height: 12px;
     background-size: 12px;
 }
 
-.zem-button--full-width {
+.zem-button-legacy--full-width {
     width: 100%;
 }
 
-.zem-button--with-icon {
+.zem-button-legacy--with-icon {
     padding-left: 34px; // 10px icon left (button left padding) + 16px icon width + 8px spacing before text
 }
 
-.zem-button--small.zem-button--with-icon {
+.zem-button-legacy--small.zem-button-legacy--with-icon {
     padding-left: 26px; // 8px icon left (button left padding) + 12px icon width + 6px spacing before text
 }
 
-.zem-button--icon-only {
+.zem-button-legacy--icon-only {
     padding-left: 26px; // 10px icon left (button left padding) + 16px icon width
 }
 
-.zem-button--small.zem-button--icon-only {
+.zem-button-legacy--small.zem-button-legacy--icon-only {
     padding-left: 20px; // 8px icon left (button left padding) + 12px icon width
 }
 
-.zem-button--download-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--download-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/download-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--download-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--download-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/download-white.svg');
 }
 
-.zem-button--connections-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--connections-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/connections-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--connections-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--connections-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/connections-white.svg');
 }
 
-.zem-button--edit-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--edit-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/edit-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--edit-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--edit-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/edit-white.svg');
 }
 
-.zem-button--expand-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--expand-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/arrow-wide-sec.svg');
     transition: all @duration-and-timing-fn--default;
 }
 
-.zem-button--highlighted.zem-button--expand-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--expand-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/arrow-wide-white.svg');
     transition: all @duration-and-timing-fn--default;
 }
 
-.zem-button--expand-icon.zem-button--with-icon::before,
-.zem-button--expand-icon.zem-button--icon-only::before {
+.zem-button-legacy--expand-icon.zem-button-legacy--with-icon::before,
+.zem-button-legacy--expand-icon.zem-button-legacy--icon-only::before {
     height: 9px;
 }
 
-.zem-button--expand-icon.zem-button--small.zem-button--with-icon::before,
-.zem-button--expand-icon.zem-button--small.zem-button--icon-only::before {
+.zem-button-legacy--expand-icon.zem-button-legacy--small.zem-button-legacy--with-icon::before,
+.zem-button-legacy--expand-icon.zem-button-legacy--small.zem-button-legacy--icon-only::before {
     height: 8px;
 }
 
-.zem-button--collapse-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--collapse-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/arrow-wide-sec.svg');
     transform: translateY(-50%) rotate(-180deg);
     transition: all @duration-and-timing-fn--default;
 }
 
-.zem-button--highlighted.zem-button--collapse-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--collapse-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/arrow-wide-white.svg');
     transform: translateY(-50%) rotate(-180deg);
     transition: all @duration-and-timing-fn--default;
 }
 
-.zem-button--collapse-icon.zem-button--with-icon::before,
-.zem-button--collapse-icon.zem-button--icon-only::before {
+.zem-button-legacy--collapse-icon.zem-button-legacy--with-icon::before,
+.zem-button-legacy--collapse-icon.zem-button-legacy--icon-only::before {
     height: 9px;
 }
 
-.zem-button--collapse-icon.zem-button--small.zem-button--with-icon::before,
-.zem-button--collapse-icon.zem-button--small.zem-button--icon-only::before {
+.zem-button-legacy--collapse-icon.zem-button-legacy--small.zem-button-legacy--with-icon::before,
+.zem-button-legacy--collapse-icon.zem-button-legacy--small.zem-button-legacy--icon-only::before {
     height: 8px;
 }
 
-.zem-button--copy-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--copy-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/copy-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--copy-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--copy-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/copy-white.svg');
 }
 
-.zem-button--magnifier-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--magnifier-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/magnifier-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--magnifier-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--magnifier-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/magnifier-white.svg');
 }
 
-.zem-button--check-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--check-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/check-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--check-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--check-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/check-white.svg');
 }
 
-.zem-button--add-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--add-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/add-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--add-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--add-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/add-white.svg');
 }
 
-.zem-button--send-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--send-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/send-sec.svg');
 }
 
-.zem-button--highlighted.zem-button--send-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--highlighted.zem-button-legacy--send-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/send-white.svg');
 }
 
-.zem-button--remove-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--remove-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('@{images-folder}/remove-sec.svg');
 }
 
-.zem-button--remove-red-icon:not(.zem-button--loading)::before {
+.zem-button-legacy--remove-red-icon:not(.zem-button-legacy--loading)::before {
     background-image: url('images/remove-red.svg');
 }
 
-.zem-button--dropdown-toggle-icon {
+.zem-button-legacy--dropdown-toggle-icon {
     padding-right: 30px;
 }
 
-.zem-button--dropdown-toggle-icon::after {
+.zem-button-legacy--dropdown-toggle-icon::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -241,21 +241,21 @@
     background-repeat: no-repeat;
 }
 
-.zem-button--dropdown-toggle-icon.zem-button--highlighted::after {
+.zem-button-legacy--dropdown-toggle-icon.zem-button-legacy--highlighted::after {
     background-image: url('images/arrow-white.svg');
 }
 
-.zem-button--highlighted.zem-button--remove-icon:not(.zem-button--loading)::before,
-.zem-button--danger.zem-button--remove-icon:not(.zem-button--loading):hover:not([disabled])::before {
+.zem-button-legacy--highlighted.zem-button-legacy--remove-icon:not(.zem-button-legacy--loading)::before,
+.zem-button-legacy--danger.zem-button-legacy--remove-icon:not(.zem-button-legacy--loading):hover:not([disabled])::before {
     background-image: url('images/remove-white.svg');
 }
 
-.zem-button--highlighted.zem-button--remove-red-icon:not(.zem-button--loading)::before,
-.zem-button--danger.zem-button--remove-red-icon:not(.zem-button--loading):hover:not([disabled])::before {
+.zem-button-legacy--highlighted.zem-button-legacy--remove-red-icon:not(.zem-button-legacy--loading)::before,
+.zem-button-legacy--danger.zem-button-legacy--remove-red-icon:not(.zem-button-legacy--loading):hover:not([disabled])::before {
     background-image: url('images/remove-white.svg');
 }
 
-.zem-button--loading {
+.zem-button-legacy--loading {
     padding-left: 32px;
 
     &::before {
@@ -272,11 +272,11 @@
     }
 }
 
-.zem-button--highlighted.zem-button--loading::before {
+.zem-button-legacy--highlighted.zem-button-legacy--loading::before {
     background-image: url('images/loader-white.gif');
 }
 
-.zem-button-as-text {
+.zem-button-legacy-as-text {
     color: @color--primary;
     background: transparent;
     text-align: left;

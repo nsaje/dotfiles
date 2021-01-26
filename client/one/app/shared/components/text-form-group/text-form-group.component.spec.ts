@@ -5,6 +5,7 @@ import {PopoverDirective} from '../popover/popover.directive';
 import {HelpPopoverComponent} from '../help-popover/help-popover.component';
 import {TextInputComponent} from '../text-input/text-input.component';
 import {FocusDirective} from '../../directives/focus/focus.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('TextFormGroupComponent', () => {
     let component: TextFormGroupComponent;
@@ -18,6 +19,7 @@ describe('TextFormGroupComponent', () => {
                 PopoverDirective,
                 HelpPopoverComponent,
                 TextFormGroupComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule],
         });

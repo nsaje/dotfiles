@@ -38,27 +38,24 @@
                     ></zem-currency-input>
                 </div>
                 <div class="zem-currency-data-cell__form-buttons">
-                    <button
-                        *ngIf="isSaveInProgress"
-                        class="button button--highlight button--disabled zem-currency-data-cell__form-buttons-item"
-                        disabled
-                    >
-                        <span class="loader loader--white"></span>
-                    </button>
-                    <button
-                        *ngIf="!isSaveInProgress"
-                        class="button button--highlight button--with-icon check-icon zem-currency-data-cell__form-buttons-item"
+                    <zem-button
+                        class="zem-button zem-currency-data-cell__form-buttons-item"
+                        [isHighlighted]="true"
+                        [isLoading]="isSaveInProgress"
+                        [isDisabled]="isSaveInProgress"
+                        [icon]="'check'"
                         (click)="save()"
                     >
                         Save
-                    </button>
-                    <button
-                        class="button button--outline zem-currency-data-cell__form-buttons-item"
-                        [disabled]="isSaveInProgress"
+                    </zem-button>
+                    <zem-button
+                        class="zem-button zem-currency-data-cell__form-buttons-item"
+                        [isOutlined]="true"
+                        [isDisabled]="isSaveInProgress"
                         (click)="cancel()"
                     >
                         Cancel
-                    </button>
+                    </zem-button>
                 </div>
             </div>
         </ng-container>

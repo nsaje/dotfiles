@@ -189,7 +189,10 @@
     >
         Cancel
     </button>
-    <div class="loader" ng-show="$ctrl.jobPosted"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-loader--inline"
+        ng-show="$ctrl.jobPosted"
+    ></zem-loader>
     <span
         class="message message--error"
         ng-repeat="error in $ctrl.errors.nonFieldErrors"

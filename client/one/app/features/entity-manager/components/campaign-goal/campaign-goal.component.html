@@ -29,14 +29,14 @@
     </div>
     <div class="zem-campaign-goal__action">
         <button
-            class="zem-button zem-button--icon-only zem-button--expand-icon"
-            [class.zem-button--collapse-icon]="isEditFormVisible"
+            class="zem-button-legacy zem-button-legacy--icon-only zem-button-legacy--expand-icon"
+            [class.zem-button-legacy--collapse-icon]="isEditFormVisible"
             (click)="toggleCampaignGoalEditForm($event)"
         ></button>
     </div>
     <div class="zem-campaign-goal__action">
         <button
-            class="zem-button zem-button--danger zem-button--icon-only zem-button--remove-icon"
+            class="zem-button-legacy zem-button-legacy--danger zem-button-legacy--icon-only zem-button-legacy--remove-icon"
             (click)="deleteCampaignGoal($event)"
             [disabled]="isDisabled"
         ></button>
@@ -64,7 +64,7 @@
     </div>
     <div class="zem-modal__footer buttons-panel">
         <button
-            class="zem-button zem-button--outlined"
+            class="zem-button-legacy zem-button-legacy--outlined"
             (click)="closePixelTagModal()"
         >
             Close

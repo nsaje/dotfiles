@@ -2,7 +2,10 @@
     *ngFor="let total of formattedCreditTotals"
     class="zem-credits-totals__overview"
 >
-    <div *ngIf="isLoading" class="loader zem-credits-total__loader"></div>
+    <zem-loader
+        *ngIf="isLoading"
+        class="zem-loader zem-loader--small zem-loader__overlay zem-loader__overlay--transparent"
+    ></zem-loader>
     <div class="zem-credits-totals__overview-item">
         <span class="zem-credits-totals__overview-item-name">Total value: </span
         ><span class="zem-credits-totals__overview-item-value">{{

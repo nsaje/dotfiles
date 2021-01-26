@@ -36,6 +36,7 @@ import {BidModifierGridCellComponent} from './components/grid/cells/bid-modifier
 import {CurrencyDataCellComponent} from './components/grid/cells/currency-data-cell/currency-data-cell.component';
 import {CurrencyRefundCellComponent} from './components/grid/cells/currency-refund-cell/currency-refund-cell.component';
 import {CheckboxFilterHeaderCellComponent} from './components/grid/cells/checkbox-filter-header-cell/checkbox-filter-header-cell.component';
+import {LoaderComponent} from '../../shared/components/loader/loader.component';
 
 @NgModule({
     declarations: [
@@ -96,6 +97,7 @@ import {CheckboxFilterHeaderCellComponent} from './components/grid/cells/checkbo
         CurrencyDataCellComponent,
         CurrencyRefundCellComponent,
         CheckboxFilterHeaderCellComponent,
+        LoaderComponent,
     ],
 })
 export class AnalyticsModule {}

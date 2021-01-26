@@ -352,7 +352,7 @@
                     >
                         <button
                             type="button"
-                            class="zem-button zem-button--with-icon zem-button--add-icon zem-campaign-goals__button"
+                            class="zem-button-legacy zem-button-legacy--with-icon zem-button-legacy--add-icon zem-campaign-goals__button"
                             (click)="store.createBudget()"
                             [disabled]="
                                 !store.isAnyCreditAvailable() || isReadOnly
@@ -480,7 +480,7 @@
                     <div class="zem-settings-section__item">
                         <button
                             type="button"
-                            class="zem-button zem-button--with-icon zem-button--add-icon"
+                            class="zem-button-legacy zem-button-legacy--with-icon zem-button-legacy--add-icon"
                             (click)="store.addDeal()"
                             [disabled]="isReadOnly"
                         >

@@ -2,7 +2,7 @@
     <div class="zem-settings-drawer-footer__actions-container">
         <div class="zem-buttons-panel">
             <button
-                class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                class="zem-button-legacy zem-button-legacy--highlighted zem-button-legacy--with-icon zem-button-legacy--check-icon"
                 [disabled]="isSaveDisabled || isLoading"
                 (click)="save.emit()"
             >
@@ -10,13 +10,13 @@
                 <ng-container *ngIf="!isNewEntity">Save</ng-container>
             </button>
             <button
-                class="zem-button zem-button--outlined"
+                class="zem-button-legacy zem-button-legacy--outlined"
                 (click)="cancel.emit()"
             >
                 Cancel
             </button>
             <button
-                class="zem-button zem-button--outlined"
+                class="zem-button-legacy zem-button-legacy--outlined"
                 *ngIf="!isNewEntity"
                 [disabled]="isArchiveDisabled"
                 (click)="archive.emit()"
@@ -34,7 +34,10 @@
         </div>
     </div>
     <div class="zem-settings-drawer-footer__status-display">
-        <span class="loader loader--small" *ngIf="isLoading"></span>
+        <zem-loader
+            class="zem-loader zem-loader--small zem-loader--inline"
+            *ngIf="isLoading"
+        ></zem-loader>
         <span class="zem-message zem-message--error" *ngIf="hasError">
             An error occurred while saving. Please correct the marked fields and
             save again.

@@ -50,15 +50,15 @@
                         *ngIf="isAnyBudgetEditable"
                     >
                         <button
-                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--small zem-button--icon-only zem-button--expand-icon"
-                            [class.zem-button--collapse-icon]="
+                            class="zem-campaign-budgets-list__cell-button zem-button-legacy zem-button-legacy--small zem-button-legacy--icon-only zem-button-legacy--expand-icon"
+                            [class.zem-button-legacy--collapse-icon]="
                                 budgetRow.isExpanded
                             "
                             [disabled]="!isBudgetEditable(budget)"
                             (click)="toggleBudgetEditForm(budgetRow)"
                         ></button>
                         <button
-                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--danger zem-button--small zem-button--icon-only zem-button--remove-icon"
+                            class="zem-campaign-budgets-list__cell-button zem-button-legacy zem-button-legacy--danger zem-button-legacy--small zem-button-legacy--icon-only zem-button-legacy--remove-icon"
                             [disabled]="!isBudgetEditable(budget) || budget.id"
                             (click)="deleteBudget(index)"
                         ></button>

@@ -9,12 +9,12 @@
 
     <div class="zem-content-ad-tracker__item-buttons">
         <button
-            class="zem-button zem-button--icon-only zem-button--expand-icon"
-            [class.zem-button--collapse-icon]="isEditFormVisible"
+            class="zem-button-legacy zem-button-legacy--icon-only zem-button-legacy--expand-icon"
+            [class.zem-button-legacy--collapse-icon]="isEditFormVisible"
             (click)="isEditFormVisible = !isEditFormVisible"
         ></button>
         <button
-            class="zem-button zem-button--icon-only zem-button--remove-icon"
+            class="zem-button-legacy zem-button-legacy--icon-only zem-button-legacy--remove-icon"
             [disabled]="isDisabled"
             (click)="contentAdTrackerRemove.emit()"
         ></button>

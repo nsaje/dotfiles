@@ -3,10 +3,10 @@
 </h1>
 
 <div class="custom-panel">
-    <div
-        class="loader loader--full-width"
+    <zem-loader
+        class="zem-loader zem-loader--small"
         ng-show="$ctrl.requestInProgress"
-    ></div>
+    ></zem-loader>
     <div class="message">
         {{ $ctrl.getEntityTypeName() }} <strong>{{ entity.name }}</strong> is
         archived.

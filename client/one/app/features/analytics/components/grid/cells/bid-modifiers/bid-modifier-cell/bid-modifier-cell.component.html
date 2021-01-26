@@ -98,27 +98,24 @@
                 </div>
                 <div class="zem-bid-modifier-cell__form-item">
                     <div class="zem-bid-modifier-cell__form-buttons">
-                        <button
-                            *ngIf="state.requests.save.inProgress"
-                            class="button button--highlight button--disabled zem-bid-modifier-cell__form-buttons-item"
-                            disabled
-                        >
-                            <span class="loader loader--white"></span>
-                        </button>
-                        <button
-                            *ngIf="!state.requests.save.inProgress"
-                            class="button button--highlight button--with-icon check-icon zem-bid-modifier-cell__form-buttons-item"
+                        <zem-button
+                            class="zem-button zem-bid-modifier-cell__form-buttons-item"
+                            [isHighlighted]="true"
+                            [isLoading]="state.requests.save.inProgress"
+                            [isDisabled]="state.requests.save.inProgress"
+                            [icon]="'check'"
                             (click)="save()"
                         >
                             Save
-                        </button>
-                        <button
-                            class="button button--outline zem-bid-modifier-cell__form-buttons-item"
-                            [disabled]="state.requests.save.inProgress"
+                        </zem-button>
+                        <zem-button
+                            class="zem-button zem-bid-modifier-cell__form-buttons-item"
+                            [isOutlined]="true"
+                            [isDisabled]="state.requests.save.inProgress"
                             (click)="cancel()"
                         >
                             Cancel
-                        </button>
+                        </zem-button>
                     </div>
                 </div>
             </div>

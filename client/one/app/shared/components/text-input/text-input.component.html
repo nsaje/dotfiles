@@ -12,8 +12,19 @@
     [zemFocus]="isFocused"
 />
 <div
-    *ngIf="statusIcon"
-    class="zem-text-input__icon"
-    [class.zem-text-input__icon--valid]="statusIcon === 'valid'"
-    [class.zem-text-input__icon--validating]="statusIcon === 'validating'"
+    *ngIf="statusIcon === 'valid'"
+    class="zem-text-input__icon zem-text-input__icon--valid"
 ></div>
+<ng-container *ngIf="statusIcon === 'validating'">
+    <ng-container
+        *ngTemplateOutlet="
+            loaderTemplate ? loaderTemplate : defaultLoaderTemplate
+        "
+    ></ng-container>
+</ng-container>
+
+<ng-template #defaultLoaderTemplate>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-text-input__icon zem-text-input__icon--validating"
+    ></zem-loader>
+</ng-template>

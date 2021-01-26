@@ -43,29 +43,25 @@
                 (fileChange)="onFileChange($event)"
             ></zem-bid-modifier-import-form>
         </div>
-        <div class="zem-modal__footer buttons-panel">
-            <button
-                *ngIf="importRequestInProgress"
-                class="button button--highlight button--disabled"
-                disabled
-            >
-                <span class="loader loader--white"></span>
-            </button>
-            <button
-                *ngIf="!importRequestInProgress"
-                class="button button--highlight button--with-icon check-icon"
-                [disabled]="!importFileIsValid"
+        <div class="zem-modal__footer zem-buttons-panel">
+            <zem-button
+                class="zem-button"
+                [isHighlighted]="true"
+                [isLoading]="importRequestInProgress"
+                [isDisabled]="importRequestInProgress || !importFileIsValid"
+                [icon]="'check'"
                 (click)="import()"
             >
                 Import
-            </button>
-            <button
-                class="button button--outline"
-                [disabled]="importRequestInProgress"
+            </zem-button>
+            <zem-button
+                class="zem-button"
+                [isOutlined]="true"
+                [isDisabled]="importRequestInProgress"
                 (click)="bidModifierImportFormModal.close()"
             >
                 Cancel
-            </button>
+            </zem-button>
         </div>
     </ng-container>
 </zem-modal>

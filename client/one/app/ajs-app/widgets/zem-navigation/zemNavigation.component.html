@@ -11,7 +11,10 @@
 </div>
 
 <div class="zem-navigation__results custom-scroller">
-    <div class="loader" ng-if="!$ctrl.list || $ctrl.filterInProgress"></div>
+    <zem-loader
+        class="zem-loader zem-loader--small"
+        ng-if="!$ctrl.list || $ctrl.filterInProgress"
+    ></zem-loader>
     <div
         class="zem-navigation__no-results"
         ng-if="$ctrl.list && !$ctrl.filterInProgress && $ctrl.filteredList.length === 0"

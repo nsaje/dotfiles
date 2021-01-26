@@ -17,7 +17,7 @@
                 class="zem-publisher-groups-view__buttons zem-publisher-groups-view__action"
             >
                 <button
-                    class="zem-publisher-groups-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-publisher-groups-view__button"
+                    class="zem-publisher-groups-view__action_button zem-button-legacy zem-button-legacy--with-icon zem-button-legacy--highlighted zem-button-legacy--add-icon zem-publisher-groups-view__button"
                     [disabled]="isReadOnly"
                     (click)="addPublisherGroup()"
                 >
@@ -162,26 +162,27 @@
                 </zem-publisher-group-edit-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
-                <button
-                    *ngIf="state.requests.upload.inProgress"
-                    class="zem-button zem-button--highlighted zem-button--loading"
-                    disabled
-                ></button>
-                <button
-                    *ngIf="!state.requests.upload.inProgress"
-                    [disabled]="state.activeEntity.isReadOnly"
-                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [isLoading]="state.requests.upload.inProgress"
+                    [isDisabled]="
+                        state.requests.upload.inProgress ||
+                        state.activeEntity.isReadOnly
+                    "
+                    [icon]="'check'"
                     (click)="savePublisherGroup()"
                 >
                     Save
-                </button>
-                <button
-                    class="zem-button zem-button--outlined"
-                    [disabled]="state.requests.upload.inProgress"
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isOutlined]="true"
+                    [isDisabled]="state.requests.upload.inProgress"
                     (click)="editPublisherGroupModal.close()"
                 >
                     Cancel
-                </button>
+                </zem-button>
             </div>
         </ng-container>
     </zem-modal>
@@ -220,7 +221,7 @@
                 class="zem-modal__footer zem-buttons-panel zem-publisher-groups-view__buttons-panel"
             >
                 <button
-                    class="zem-button zem-button--outlined"
+                    class="zem-button-legacy zem-button-legacy--outlined"
                     (click)="connectionsModal.close(); store.clearErrors()"
                 >
                     Close
@@ -265,7 +266,7 @@
                 class="zem-modal__footer zem-buttons-panel zem-publisher-groups-view__buttons-panel"
             >
                 <button
-                    class="zem-button zem-button--highlighted"
+                    class="zem-button-legacy zem-button-legacy--highlighted"
                     (click)="
                         deleteFailedModal.close();
                         openConnectionsModal(state.activeEntity.entity)
@@ -274,7 +275,7 @@
                     Review publisher group use
                 </button>
                 <button
-                    class="zem-button zem-button--outlined"
+                    class="zem-button-legacy zem-button-legacy--outlined"
                     (click)="deleteFailedModal.close()"
                 >
                     Cancel

@@ -30,7 +30,10 @@
             >
                 Bluekai not accessible at the moment.
             </div>
-            <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
+            <zem-loader
+                class="zem-loader zem-loader--small"
+                ng-if="!$ctrl.state.info.reach"
+            ></zem-loader>
             <div
                 class="zem-reach-bar"
                 ng-if="$ctrl.state.info.reach.relative >= 0"

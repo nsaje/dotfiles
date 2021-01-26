@@ -21,7 +21,7 @@
         popoverPlacement="top"
     >
         <button
-            class="zem-button zem-button--dropdown-toggle-icon"
+            class="zem-button-legacy zem-button-legacy--dropdown-toggle-icon"
             zemDropdownToggle
         >
             {{ blacklistAction.name }} blacklist
@@ -47,12 +47,12 @@
             </ul>
         </div>
     </div>
-    <div
-        class="zem-bulk-blacklist-actions__loader"
+    <zem-loader
+        class="zem-loader zem-loader--small zem-bulk-blacklist-actions__loader"
         [ngStyle]="{
             display: store.state.requests.updateBlacklistStatuses.inProgress
                 ? 'inline-block'
                 : 'none'
         }"
-    ></div>
+    ></zem-loader>
 </ng-container>

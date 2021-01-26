@@ -1,6 +1,10 @@
 <div class="zem-drawer__backdrop" (click)="close()"></div>
 
-<div class="zem-drawer__panel" [zemLoadingOverlay]="isLoading">
+<div class="zem-drawer__panel">
+    <zem-loader
+        *ngIf="isLoading"
+        class="zem-loader zem-loader__overlay zem-loader__overlay--transparent"
+    ></zem-loader>
     <button
         class="zem-drawer__close-button"
         *ngIf="isClosable"

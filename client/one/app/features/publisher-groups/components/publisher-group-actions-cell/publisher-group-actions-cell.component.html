@@ -2,28 +2,30 @@
     <button
         [hidden]="this.publisherGroup.implicit"
         [disabled]="!hasReadAccess"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--connections-icon zem-publisher-group-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--connections-icon zem-publisher-group-actions-cell__item"
         title="Connections"
         (click)="openConnectionsModal()"
     ></button>
     <button
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--download-icon zem-publisher-group-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--download-icon zem-publisher-group-actions-cell__item"
         title="Download"
         (click)="download()"
     ></button>
     <button
         [hidden]="this.publisherGroup.implicit"
         [ngClass]="
-            isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
+            isReadOnly
+                ? 'zem-button-legacy--magnifier-icon'
+                : 'zem-button-legacy--edit-icon'
         "
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-deal-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-deal-actions-cell__item"
         title="Edit"
         (click)="openEditPublisherGroupModal()"
     ></button>
     <button
         [hidden]="this.publisherGroup.implicit"
         [disabled]="isReadOnly"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-publisher-group-actions-cell__item"
+        class="zem-button-legacy zem-button-legacy--small zem-button-legacy--with-icon zem-button-legacy--icon-only zem-button-legacy--remove-icon zem-button-legacy--danger zem-publisher-group-actions-cell__item"
         title="Delete"
         (click)="delete()"
     ></button>

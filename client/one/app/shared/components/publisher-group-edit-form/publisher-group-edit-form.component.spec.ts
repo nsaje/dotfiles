@@ -12,6 +12,7 @@ import {TextInputComponent} from '../text-input/text-input.component';
 import {CheckboxInputComponent} from '../checkbox-input/checkbox-input.component';
 import {PopoverDirective} from '../popover/popover.directive';
 import {FocusDirective} from '../../directives/focus/focus.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('PublisherGroupEditFormComponent', () => {
     let component: PublisherGroupEditFormComponent;
@@ -28,6 +29,7 @@ describe('PublisherGroupEditFormComponent', () => {
                 HelpPopoverComponent,
                 TextInputComponent,
                 CheckboxInputComponent,
+                LoaderComponent,
                 PopoverDirective,
                 FocusDirective,
             ],
