@@ -45,7 +45,9 @@ export class ButtonComponent implements OnChanges {
 
     @HostBinding('class.zem-button__button--full-width') fullWidthClass = false;
 
-    buttonClass: {[key: string]: boolean} = {};
+    buttonClass: {[key: string]: boolean} = {
+        'zem-button__button': true,
+    };
     loaderClass: {[key: string]: boolean} = {};
 
     ngOnChanges() {
