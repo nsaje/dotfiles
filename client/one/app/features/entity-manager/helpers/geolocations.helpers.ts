@@ -127,25 +127,3 @@ export function mapGeolocationsAndGroupByType(
     }
     return geolocationsByType;
 }
-
-export function getGeolocationBadges(
-    geolocation: Geolocation
-): {
-    class: string;
-    text: string;
-}[] {
-    const badges = [];
-    if (!geolocation.outbrainId) {
-        badges.push({
-            class: 'outbrain',
-            text: 'Not supported by Outbrain',
-        });
-    }
-    if (!geolocation.woeid) {
-        badges.push({
-            class: 'yahoo',
-            text: 'Not supported by Yahoo',
-        });
-    }
-    return badges;
-}

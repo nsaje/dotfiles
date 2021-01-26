@@ -135,19 +135,4 @@ describe('geolocationHelpers', () => {
             )
         ).toEqual(locationsByType);
     });
-
-    it('should correctly add badges', () => {
-        const location: Geolocation = {
-            key: 'SI',
-            type: GeolocationType.COUNTRY,
-            name: 'Slovenia',
-            outbrainId: '',
-            woeid: '',
-            facebookKey: 'SI',
-        };
-
-        expect(
-            geolocationHelpers.getGeolocationBadges(location).length
-        ).toEqual(2);
-    });
 });

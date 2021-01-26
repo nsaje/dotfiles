@@ -27,11 +27,9 @@ describe('GeoTargetingComponent', () => {
             facebookKey: '',
         };
         component.location = slovenia;
-        component.ngOnInit();
     });
 
     it('should be correctly initialized', () => {
         expect(component).toBeDefined();
-        expect(component.badges.length).toEqual(2);
     });
 });

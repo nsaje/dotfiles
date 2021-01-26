@@ -1,13 +1,6 @@
 <div class="zem-geo-targeting-location__list-item-name">
     <span [zemTextHighlight]="highlightText">{{ location.name }}</span>
 </div>
-<div
-    *ngFor="let badge of badges"
-    class="zem-geo-targeting-location__list-item-not-supported-icon zem-geo-targeting-location__list-item-not-supported-icon--{{
-        badge.class
-    }}"
-    title="{{ badge.text }}"
-></div>
 <button
     *ngIf="canRemoveLocation"
     class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"

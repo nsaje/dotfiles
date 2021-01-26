@@ -6,17 +6,15 @@ import {
     EventEmitter,
     Component,
     ChangeDetectionStrategy,
-    OnInit,
 } from '@angular/core';
 import {Geolocation} from '../../../../core/geolocations/types/geolocation';
-import {getGeolocationBadges} from '../../helpers/geolocations.helpers';
 
 @Component({
     selector: 'zem-geo-targeting-location',
     templateUrl: './geo-targeting-location.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GeoTargetingLocationComponent implements OnInit {
+export class GeoTargetingLocationComponent {
     @Input()
     location: Geolocation;
     @Input()
@@ -25,13 +23,4 @@ export class GeoTargetingLocationComponent implements OnInit {
     canRemoveLocation: boolean = true;
     @Output()
     removeLocation: EventEmitter<Geolocation> = new EventEmitter<Geolocation>();
-
-    badges: {
-        class: string;
-        text: string;
-    }[] = [];
-
-    ngOnInit() {
-        this.badges = getGeolocationBadges(this.location);
-    }
 }
