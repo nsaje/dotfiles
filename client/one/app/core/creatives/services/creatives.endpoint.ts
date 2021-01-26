@@ -8,6 +8,7 @@ import * as commonHelpers from '../../../shared/helpers/common.helpers';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {catchError, map} from 'rxjs/operators';
 import {AdType} from '../../../app.constants';
+import {CreativeBatch} from '../types/creative-batch';
 
 @Injectable()
 export class CreativesEndpoint {
@@ -61,5 +62,119 @@ export class CreativesEndpoint {
                     return throwError(error);
                 })
             );
+    }
+
+    getBatch(
+        batchId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        const request = CREATIVES_CONFIG.requests.creativeBatches.get;
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<CreativeBatch>>(`${request.url}${batchId}`)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    createBatch(
+        batch: CreativeBatch,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        const request = CREATIVES_CONFIG.requests.creativeBatches.create;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .post<ApiResponse<CreativeBatch>>(request.url, batch)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    editBatch(
+        batch: CreativeBatch,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        const request = CREATIVES_CONFIG.requests.creativeBatches.edit;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .put<ApiResponse<CreativeBatch>>(`${request.url}${batch.id}`, batch)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    validateBatch(
+        batch: Partial<CreativeBatch>,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = CREATIVES_CONFIG.requests.creativeBatches.validate;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.post<ApiResponse<void>>(request.url, batch).pipe(
+            map(() => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
     }
 }

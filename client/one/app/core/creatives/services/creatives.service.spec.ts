@@ -6,6 +6,9 @@ import {CreativesService} from './creatives.service';
 import {Creative} from '../types/creative';
 import {AdType} from '../../../app.constants';
 import {TrackerEventType, TrackerMethod} from '../creatives.constants';
+import {CreativeBatch} from '../types/creative-batch';
+import {CreativeBatchStatus} from '../types/creative-batch-status';
+import {fakeAsync, tick} from '@angular/core/testing';
 
 describe('CreativesService', () => {
     let service: CreativesService;
@@ -16,10 +19,17 @@ describe('CreativesService', () => {
     let mockedCreatives: Creative[];
     let mockedAgencyId: string;
     let mockedAccountId: string;
+    let mockedBatch: CreativeBatch;
+    let mockedBatchId: string;
+    let mockedBatchCreateParams: CreativeBatch;
 
     beforeEach(() => {
         creativesEndpointStub = jasmine.createSpyObj(CreativesEndpoint.name, [
             'list',
+            'getBatch',
+            'createBatch',
+            'editBatch',
+            'validateBatch',
         ]);
         service = new CreativesService(creativesEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -57,6 +67,29 @@ describe('CreativesService', () => {
             },
         ];
         mockedCreative = clone(mockedCreatives[0]);
+
+        mockedBatchId = '1';
+        mockedBatch = {
+            id: mockedBatchId,
+            agencyId: '71',
+            accountId: null,
+            name: 'Test batch',
+            status: CreativeBatchStatus.IN_PROGRESS,
+            tags: ['test'],
+            imageCrop: 'what',
+            displayUrl: 'https://one.zemanta.com',
+            brandName: 'TestBrand',
+            description: 'A very testfully testful brand',
+            callToAction: 'Just do it',
+            createdBy: 'Nobody',
+            createdDt: new Date(),
+        };
+
+        mockedBatchCreateParams = {
+            name: 'Test batch',
+            agencyId: '71',
+            accountId: null,
+        };
     });
 
     it('should get creatives via endpoint', () => {
@@ -93,6 +126,77 @@ describe('CreativesService', () => {
             keyword,
             creativeType,
             tags,
+            requestStateUpdater
+        );
+    });
+
+    it('should get creative batch via endpoint', () => {
+        creativesEndpointStub.getBatch.and
+            .returnValue(of(mockedBatch, asapScheduler))
+            .calls.reset();
+
+        service
+            .getBatch(mockedBatchId, requestStateUpdater)
+            .subscribe(batch => {
+                expect(batch).toEqual(mockedBatch);
+            });
+        expect(creativesEndpointStub.getBatch).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.getBatch).toHaveBeenCalledWith(
+            mockedBatchId,
+            requestStateUpdater
+        );
+    });
+
+    it('should create new creative batch', fakeAsync(() => {
+        creativesEndpointStub.createBatch.and
+            .returnValue(of(mockedBatch, asapScheduler))
+            .calls.reset();
+
+        const mockedNewBatch = clone(mockedBatchCreateParams);
+        service
+            .createBatch(mockedNewBatch, requestStateUpdater)
+            .subscribe(batch => {
+                expect(batch).toEqual(mockedBatch);
+            });
+        tick();
+
+        expect(creativesEndpointStub.createBatch).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.createBatch).toHaveBeenCalledWith(
+            mockedNewBatch,
+            requestStateUpdater
+        );
+    }));
+
+    it('should edit creative batch via endpoint', () => {
+        const mockedNewBatch = clone(mockedBatch);
+        creativesEndpointStub.editBatch.and
+            .returnValue(of(mockedBatch, asapScheduler))
+            .calls.reset();
+
+        service
+            .editBatch(mockedNewBatch, requestStateUpdater)
+            .subscribe(newBatch => {
+                expect(newBatch).toEqual(mockedNewBatch);
+            });
+
+        expect(creativesEndpointStub.editBatch).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.editBatch).toHaveBeenCalledWith(
+            mockedNewBatch,
+            requestStateUpdater
+        );
+    });
+
+    it('should validate creative batch via endpoint', () => {
+        creativesEndpointStub.validateBatch.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+
+        service
+            .validateBatch(mockedBatch, requestStateUpdater)
+            .subscribe(x => {});
+        expect(creativesEndpointStub.validateBatch).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.validateBatch).toHaveBeenCalledWith(
+            mockedBatch,
             requestStateUpdater
         );
     });

@@ -4,6 +4,7 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
 import {Creative} from '../types/creative';
 import {AdType} from '../../../app.constants';
+import {CreativeBatch} from '../types/creative-batch';
 
 @Injectable()
 export class CreativesService {
@@ -29,5 +30,33 @@ export class CreativesService {
             tags,
             requestStateUpdater
         );
+    }
+
+    getBatch(
+        batchId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        return this.endpoint.getBatch(batchId, requestStateUpdater);
+    }
+
+    validateBatch(
+        batch: Partial<CreativeBatch>,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.validateBatch(batch, requestStateUpdater);
+    }
+
+    createBatch(
+        batch: CreativeBatch,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        return this.endpoint.createBatch(batch, requestStateUpdater);
+    }
+
+    editBatch(
+        batch: CreativeBatch,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeBatch> {
+        return this.endpoint.editBatch(batch, requestStateUpdater);
     }
 }
