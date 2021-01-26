@@ -99,9 +99,9 @@ def _apply_currency_exchange_rate(currency_exchange_rates, account_id, row):
 
 
 def _add_calculated_columns(row):
-    row["ctr"] = row["clicks"] / row["impressions"]
-    row["cpc"] = row["spend"] / row["clicks"]
-    row["cpm"] = (row["spend"] / row["impressions"]) * 1000
+    row["ctr"] = row["clicks"] / row["impressions"] if row["impressions"] else None
+    row["cpc"] = row["spend"] / row["clicks"] if row["clicks"] else None
+    row["cpm"] = (row["spend"] / row["impressions"]) * 1000 if row["impressions"] else None
 
 
 def _get_entity_ids_for_row(breakdown, campaign_id, ad_group_id, content_ad_id, entity_lookup_dict, row):
