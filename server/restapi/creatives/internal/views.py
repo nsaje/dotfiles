@@ -87,6 +87,10 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
     serializer = serializers.CreativeBatchSerializer
 
+    def get(self, request, batch_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.READ, batch_id)
+        return self.response_ok(self.serializer(batch, context={"request": request}).data)
+
     def validate(self, request):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)

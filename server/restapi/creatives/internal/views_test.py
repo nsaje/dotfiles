@@ -217,6 +217,24 @@ class CreativeBatchViewSetTestCase(RESTAPITestCase):
         self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
 
+    def test_get_on_account(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        batch = magic_mixer.blend(core.features.creatives.CreativeBatch, account=account)
+
+        r = self.client.get(reverse("restapi.creatives.internal:creative_batch_details", kwargs={"batch_id": batch.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["id"], str(batch.id))
+
+    def test_get_on_agency(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        batch = magic_mixer.blend(core.features.creatives.CreativeBatch, agency=agency)
+
+        r = self.client.get(reverse("restapi.creatives.internal:creative_batch_details", kwargs={"batch_id": batch.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["id"], str(batch.id))
+
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.creatives.internal:creative_batch_validate"))
         self.assertResponseValid(r, data_type=type(None))
