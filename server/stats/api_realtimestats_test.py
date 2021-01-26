@@ -11,9 +11,9 @@ from utils.magic_mixer import magic_mixer
 
 from . import api_realtimestats
 
-CAMPAIGN_ID = random.randint(10 ** 5, 10 ** 6)
-AD_GROUP_ID = random.randint(10 ** 5, 10 ** 6)
-CONTENT_AD_ID = random.randint(10 ** 5, 10 ** 6)
+CAMPAIGN_ID = str(random.randint(10 ** 5, 10 ** 6))
+AD_GROUP_ID = str(random.randint(10 ** 5, 10 ** 6))
+CONTENT_AD_ID = str(random.randint(10 ** 5, 10 ** 6))
 
 STATS_ROW = {
     "clicks": 2607,
@@ -25,10 +25,10 @@ STATS_ROW = {
 
 
 GROUPBY_TEST_CASES = [
-    ("account_id", {"account_id": 1234, "breakdown": []}, {**STATS_ROW}, api_realtimestats.InvalidBreakdown),
+    ("account_id", {"account_id": "1234", "breakdown": []}, {**STATS_ROW}, api_realtimestats.InvalidBreakdown),
     (
         "account_id",
-        {"account_id": 1234, "breakdown": ["campaign_id"]},
+        {"account_id": "1234", "breakdown": ["campaign_id"]},
         {**STATS_ROW, "campaign_id": CAMPAIGN_ID},
         False,
     ),

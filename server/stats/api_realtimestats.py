@@ -126,30 +126,32 @@ def _get_entity_ids_for_row(breakdown, campaign_id, ad_group_id, content_ad_id, 
 def _prepare_entity_lookup_dict(breakdown, campaign_id, ad_group_id, content_ad_id, rows):
     if campaign_id:
         campaign = core.models.Campaign.objects.only("id", "account_id").get(id=campaign_id)
-        return {campaign_id: EntityIds(campaign.account_id, campaign.id)}
+        return {str(campaign_id): EntityIds(campaign.account_id, campaign.id)}
     elif ad_group_id:
         ad_group = core.models.AdGroup.objects.only("id", "campaign_id", "campaign__account_id").get(id=ad_group_id)
-        return {ad_group.id: EntityIds(ad_group.campaign.account_id, ad_group.campaign_id)}
+        return {str(ad_group.id): EntityIds(ad_group.campaign.account_id, ad_group.campaign_id)}
     elif content_ad_id:
         content_ad = core.models.ContentAd.objects.filter(id=content_ad_id).only("id", "ad_group__campaign_id").get()
-        return {content_ad.id: EntityIds(content_ad.ad_group.campaign.account_id, content_ad.ad_group.campaign_id)}
+        return {str(content_ad.id): EntityIds(content_ad.ad_group.campaign.account_id, content_ad.ad_group.campaign_id)}
     elif "campaign_id" in breakdown:
         campaign_ids = [row["campaign_id"] for row in rows]
         campaigns = core.models.Campaign.objects.filter(id__in=campaign_ids).only("id", "account_id")
-        return {campaign.id: EntityIds(campaign.account_id, campaign.id) for campaign in campaigns}
+        return {str(campaign.id): EntityIds(campaign.account_id, campaign.id) for campaign in campaigns}
     elif "ad_group_id" in breakdown:
         ad_group_ids = [row["ad_group_id"] for row in rows]
         ad_groups = core.models.AdGroup.objects.filter(id__in=ad_group_ids).only(
             "id", "campaign_id", "campaign__account_id"
         )
-        return {ad_group.id: EntityIds(ad_group.campaign.account_id, ad_group.campaign_id) for ad_group in ad_groups}
+        return {
+            str(ad_group.id): EntityIds(ad_group.campaign.account_id, ad_group.campaign_id) for ad_group in ad_groups
+        }
     elif "content_ad_id" in breakdown:
         content_ad_ids = [row["content_ad_id"] for row in rows]
         content_ads = core.models.ContentAd.objects.filter(id__in=content_ad_ids).only(
             "id", "ad_group__campaign_id", "ad_group__campaign__account_id"
         )
         return {
-            content_ad.id: EntityIds(content_ad.ad_group.campaign.account_id, content_ad.ad_group.campaign_id)
+            str(content_ad.id): EntityIds(content_ad.ad_group.campaign.account_id, content_ad.ad_group.campaign_id)
             for content_ad in content_ads
         }
     else:
