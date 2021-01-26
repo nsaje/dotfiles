@@ -47,7 +47,7 @@ class S3Helper(object):
 
         def _get_result(t):
             result = t.join_and_get_result(timeout=600)
-            if t.isAlive():
+            if t.is_alive():
                 raise TimeoutException("Downloading file from S3 taking too long")
             return result
 
