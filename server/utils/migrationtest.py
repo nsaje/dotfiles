@@ -1,4 +1,3 @@
-
 # MigrationTest is based on https://github.com/plumdog/django_migration_testcase
 """
 License applying to this specific file:

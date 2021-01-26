@@ -5,6 +5,7 @@ import magic
 import mimetypes
 import re
 import json
+import io
 
 import unicodecsv
 import dateutil.parser
@@ -12,6 +13,7 @@ from collections import OrderedDict
 from collections import Counter
 
 import xlrd
+import openpyxl
 
 from django import forms
 from django.contrib.postgres import forms as postgres_forms
@@ -372,7 +374,8 @@ class AdGroupAdsUploadBaseForm(forms.Form):
     )
 
 
-EXCEL_MIMETYPES = ("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+XLS_MIMETYPE = "application/vnd.ms-excel"
+XLSX_MIMETYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class ParseCSVExcelFile(object):
@@ -381,8 +384,10 @@ class ParseCSVExcelFile(object):
         filename_mimetype, _ = mimetypes.guess_type(candidates_file.name)
         content_mimetype = magic.from_buffer(content, mime=True).split("/")
 
-        if filename_mimetype in EXCEL_MIMETYPES and content_mimetype[0] == "application":
-            return self._parse_excel_file(content)
+        if filename_mimetype == XLS_MIMETYPE and content_mimetype[0] == "application":
+            return self._parse_xls_file(content)
+        elif filename_mimetype == XLSX_MIMETYPE and content_mimetype[0] == "application":
+            return self._parse_xlsx_file(content)
         elif filename_mimetype == "text/csv" and content_mimetype[0] == "text":
             return self._parse_csv_file(content)
         else:
@@ -419,10 +424,7 @@ class ParseCSVExcelFile(object):
 
         return rows
 
-    def _get_sheet_row(self, sheet, i):
-        return [cell.value for cell in sheet.row(i)]
-
-    def _parse_excel_file(self, content):
+    def _parse_xls_file(self, content):
         wb = xlrd.open_workbook(file_contents=content)
 
         if wb.nsheets < 1:
@@ -430,6 +432,18 @@ class ParseCSVExcelFile(object):
         sheet = wb.sheet_by_index(0)
 
         return [self._get_sheet_row(sheet, i) for i in range(sheet.nrows)]
+
+    def _get_sheet_row(self, sheet, i):
+        return [cell.value for cell in sheet.row(i)]
+
+    def _parse_xlsx_file(self, content):
+        wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True)
+
+        if len(wb.worksheets) < 1:
+            raise forms.ValidationError("No sheets in excel file.")
+        sheet = wb.worksheets[0]
+
+        return [[cell.value for cell in row] for row in sheet.rows]
 
     def _is_example_row(self, row):
         return False

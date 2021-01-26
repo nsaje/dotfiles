@@ -47,8 +47,8 @@ NO_REPLY_EMAIL = "noreply@zemanta.com"
 def send_official_email(
     agency_or_user, recipient_list=None, subject=None, body=None, additional_recipients=None, tags=None, from_email=None
 ):
-    """ Sends an official email, meaning it requires an agency or a user to determine
-        if the e-mail should be whitelabeled. """
+    """Sends an official email, meaning it requires an agency or a user to determine
+    if the e-mail should be whitelabeled."""
     email = create_official_email(
         agency_or_user=agency_or_user,
         recipient_list=recipient_list,
@@ -365,7 +365,7 @@ def send_new_user_email(user, request):
 
 
 def _generate_new_user_url(user, request):
-    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8"))
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(reverse("welcome", args=(encoded_id, token)))
@@ -374,7 +374,7 @@ def _generate_new_user_url(user, request):
 
 
 def _generate_password_reset_url(user, request, next_param=""):
-    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8"))
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(reverse("set_password", args=(encoded_id, token)))

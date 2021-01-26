@@ -1,7 +1,6 @@
+import psycopg2.extensions
 from django import template
 from django.utils.safestring import mark_safe
-
-import psycopg2.extensions
 
 register = template.Library()
 

@@ -31,6 +31,5 @@ def combine_tracking_codes(*args):
 
 
 def get_full_z1_url(partial_url):
-    """Returns partial_url prepended with base URL (domain)
-    """
+    """Returns partial_url prepended with base URL (domain)"""
     return urllib.parse.urljoin(settings.BASE_URL, partial_url)

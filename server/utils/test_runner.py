@@ -61,7 +61,7 @@ class SplitTestsRunner(FilterSuiteMixin, django.test.runner.DiscoverRunner):
         skip_transaction_tests=False,
         timing=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         logging.disable(logging.CRITICAL)
 

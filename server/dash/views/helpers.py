@@ -484,7 +484,10 @@ def _get_editable_fields_status_setting(
 
 def get_source_supply_dash_disabled_message(ad_group_source, source):
     if not source.has_3rd_party_dashboard():
-        return "This media source doesn't have a dashboard of its own. " "All campaign management is done through Zemanta One dashboard."
+        return (
+            "This media source doesn't have a dashboard of its own. "
+            "All campaign management is done through Zemanta One dashboard."
+        )
 
     return None
 

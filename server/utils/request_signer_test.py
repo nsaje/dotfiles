@@ -58,7 +58,7 @@ class EncryptionHelperTestCase(unittest.TestCase):
             self.url,
             data=self.data,
             content_type="application/json",
-            **{header_sig: self.signature.decode("utf-8"), header_ts: str(mock_time())}
+            **{header_sig: self.signature.decode("utf-8"), header_ts: str(mock_time())},
         )
 
         request_signer.verify_wsgi_request(request, [b"my-deprecated-key", self.secret_key])
@@ -73,7 +73,7 @@ class EncryptionHelperTestCase(unittest.TestCase):
             self.url,
             data=self.data,
             content_type="application/json",
-            **{header_sig: self.signature, header_ts: "123456789"}
+            **{header_sig: self.signature, header_ts: "123456789"},
         )
 
         with self.assertRaises(request_signer.SignatureError):
@@ -92,7 +92,7 @@ class EncryptionHelperTestCase(unittest.TestCase):
             self.url,
             data=self.data,
             content_type="application/json",
-            **{request_signer.SIGNATURE_HEADER.upper(): self.signature}
+            **{request_signer.SIGNATURE_HEADER.upper(): self.signature},
         )
 
         with self.assertRaises(request_signer.SignatureError):

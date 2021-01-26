@@ -667,5 +667,5 @@ def _set_ad_group_flight_time_to_ongoing(ad_group):
         skip_automation=True,
         system_user=dash.constants.SystemUserType.AUTOPILOT,
         skip_field_change_validation_autopilot=True,
-        **updates
+        **updates,
     )

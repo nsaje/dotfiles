@@ -1821,7 +1821,7 @@ class AudienceFormTestCase(TestCase):
         data["name"] = ""
         self._expect_error("name", "Please specify audience name.", data)
 
-        del (data["name"])
+        del data["name"]
         self._expect_error("name", "Please specify audience name.", data)
 
         data["name"] = "a" * 128
@@ -1832,7 +1832,7 @@ class AudienceFormTestCase(TestCase):
         data["pixel_id"] = None
         self._expect_error("pixel_id", "Please select a pixel.", data)
 
-        del (data["pixel_id"])
+        del data["pixel_id"]
         self._expect_error("pixel_id", "Please select a pixel.", data)
 
     def test_invalid_ttl(self):
@@ -1840,7 +1840,7 @@ class AudienceFormTestCase(TestCase):
         data["ttl"] = None
         self._expect_error("ttl", "Please specify the user retention in days.", data)
 
-        del (data["ttl"])
+        del data["ttl"]
         self._expect_error("ttl", "Please specify the user retention in days.", data)
 
         data["ttl"] = 366
@@ -1860,7 +1860,7 @@ class AudienceFormTestCase(TestCase):
         data["rules"] = []
         self._expect_error("rules", "Please select a rule.", data)
 
-        del (data["rules"])
+        del data["rules"]
         self._expect_error("rules", "Please select a rule.", data)
 
         data["rules"] = [{"type": None, "value": "bla"}]

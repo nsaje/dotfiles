@@ -36,7 +36,7 @@ class RDSModelization(object):
     def _get_constant_value(field, constant, output_field=CharField):
         return Case(
             *[When(**{field: i, "then": Value(constant.get_text(i))}) for i in constant._VALUES],
-            output_field=output_field()
+            output_field=output_field(),
         )
 
     def _get_rds_queryset(self):

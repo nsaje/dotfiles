@@ -29,7 +29,7 @@ def get_flow(request):
         scope="email",
         access_type="online",
         redirect_uri=url,
-        **kwargs
+        **kwargs,
     )
     return flow
 

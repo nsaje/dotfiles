@@ -173,7 +173,11 @@ def _prepare_publisher_groups_constraints(
     constrain_ad_group,
     filtered_sources,
 ):
-    blacklists, whitelists, pg_targeting = core.features.publisher_groups.get_publisher_group_targeting_multiple_entities(
+    (
+        blacklists,
+        whitelists,
+        pg_targeting,
+    ) = core.features.publisher_groups.get_publisher_group_targeting_multiple_entities(
         allowed_accounts if constrain_accounts else None,
         allowed_campaigns if constrain_campaigns else None,
         allowed_ad_groups if constrain_ad_group else None,

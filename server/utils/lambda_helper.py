@@ -18,6 +18,6 @@ def invoke_lambda(function, payload, do_async=False, **kwargs):
         FunctionName=function,
         Payload=json.dumps(payload),
         InvocationType=do_async and "Event" or "RequestResponse",
-        **kwargs
+        **kwargs,
     )
     return None if do_async else json.loads(response["Payload"].read())

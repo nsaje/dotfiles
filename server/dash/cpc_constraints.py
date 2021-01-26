@@ -55,7 +55,7 @@ def create(
     min_cpc=None,
     max_cpc=None,
     enforce_cpc_settings=False,
-    **levels
+    **levels,
 ):
     assert levels
     if dash.models.CpcConstraint.objects.filter(
@@ -136,7 +136,7 @@ def _get_invalid_ad_group_sources_settings(min_cpc=None, max_cpc=None, **levels)
             ad_group_source__ad_group_id__in=(
                 dash.models.AdGroup.objects.all().exclude_archived().values_list("id", flat=True)
             ),
-            **_get_ags_level_constraints(levels)
+            **_get_ags_level_constraints(levels),
         )
         .group_current_settings()
         .values_list("id", flat=True),
@@ -151,7 +151,7 @@ def _get_ad_group_sources_settings(**levels):
             ad_group_source__ad_group_id__in=(
                 dash.models.AdGroup.objects.all().exclude_archived().values_list("id", flat=True)
             ),
-            **_get_ags_level_constraints(levels)
+            **_get_ags_level_constraints(levels),
         )
         .select_related("ad_group_source__ad_group")
         .group_current_settings()

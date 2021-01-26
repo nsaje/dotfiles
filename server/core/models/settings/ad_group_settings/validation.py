@@ -174,7 +174,10 @@ class AdGroupSettingsValidatorMixin(object):
             min_autopilot_daily_budget = autopilot_legacy.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
 
             if new_settings.autopilot_daily_budget < min_autopilot_daily_budget:
-                msg = "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot " "requires {symbol}{min_per_source:.2f} or more per active media source."
+                msg = (
+                    "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot "
+                    "requires {symbol}{min_per_source:.2f} or more per active media source."
+                )
                 exchange_rate = self._get_exchange_rate()
                 raise exceptions.AutopilotDailyBudgetTooLow(
                     msg.format(
@@ -232,8 +235,9 @@ class AdGroupSettingsValidatorMixin(object):
                 should_validate_category = (
                     self.ad_group.campaign.account.agency_id not in ARBITRARY_BLUEKAI_CATEGORIES_AGENCIES
                 )
-                if should_validate_category and not dash.features.bluekai.models.BlueKaiCategory.objects.active().filter(
-                    category_id=b_id
+                if (
+                    should_validate_category
+                    and not dash.features.bluekai.models.BlueKaiCategory.objects.active().filter(category_id=b_id)
                 ):
                     raise exceptions.BluekaiCategoryInvalid('Invalid BlueKai category id: "{}"'.format(b_id))
 

@@ -1,4 +1,4 @@
-FROM python:3.7.5-slim
+FROM python:3.9.1-slim
 
 RUN apt-get update && \
     apt-get install -y \
@@ -8,7 +8,7 @@ RUN apt-get update && \
     python-dev \
     libcurl4-openssl-dev
 # flake8-polyfill is only installed because radon plugin is loaded from flake8 and it has broken dependencies
-RUN pip install -U flake8==3.7.7 flake8-polyfill==1.0.2 xenon pip-tools==5.4.0 black==18.6b4 mypy isort==4.3.21
+RUN pip install -U flake8==3.7.7 flake8-polyfill==1.0.2 xenon pip-tools==5.5.0 black==20.8b1 mypy isort==4.3.21
 
 RUN useradd --create-home --password '*' --shell /bin/bash --uid 1000 ubuntu
 USER ubuntu

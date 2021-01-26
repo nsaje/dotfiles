@@ -40,7 +40,7 @@ class AdGroupSettingsMixin(object):
         write_source_history=True,
         k1_sync=True,
         is_create=False,
-        **updates
+        **updates,
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
         if not skip_validation:
