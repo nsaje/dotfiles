@@ -1,19 +1,29 @@
 <div class="zem-creative-actions-cell">
-    <button
-        [ngClass]="
-            isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
-        "
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-creative-actions-cell__item"
+    <zem-button
+        class="zem-button zem-creative-actions-cell__item"
+        [icon]="isReadOnly ? 'magnifier' : 'edit'"
+        [isIconOnly]="true"
+        [isSmall]="true"
+        [title]="isReadOnly ? 'View' : 'Edit'"
         (click)="edit()"
-    ></button>
-    <button
-        [disabled]="isReadOnly"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--copy-icon zem-creative-actions-cell__item"
+    >
+    </zem-button>
+    <zem-button
+        class="zem-button zem-creative-actions-cell__item"
+        [icon]="'copy'"
+        [isIconOnly]="true"
+        [isSmall]="true"
+        [title]="'Clone'"
         (click)="clone()"
-    ></button>
-    <button
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--download-icon zem-creative-actions-cell__item"
-        title="Download"
+    >
+    </zem-button>
+    <zem-button
+        class="zem-button zem-creative-actions-cell__item"
+        [icon]="'download'"
+        [isIconOnly]="true"
+        [isSmall]="true"
+        [title]="'Download'"
         (click)="exportToCsv()"
-    ></button>
+    >
+    </zem-button>
 </div>
