@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.db import transaction
+from django.db.models import Q
+from django.db.models import UniqueConstraint
 
 import core.features.multicurrency
 import utils.k1_helper
@@ -34,6 +36,7 @@ class CampaignGoal(models.Model):
     class Meta:
         app_label = "dash"
         unique_together = ("campaign", "type", "conversion_goal")
+        constraints = (UniqueConstraint(fields=["campaign"], name="unique_primary_goal", condition=Q(primary=True)),)
 
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE)
     type = models.PositiveSmallIntegerField(

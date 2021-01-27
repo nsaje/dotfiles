@@ -6,6 +6,8 @@ from mock import patch
 import core.models
 import dash.constants
 import utils.exc
+from core.features.goals import CampaignGoal
+from core.features.goals import CampaignGoalValue
 from utils.magic_mixer import magic_mixer
 
 
@@ -110,7 +112,7 @@ class InstanceTestCase(TestCase):
         goal2 = magic_mixer.blend(
             core.features.goals.CampaignGoal,
             campaign=campaign,
-            primary=True,
+            primary=False,
             type=dash.constants.CampaignGoalKPI.PAGES_PER_SESSION,
         )
         goal1.add_local_value(request, "0.15")
@@ -152,3 +154,25 @@ class InstanceTestCase(TestCase):
             campaign.settings.update(None, blacklist_publisher_groups=[publisher_group_3.id])
         campaign.settings.update(None, whitelist_publisher_groups=[])
         campaign.settings.update(None, blacklist_publisher_groups=[])
+
+    def test_change_name_does_not_affect_goals(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign.settings.update_unsafe(None, name="Initial")
+
+        value = Decimal("0.1500")
+        campaign_goal = magic_mixer.blend(CampaignGoal, campaign=campaign)
+        campaign_goal_value = magic_mixer.blend(
+            CampaignGoalValue, campaign_goal=campaign_goal, value=value, local_value=value
+        )
+
+        self.assertEqual(CampaignGoal.objects.filter(campaign=campaign).count(), 1)
+        self.assertEqual(CampaignGoal.objects.filter(campaign=campaign).get(), campaign_goal)
+        self.assertEqual(CampaignGoalValue.objects.filter(campaign_goal__campaign=campaign).count(), 1)
+        self.assertEqual(CampaignGoalValue.objects.filter(campaign_goal__campaign=campaign).get(), campaign_goal_value)
+
+        campaign.settings.update(None, archived=False, name="New")
+
+        self.assertEqual(CampaignGoal.objects.filter(campaign=campaign).count(), 1)
+        self.assertEqual(CampaignGoal.objects.filter(campaign=campaign).get(), campaign_goal)
+        self.assertEqual(CampaignGoalValue.objects.filter(campaign_goal__campaign=campaign).count(), 1)
+        self.assertEqual(CampaignGoalValue.objects.filter(campaign_goal__campaign=campaign).get(), campaign_goal_value)

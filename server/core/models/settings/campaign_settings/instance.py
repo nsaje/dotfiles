@@ -29,7 +29,7 @@ class CampaignSettingsMixin(object):
             self._handle_archived(request, changes)
             self._propagate_settings(changes)
 
-        self._update_campaign(kwargs)
+        self._update_campaign(changes)
         return changes
 
     @classmethod

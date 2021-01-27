@@ -29,7 +29,7 @@ class UpdateExchangeRatesTestCase(BaseTestCase):
         self.goal2 = magic_mixer.blend(
             core.features.goals.CampaignGoal,
             campaign=self.campaign,
-            primary=True,
+            primary=False,
             type=dash.constants.CampaignGoalKPI.PAGES_PER_SESSION,
         )
         self.goal1.add_local_value(request, decimal.Decimal("0.15"))

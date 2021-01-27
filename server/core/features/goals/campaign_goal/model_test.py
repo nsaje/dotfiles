@@ -1,6 +1,9 @@
+import threading
 from decimal import Decimal
 
+from django.db import IntegrityError
 from django.test import TestCase
+from django.test import TransactionTestCase
 from mock import patch
 
 import core.features.multicurrency
@@ -31,6 +34,16 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual('Campaign goal "Time on Site - Seconds" set as primary', hist.changes_text)
+
+    def test_single_primary_constraint(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        # multiple non-primary goals are possible
+        magic_mixer.blend(CampaignGoal, campaign=campaign, primary=False)
+        magic_mixer.blend(CampaignGoal, campaign=campaign, primary=False)
+        # only a single primary goal is allowed
+        magic_mixer.blend(CampaignGoal, campaign=campaign, primary=True)
+        with self.assertRaises(IntegrityError):
+            magic_mixer.blend(CampaignGoal, campaign=campaign, primary=True)
 
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_add_value(self, mock_get_exchange_rate):
@@ -79,3 +92,21 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$4.000 CPC"')
+
+
+class TestConcurrency(TransactionTestCase):
+    def test_single_primary_constraint(self):
+        event_1 = threading.Event()
+        event_2 = threading.Event()
+        campaign = magic_mixer.blend(core.models.Campaign)
+
+        def parallel_code():
+            magic_mixer.blend(CampaignGoal, campaign=campaign, primary=True)
+            event_1.set()
+            event_2.wait()
+
+        threading.Thread(target=parallel_code).start()
+        event_1.wait()
+        with self.assertRaises(IntegrityError):
+            magic_mixer.blend(CampaignGoal, campaign=campaign, primary=True)
+        event_2.set()
