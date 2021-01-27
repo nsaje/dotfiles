@@ -1,3 +1,4 @@
+import newrelic.agent
 import rest_framework.permissions
 
 import stats.api_realtimestats
@@ -18,12 +19,14 @@ class CanUseRealTimeStats(rest_framework.permissions.BasePermission):
 class RealtimeStatsViewSet(RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseRealTimeStats)
 
+    @newrelic.agent.function_trace()
     def groupby(self, request):
         serializer = serializers.GroupByQueryParamsExpectations
         query_params = self._extract_query_params(request, serializer=serializer)
         rows = stats.api_realtimestats.groupby(**query_params)
         return self.response_ok(serializers.RealtimeStatsSerializer(rows, many=True).data)
 
+    @newrelic.agent.function_trace()
     def topn(self, request):
         serializer = serializers.TopNQueryParamsExpectations
         query_params = self._extract_query_params(request, serializer=serializer)
