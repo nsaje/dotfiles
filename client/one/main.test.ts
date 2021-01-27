@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
     platformBrowserDynamicTesting()
 );
 
-const context = require.context('./app', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 context.keys().map(context);
 
 // Start Karma to run the tests

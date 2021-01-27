@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 var path = require('path');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 var APP_ENVIRONMENT = null;
 var THEMES = {
@@ -30,6 +31,7 @@ module.exports.getThemes = getThemes;
 module.exports.getWhitelabels = getWhitelabels;
 module.exports.generateMainConfig = generateMainConfig;
 module.exports.generateStyleConfig = generateStyleConfig;
+module.exports.generateWorkerConfig = generateWorkerConfig;
 module.exports.root = root;
 
 function getAppEnvironment() {
@@ -198,6 +200,40 @@ function generateStyleConfig(appEnvironment, themeName) {
     return config;
 }
 
+function generateWorkerConfig() {
+    var config = {
+        module: {},
+    };
+
+    config.resolve = {
+        extensions: ['.ts', '.js'],
+    };
+
+    config.module.rules = [
+        {
+            test: /\.tsx?$/,
+            exclude: /node_modules/,
+            use: [
+                {
+                    loader: 'awesome-typescript-loader',
+                    options: {
+                        transpileOnly: true,
+                        configFileName: 'tsconfig.worker.json',
+                    },
+                },
+            ],
+        },
+    ];
+
+    config.plugins = [
+        // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+        // Runs typescript type checking in a separate process.
+        new ForkTsCheckerWebpackPlugin(),
+    ];
+
+    return config;
+}
+
 // eslint-disable-next-line complexity
 function generateAppEnvironment(env) {
     var config = {
@@ -206,6 +242,8 @@ function generateAppEnvironment(env) {
             test: env.NODE_ENV === 'test',
             prod: env.NODE_ENV === 'production',
             e2e: env.NODE_ENV === 'e2e',
+            workerDev: env.NODE_ENV === 'worker-development',
+            workerProd: env.NODE_ENV === 'worker-production',
         },
         buildNumber: env.npm_config_build_number || '',
         branchName: env.npm_config_branch_name || '',
@@ -219,6 +257,9 @@ function generateAppEnvironment(env) {
     };
 
     config.staticUrl = getStaticUrl(config);
+    if (config.env.dev || config.env.prod || config.env.e2e) {
+        config.workerUrl = config.staticUrl + '/one/zemanta-one.worker.js';
+    }
 
     return config;
 }

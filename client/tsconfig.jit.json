@@ -1,4 +1,12 @@
 {
     "extends": "./tsconfig.json",
-    "exclude": ["one/main.aot.ts", "one/main.test.ts", "one/**/*.spec.ts", "one/app/testing/**/*"]
+    "exclude": [
+        "one/main.aot.ts",
+        "one/main.worker.ts", 
+        "one/workers/worker-dispatcher.ts", 
+        "one/workers/workers/**/*", 
+        "one/workers/types/**/*", 
+        "one/main.test.ts",
+        "one/**/*.spec.ts", 
+        "one/app/testing/**/*"]
 }
