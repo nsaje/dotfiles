@@ -43,6 +43,7 @@ import {
     SetAllEntitiesSelectedAction,
     SetAllEntitiesSelectedActionReducer,
 } from './reducers/set-all-entities-selected.reducer';
+import {MAX_LOADED_TAGS} from '../../creatives-shared.config';
 
 @Injectable()
 export class CreativesStore extends Store<CreativesStoreState> {
@@ -101,7 +102,7 @@ export class CreativesStore extends Store<CreativesStoreState> {
         searchParams: CreativesSearchParams
     ) {
         this.loadCreatives(scope, pagination, searchParams);
-        this.loadTags(scope);
+        this.loadTags(scope, null, true);
     }
 
     loadEntities(
@@ -139,6 +140,21 @@ export class CreativesStore extends Store<CreativesStoreState> {
         );
     }
 
+    loadTags(
+        scope: ScopeParams,
+        keyword: string = null,
+        forceReload: boolean = false
+    ) {
+        this.dispatch(
+            new FetchCreativeTagsAction({
+                scope,
+                searchParams: {keyword},
+                forceReload,
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
+    }
+
     private loadCreatives(
         scope: ScopeParams,
         pagination: PaginationState,
@@ -149,18 +165,6 @@ export class CreativesStore extends Store<CreativesStoreState> {
                 scope,
                 pagination,
                 searchParams,
-                requestStateUpdater: this.requestStateUpdater,
-            })
-        );
-    }
-
-    private loadTags(scope: ScopeParams) {
-        // TODO: Load only first 100 tags on store init, then load 100 matches when search keyword changes
-        this.dispatch(
-            new FetchCreativeTagsAction({
-                scope,
-                pagination: null,
-                searchParams: null,
                 requestStateUpdater: this.requestStateUpdater,
             })
         );

@@ -28,6 +28,8 @@ export class CreativesActionsComponent implements OnInit, OnChanges {
     @Input()
     availableTags: string[];
     @Input()
+    isLoadingTags: boolean = false;
+    @Input()
     isDisabled: boolean = false;
     @Input()
     isReadOnly: boolean = true;
@@ -35,6 +37,8 @@ export class CreativesActionsComponent implements OnInit, OnChanges {
     searchParamsChange: EventEmitter<CreativesSearchParams> = new EventEmitter<
         CreativesSearchParams
     >();
+    @Output()
+    tagSearch: EventEmitter<string> = new EventEmitter<string>();
 
     readonly creativeTypes: {id: AdType; name: string}[] = CREATIVE_TYPES;
 
@@ -68,6 +72,7 @@ export class CreativesActionsComponent implements OnInit, OnChanges {
 
     onTagsChange($event: string[]) {
         this.emitNewSearchParams({tags: $event});
+        this.tagSearch.emit('');
     }
 
     private emitNewSearchParams(changes: Partial<CreativesSearchParams>) {

@@ -20,7 +20,7 @@ import {
     FetchCreativeTagsActionEffect,
 } from './effects/fetch-creative-tags.effect';
 
-describe('CreativesLibraryStore', () => {
+describe('CreativesStore', () => {
     let fetchCreativesActionEffectStub: jasmine.SpyObj<FetchCreativesActionEffect>;
     let fetchCreativeTagsActionEffectStub: jasmine.SpyObj<FetchCreativeTagsActionEffect>;
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -147,8 +147,8 @@ describe('CreativesLibraryStore', () => {
         expect(store.dispatch).toHaveBeenCalledWith(
             new FetchCreativeTagsAction({
                 scope: mockedScopeParams,
-                pagination: null,
-                searchParams: null,
+                searchParams: {keyword: null},
+                forceReload: true,
                 requestStateUpdater: (<any>store).requestStateUpdater,
             })
         );
@@ -190,5 +190,27 @@ describe('CreativesLibraryStore', () => {
         });
 
         expect(store.areAllEntitiesSelected()).toBeFalse();
+    }));
+
+    it('should correctly load tags on keyword change', fakeAsync(() => {
+        const mockedScopeParams: ScopeParams = {
+            agencyId: '24',
+            accountId: '367',
+        };
+
+        spyOn(store, 'dispatch').and.returnValue(Promise.resolve(true));
+
+        store.loadTags(mockedScopeParams, 'test');
+        tick();
+
+        expect(store.dispatch).toHaveBeenCalledTimes(1);
+        expect(store.dispatch).toHaveBeenCalledWith(
+            new FetchCreativeTagsAction({
+                scope: mockedScopeParams,
+                searchParams: {keyword: 'test'},
+                forceReload: false,
+                requestStateUpdater: (<any>store).requestStateUpdater,
+            })
+        );
     }));
 });

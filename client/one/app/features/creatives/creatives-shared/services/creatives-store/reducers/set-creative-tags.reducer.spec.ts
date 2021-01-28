@@ -15,9 +15,13 @@ describe('SetCreativeTagsActionReducer', () => {
     it('should correctly reduce state', () => {
         const state = reducer.reduce(
             new CreativesStoreState(),
-            new SetCreativeTagsAction(mockedCreativeTags)
+            new SetCreativeTagsAction({
+                tags: mockedCreativeTags,
+                allTagsLoaded: true,
+            })
         );
 
         expect(state.availableTags).toEqual(mockedCreativeTags);
+        expect(state.allTagsLoaded).toEqual(true);
     });
 });

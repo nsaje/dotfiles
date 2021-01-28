@@ -27,7 +27,9 @@
         placeholder="Filter by tags"
         [value]="searchParams?.tags"
         [items]="availableTags"
+        [isLoading]="isLoadingTags"
         (valueChange)="onTagsChange($event)"
+        (search)="tagSearch.emit($event)"
     ></zem-tag-picker>
 </div>
 <div class="zem-creatives-actions__buttons zem-creatives-actions__action"></div>

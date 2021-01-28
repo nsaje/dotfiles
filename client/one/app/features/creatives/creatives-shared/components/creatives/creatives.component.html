@@ -6,7 +6,9 @@
             [availableTags]="state.availableTags"
             [isReadOnly]="isReadOnly"
             [isDisabled]="!state.scope?.agencyId"
-            (searchParamsChange)="this.searchParamsChange.emit($event)"
+            [isLoadingTags]="state.requests.listTags.inProgress"
+            (searchParamsChange)="searchParamsChange.emit($event)"
+            (tagSearch)="store.loadTags(state.scope, $event)"
         >
         </zem-creatives-actions>
         <zem-creatives-grid
@@ -16,7 +18,7 @@
             [isLoading]="state.requests.list.inProgress"
             [paginationOptions]="paginationOptions"
             [paginationCount]="state.requests.list.count"
-            (paginationChange)="this.paginationChange.emit($event)"
+            (paginationChange)="paginationChange.emit($event)"
         >
         </zem-creatives-grid>
     </div>

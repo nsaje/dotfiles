@@ -23,3 +23,5 @@ export const CREATIVE_TYPES: {id: AdType; name: string}[] = [
     {id: AdType.IMAGE, name: 'Image'},
     {id: AdType.AD_TAG, name: 'Ad tag'},
 ];
+
+export const MAX_LOADED_TAGS = 100;

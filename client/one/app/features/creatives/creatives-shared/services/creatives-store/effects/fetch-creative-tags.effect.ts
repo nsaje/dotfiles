@@ -5,16 +5,16 @@ import {StoreEffect} from '../../../../../../shared/services/store/store.effect'
 import {CreativesStoreState} from '../creatives.store.state';
 import {takeUntil} from 'rxjs/operators';
 import {SetCreativeTagsAction} from '../reducers/set-creative-tags.reducer';
-import {getOffset} from '../../../../../../shared/helpers/pagination.helper';
 import {CreativeTagsService} from '../../../../../../core/creative-tags/services/creative-tags.service';
 import {ScopeParams} from '../../../../../../shared/types/scope-params';
 import {CreativeTagsSearchParams} from '../../../types/creative-tags-search-params';
-import {PaginationState} from '../../../../../../shared/components/smart-grid/types/pagination-state';
+import {isNotEmpty} from '../../../../../../shared/helpers/common.helpers';
+import {MAX_LOADED_TAGS} from '../../../creatives-shared.config';
 
 export interface FetchCreativeTagsParams {
     scope: ScopeParams;
-    pagination?: PaginationState;
     searchParams?: CreativeTagsSearchParams;
+    forceReload: boolean;
     requestStateUpdater: RequestStateUpdater;
 }
 
@@ -38,22 +38,32 @@ export class FetchCreativeTagsActionEffect extends StoreEffect<
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
             const params: FetchCreativeTagsParams = action.payload;
-            const offset: number = params.pagination
-                ? getOffset(params.pagination.page, params.pagination.pageSize)
-                : null;
+            if (state.allTagsLoaded && !params.forceReload) {
+                resolve(true);
+                return;
+            }
+
             this.service
                 .list(
                     params.scope.agencyId,
                     params.scope.accountId,
-                    offset,
-                    params.pagination?.pageSize,
+                    0,
+                    MAX_LOADED_TAGS,
                     params.searchParams?.keyword,
                     params.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (creativeTags: string[]) => {
-                        this.dispatch(new SetCreativeTagsAction(creativeTags));
+                        const allTagsLoaded: boolean =
+                            !isNotEmpty(params.searchParams?.keyword) &&
+                            creativeTags.length < MAX_LOADED_TAGS;
+                        this.dispatch(
+                            new SetCreativeTagsAction({
+                                tags: creativeTags,
+                                allTagsLoaded,
+                            })
+                        );
                         resolve(true);
                     },
                     () => {

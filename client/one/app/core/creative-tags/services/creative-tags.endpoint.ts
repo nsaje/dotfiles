@@ -19,7 +19,7 @@ export class CreativeTagsEndpoint {
         keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<string[]> {
-        const request = CREATIVE_TAGS_CONFIG.requests.creatives.list;
+        const request = CREATIVE_TAGS_CONFIG.requests.creativeTags.listTags;
         const params = {
             ...(commonHelpers.isDefined(offset) && {offset: `${offset}`}),
             ...(commonHelpers.isDefined(limit) && {limit: `${limit}`}),
