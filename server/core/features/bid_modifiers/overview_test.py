@@ -1,6 +1,7 @@
 import functools
 import operator
 
+from django.conf import settings
 from django.test import TestCase
 
 import dash.constants
@@ -417,6 +418,31 @@ class TestGetMinMaxFactorsDetailed(TestCase):
             self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
         )
         self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_source_modifier_for_deprecated_source(self):
+        self.source_2.deprecated = True
+        self.source_2.save()
+
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_2.id), None, 1.2)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_source_modifier_for_outbrain_source(self):
+        settings.HARDCODED_SOURCE_ID_OUTBRAIN = self.source_2.id
+
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_2.id), None, 1.2)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.1)
         self.assertEqual(max_factor, 1.1)
 
     def test_ad_all_higher(self):

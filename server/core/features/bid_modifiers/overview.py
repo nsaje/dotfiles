@@ -9,6 +9,7 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
+from django.conf import settings
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Max
@@ -158,6 +159,8 @@ def _calculate_min_max(
         active_sources_ids = list(
             core.models.AdGroupSource.objects.filter(ad_group_id=ad_group_id)
             .filter_active()
+            .exclude(source__deprecated=True)
+            .exclude(source_id=settings.HARDCODED_SOURCE_ID_OUTBRAIN)
             .annotate(target=Cast("source__id", CharField()))
             .values_list("target", flat=True)
         )
