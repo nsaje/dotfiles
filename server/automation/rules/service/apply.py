@@ -85,6 +85,7 @@ def apply_rule(
                 if update.has_changes():
                     _write_trigger_history(target, rule, ad_group)
                     changes.append(update)
+                if update.has_changes() or rule.id in [332, 333, 334]:  # TODO(luka): remove debugging rules
                     per_target_condition_values[target] = {
                         str(condition.id): ConditionValues(left_operand_value=value[0], right_operand_value=value[1])
                         for condition, value in values_by_condition.items()
