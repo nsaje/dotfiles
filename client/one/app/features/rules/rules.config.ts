@@ -636,31 +636,31 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
     [RuleConditionOperandType.Mrc50Measurable]: {
         type: RuleConditionOperandType.Mrc50Measurable,
         label: 'Measurable Impressions',
-        group: RuleConditionOperandGroup.VideoMetrics,
+        group: RuleConditionOperandGroup.Viewability,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.Mrc50Viewable]: {
         type: RuleConditionOperandType.Mrc50Viewable,
         label: 'Viewable Impressions',
-        group: RuleConditionOperandGroup.VideoMetrics,
+        group: RuleConditionOperandGroup.Viewability,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.Mrc50MeasurablePercent]: {
         type: RuleConditionOperandType.Mrc50MeasurablePercent,
         label: '% Measurable Impressions',
-        group: RuleConditionOperandGroup.VideoMetrics,
+        group: RuleConditionOperandGroup.Viewability,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.Mrc50ViewablePercent]: {
         type: RuleConditionOperandType.Mrc50ViewablePercent,
         label: '% Viewable Impressions',
-        group: RuleConditionOperandGroup.VideoMetrics,
+        group: RuleConditionOperandGroup.Viewability,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.Mrc50Vcpm]: {
         type: RuleConditionOperandType.Mrc50Vcpm,
         label: 'Avg. VCPM',
-        group: RuleConditionOperandGroup.VideoMetrics,
+        group: RuleConditionOperandGroup.Viewability,
         hasTimeRangeModifier: true,
     },
     [RuleConditionOperandType.AvgCostPerPageview]: {
