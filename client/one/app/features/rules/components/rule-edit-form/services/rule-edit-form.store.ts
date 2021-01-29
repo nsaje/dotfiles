@@ -615,10 +615,44 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Ctr],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpc],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpm],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.VideoStart],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoFirstQuartile
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.VideoMidpoint],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoThirdQuartile
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.VideoComplete],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.VideoStartPercent],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoFirstQuartilePercent
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoMidpointPercent
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoThirdQuartilePercent
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.VideoCompletePercent
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AvgCpv],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AvgCpcv],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Mrc50Measurable],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Mrc50Viewable],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.Mrc50MeasurablePercent
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.Mrc50ViewablePercent
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Mrc50Vcpm],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Conversions],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversion
             ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Roas],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AccountCreatedDate

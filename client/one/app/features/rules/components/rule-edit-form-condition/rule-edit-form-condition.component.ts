@@ -116,7 +116,9 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 this.ruleCondition.metric.type ===
                     RuleConditionOperandType.Conversions ||
                 this.ruleCondition.metric.type ===
-                    RuleConditionOperandType.AvgCostPerConversion;
+                    RuleConditionOperandType.AvgCostPerConversion ||
+                this.ruleCondition.metric.type ===
+                    RuleConditionOperandType.Roas;
 
             this.inputUnitSymbol =
                 this.selectedValueConfig?.unit === Unit.CurrencySign
