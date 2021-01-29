@@ -1,6 +1,7 @@
 <zem-loader
     class="zem-loader zem-loader__overlay"
     ng-show="!$ctrl.initialized || $ctrl.chart.isLoading"
+    [description]="'Loading chart'"
 >
 </zem-loader>
 <zem-chart-metric-selector

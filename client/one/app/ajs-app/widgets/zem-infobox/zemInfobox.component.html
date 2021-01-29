@@ -5,8 +5,9 @@
 
 <div class="zem-infobox__content custom-scroller">
     <zem-loader
-        class="zem-loader zem-loader--small zem-loader__overlay"
+        class="zem-loader zem-loader__overlay"
         ng-show="$ctrl.loadRequestInProgress"
+        [description]="'Loading infobox'"
     >
     </zem-loader>
     <div

@@ -1,8 +1,5 @@
 <div class="splash" *ngIf="!isInitialized">
-    <zem-loader
-        class="zem-loader zem-loader__overlay"
-        [description]="'Loading interface'"
-    >
+    <zem-loader class="zem-loader" [description]="'Loading interface'">
     </zem-loader>
 </div>
 <ng-container *ngIf="isInitialized">
