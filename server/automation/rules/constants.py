@@ -196,6 +196,16 @@ class MetricType(ConstantBase):
     CAMPAIGN_REMAINING_BUDGET = 66
     CONVERSIONS = 67
     AVG_COST_PER_UNIQUE_USER = 70
+    MRC50_MEASURABLE = 71
+    MRC50_VIEWABLE = 72
+    MRC50_MEASURABLE_PERCENT = 73
+    MRC50_VIEWABLE_PERCENT = 74
+    MRC50_VCPM = 75
+    VIDEO_START_PERCENT = 76
+    VIDEO_FIRST_QUARTILE_PERCENT = 77
+    VIDEO_MIDPOINT_PERCENT = 78
+    VIDEO_THIRD_QUARTILE_PERCENT = 79
+    VIDEO_COMPLETE_PERCENT = 80
 
     _VALUES = {
         TOTAL_SPEND: "Total spend",
@@ -224,11 +234,11 @@ class MetricType(ConstantBase):
         AVG_COST_PER_NON_BOUNCED_VISIT: "Average cost per non-bounced visit",
         AVG_COST_PER_MINUTE: "Average cost per minute",
         AVG_COST_PER_CONVERSION: "Average cost per conversion",
-        VIDEO_START: "Video start",
-        VIDEO_FIRST_QUARTILE: "Video fist quartile",
-        VIDEO_MIDPOINT: "Video midpoint",
-        VIDEO_THIRD_QUARTILE: "Video third quartile",
-        VIDEO_COMPLETE: "Video complete",
+        VIDEO_START: "Video Start",
+        VIDEO_FIRST_QUARTILE: "Video Fist Quartile",
+        VIDEO_MIDPOINT: "Video Midpoint",
+        VIDEO_THIRD_QUARTILE: "Video Third Quartile",
+        VIDEO_COMPLETE: "Video Complete",
         AVG_CPV: "Average CPV",
         AVG_CPCV: "Average CPCV",
         ACCOUNT_NAME: "Account name",
@@ -264,6 +274,16 @@ class MetricType(ConstantBase):
         CAMPAIGN_REMAINING_BUDGET: "Remaining budget",
         CONVERSIONS: "Conversions (click)",
         AVG_COST_PER_UNIQUE_USER: "Average cost per unique user",
+        MRC50_MEASURABLE: "Measurable Impressions",
+        MRC50_VIEWABLE: "Viewable Impressions",
+        MRC50_MEASURABLE_PERCENT: "% Measurable Impressions",
+        MRC50_VIEWABLE_PERCENT: "% Viewable Impressions",
+        MRC50_VCPM: "Avgerage VCPM",
+        VIDEO_START_PERCENT: "% Video Start",
+        VIDEO_FIRST_QUARTILE_PERCENT: "% Video Fist Quartile",
+        VIDEO_MIDPOINT_PERCENT: "% Video Midpoint",
+        VIDEO_THIRD_QUARTILE_PERCENT: "% Video Third Quartile",
+        VIDEO_COMPLETE_PERCENT: "% Video Complete",
     }
 
 
@@ -309,6 +329,16 @@ METRIC_STATS_MAPPING = {
     MetricType.VIDEO_COMPLETE: "video_complete",
     MetricType.AVG_CPV: "local_video_etfm_cpv",
     MetricType.AVG_CPCV: "local_video_etfm_cpcv",
+    MetricType.VIDEO_START_PERCENT: "video_start_percent",
+    MetricType.VIDEO_FIRST_QUARTILE_PERCENT: "video_first_quartile_percent",
+    MetricType.VIDEO_MIDPOINT_PERCENT: "video_midpoint_percent",
+    MetricType.VIDEO_THIRD_QUARTILE_PERCENT: "video_third_quartile_percent",
+    MetricType.VIDEO_COMPLETE_PERCENT: "video_complete_percent",
+    MetricType.MRC50_MEASURABLE: "mrc50_measurable",
+    MetricType.MRC50_VIEWABLE: "mrc50_viewable",
+    MetricType.MRC50_MEASURABLE_PERCENT: "mrc50_measurable_percent",
+    MetricType.MRC50_VIEWABLE_PERCENT: "mrc50_viewable_percent",
+    MetricType.MRC50_VCPM: "local_etfm_mrc50_vcpm",
 }
 
 
@@ -485,6 +515,23 @@ class EmailActionMacro(ConstantBase):
     AVG_COST_PER_NON_BOUNCED_VISIT = "AVG_COST_PER_NON_BOUNCED_VISIT"
     AVG_COST_PER_MINUTE = "AVG_COST_PER_MINUTE"
     AVG_COST_PER_UNIQUE_USER = "AVG_COST_PER_UNIQUE_USER"
+    VIDEO_START = "VIDEO_START"
+    VIDEO_FIRST_QUARTILE = "VIDEO_FIRST_QUARTILE"
+    VIDEO_MIDPOINT = "VIDEO_MIDPOINT"
+    VIDEO_THIRD_QUARTILE = "VIDEO_THIRD_QUARTILE"
+    VIDEO_COMPLETE = "VIDEO_COMPLETE"
+    AVG_CPV = "AVG_CPV"
+    AVG_CPCV = "AVG_CPCV"
+    VIDEO_START_PERCENT = "VIDEO_START_PERCENT"
+    VIDEO_FIRST_QUARTILE_PERCENT = "VIDEO_FIRST_QUARTILE_PERCENT"
+    VIDEO_MIDPOINT_PERCENT = "VIDEO_MIDPOINT_PERCENT"
+    VIDEO_THIRD_QUARTILE_PERCENT = "VIDEO_THIRD_QUARTILE_PERCENT"
+    VIDEO_COMPLETE_PERCENT = "VIDEO_COMPLETE_PERCENT"
+    MRC50_MEASURABLE = "MRC50_MEASURABLE"
+    MRC50_VIEWABLE = "MRC50_VIEWABLE"
+    MRC50_MEASURABLE_PERCENT = "MRC50_MEASURABLE_PERCENT"
+    MRC50_VIEWABLE_PERCENT = "MRC50_VIEWABLE_PERCENT"
+    MRC50_VCPM = "MRC50_VCPM"
 
     _VALUES = {
         AGENCY_ID: "Agency ID",
@@ -520,32 +567,66 @@ class EmailActionMacro(ConstantBase):
         AVG_COST_PER_PAGEVIEW: "Average cost per pageview",
         AVG_COST_PER_NON_BOUNCED_VISIT: "Average cost per non-bounced visit",
         AVG_COST_PER_MINUTE: "Average cost per minute",
+        VIDEO_START: "Video Start",
+        VIDEO_FIRST_QUARTILE: "Video First Quartile",
+        VIDEO_MIDPOINT: "Video Midpoint",
+        VIDEO_THIRD_QUARTILE: "Video Third Quartile",
+        VIDEO_COMPLETE: "Video Complete",
+        AVG_CPV: "Average CPV",
+        AVG_CPCV: "Average CPCV",
+        VIDEO_START_PERCENT: "% Video Start",
+        VIDEO_FIRST_QUARTILE_PERCENT: "% Video Frist Quartile",
+        VIDEO_MIDPOINT_PERCENT: "% Video Midpoint",
+        VIDEO_THIRD_QUARTILE_PERCENT: "% Video Third Quartile",
+        VIDEO_COMPLETE_PERCENT: "% Video Complete",
+        MRC50_MEASURABLE: "Measurable Impressions",
+        MRC50_VIEWABLE: "Viewable Impressions",
+        MRC50_MEASURABLE_PERCENT: "% Measurable Impressions",
+        MRC50_VIEWABLE_PERCENT: "% Viewable Impressions",
+        MRC50_VCPM: "Average VCPM",
     }
 
 
-EMAIL_MACRO_STATS_MAPPING = {
-    EmailActionMacro.TOTAL_SPEND: "local_etfm_cost",
-    EmailActionMacro.CLICKS: "clicks",
-    EmailActionMacro.IMPRESSIONS: "impressions",
-    EmailActionMacro.AVG_CPC: "local_etfm_cpc",
-    EmailActionMacro.AVG_CPM: "local_etfm_cpm",
-    EmailActionMacro.VISITS: "visits",
-    EmailActionMacro.UNIQUE_USERS: "unique_users",
-    EmailActionMacro.NEW_USERS: "new_users",
-    EmailActionMacro.RETURNING_USERS: "returning_users",
-    EmailActionMacro.PERCENT_NEW_USERS: "percent_new_users",
-    EmailActionMacro.CLICK_DISCREPANCY: "click_discrepancy",
-    EmailActionMacro.PAGEVIEWS: "pageviews",
-    EmailActionMacro.PAGEVIEWS_PER_VISIT: "pv_per_visit",
-    EmailActionMacro.BOUNCED_VISITS: "bounced_visits",
-    EmailActionMacro.NON_BOUNCED_VISITS: "non_bounced_visits",
-    EmailActionMacro.BOUNCE_RATE: "bounce_rate",
-    EmailActionMacro.TOTAL_SECONDS: "total_seconds",
-    EmailActionMacro.AVG_TIME_ON_SITE: "avg_tos",
-    EmailActionMacro.AVG_COST_PER_VISIT: "local_avg_etfm_cost_per_visit",
-    EmailActionMacro.AVG_COST_PER_NEW_VISITOR: "local_avg_etfm_cost_per_new_visitor",
-    EmailActionMacro.AVG_COST_PER_PAGEVIEW: "local_avg_etfm_cost_per_pageview",
-    EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
-    EmailActionMacro.AVG_COST_PER_MINUTE: "local_avg_etfm_cost_per_minute",
-    EmailActionMacro.AVG_COST_PER_UNIQUE_USER: "local_avg_etfm_cost_per_unique_user",
+EMAIL_MACRO_METRIC_TYPE_MAPPING = {
+    EmailActionMacro.TOTAL_SPEND: MetricType.TOTAL_SPEND,
+    EmailActionMacro.CLICKS: MetricType.CLICKS,
+    EmailActionMacro.IMPRESSIONS: MetricType.IMPRESSIONS,
+    EmailActionMacro.AVG_CPC: MetricType.AVG_CPC,
+    EmailActionMacro.AVG_CPM: MetricType.AVG_CPM,
+    EmailActionMacro.VISITS: MetricType.VISITS,
+    EmailActionMacro.UNIQUE_USERS: MetricType.UNIQUE_USERS,
+    EmailActionMacro.NEW_USERS: MetricType.NEW_USERS,
+    EmailActionMacro.RETURNING_USERS: MetricType.RETURNING_USERS,
+    EmailActionMacro.PERCENT_NEW_USERS: MetricType.NEW_USERS_RATIO,
+    EmailActionMacro.CLICK_DISCREPANCY: MetricType.CLICK_DISCREPANCY,
+    EmailActionMacro.PAGEVIEWS: MetricType.PAGEVIEWS,
+    EmailActionMacro.PAGEVIEWS_PER_VISIT: MetricType.PAGEVIEWS_PER_VISIT,
+    EmailActionMacro.BOUNCED_VISITS: MetricType.BOUNCED_VISITS,
+    EmailActionMacro.NON_BOUNCED_VISITS: MetricType.NON_BOUNCED_VISITS,
+    EmailActionMacro.BOUNCE_RATE: MetricType.BOUNCE_RATE,
+    EmailActionMacro.TOTAL_SECONDS: MetricType.TOTAL_SECONDS,
+    EmailActionMacro.AVG_TIME_ON_SITE: MetricType.AVG_TIME_ON_SITE,
+    EmailActionMacro.AVG_COST_PER_VISIT: MetricType.AVG_COST_PER_VISIT,
+    EmailActionMacro.AVG_COST_PER_NEW_VISITOR: MetricType.AVG_COST_PER_NEW_VISITOR,
+    EmailActionMacro.AVG_COST_PER_PAGEVIEW: MetricType.AVG_COST_PER_PAGEVIEW,
+    EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT: MetricType.AVG_COST_PER_NON_BOUNCED_VISIT,
+    EmailActionMacro.AVG_COST_PER_MINUTE: MetricType.AVG_COST_PER_MINUTE,
+    EmailActionMacro.AVG_COST_PER_UNIQUE_USER: MetricType.AVG_COST_PER_UNIQUE_USER,
+    EmailActionMacro.VIDEO_START: MetricType.VIDEO_START,
+    EmailActionMacro.VIDEO_FIRST_QUARTILE: MetricType.VIDEO_FIRST_QUARTILE,
+    EmailActionMacro.VIDEO_MIDPOINT: MetricType.VIDEO_MIDPOINT,
+    EmailActionMacro.VIDEO_THIRD_QUARTILE: MetricType.VIDEO_THIRD_QUARTILE,
+    EmailActionMacro.VIDEO_COMPLETE: MetricType.VIDEO_COMPLETE,
+    EmailActionMacro.AVG_CPV: MetricType.AVG_CPV,
+    EmailActionMacro.AVG_CPCV: MetricType.AVG_CPCV,
+    EmailActionMacro.VIDEO_START_PERCENT: MetricType.VIDEO_START_PERCENT,
+    EmailActionMacro.VIDEO_FIRST_QUARTILE_PERCENT: MetricType.VIDEO_FIRST_QUARTILE_PERCENT,
+    EmailActionMacro.VIDEO_MIDPOINT_PERCENT: MetricType.VIDEO_MIDPOINT_PERCENT,
+    EmailActionMacro.VIDEO_THIRD_QUARTILE_PERCENT: MetricType.VIDEO_THIRD_QUARTILE_PERCENT,
+    EmailActionMacro.VIDEO_COMPLETE_PERCENT: MetricType.VIDEO_COMPLETE_PERCENT,
+    EmailActionMacro.MRC50_MEASURABLE: MetricType.MRC50_MEASURABLE,
+    EmailActionMacro.MRC50_VIEWABLE: MetricType.MRC50_VIEWABLE,
+    EmailActionMacro.MRC50_MEASURABLE_PERCENT: MetricType.MRC50_MEASURABLE_PERCENT,
+    EmailActionMacro.MRC50_VIEWABLE_PERCENT: MetricType.MRC50_VIEWABLE_PERCENT,
+    EmailActionMacro.MRC50_VCPM: MetricType.MRC50_VCPM,
 }

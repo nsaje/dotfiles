@@ -133,7 +133,8 @@ def _add_missing_targets(
         possible_targets = set(all_possible_targets[ad_group.id])
         actual_targets = set(stats[ad_group.id].keys() if ad_group.id in stats else [])
         for target_key in possible_targets - actual_targets:
-            for metric, value in config.STATS_FIELDS_DEFAULTS.items():
+            for metric_type, value in config.STATS_FIELDS_DEFAULTS.items():
+                metric = constants.METRIC_STATS_MAPPING[metric_type]
                 for window_key in constants.MetricWindow.get_all():
                     stats.setdefault(ad_group.id, {})
                     stats[ad_group.id].setdefault(target_key, {})

@@ -207,7 +207,7 @@ def _prepare_left_stat_operand(
     window = condition.left_operand_window or rule.window
     left_operand_stat_value = target_stats[left_operand_key].get(window)
     if left_operand_stat_value is None:
-        left_operand_stat_value = config.STATS_FIELDS_DEFAULTS[left_operand_key]
+        left_operand_stat_value = config.STATS_FIELDS_DEFAULTS[condition.left_operand_type]
     if left_operand_stat_value is None:
         return left_operand_stat_value
     left_operand_modifier = condition.left_operand_modifier or 1.0
@@ -243,7 +243,7 @@ def _prepare_left_stat_operand_conversions(
     condition_window = condition.left_operand_window or rule.window
     value = conversion_stats.get(condition_window, {}).get(slug, {}).get(conversion_window, {}).get(metric_key)
     if value is None:
-        value = config.CONVERSION_FIELDS_DEFAULTS[metric_key_prefix]
+        value = config.CONVERSION_FIELDS_DEFAULTS[condition.left_operand_type]
     return value
 
 

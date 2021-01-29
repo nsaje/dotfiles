@@ -561,6 +561,108 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.AudienceMetrics,
         hasTimeRangeModifier: true,
     },
+    [RuleConditionOperandType.VideoStart]: {
+        type: RuleConditionOperandType.VideoStart,
+        label: 'Video Start',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoFirstQuartile]: {
+        type: RuleConditionOperandType.VideoFirstQuartile,
+        label: 'Video First Quartile',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoMidpoint]: {
+        type: RuleConditionOperandType.VideoMidpoint,
+        label: 'Video Midpoint',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoThirdQuartile]: {
+        type: RuleConditionOperandType.VideoThirdQuartile,
+        label: 'Video Third Quartile',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoComplete]: {
+        type: RuleConditionOperandType.VideoComplete,
+        label: 'Video Complete',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoStartPercent]: {
+        type: RuleConditionOperandType.VideoStartPercent,
+        label: '% Video Start',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoFirstQuartilePercent]: {
+        type: RuleConditionOperandType.VideoFirstQuartilePercent,
+        label: '% Video First Quartile',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoMidpointPercent]: {
+        type: RuleConditionOperandType.VideoMidpointPercent,
+        label: '% Video Midpoint',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoThirdQuartilePercent]: {
+        type: RuleConditionOperandType.VideoThirdQuartilePercent,
+        label: '% Video Third Quartile',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.VideoCompletePercent]: {
+        type: RuleConditionOperandType.VideoCompletePercent,
+        label: '% Video Complete',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCpv]: {
+        type: RuleConditionOperandType.AvgCpv,
+        label: 'Avg. CPV',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCpcv]: {
+        type: RuleConditionOperandType.AvgCpcv,
+        label: 'Avg. CPCV',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.Mrc50Measurable]: {
+        type: RuleConditionOperandType.Mrc50Measurable,
+        label: 'Measurable Impressions',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.Mrc50Viewable]: {
+        type: RuleConditionOperandType.Mrc50Viewable,
+        label: 'Viewable Impressions',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.Mrc50MeasurablePercent]: {
+        type: RuleConditionOperandType.Mrc50MeasurablePercent,
+        label: '% Measurable Impressions',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.Mrc50ViewablePercent]: {
+        type: RuleConditionOperandType.Mrc50ViewablePercent,
+        label: '% Viewable Impressions',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.Mrc50Vcpm]: {
+        type: RuleConditionOperandType.Mrc50Vcpm,
+        label: 'Avg. VCPM',
+        group: RuleConditionOperandGroup.VideoMetrics,
+        hasTimeRangeModifier: true,
+    },
     [RuleConditionOperandType.AvgCostPerPageview]: {
         type: RuleConditionOperandType.AvgCostPerPageview,
         label: 'Avg. Cost per Pageview',
@@ -1253,6 +1355,326 @@ export const RULE_CONDITIONS_OPTIONS = {
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerUniqueUser
             ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoStart]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoStart
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoFirstQuartile]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoFirstQuartile
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoMidpoint]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoMidpoint
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoThirdQuartile]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoThirdQuartile
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoComplete]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoComplete
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoStartPercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoStartPercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoFirstQuartilePercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoFirstQuartilePercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoMidpointPercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoMidpointPercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoThirdQuartilePercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoThirdQuartilePercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.VideoCompletePercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.VideoCompletePercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCpv]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.AvgCpv],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCpcv]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.AvgCpcv],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Mrc50Measurable]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.Mrc50Measurable
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Mrc50Viewable]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.Mrc50Viewable
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Integer,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Mrc50MeasurablePercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.Mrc50MeasurablePercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Mrc50ViewablePercent]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.Mrc50ViewablePercent
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
+                unit: Unit.Percent,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Mrc50Vcpm]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Mrc50Vcpm],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
@@ -2134,6 +2556,280 @@ export const EMAIL_MACROS = [
         label: 'Avg. cost per unique user (last 60 days)',
         value: Macro.AvgCostPerUniqueUserLastSixtyDays,
     },
+    {label: 'Video Start (last day)', value: Macro.VideoStartLastDay},
+    {label: 'Video Start (last 3 days)', value: Macro.VideoStartLastThreeDays},
+    {label: 'Video Start (last 7 days)', value: Macro.VideoStartLastSevenDays},
+    {
+        label: 'Video Start (last 30 days)',
+        value: Macro.VideoStartLastThirtyDays,
+    },
+    {label: 'Video Start (last 60 days)', value: Macro.VideoStartLastSixtyDays},
+    {
+        label: 'Video First Quartile (last day)',
+        value: Macro.VideoFirstQuartileLastDay,
+    },
+    {
+        label: 'Video First Quartile (last 3 days)',
+        value: Macro.VideoFirstQuartileLastThreeDays,
+    },
+    {
+        label: 'Video First Quartile (last 7 days)',
+        value: Macro.VideoFirstQuartileLastSevenDays,
+    },
+    {
+        label: 'Video First Quartile (last 30 days)',
+        value: Macro.VideoFirstQuartileLastThirtyDays,
+    },
+    {
+        label: 'Video First Quartile (last 60 days)',
+        value: Macro.VideoFirstQuartileLastSixtyDays,
+    },
+    {label: 'Video Midpoint (last day)', value: Macro.VideoMidpointLastDay},
+    {
+        label: 'Video Midpoint (last 3 days)',
+        value: Macro.VideoMidpointLastThreeDays,
+    },
+    {
+        label: 'Video Midpoint (last 7 days)',
+        value: Macro.VideoMidpointLastSevenDays,
+    },
+    {
+        label: 'Video Midpoint (last 30 days)',
+        value: Macro.VideoMidpointLastThirtyDays,
+    },
+    {
+        label: 'Video Midpoint (last 60 days)',
+        value: Macro.VideoMidpointLastSixtyDays,
+    },
+    {
+        label: 'Video Third Quartile (last day)',
+        value: Macro.VideoThirdQuartileLastDay,
+    },
+    {
+        label: 'Video Third Quartile (last 3 days)',
+        value: Macro.VideoThirdQuartileLastThreeDays,
+    },
+    {
+        label: 'Video Third Quartile (last 7 days)',
+        value: Macro.VideoThirdQuartileLastSevenDays,
+    },
+    {
+        label: 'Video Third Quartile (last 30 days)',
+        value: Macro.VideoThirdQuartileLastThirtyDays,
+    },
+    {
+        label: 'Video Third Quartile (last 60 days)',
+        value: Macro.VideoThirdQuartileLastSixtyDays,
+    },
+    {label: 'Video Complete (last day)', value: Macro.VideoCompleteLastDay},
+    {
+        label: 'Video Complete (last 3 days)',
+        value: Macro.VideoCompleteLastThreeDays,
+    },
+    {
+        label: 'Video Complete (last 7 days)',
+        value: Macro.VideoCompleteLastSevenDays,
+    },
+    {
+        label: 'Video Complete (last 30 days)',
+        value: Macro.VideoCompleteLastThirtyDays,
+    },
+    {
+        label: 'Video Complete (last 60 days)',
+        value: Macro.VideoCompleteLastSixtyDays,
+    },
+    {label: '% Video Start (last day)', value: Macro.VideoStartPercentLastDay},
+    {
+        label: '% Video Start (last 3 days)',
+        value: Macro.VideoStartPercentLastThreeDays,
+    },
+    {
+        label: '% Video Start (last 7 days)',
+        value: Macro.VideoStartPercentLastSevenDays,
+    },
+    {
+        label: '% Video Start (last 30 days)',
+        value: Macro.VideoStartPercentLastThirtyDays,
+    },
+    {
+        label: '% Video Start (last 60 days)',
+        value: Macro.VideoStartPercentLastSixtyDays,
+    },
+    {
+        label: '% Video First Quartile (last day)',
+        value: Macro.VideoFirstQuartilePercentLastDay,
+    },
+    {
+        label: '% Video First Quartile (last 3 days)',
+        value: Macro.VideoFirstQuartilePercentLastThreeDays,
+    },
+    {
+        label: '% Video First Quartile (last 7 days)',
+        value: Macro.VideoFirstQuartilePercentLastSevenDays,
+    },
+    {
+        label: '% Video First Quartile (last 30 days)',
+        value: Macro.VideoFirstQuartilePercentLastThirtyDays,
+    },
+    {
+        label: '% Video First Quartile (last 60 days)',
+        value: Macro.VideoFirstQuartilePercentLastSixtyDays,
+    },
+    {
+        label: '% Video Midpoint (last day)',
+        value: Macro.VideoMidpointPercentLastDay,
+    },
+    {
+        label: '% Video Midpoint (last 3 days)',
+        value: Macro.VideoMidpointPercentLastThreeDays,
+    },
+    {
+        label: '% Video Midpoint (last 7 days)',
+        value: Macro.VideoMidpointPercentLastSevenDays,
+    },
+    {
+        label: '% Video Midpoint (last 30 days)',
+        value: Macro.VideoMidpointPercentLastThirtyDays,
+    },
+    {
+        label: '% Video Midpoint (last 60 days)',
+        value: Macro.VideoMidpointPercentLastSixtyDays,
+    },
+    {
+        label: '% Video Third Quartile (last day)',
+        value: Macro.VideoThirdQuartilePercentLastDay,
+    },
+    {
+        label: '% Video Third Quartile (last 3 days)',
+        value: Macro.VideoThirdQuartilePercentLastThreeDays,
+    },
+    {
+        label: '% Video Third Quartile (last 7 days)',
+        value: Macro.VideoThirdQuartilePercentLastSevenDays,
+    },
+    {
+        label: '% Video Third Quartile (last 30 days)',
+        value: Macro.VideoThirdQuartilePercentLastThirtyDays,
+    },
+    {
+        label: '% Video Third Quartile (last 60 days)',
+        value: Macro.VideoThirdQuartilePercentLastSixtyDays,
+    },
+    {
+        label: '% Video Complete (last day)',
+        value: Macro.VideoCompletePercentLastDay,
+    },
+    {
+        label: '% Video Complete (last 3 days)',
+        value: Macro.VideoCompletePercentLastThreeDays,
+    },
+    {
+        label: '% Video Complete (last 7 days)',
+        value: Macro.VideoCompletePercentLastSevenDays,
+    },
+    {
+        label: '% Video Complete (last 30 days)',
+        value: Macro.VideoCompletePercentLastThirtyDays,
+    },
+    {
+        label: '% Video Complete (last 60 days)',
+        value: Macro.VideoCompletePercentLastSixtyDays,
+    },
+    {label: 'Avg. CPV (last day)', value: Macro.AvgCpvLastDay},
+    {label: 'Avg. CPV (last 3 days)', value: Macro.AvgCpvLastThreeDays},
+    {label: 'Avg. CPV (last 7 days)', value: Macro.AvgCpvLastSevenDays},
+    {label: 'Avg. CPV (last 30 days)', value: Macro.AvgCpvLastThirtyDays},
+    {label: 'Avg. CPV (last 60 days)', value: Macro.AvgCpvLastSixtyDays},
+    {label: 'Avg. CPCV (last day)', value: Macro.AvgCpcvLastDay},
+    {label: 'Avg. CPCV (last 3 days)', value: Macro.AvgCpcvLastThreeDays},
+    {label: 'Avg. CPCV (last 7 days)', value: Macro.AvgCpcvLastSevenDays},
+    {label: 'Avg. CPCV (last 30 days)', value: Macro.AvgCpcvLastThirtyDays},
+    {label: 'Avg. CPCV (last 60 days)', value: Macro.AvgCpcvLastSixtyDays},
+    {
+        label: 'Measurable Impressions (last day)',
+        value: Macro.Mrc50MeasurableLastDay,
+    },
+    {
+        label: 'Measurable Impressions (last 3 days)',
+        value: Macro.Mrc50MeasurableLastThreeDays,
+    },
+    {
+        label: 'Measurable Impressions (last 7 days)',
+        value: Macro.Mrc50MeasurableLastSevenDays,
+    },
+    {
+        label: 'Measurable Impressions (last 30 days)',
+        value: Macro.Mrc50MeasurableLastThirtyDays,
+    },
+    {
+        label: 'Measurable Impressions (last 60 days)',
+        value: Macro.Mrc50MeasurableLastSixtyDays,
+    },
+    {
+        label: 'Viewable Impressions (last day)',
+        value: Macro.Mrc50ViewableLastDay,
+    },
+    {
+        label: 'Viewable Impressions (last 3 days)',
+        value: Macro.Mrc50ViewableLastThreeDays,
+    },
+    {
+        label: 'Viewable Impressions (last 7 days)',
+        value: Macro.Mrc50ViewableLastSevenDays,
+    },
+    {
+        label: 'Viewable Impressions (last 30 days)',
+        value: Macro.Mrc50ViewableLastThirtyDays,
+    },
+    {
+        label: 'Viewable Impressions (last 60 days)',
+        value: Macro.Mrc50ViewableLastSixtyDays,
+    },
+    {
+        label: '% Measurable Impressions (last day)',
+        value: Macro.Mrc50MeasurablePercentLastDay,
+    },
+    {
+        label: '% Measurable Impressions (last 3 days)',
+        value: Macro.Mrc50MeasurablePercentLastThreeDays,
+    },
+    {
+        label: '% Measurable Impressions (last 7 days)',
+        value: Macro.Mrc50MeasurablePercentLastSevenDays,
+    },
+    {
+        label: '% Measurable Impressions (last 30 days)',
+        value: Macro.Mrc50MeasurablePercentLastThirtyDays,
+    },
+    {
+        label: '% Measurable Impressions (last 60 days)',
+        value: Macro.Mrc50MeasurablePercentLastSixtyDays,
+    },
+    {
+        label: '% Viewable Impressions (last day)',
+        value: Macro.Mrc50ViewablePercentLastDay,
+    },
+    {
+        label: '% Viewable Impressions (last 3 days)',
+        value: Macro.Mrc50ViewablePercentLastThreeDays,
+    },
+    {
+        label: '% Viewable Impressions (last 7 days)',
+        value: Macro.Mrc50ViewablePercentLastSevenDays,
+    },
+    {
+        label: '% Viewable Impressions (last 30 days)',
+        value: Macro.Mrc50ViewablePercentLastThirtyDays,
+    },
+    {
+        label: '% Viewable Impressions (last 60 days)',
+        value: Macro.Mrc50ViewablePercentLastSixtyDays,
+    },
+    {label: 'Avg. VCPM (last day)', value: Macro.Mrc50VcpmLastDay},
+    {label: 'Avg. VCPM (last 3 days)', value: Macro.Mrc50VcpmLastThreeDays},
+    {label: 'Avg. VCPM (last 7 days)', value: Macro.Mrc50VcpmLastSevenDays},
+    {label: 'Avg. VCPM (last 30 days)', value: Macro.Mrc50VcpmLastThirtyDays},
+    {label: 'Avg. VCPM (last 60 days)', value: Macro.Mrc50VcpmLastSixtyDays},
 ];
 
 export const PAGINATION_URL_PARAMS = ['page', 'pageSize'];

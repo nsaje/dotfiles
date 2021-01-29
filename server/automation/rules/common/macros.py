@@ -25,6 +25,9 @@ CURRENCY_MACROS = [
     constants.EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT,
     constants.EmailActionMacro.AVG_COST_PER_MINUTE,
     constants.EmailActionMacro.AVG_COST_PER_UNIQUE_USER,
+    constants.EmailActionMacro.AVG_CPV,
+    constants.EmailActionMacro.AVG_CPCV,
+    constants.EmailActionMacro.MRC50_VCPM,
 ]
 PERCENT_MACROS = [constants.EmailActionMacro.PERCENT_NEW_USERS]
 
@@ -88,12 +91,13 @@ def _get_macro_value(macro, ad_group, currency, target_stats):
 
 
 def _get_stat_macro_value(macro_prefix: str, window: str, currency, target_stats: Dict[str, Dict[int, Any]]):
-    stat_key = constants.EMAIL_MACRO_STATS_MAPPING[macro_prefix]
+    stat_type = constants.EMAIL_MACRO_METRIC_TYPE_MAPPING[macro_prefix]
+    stat_key = constants.METRIC_STATS_MAPPING[stat_type]
 
     window_constant_value = constants.MetricWindow.get_constant_value(window)
     macro_stat = target_stats[stat_key].get(window_constant_value)
     if macro_stat is None:
-        macro_stat = config.STATS_FIELDS_DEFAULTS[stat_key]
+        macro_stat = config.STATS_FIELDS_DEFAULTS[stat_type]
 
     if macro_prefix in CURRENCY_MACROS and macro_stat is not None:
         value = core.features.multicurrency.format_value_in_currency(

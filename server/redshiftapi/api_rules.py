@@ -71,8 +71,18 @@ def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
         "video_midpoint",
         "video_third_quartile",
         "video_complete",
+        "video_start_percent",
+        "video_first_quartile_percent",
+        "video_midpoint_percent",
+        "video_third_quartile_percent",
+        "video_complete_percent",
         "local_video_etfm_cpv",
         "local_video_etfm_cpcv",
+        "mrc50_measurable",
+        "mrc50_viewable",
+        "mrc50_measurable_percent",
+        "mrc50_viewable_percent",
+        "local_etfm_mrc50_vcpm",
     ]
 
     m = redshiftapi.models.MVMaster()

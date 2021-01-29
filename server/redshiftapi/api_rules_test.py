@@ -190,7 +190,17 @@ local_avg_etfm_cost_per_minute, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
-local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, SUM(video_start)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_start_percent, SUM(video_first_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_first_quartile_percent, SUM(video_midpoint)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_midpoint_percent, SUM(video_third_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_third_quartile_percent, SUM(video_complete)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_complete_percent, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -202,7 +212,17 @@ local_video_etfm_cpv, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
-local_video_etfm_cpcv
+local_video_etfm_cpcv, SUM(mrc50_measurable) mrc50_measurable, SUM(mrc50_viewable) mrc50_viewable, SUM(mrc50_measurable)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+mrc50_measurable_percent, SUM(mrc50_viewable)::FLOAT / (
+NULLIF(SUM(mrc50_measurable), 0) * 0.01)
+mrc50_viewable_percent, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(mrc50_viewable), 0) * 1000000.0)
+local_etfm_mrc50_vcpm
     FROM
         {table}{limit_join}
     WHERE
@@ -286,7 +306,17 @@ local_avg_etfm_cost_per_minute, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
-local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, SUM(video_start)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_start_percent, SUM(video_first_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_first_quartile_percent, SUM(video_midpoint)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_midpoint_percent, SUM(video_third_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_third_quartile_percent, SUM(video_complete)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_complete_percent, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -298,7 +328,17 @@ local_video_etfm_cpv, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
-local_video_etfm_cpcv
+local_video_etfm_cpcv, SUM(mrc50_measurable) mrc50_measurable, SUM(mrc50_viewable) mrc50_viewable, SUM(mrc50_measurable)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+mrc50_measurable_percent, SUM(mrc50_viewable)::FLOAT / (
+NULLIF(SUM(mrc50_measurable), 0) * 0.01)
+mrc50_viewable_percent, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(mrc50_viewable), 0) * 1000000.0)
+local_etfm_mrc50_vcpm
     FROM
         {table}{limit_join}
     WHERE
@@ -382,7 +422,17 @@ local_avg_etfm_cost_per_minute, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
-local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, SUM(video_start)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_start_percent, SUM(video_first_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_first_quartile_percent, SUM(video_midpoint)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_midpoint_percent, SUM(video_third_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_third_quartile_percent, SUM(video_complete)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_complete_percent, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -394,7 +444,17 @@ local_video_etfm_cpv, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
-local_video_etfm_cpcv
+local_video_etfm_cpcv, SUM(mrc50_measurable) mrc50_measurable, SUM(mrc50_viewable) mrc50_viewable, SUM(mrc50_measurable)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+mrc50_measurable_percent, SUM(mrc50_viewable)::FLOAT / (
+NULLIF(SUM(mrc50_measurable), 0) * 0.01)
+mrc50_viewable_percent, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(mrc50_viewable), 0) * 1000000.0)
+local_etfm_mrc50_vcpm
     FROM
         {table}{limit_join}
     WHERE
@@ -478,7 +538,17 @@ local_avg_etfm_cost_per_minute, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
-local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, SUM(video_start)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_start_percent, SUM(video_first_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_first_quartile_percent, SUM(video_midpoint)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_midpoint_percent, SUM(video_third_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_third_quartile_percent, SUM(video_complete)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_complete_percent, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -490,7 +560,17 @@ local_video_etfm_cpv, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
-local_video_etfm_cpcv
+local_video_etfm_cpcv, SUM(mrc50_measurable) mrc50_measurable, SUM(mrc50_viewable) mrc50_viewable, SUM(mrc50_measurable)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+mrc50_measurable_percent, SUM(mrc50_viewable)::FLOAT / (
+NULLIF(SUM(mrc50_measurable), 0) * 0.01)
+mrc50_viewable_percent, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(mrc50_viewable), 0) * 1000000.0)
+local_etfm_mrc50_vcpm
     FROM
         {table}{limit_join}
     WHERE
@@ -574,7 +654,17 @@ local_avg_etfm_cost_per_minute, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
-local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, SUM(video_start)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_start_percent, SUM(video_first_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_first_quartile_percent, SUM(video_midpoint)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_midpoint_percent, SUM(video_third_quartile)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_third_quartile_percent, SUM(video_complete)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+video_complete_percent, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -586,7 +676,17 @@ local_video_etfm_cpv, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
-local_video_etfm_cpcv
+local_video_etfm_cpcv, SUM(mrc50_measurable) mrc50_measurable, SUM(mrc50_viewable) mrc50_viewable, SUM(mrc50_measurable)::FLOAT / (
+NULLIF(SUM(impressions), 0) * 0.01)
+mrc50_measurable_percent, SUM(mrc50_viewable)::FLOAT / (
+NULLIF(SUM(mrc50_measurable), 0) * 0.01)
+mrc50_viewable_percent, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(mrc50_viewable), 0) * 1000000.0)
+local_etfm_mrc50_vcpm
     FROM
         {table}{limit_join}
     WHERE

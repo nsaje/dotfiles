@@ -118,8 +118,12 @@ class QueryStatsTest(TestCase):
         self.assertCountEqual([str(active_ad.id)], result[self.ad_group.id].keys())
 
         target_stats = result[self.ad_group.id][str(active_ad.id)]
-        self.assertCountEqual(config.STATS_FIELDS_DEFAULTS.keys(), target_stats)
-        for metric, value in config.STATS_FIELDS_DEFAULTS.items():
+        self.assertCountEqual(
+            [constants.METRIC_STATS_MAPPING[metric_type] for metric_type in config.STATS_FIELDS_DEFAULTS.keys()],
+            target_stats,
+        )
+        for metric_type, value in config.STATS_FIELDS_DEFAULTS.items():
+            metric = constants.METRIC_STATS_MAPPING[metric_type]
             for window_key in constants.MetricWindow.get_all():
                 self.assertEqual(value, target_stats[metric][window_key])
 
@@ -982,7 +986,11 @@ class AddMissingTargetsTest(TestCase):
             self.assertEqual({}, empty_stats)
 
     def _assert_target_stats_defaults(self, target_stats):
-        self.assertCountEqual(config.STATS_FIELDS_DEFAULTS.keys(), target_stats)
-        for metric, value in config.STATS_FIELDS_DEFAULTS.items():
+        self.assertCountEqual(
+            [constants.METRIC_STATS_MAPPING[metric_type] for metric_type in config.STATS_FIELDS_DEFAULTS.keys()],
+            target_stats,
+        )
+        for metric_type, value in config.STATS_FIELDS_DEFAULTS.items():
+            metric = constants.METRIC_STATS_MAPPING[metric_type]
             for window_key in constants.MetricWindow.get_all():
                 self.assertEqual(value, target_stats[metric][window_key])

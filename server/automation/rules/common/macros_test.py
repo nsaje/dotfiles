@@ -108,8 +108,26 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: {AVG_COST_PER_PAGEVIEW_LAST_30_DAYS}
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: {AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS}
             AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}
-            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: {AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS}"""
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: {AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS}
+            VIDEO_START_LAST_30_DAYS: {VIDEO_START_LAST_30_DAYS}
+            VIDEO_FIRST_QUARTILE_LAST_30_DAYS: {VIDEO_FIRST_QUARTILE_LAST_30_DAYS}
+            VIDEO_MIDPOINT_LAST_30_DAYS: {VIDEO_MIDPOINT_LAST_30_DAYS}
+            VIDEO_THIRD_QUARTILE_LAST_30_DAYS: {VIDEO_THIRD_QUARTILE_LAST_30_DAYS}
+            VIDEO_COMPLETE_LAST_30_DAYS: {VIDEO_COMPLETE_LAST_30_DAYS}
+            AVG_CPV_LAST_30_DAYS: {AVG_CPV_LAST_30_DAYS}
+            AVG_CPCV_LAST_30_DAYS: {AVG_CPCV_LAST_30_DAYS}
+            VIDEO_START_PERCENT_LAST_30_DAYS: {VIDEO_START_PERCENT_LAST_30_DAYS}
+            VIDEO_FIRST_QUARTILE_PERCENT_LAST_30_DAYS: {VIDEO_FIRST_QUARTILE_PERCENT_LAST_30_DAYS}
+            VIDEO_MIDPOINT_PERCENT_LAST_30_DAYS: {VIDEO_MIDPOINT_PERCENT_LAST_30_DAYS}
+            VIDEO_THIRD_QUARTILE_PERCENT_LAST_30_DAYS: {VIDEO_THIRD_QUARTILE_PERCENT_LAST_30_DAYS}
+            VIDEO_COMPLETE_PERCENT_LAST_30_DAYS: {VIDEO_COMPLETE_PERCENT_LAST_30_DAYS}
+            MRC50_MEASURABLE_LAST_30_DAYS: {MRC50_MEASURABLE_LAST_30_DAYS}
+            MRC50_VIEWABLE_LAST_30_DAYS: {MRC50_VIEWABLE_LAST_30_DAYS}
+            MRC50_MEASURABLE_PERCENT_LAST_30_DAYS: {MRC50_MEASURABLE_PERCENT_LAST_30_DAYS}
+            MRC50_VIEWABLE_PERCENT_LAST_30_DAYS: {MRC50_VIEWABLE_PERCENT_LAST_30_DAYS}
+            MRC50_VCPM_LAST_30_DAYS: {MRC50_VCPM_LAST_30_DAYS}"""
         )
+
         self.target_stats = {
             "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
             "clicks": {constants.MetricWindow.LAST_30_DAYS: 2000},
@@ -135,6 +153,23 @@ class ExpandTestCase(TestCase):
             "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
             "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
             "local_avg_etfm_cost_per_unique_user": {constants.MetricWindow.LAST_30_DAYS: 8.12},
+            "video_start": {constants.MetricWindow.LAST_30_DAYS: 31},
+            "video_first_quartile": {constants.MetricWindow.LAST_30_DAYS: 32},
+            "video_midpoint": {constants.MetricWindow.LAST_30_DAYS: 33},
+            "video_third_quartile": {constants.MetricWindow.LAST_30_DAYS: 34},
+            "video_complete": {constants.MetricWindow.LAST_30_DAYS: 35},
+            "local_video_etfm_cpv": {constants.MetricWindow.LAST_30_DAYS: 36},
+            "local_video_etfm_cpcv": {constants.MetricWindow.LAST_30_DAYS: 37},
+            "video_start_percent": {constants.MetricWindow.LAST_30_DAYS: 38},
+            "video_first_quartile_percent": {constants.MetricWindow.LAST_30_DAYS: 39},
+            "video_midpoint_percent": {constants.MetricWindow.LAST_30_DAYS: 40},
+            "video_third_quartile_percent": {constants.MetricWindow.LAST_30_DAYS: 41},
+            "video_complete_percent": {constants.MetricWindow.LAST_30_DAYS: 42},
+            "mrc50_measurable": {constants.MetricWindow.LAST_30_DAYS: 43},
+            "mrc50_viewable": {constants.MetricWindow.LAST_30_DAYS: 44},
+            "mrc50_measurable_percent": {constants.MetricWindow.LAST_30_DAYS: 45},
+            "mrc50_viewable_percent": {constants.MetricWindow.LAST_30_DAYS: 46},
+            "local_etfm_mrc50_vcpm": {constants.MetricWindow.LAST_30_DAYS: 47},
         }
 
     def test_expand_macros(self):
@@ -174,8 +209,26 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: $0.11
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: $0.44
             AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22
-            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: $8.12"""
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: $8.12
+            VIDEO_START_LAST_30_DAYS: 31
+            VIDEO_FIRST_QUARTILE_LAST_30_DAYS: 32
+            VIDEO_MIDPOINT_LAST_30_DAYS: 33
+            VIDEO_THIRD_QUARTILE_LAST_30_DAYS: 34
+            VIDEO_COMPLETE_LAST_30_DAYS: 35
+            AVG_CPV_LAST_30_DAYS: $36.00
+            AVG_CPCV_LAST_30_DAYS: $37.00
+            VIDEO_START_PERCENT_LAST_30_DAYS: 38
+            VIDEO_FIRST_QUARTILE_PERCENT_LAST_30_DAYS: 39
+            VIDEO_MIDPOINT_PERCENT_LAST_30_DAYS: 40
+            VIDEO_THIRD_QUARTILE_PERCENT_LAST_30_DAYS: 41
+            VIDEO_COMPLETE_PERCENT_LAST_30_DAYS: 42
+            MRC50_MEASURABLE_LAST_30_DAYS: 43
+            MRC50_VIEWABLE_LAST_30_DAYS: 44
+            MRC50_MEASURABLE_PERCENT_LAST_30_DAYS: 45
+            MRC50_VIEWABLE_PERCENT_LAST_30_DAYS: 46
+            MRC50_VCPM_LAST_30_DAYS: $47.00"""
         )
+
         self.assertEqual(expected, expanded)
         self.assertTrue(all(macro in expanded for macro in constants.EmailActionMacro.get_all()))
 
