@@ -331,6 +331,43 @@ angular
                 shown: true,
             },
 
+            VIDEO_START_PERCENT: {
+                name: '% Video Start',
+                value: 'video_start_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+            VIDEO_PROGRESS_3S_PERCENT: {
+                name: '% Video Progress 3s',
+                value: 'video_progress_3s_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+            VIDEO_FIRST_QUARTILE_PERCENT: {
+                name: '% Video First Quartile',
+                value: 'video_first_quartile_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+            VIDEO_MIDPOINT_PERCENT: {
+                name: '% Video Midpoint',
+                value: 'video_midpoint_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+            VIDEO_THIRD_QUARTILE_PERCENT: {
+                name: '% Video Third Quartile',
+                value: 'video_third_quartile_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+            VIDEO_COMPLETE_PERCENT: {
+                name: '% Video Complete',
+                value: 'video_complete_percent',
+                type: TYPE_PERCENT,
+                shown: true,
+            },
+
             VIDEO_ETFM_CPV: {
                 name: 'Avg. CPV',
                 value: 'video_etfm_cpv',

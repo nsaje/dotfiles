@@ -432,6 +432,37 @@ class MVMaster(BreakdownsBase):
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
+    video_start_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_start", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+    video_first_quartile_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_first_quartile", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+    video_midpoint_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_midpoint", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+    video_third_quartile_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_third_quartile", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+    video_complete_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_complete", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+    video_progress_3s_percent = backtosql.TemplateColumn(
+        "part_sumdiv.sql",
+        {"column_name": "video_progress_3s", "divisor": "impressions", "divisor_modifier": "0.01"},
+        AGGREGATE,
+    )
+
     # MRC50 viewability
     mrc50_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_measurable"}, AGGREGATE)
     mrc50_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_viewable"}, AGGREGATE)

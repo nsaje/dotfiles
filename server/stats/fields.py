@@ -149,6 +149,12 @@ DEFAULT_STATS = set(
         "local_video_etfm_cpv",
         "video_etfm_cpcv",
         "local_video_etfm_cpcv",
+        "video_start_percent",
+        "video_first_quartile_percent",
+        "video_midpoint_percent",
+        "video_third_quartile_percent",
+        "video_complete_percent",
+        "video_progress_3s_percent",
     ]
 )
 
