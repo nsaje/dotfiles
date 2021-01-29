@@ -86,9 +86,9 @@ def _aggregate_conversions(stats_row, pixel_rows):
                 conversions[slug][window]["conversion_count_view"] += pixel_row["count_view"]
                 conversions[slug][window]["conversion_count_total"] += pixel_row["count"] + pixel_row["count_view"]
 
-                conversions[slug][window]["conversion_value_click"] += pixel_row["conversion_value"]
-                conversions[slug][window]["conversion_value_view"] += pixel_row["conversion_value_view"]
-                conversions[slug][window]["conversion_value_total"] += (
+                conversions[slug][window]["conversion_value_click"] += float(pixel_row["conversion_value"])
+                conversions[slug][window]["conversion_value_view"] += float(pixel_row["conversion_value_view"])
+                conversions[slug][window]["conversion_value_total"] += float(
                     pixel_row["conversion_value"] + pixel_row["conversion_value_view"]
                 )
 

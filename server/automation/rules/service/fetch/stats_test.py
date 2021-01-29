@@ -1,3 +1,5 @@
+import decimal
+
 import mock
 from django.test import TestCase
 
@@ -45,7 +47,7 @@ class QueryStatsTest(TestCase):
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 100,
+                "local_etfm_cost": 100.0,
                 "etfm_cpc": 0.2,
                 "etfm_cpm": 0.3,
             }
@@ -60,8 +62,8 @@ class QueryStatsTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 100,
                 "count_view": 250,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -72,8 +74,8 @@ class QueryStatsTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_7_DAYS,
                 "count": 10,
                 "count_view": 50,
-                "conversion_value": 50,
-                "conversion_value_view": 250,
+                "conversion_value": decimal.Decimal(50),
+                "conversion_value_view": decimal.Decimal(250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -84,8 +86,8 @@ class QueryStatsTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
                 "count": 2,
                 "count_view": 8,
-                "conversion_value": 10,
-                "conversion_value_view": 40,
+                "conversion_value": decimal.Decimal(10),
+                "conversion_value_view": decimal.Decimal(40),
             },
         ]
 
@@ -98,7 +100,7 @@ class QueryStatsTest(TestCase):
             {
                 self.ad_group.id: {
                     "pub1.com__12": {
-                        "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 100},
+                        "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 100.0},
                         "etfm_cpc": {constants.MetricWindow.LAST_3_DAYS: 0.2},
                         "etfm_cpm": {constants.MetricWindow.LAST_3_DAYS: 0.3},
                     }
@@ -226,7 +228,7 @@ class AugmentTest(TestCase):
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 100,
+                "local_etfm_cost": 100.0,
             }
         ]
         self.conversion_stats = [
@@ -239,8 +241,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 100,
                 "count_view": 250,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             }
         ]
 
@@ -255,7 +257,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                     "conversions": {
                         "testslug": {
                             24: {
@@ -316,7 +318,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                     "conversions": {},
                 }
             ],
@@ -334,7 +336,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                 }
             ],
             self.raw_stats,
@@ -347,14 +349,14 @@ class AugmentTest(TestCase):
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 100,
+                "local_etfm_cost": 100.0,
             },
             {
                 "ad_group_id": self.ad_group.id,
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_7_DAYS,
-                "local_etfm_cost": 200,
+                "local_etfm_cost": 200.0,
             },
         ]
 
@@ -368,8 +370,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 100,
                 "count_view": 250,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -380,8 +382,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 200,
                 "count_view": 500,
-                "conversion_value": 300,
-                "conversion_value_view": 500,
+                "conversion_value": decimal.Decimal(300),
+                "conversion_value_view": decimal.Decimal(500),
             },
         ]
 
@@ -395,7 +397,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                     "conversions": {
                         "testslug": {
                             24: {
@@ -448,7 +450,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_7_DAYS,
-                    "local_etfm_cost": 200,
+                    "local_etfm_cost": 200.0,
                     "conversions": {
                         "testslug": {
                             24: {
@@ -507,7 +509,7 @@ class AugmentTest(TestCase):
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 100,
+                "local_etfm_cost": 100.0,
             }
         ]
 
@@ -521,8 +523,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 100,
                 "count_view": 250,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -533,8 +535,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_7_DAYS,
                 "count": 25,
                 "count_view": 35,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -545,8 +547,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
                 "count": 12,
                 "count_view": 16,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
         ]
 
@@ -560,7 +562,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                     "conversions": {
                         "testslug": {
                             24: {
@@ -621,14 +623,14 @@ class AugmentTest(TestCase):
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 100,
+                "local_etfm_cost": 100.0,
             },
             {
                 "ad_group_id": other_ad_group.id,
                 "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "local_etfm_cost": 20,
+                "local_etfm_cost": 20.0,
             },
         ]
 
@@ -642,8 +644,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_1_DAY,
                 "count": 100,
                 "count_view": 250,
-                "conversion_value": 500,
-                "conversion_value_view": 1250,
+                "conversion_value": decimal.Decimal(500),
+                "conversion_value_view": decimal.Decimal(1250),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -654,8 +656,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_7_DAYS,
                 "count": 25,
                 "count_view": 35,
-                "conversion_value": 75,
-                "conversion_value_view": 105,
+                "conversion_value": decimal.Decimal(75),
+                "conversion_value_view": decimal.Decimal(105),
             },
             {
                 "ad_group_id": self.ad_group.id,
@@ -666,8 +668,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
                 "count": 12,
                 "count_view": 16,
-                "conversion_value": 30,
-                "conversion_value_view": 40,
+                "conversion_value": decimal.Decimal(30),
+                "conversion_value_view": decimal.Decimal(40),
             },
             {
                 "ad_group_id": other_ad_group.id,
@@ -678,8 +680,8 @@ class AugmentTest(TestCase):
                 "window": dash.constants.ConversionWindows.LEQ_30_DAYS,
                 "count": 225,
                 "count_view": 333,
-                "conversion_value": 100,
-                "conversion_value_view": 125,
+                "conversion_value": decimal.Decimal(100),
+                "conversion_value_view": decimal.Decimal(125),
             },
         ]
 
@@ -693,7 +695,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 100,
+                    "local_etfm_cost": 100.0,
                     "conversions": {
                         "testslug": {
                             24: {
@@ -746,7 +748,7 @@ class AugmentTest(TestCase):
                     "source_id": 12,
                     "publisher": "pub1.com",
                     "window_key": constants.MetricWindow.LAST_3_DAYS,
-                    "local_etfm_cost": 20,
+                    "local_etfm_cost": 20.0,
                     "conversions": {
                         "testslug": {
                             720: {
