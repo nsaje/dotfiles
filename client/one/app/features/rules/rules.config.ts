@@ -699,6 +699,12 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.Conversions,
         hasTimeRangeModifier: true,
     },
+    [RuleConditionOperandType.Roas]: {
+        type: RuleConditionOperandType.Roas,
+        label: 'ROAS',
+        group: RuleConditionOperandGroup.Conversions,
+        hasTimeRangeModifier: true,
+    },
     [RuleConditionOperandType.CampaignBudget]: {
         type: RuleConditionOperandType.CampaignBudget,
         label: 'Campaign budget',
@@ -1724,6 +1730,22 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Currency,
                 unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Roas]: {
+        metric: RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Roas],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Decimal,
                 fractionSize: 2,
             },
         ],

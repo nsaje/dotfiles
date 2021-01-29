@@ -282,6 +282,7 @@ export enum RuleConditionOperandType {
     AvgCostPerUniqueUser = 'AVG_COST_PER_UNIQUE_USER',
     Conversions = 'CONVERSIONS',
     AvgCostPerConversion = 'AVG_COST_PER_CONVERSION',
+    Roas = 'ROAS',
     CampaignBudget = 'CAMPAIGN_BUDGET',
     RemainingCampaignBudget = 'CAMPAIGN_REMAINING_BUDGET',
     CampaignBudgetMargin = 'CAMPAIGN_BUDGET_MARGIN',

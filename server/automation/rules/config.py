@@ -260,6 +260,7 @@ FLOAT_OPERANDS = {
     constants.MetricType.AVG_COST_PER_UNIQUE_USER,
     constants.MetricType.AVG_COST_PER_CONVERSION,
     constants.MetricType.CONVERSIONS,
+    constants.MetricType.ROAS,
     constants.MetricType.VIDEO_START,
     constants.MetricType.VIDEO_FIRST_QUARTILE,
     constants.MetricType.VIDEO_MIDPOINT,
@@ -349,6 +350,7 @@ VALID_OPERATORS = {
     constants.MetricType.AVG_COST_PER_UNIQUE_USER: VALID_NUMBER_OPERATORS,
     constants.MetricType.AVG_COST_PER_CONVERSION: VALID_NUMBER_OPERATORS,
     constants.MetricType.CONVERSIONS: VALID_NUMBER_OPERATORS,
+    constants.MetricType.ROAS: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_START: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_FIRST_QUARTILE: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_MIDPOINT: VALID_NUMBER_OPERATORS,
@@ -445,4 +447,8 @@ STATS_FIELDS_DEFAULTS = {
     constants.MetricType.MRC50_VCPM: None,
 }
 
-CONVERSION_FIELDS_DEFAULTS = {constants.MetricType.CONVERSIONS: 0, constants.MetricType.AVG_COST_PER_CONVERSION: None}
+CONVERSION_FIELDS_DEFAULTS = {
+    constants.MetricType.CONVERSIONS: 0,
+    constants.MetricType.AVG_COST_PER_CONVERSION: None,
+    constants.MetricType.ROAS: None,
+}

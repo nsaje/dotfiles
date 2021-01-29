@@ -206,6 +206,7 @@ class MetricType(ConstantBase):
     VIDEO_MIDPOINT_PERCENT = 78
     VIDEO_THIRD_QUARTILE_PERCENT = 79
     VIDEO_COMPLETE_PERCENT = 80
+    ROAS = 81
 
     _VALUES = {
         TOTAL_SPEND: "Total spend",
@@ -272,7 +273,7 @@ class MetricType(ConstantBase):
         DAYS_UNTIL_CAMPAIGN_BUDGET_END: "Days until budget end",
         CAMPAIGN_BUDGET_MARGIN: "Budget margin",
         CAMPAIGN_REMAINING_BUDGET: "Remaining budget",
-        CONVERSIONS: "Conversions (click)",
+        CONVERSIONS: "Conversions",
         AVG_COST_PER_UNIQUE_USER: "Average cost per unique user",
         MRC50_MEASURABLE: "Measurable Impressions",
         MRC50_VIEWABLE: "Viewable Impressions",
@@ -379,6 +380,7 @@ METRIC_SETTINGS_MAPPING = {
 METRIC_CONVERSIONS_MAPPING = {
     MetricType.CONVERSIONS: "conversion_count",
     MetricType.AVG_COST_PER_CONVERSION: "local_avg_etfm_cost_per_conversion",
+    MetricType.ROAS: "roas",
 }
 
 

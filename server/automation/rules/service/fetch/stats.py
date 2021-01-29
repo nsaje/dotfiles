@@ -72,11 +72,25 @@ def _aggregate_conversions(stats_row, pixel_rows):
         for window in all_conversion_windows:
             if window >= row_window:
                 conversions[slug].setdefault(
-                    window, {"conversion_count_click": 0, "conversion_count_view": 0, "conversion_count_total": 0}
+                    window,
+                    {
+                        "conversion_count_click": 0,
+                        "conversion_count_view": 0,
+                        "conversion_count_total": 0,
+                        "conversion_value_click": 0,
+                        "conversion_value_view": 0,
+                        "conversion_value_total": 0,
+                    },
                 )
                 conversions[slug][window]["conversion_count_click"] += pixel_row["count"]
                 conversions[slug][window]["conversion_count_view"] += pixel_row["count_view"]
                 conversions[slug][window]["conversion_count_total"] += pixel_row["count"] + pixel_row["count_view"]
+
+                conversions[slug][window]["conversion_value_click"] += pixel_row["conversion_value"]
+                conversions[slug][window]["conversion_value_view"] += pixel_row["conversion_value_view"]
+                conversions[slug][window]["conversion_value_total"] += (
+                    pixel_row["conversion_value"] + pixel_row["conversion_value_view"]
+                )
 
     for slug in conversions:
         for window in conversions[slug]:
@@ -93,6 +107,22 @@ def _aggregate_conversions(stats_row, pixel_rows):
             conversions[slug][window]["local_avg_etfm_cost_per_conversion_total"] = (
                 (stats_row["local_etfm_cost"] / conversions[slug][window]["conversion_count_total"])
                 if conversions[slug][window]["conversion_count_total"]
+                else None
+            )
+
+            conversions[slug][window]["roas_click"] = (
+                (conversions[slug][window]["conversion_value_click"] / stats_row["local_etfm_cost"])
+                if stats_row["local_etfm_cost"]
+                else None
+            )
+            conversions[slug][window]["roas_view"] = (
+                (conversions[slug][window]["conversion_value_view"] / stats_row["local_etfm_cost"])
+                if stats_row["local_etfm_cost"]
+                else None
+            )
+            conversions[slug][window]["roas_total"] = (
+                (conversions[slug][window]["conversion_value_total"] / stats_row["local_etfm_cost"])
+                if stats_row["local_etfm_cost"]
                 else None
             )
 

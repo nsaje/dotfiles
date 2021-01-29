@@ -134,7 +134,7 @@ def _get_touchpoints_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
 
     target_type_columns = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
     breakdown_columns = ["ad_group_id", "slug", "window"]
-    aggregate_columns = ["count", "count_view"]
+    aggregate_columns = ["count", "count_view", "conversion_value", "conversion_value_view"]
 
     m = redshiftapi.models.MVTouchpointConversions()
     sql = backtosql.generate_sql(
