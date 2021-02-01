@@ -19,10 +19,7 @@ export class WorkersService {
                     worker.terminate();
                     reject($event.error);
                 };
-                worker.postMessage({
-                    topic: topic,
-                    payload: payload,
-                } as ActionMessage);
+                this.postMessage(worker, topic, payload);
             } else {
                 reject('Worker not supported');
             }
@@ -36,6 +33,43 @@ export class WorkersService {
         const url = window.URL || window.webkitURL;
         const blobUrl = url.createObjectURL(blob);
         return new Worker(blobUrl);
+    }
+
+    private postMessage<T1>(
+        worker: Worker,
+        topic: ActionTopic,
+        payload: T1
+    ): void {
+        if (Array.isArray(payload)) {
+            // Communicating Large Objects with Web Workers in javascript
+            // https://developers.redhat.com/blog/2014/05/20/communicating-large-objects-with-web-workers-in-javascript/
+            const payloadLength = payload.length;
+            let index = 0;
+            (function doChunk() {
+                let chunkSize = 100;
+                while (chunkSize > 0 && index < payload.length) {
+                    worker.postMessage(
+                        JSON.stringify({
+                            topic: topic,
+                            payload: payload[index],
+                            payloadLength: payloadLength,
+                        } as ActionMessage)
+                    );
+                    --chunkSize;
+                    ++index;
+                }
+                if (index < payload.length) {
+                    setTimeout(doChunk, 0);
+                }
+            })();
+        } else {
+            worker.postMessage(
+                JSON.stringify({
+                    topic: topic,
+                    payload: payload,
+                } as ActionMessage)
+            );
+        }
     }
 }
 
