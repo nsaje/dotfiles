@@ -33,6 +33,10 @@ def _check_credit(credit: core.features.bcm.CreditLineItem):
     credit_spend_percent = budgets_spend / credit.amount
     agency_or_user = credit.agency or credit.account.settings.default_account_manager
     recipients = _get_recipients(credit)
+    if not recipients:
+        logger.info("No recipients for credit, skipping.", credit_id=credit.id)
+        return
+
     if credit_spend_percent > 0.9:
         if not notifications.sent_90_percent:
             template_type = dash.constants.EmailTemplateType.CREDIT_DEPLETED_90_PERCENT
