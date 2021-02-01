@@ -8,7 +8,6 @@
 .zem-popover.popover {
     display: block !important;
     padding: @spacing--default;
-    border: 1px solid @border-color--default;
     z-index: @z-index--popover;
     max-width: @zem-popover__width;
 }
@@ -22,7 +21,6 @@
     border-width: @zem-popover__arrow-width;
 }
 
-.zem-popover.popover .arrow::before,
 .zem-popover.popover .arrow::after {
     position: absolute;
     display: block;
@@ -42,13 +40,6 @@
     margin-left: -@zem-popover__arrow-width !important;
 }
 
-.zem-popover.bs-popover-top > .arrow::before,
-.zem-popover.bs-popover-auto[x-placement^='top'] > .arrow::before {
-    bottom: -@zem-popover__arrow-width;
-    border-top-color: @border-color--default;
-    border-width: @zem-popover__arrow-width @zem-popover__arrow-width 0;
-}
-
 .zem-popover.bs-popover-top > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='top'] > .arrow::after {
     bottom: -(@zem-popover__arrow-width - 1);
@@ -65,14 +56,6 @@
 .zem-popover.bs-popover-auto[x-placement^='right'] > .arrow {
     left: 0;
     margin-top: -@zem-popover__arrow-width !important;
-}
-
-.zem-popover.bs-popover-right > .arrow::before,
-.zem-popover.bs-popover-auto[x-placement^='right'] > .arrow::before {
-    left: -@zem-popover__arrow-width;
-    border-right-color: @border-color--default;
-    border-width: @zem-popover__arrow-width @zem-popover__arrow-width
-        @zem-popover__arrow-width 0;
 }
 
 .zem-popover.bs-popover-right > .arrow::after,
@@ -94,14 +77,6 @@
     margin-left: -@zem-popover__arrow-width !important;
 }
 
-.zem-popover.bs-popover-bottom > .arrow::before,
-.zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow::before {
-    top: -@zem-popover__arrow-width;
-    border-bottom-color: @border-color--default;
-    border-width: 0 @zem-popover__arrow-width @zem-popover__arrow-width
-        @zem-popover__arrow-width;
-}
-
 .zem-popover.bs-popover-bottom > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow::after {
     top: -(@zem-popover__arrow-width - 1);
@@ -119,14 +94,6 @@
 .zem-popover.bs-popover-auto[x-placement^='left'] > .arrow {
     right: 0;
     margin-top: -@zem-popover__arrow-width !important;
-}
-
-.zem-popover.bs-popover-left > .arrow::before,
-.zem-popover.bs-popover-auto[x-placement^='left'] > .arrow::before {
-    right: -@zem-popover__arrow-width;
-    border-left-color: @border-color--default;
-    border-width: @zem-popover__arrow-width 0 @zem-popover__arrow-width
-        @zem-popover__arrow-width;
 }
 
 .zem-popover.bs-popover-left > .arrow::after,
