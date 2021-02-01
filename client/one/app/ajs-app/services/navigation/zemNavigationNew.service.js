@@ -1,6 +1,7 @@
 var RoutePathName = require('../../../app.constants').RoutePathName;
 var commonHelpers = require('../../../shared/helpers/common.helpers');
 var routerHelpers = require('../../../shared/helpers/router.helpers');
+var hierarchyHelpers = require('../../../../workers/shared/helpers/hierarchy.helpers');
 
 angular
     .module('one.services')
@@ -8,7 +9,6 @@ angular
         $rootScope,
         $q,
         $location,
-        $timeout,
         NgRouter,
         zemNavigationService
     ) {
@@ -25,14 +25,11 @@ angular
         this.getNavigationHierarchy = getNavigationHierarchy;
         this.getNavigationHierarchyPromise = getNavigationHierarchyPromise;
         this.onHierarchyUpdate = onHierarchyUpdate;
-        this.onHierarchyPartialUpdate = onHierarchyPartialUpdate;
         this.onActiveEntityChange = onActiveEntityChange;
         this.onBidModifierUpdate = onBidModifierUpdate;
 
         var EVENTS = {
             ON_HIERARCHY_UPDATE: 'zem-navigation-service-on-data-updated',
-            ON_HIERARCHY_PARTIAL_UPDATE:
-                'zem-navigation-service-on-data-partial-updated',
             ON_ACTIVE_ENTITY_CHANGE:
                 'zem-navigation-service-on-active-entity-change',
             ON_BID_MODIFIER_UPDATE:
@@ -50,13 +47,19 @@ angular
                 $scope,
                 handleBidModifierUpdate
             );
-
             $rootScope.$on('$zemNavigationEnd', handleNavigationChange);
         }
 
         function handleDataUpdate() {
             var accounts = zemNavigationService.getAccounts();
-            buildHierarchyRootAsync(accounts);
+            hierarchyRoot = hierarchyHelpers.buildHierarchy(accounts);
+            if (activeEntity) {
+                // Update entity with new object
+                getEntityById(activeEntity.type, activeEntity.id).then(
+                    setActiveEntity
+                );
+            }
+            notifyListeners(EVENTS.ON_HIERARCHY_UPDATE, hierarchyRoot);
         }
 
         function handleBidModifierUpdate() {
@@ -83,80 +86,6 @@ angular
             }
 
             getEntityById(type, id).then(setActiveEntity);
-        }
-
-        function buildHierarchyRootAsync(legacyAccounts) {
-            var root = {};
-            root.children = [];
-            root.ids = {
-                accounts: {},
-                campaigns: {},
-                adGroups: {},
-            };
-
-            var index = 0;
-            (function doChunk() {
-                var chunkSize = 100;
-                while (chunkSize > 0 && index < legacyAccounts.length) {
-                    var account = convertLegacyAccount(
-                        root,
-                        legacyAccounts[index]
-                    );
-                    root.children.push(account);
-                    --chunkSize;
-                    ++index;
-                }
-                if (index < legacyAccounts.length) {
-                    $timeout(doChunk);
-                    $timeout(
-                        notifyListeners(
-                            EVENTS.ON_HIERARCHY_PARTIAL_UPDATE,
-                            root
-                        )
-                    );
-                } else {
-                    hierarchyRoot = root;
-                    if (activeEntity) {
-                        // Update entity with new object
-                        getEntityById(activeEntity.type, activeEntity.id).then(
-                            setActiveEntity
-                        );
-                    }
-                    notifyListeners(EVENTS.ON_HIERARCHY_UPDATE, hierarchyRoot);
-                }
-            })();
-        }
-
-        function convertLegacyAccount(root, legacyAccount) {
-            var account = createEntity(
-                constants.entityType.ACCOUNT,
-                null,
-                legacyAccount
-            );
-            root.ids.accounts[account.id] = account;
-            account.children = legacyAccount.campaigns.map(function(
-                legacyCampaign
-            ) {
-                var campaign = createEntity(
-                    constants.entityType.CAMPAIGN,
-                    account,
-                    legacyCampaign
-                );
-                root.ids.campaigns[campaign.id] = campaign;
-                campaign.children = legacyCampaign.adGroups.map(function(
-                    legacyAdGroup
-                ) {
-                    var adGroup = createEntity(
-                        constants.entityType.AD_GROUP,
-                        campaign,
-                        legacyAdGroup
-                    );
-                    root.ids.adGroups[adGroup.id] = adGroup;
-                    return adGroup;
-                });
-                return campaign;
-            });
-            return account;
         }
 
         function createEntity(type, parent, data) {
@@ -380,13 +309,6 @@ angular
         //
         function onHierarchyUpdate(callback) {
             return registerListener(EVENTS.ON_HIERARCHY_UPDATE, callback);
-        }
-
-        function onHierarchyPartialUpdate(callback) {
-            return registerListener(
-                EVENTS.ON_HIERARCHY_PARTIAL_UPDATE,
-                callback
-            );
         }
 
         function onActiveEntityChange(callback) {

@@ -25,7 +25,6 @@ angular.module('one.widgets').component('zemNavigation', {
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
         var hierarchyUpdateHandler;
-        var hierarchyPartialUpdateHandler;
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
@@ -45,9 +44,6 @@ angular.module('one.widgets').component('zemNavigation', {
             hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
                 initializeList
             );
-            hierarchyPartialUpdateHandler = zemNavigationNewService.onHierarchyPartialUpdate(
-                initializePartialList
-            );
             $element.keydown(handleKeyDown);
             initializeList();
         };
@@ -60,7 +56,6 @@ angular.module('one.widgets').component('zemNavigation', {
 
         $ctrl.$onDestroy = function() {
             if (hierarchyUpdateHandler) hierarchyUpdateHandler();
-            if (hierarchyPartialUpdateHandler) hierarchyPartialUpdateHandler();
             $element.unbind();
         };
 
@@ -166,13 +161,6 @@ angular.module('one.widgets').component('zemNavigation', {
                 if ($ctrl.isOpen) {
                     filterList();
                 }
-            }
-        }
-
-        function initializePartialList(event, hierarchy) {
-            $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
-            if ($ctrl.isOpen) {
-                $timeout(doFilter);
             }
         }
 

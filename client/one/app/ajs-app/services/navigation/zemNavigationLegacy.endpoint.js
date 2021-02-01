@@ -1,9 +1,13 @@
+var ActionTopic = require('../../../../workers/shared/workers.constants')
+    .ActionTopic;
+
 angular
     .module('one.services')
     .service('zemNavigationLegacyEndpoint', function(
         $q,
         $http,
-        zemDataFilterService
+        zemDataFilterService,
+        zemWorkersService
     ) {
         this.get = get;
         this.list = list;
@@ -68,17 +72,35 @@ angular
             addAgencyFilter(config.params);
             addAccountTypeFilter(config.params);
 
-            $http
-                .get(url, config)
-                .success(function(data) {
+            // Angular.js $http client by default uses JSON.parse to transform incoming response data.
+            // Parsing huge response can block the main ui thread.
+            // SOURCE: https://github.com/angular/angular.js/blob/3a3db690a16e888aa7371e3b02e2954b9ec2d558/src/ng/http.js#L241
+            // SOLUTION: use web worker to fetch and parse response data.
+
+            zemWorkersService
+                .runWorker(ActionTopic.FETCH_NAVIGATION, {
+                    url: window.location.origin + url,
+                })
+                .then(function(data) {
                     var resource;
                     if (data && data.data) {
                         resource = data.data;
                     }
                     deferred.resolve(resource || []);
                 })
-                .error(function(data) {
-                    deferred.reject(data);
+                .catch(function() {
+                    $http
+                        .get(url, config)
+                        .success(function(data) {
+                            var resource;
+                            if (data && data.data) {
+                                resource = data.data;
+                            }
+                            deferred.resolve(resource || []);
+                        })
+                        .error(function(data) {
+                            deferred.reject(data);
+                        });
                 });
 
             return deferred.promise;

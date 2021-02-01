@@ -127,12 +127,12 @@ function generateConfig(appEnvironment) {
     }
 
     config.devServer = {
-        contentBase: './',
+        contentBase: ['./', common.root('./dist')],
         stats: 'minimal',
         hot: true,
         disableHostCheck: true,
         watchOptions: {
-            ignored: /node_modules|.*spec\.js|.*mock\.js|.*spec\.ts|.*mock\.ts|\.DS_Store|\.#.*/,
+            ignored: /node_modules|workers|.*spec\.js|.*mock\.js|.*spec\.ts|.*mock\.ts|\.DS_Store|\.#.*/,
             aggregateTimeout: 300,
             poll: 1000,
         },
