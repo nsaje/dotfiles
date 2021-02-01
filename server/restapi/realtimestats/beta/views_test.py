@@ -125,8 +125,7 @@ class TopNViewTest(RESTAPITestCase):
             }
         ]
         r = self.client.get(
-            reverse("restapi.realtimestats.beta:topn")
-            + f"?contentAdId={self.content_ad.id}&breakdown=contentAdId&order=-spend"
+            reverse("restapi.realtimestats.beta:topn") + f"?contentAdId={self.content_ad.id}&breakdown=contentAdId"
         )
 
         resp_json = self.assertResponseValid(r, data_type=list)
@@ -145,7 +144,9 @@ class TopNViewTest(RESTAPITestCase):
             ],
         )
 
-        mock_topn.assert_called_with(breakdown=["content_ad_id"], content_ad_id=self.content_ad.id, order="-spend")
+        mock_topn.assert_called_with(
+            breakdown=["content_ad_id"], content_ad_id=self.content_ad.id, order="-impressions"
+        )
 
     def test_invalid_campaign_id(self, mock_topn):
         account = self.mix_account()

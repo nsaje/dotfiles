@@ -52,5 +52,6 @@ class TopNQueryParamsExpectations(BaseQueryParamsExpectations):
     )
     order = restapi.serializers.fields.OrderChoiceField(
         choices=[utils.camel_case.snake_to_camel(const) for const in realtimeapi.constants.ValidOrder.get_all()],
+        default="-impressions",
         required=False,
     )
