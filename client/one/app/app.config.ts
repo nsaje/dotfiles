@@ -15,7 +15,6 @@ export const APP_CONFIG = {
     branchName: environment.branchName,
     sentryToken: environment.sentryToken,
     staticUrl: environment.staticUrl,
-    workerUrl: environment.workerUrl,
     apiLegacyUrl: '/api',
     apiRestUrl: '/rest',
     apiRestInternalUrl: '/rest/internal',

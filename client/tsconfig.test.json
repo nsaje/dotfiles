@@ -1,4 +1,4 @@
 {
     "extends": "./tsconfig.json",
-    "exclude": ["one/main.aot.ts", "one/main.jit.ts", "one/main.worker.ts"]
+    "exclude": ["one/main.aot.ts", "one/main.jit.ts"]
 }

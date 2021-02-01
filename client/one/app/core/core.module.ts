@@ -23,7 +23,6 @@ import {AuthModule} from './auth/auth.module';
 import {PosthogService} from './posthog/posthog.service';
 import {LocalStorageService} from './local-storage/local-storage.service';
 import {CreativesModule} from './creatives/creatives.module';
-import {WorkersService} from './workers/workers.service';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -64,7 +63,6 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         NotificationService,
         ExceptionHandlerService,
         LocalStorageService,
-        WorkersService,
         HTTP_INTERCEPTOR_PROVIDERS,
     ],
 })

@@ -46,9 +46,6 @@ angular
         this.registerAlert = angular.noop;
         this.removeAlert = angular.noop;
     })
-    .service('zemWorkersService', function() {
-        this.runWorker = angular.noop;
-    })
     .service('NgZone', function() {
         this.runOutsideAngular = function(fn) {
             fn();
