@@ -8,7 +8,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-@mock.patch("stats.api_realtimestats.groupby")
+@mock.patch("stats.api_realtimestats.groupby", autospec=True)
 class GroupByViewTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
@@ -50,13 +50,7 @@ class GroupByViewTest(RESTAPITestCase):
         )
 
         mock_groupby.assert_called_with(
-            breakdown=["content_ad_id"],
-            content_ad_id=self.content_ad.id,
-            ad_group_id=None,
-            campaign_id=None,
-            account_id=None,
-            marker=1234,
-            limit=50,
+            breakdown=["content_ad_id"], content_ad_id=self.content_ad.id, marker=1234, limit=50
         )
 
     def test_invalid_account_id(self, mock_groupby):
@@ -110,7 +104,7 @@ class GroupByViewTest(RESTAPITestCase):
         self.assertResponseError(r, "ValidationError")
 
 
-@mock.patch("stats.api_realtimestats.topn")
+@mock.patch("stats.api_realtimestats.topn", autospec=True)
 class TopNViewTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
@@ -151,13 +145,7 @@ class TopNViewTest(RESTAPITestCase):
             ],
         )
 
-        mock_topn.assert_called_with(
-            breakdown=["content_ad_id"],
-            content_ad_id=self.content_ad.id,
-            ad_group_id=None,
-            campaign_id=None,
-            account_id=None,
-        )
+        mock_topn.assert_called_with(breakdown=["content_ad_id"], content_ad_id=self.content_ad.id, order="-spend")
 
     def test_invalid_campaign_id(self, mock_topn):
         account = self.mix_account()

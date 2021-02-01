@@ -53,24 +53,33 @@ class RealtimeStatsViewSet(RESTAPIBaseViewSet):
         if limit:
             query_params["limit"] = limit
 
+        order = qpe.validated_data.get("order")
+        if order:
+            query_params["order"] = order
+
         return query_params
 
     def _extract_dimensions_filter(self, request, qpe):
         dimensions_filter = {}
-        dimensions_filter["account_id"] = qpe.validated_data.get("account_id")
-        if dimensions_filter["account_id"]:
+
+        account_id = qpe.validated_data.get("account_id")
+        if account_id:
+            dimensions_filter["account_id"] = account_id
             zemauth.access.get_account(request.user, Permission.READ, dimensions_filter["account_id"])
 
-        dimensions_filter["campaign_id"] = qpe.validated_data.get("campaign_id")
-        if dimensions_filter["campaign_id"]:
+        campaign_id = qpe.validated_data.get("campaign_id")
+        if campaign_id:
+            dimensions_filter["campaign_id"] = campaign_id
             zemauth.access.get_campaign(request.user, Permission.READ, dimensions_filter["campaign_id"])
 
-        dimensions_filter["ad_group_id"] = qpe.validated_data.get("ad_group_id")
-        if dimensions_filter["ad_group_id"]:
+        ad_group_id = qpe.validated_data.get("ad_group_id")
+        if ad_group_id:
+            dimensions_filter["ad_group_id"] = ad_group_id
             zemauth.access.get_ad_group(request.user, Permission.READ, dimensions_filter["ad_group_id"])
 
-        dimensions_filter["content_ad_id"] = qpe.validated_data.get("content_ad_id")
-        if dimensions_filter["content_ad_id"]:
+        content_ad_id = qpe.validated_data.get("content_ad_id")
+        if content_ad_id:
+            dimensions_filter["content_ad_id"] = content_ad_id
             zemauth.access.get_content_ad(request.user, Permission.READ, dimensions_filter["content_ad_id"])
 
         if not any(dimensions_filter.values()):
