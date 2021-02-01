@@ -18,10 +18,11 @@ export class ActionDispatcher {
         this.worker = _worker;
     }
 
-    async dispatch(message: ActionMessage): Promise<void> {
-        const action = this.getAction(message);
+    async dispatch($event: MessageEvent): Promise<void> {
+        const actionMessage = $event.data as ActionMessage;
+        const action = this.getAction(actionMessage);
         if (action) {
-            const result: any = await action.run(message);
+            const result: any = await action.run(actionMessage);
             this.worker.postMessage(result);
         } else {
             throw Error('Worker action not provided');
