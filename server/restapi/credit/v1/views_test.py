@@ -6,7 +6,6 @@ from django.urls import reverse
 import core.models
 import dash.constants
 import dash.models
-import utils.test_helper
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -15,7 +14,6 @@ from zemauth.features.entity_permission import Permission
 class CreditViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown", "can_see_service_fee"])
 
     @classmethod
     def credit_repr(
@@ -125,7 +123,6 @@ class CreditViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
     def test_service_fee_permissioned(self):
-        utils.test_helper.add_permissions(self.user, ["can_see_service_fee"])
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.BASE_COSTS_SERVICE_FEE])
         credit = magic_mixer.blend(core.features.bcm.CreditLineItem, account=account, end_date=datetime.date.today())
 
@@ -136,7 +133,6 @@ class CreditViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"], with_service_fee=True)
 
     def test_license_fee_permissioned(self):
-        utils.test_helper.add_permissions(self.user, ["can_view_platform_cost_breakdown"])
         account = self.mix_account(
             self.user, permissions=[Permission.READ, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE]
         )

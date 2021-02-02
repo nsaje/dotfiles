@@ -113,7 +113,6 @@ class User(
             ("campaign_settings_sales_rep", "Can be chosen as sales representative."),
             ("supply_dash_link_view", "Can view supply dash link."),
             ("account_credit_view", "Can view accounts's credit tab."),
-            ("account_agency_access_permissions", "Can view and set account access permissions."),
             ("campaign_ad_groups_detailed_report", "Can download detailed report on campaign level."),
             ("view_pubs_postclick_acquisition", "Can view publishers postclick acq. metrics."),
             ("data_status_column", "Can see data status column in table."),
@@ -129,7 +128,6 @@ class User(
             ),
             ("can_see_managers_in_campaigns_table", "Can see Campaign Manager in campaigns table."),
             ("can_hide_chart", "Can show or hide chart"),
-            ("can_access_all_accounts_infobox", "Can access info box on all accounts level"),
             (
                 "can_set_account_sales_representative",
                 "Can view and set account sales representative on account settings tab.",
@@ -137,20 +135,10 @@ class User(
             ("can_modify_account_manager", "Can view and set account manager on account settings tab."),
             ("can_request_demo_v3", "Can request demo v3."),
             ("can_filter_by_account_type", "Can filter by account type"),
-            ("can_manage_agency_margin", "User can define margin in budget line item."),
-            (
-                "can_view_agency_margin",
-                "[IGNORED if not BCMv2] User can view margin in budget tab and view margin columns in tables and reports.",
-            ),
-            (
-                "can_view_platform_cost_breakdown",
-                "[IGNORED if not BCMv2] User can view platform costs broken down into media, data and fee.",
-            ),
             (
                 "can_view_platform_cost_breakdown_derived",
                 "[IGNORED if not BCMv2] User can view columns derived from platform costs.",
             ),
-            ("can_view_agency_cost_breakdown", "User can view agency costs broken down into margin."),
             (
                 "can_switch_between_cost_breakdowns",
                 "User can switch between stats that include fee and margin and stats that don't.",
@@ -213,10 +201,6 @@ class User(
             ("can_see_internal_deals", "User can see and edit internal deals in the library."),
             ("can_see_mrc100_metrics", "User can see the MRC100 viewability metrics"),
             ("can_see_vast4_metrics", "User can see the VAST4 viewability metrics"),
-            (
-                "can_see_service_fee",
-                "User can view platform costs broken down into base media, base data and service fee.",
-            ),
             ("can_enable_push_metrics", "User can enable push metrics through special link"),
             ("can_use_smart_grid_in_analytics_view", "User can use smart grid in analytics view"),
             ("can_use_3rdparty_js_trackers", "User can use 3rd party JS tracking"),

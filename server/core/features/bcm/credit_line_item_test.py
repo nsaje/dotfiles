@@ -5,8 +5,6 @@ from django.core.exceptions import ValidationError
 
 import core.models
 import dash.constants
-import utils.exc
-import utils.test_helper
 from utils import test_helper
 from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import get_request_mock
@@ -45,7 +43,7 @@ class TestCreditLineItemManager(BaseTestCase):
 
 class TestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user(permissions=["can_see_service_fee"])
+        self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.item = self._create_credit(
@@ -107,7 +105,6 @@ class TestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
             self.item.save()
 
     def test_update_service_fee_no_permission(self):
-        utils.test_helper.remove_permissions(self.request.user, permissions=["can_see_service_fee"])
         self.item.update(self.request, service_fee=Decimal("0.3"))
         self.assertEqual(Decimal("0.7"), self.item.service_fee)
         self.item.service_fee = Decimal("0.1")

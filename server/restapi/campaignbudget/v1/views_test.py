@@ -8,7 +8,6 @@ import core.models
 import dash.models
 from dash import constants
 from restapi.common.views_base_test_case import RESTAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -144,7 +143,6 @@ class CampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_budgets_get_limited(self):
-        test_helper.remove_permissions(self.user, permissions=["can_manage_agency_margin"])
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         account = magic_mixer.blend(dash.models.Account, agency=agency)
         campaign = magic_mixer.blend(

@@ -546,7 +546,6 @@ angular
                 help: 'Media spend without service fee.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             eMediaCost: {
@@ -557,8 +556,6 @@ angular
                 help: 'Amount spent per media source.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_platform_cost_breakdown',
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 supportsRefunds: true,
@@ -583,7 +580,6 @@ angular
                 help: 'Data spend without service fee.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             eDataCost: {
@@ -595,8 +591,6 @@ angular
                     "Additional targeting/segmenting costs. If you are running a video campaign with video files hosted by Zemanta we'll also display the additional video serving cost in this column.",
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_platform_cost_breakdown',
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
@@ -608,7 +602,6 @@ angular
                 help: 'Agency’s service fee.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             licenseFee: {
@@ -619,8 +612,6 @@ angular
                 help: 'Zemanta One platform usage cost.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_platform_cost_breakdown',
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 supportsRefunds: true,
@@ -633,8 +624,6 @@ angular
                 help: "Agency's margin",
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_agency_margin',
-                shown: 'zemauth.can_view_agency_margin',
                 shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 supportsRefunds: true,
             },
@@ -658,8 +647,6 @@ angular
                 help: 'Sum of media spend, data spend and license fee.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_agency_cost_breakdown',
-                shown: 'zemauth.can_view_agency_cost_breakdown',
                 shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 costMode: constants.costMode.ANY,
                 supportsRefunds: true,
@@ -685,7 +672,6 @@ angular
                 help: 'Platform spend without service fee.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
                 costMode: constants.costMode.ANY,
             },

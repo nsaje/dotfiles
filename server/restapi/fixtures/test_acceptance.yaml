@@ -24,11 +24,9 @@
       - ['can_set_account_ob_representative', 'zemauth', 'user']
       - ['can_see_salesforce_url', 'zemauth', 'user']
       - ['can_see_all_available_sources', 'zemauth', 'user']
-      - ['can_manage_agency_margin', 'zemauth', 'user']
       - ['can_see_deals_in_ui', 'zemauth', 'user']
       - ['account_credit_view', 'zemauth', 'user']
       - ["can_see_backend_hacks", "zemauth", "user"]
-      - ["can_see_service_fee", "zemauth", "user"]
 
 - model: oauth2_provider.application
   pk: 1

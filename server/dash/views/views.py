@@ -771,7 +771,7 @@ class AllAccountsOverview(DASHAPIBaseView):
         }
 
         performance_settings = []
-        if request.user.has_perm("zemauth.can_access_all_accounts_infobox"):
+        if request.user.has_perm_on_all_entities(Permission.READ):
             basic_settings = self._basic_all_accounts_settings(request.user, start_date, end_date, view_filter)
             performance_settings = self._append_performance_all_accounts_settings(
                 performance_settings, request.user, view_filter

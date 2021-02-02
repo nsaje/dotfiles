@@ -642,10 +642,6 @@ class CampaignViewSetTest(RESTAPITestCase):
 
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get_limited(self, mock_get_extra_data):
-        test_helper.remove_permissions(
-            self.user,
-            permissions=["can_manage_agency_margin", "can_view_platform_cost_breakdown", "can_see_service_fee"],
-        )
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(

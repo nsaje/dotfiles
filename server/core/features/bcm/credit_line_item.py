@@ -19,6 +19,7 @@ import utils.string_helper
 from dash import constants
 from utils import dates_helper
 from utils import lc_helper
+from zemauth.features.entity_permission import Permission
 
 from . import helpers
 
@@ -52,7 +53,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         "contract_number",
     ]
 
-    _permissioned_fields = {"service_fee": "zemauth.can_see_service_fee"}
+    _entity_permissioned_fields = {"service_fee": Permission.BASE_COSTS_SERVICE_FEE}
 
     _demo_fields = {"comment": utils.demo_anonymizer.fake_io}
     account = models.ForeignKey("Account", related_name="credits", on_delete=models.PROTECT, blank=True, null=True)
@@ -132,8 +133,10 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         for field, new_value in updates.items():
             if field not in self._settings_fields:
                 continue
-            required_permission = self._permissioned_fields.get(field)
-            if required_permission and not (user is None or user.has_perm(required_permission)):
+            required_entity_permission = self._entity_permissioned_fields.get(field)
+            if required_entity_permission and not (
+                user is None or user.has_perm_on(required_entity_permission, (self.agency or self.account))
+            ):
                 continue
             if new_value != getattr(self, field):
                 has_changes = True

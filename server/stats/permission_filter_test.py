@@ -46,7 +46,25 @@ class FilterTestCase(BaseTestCase):
 
         self.public_fields_no_extra_costs = self.public_fields_legacy | permission_filter._get_fields_to_keep(
             magic_mixer.blend_user(), self.goals
-        )
+        ) - {
+            "etf_cost",
+            "local_etf_cost",
+            "e_media_cost",
+            "local_e_media_cost",
+            "e_data_cost",
+            "local_e_data_cost",
+            "license_fee",
+            "local_license_fee",
+            "b_media_cost",
+            "local_b_media_cost",
+            "b_data_cost",
+            "local_b_data_cost",
+            "bt_cost",
+            "local_bt_cost",
+            "service_fee",
+            "local_service_fee",
+            "service_fee_refund",
+        }
 
         self.public_fields = self.public_fields_no_extra_costs | {
             "b_data_cost",
@@ -97,7 +115,7 @@ class FilterTestCase(BaseTestCase):
         )
 
     def test_filter_columns_by_permission_platform_cost(self):
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
+        user = magic_mixer.blend_user()
         test_helper.add_entity_permissions(
             user, [Permission.BASE_COSTS_SERVICE_FEE, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE], None
         )
@@ -132,17 +150,6 @@ class FilterTestCase(BaseTestCase):
 
         self.assertCountEqual(
             set(self.rows[0].keys()) - self.public_fields_no_extra_costs, ["et_cost", "local_et_cost"]
-        )
-
-    def test_filter_columns_by_permission_agency_cost(self):
-        user = magic_mixer.blend_user(["can_view_agency_cost_breakdown"])
-        test_helper.add_entity_permissions(user, [Permission.AGENCY_SPEND_MARGIN], None)
-
-        permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
-
-        self.assertCountEqual(
-            set(self.rows[0].keys()) - self.public_fields_no_extra_costs | {"margin", "local_margin"},
-            ["etf_cost", "local_etf_cost", "margin", "local_margin"],
         )
 
     def test_filter_columns_by_permission_managers(self):
@@ -198,6 +205,16 @@ class FilterTestCase(BaseTestCase):
         self.assertCountEqual(
             set(self.rows[0].keys()) - self.public_fields_no_extra_costs | {"margin", "local_margin"},
             ["margin", "local_margin", "etf_cost", "local_etf_cost"],
+        )
+
+    def test_filter_columns_without_entity_permissions(self):
+        user = magic_mixer.blend_user()
+        test_helper.add_entity_permissions(user, [Permission.READ], self.account)
+
+        permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
+        self.assertCountEqual(
+            set(self.rows[0].keys()) - self.public_fields_no_extra_costs | {"margin", "local_margin"},
+            ["margin", "local_margin"],
         )
 
     def test_filter_columns_by_entity_permission_media_cost_data_cost_licence_fee(self):

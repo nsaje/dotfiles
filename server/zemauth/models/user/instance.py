@@ -12,8 +12,6 @@ from django.utils.functional import cached_property
 import core.models
 from zemauth.features.entity_permission import Permission
 
-SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_budget_management",)
-
 
 class UserMixin(object):
     def get_full_name(self):
@@ -45,9 +43,7 @@ class UserMixin(object):
             return []
 
         if self.is_superuser:
-            permissions = list(
-                auth_models.Permission.objects.all().exclude(codename__in=SUPERUSER_EXCLUDED_PERMISSIONS)
-            )
+            permissions = list(auth_models.Permission.objects.all())
         else:
             permissions = list(
                 auth_models.Permission.objects.filter(

@@ -21,7 +21,7 @@ from zemauth.models import User
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 class ApiBreakdownQueryTest(BaseTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
-    permissions = ["can_see_sspd_url", "can_view_platform_cost_breakdown", "can_see_managers_in_campaigns_table"]
+    permissions = ["can_see_sspd_url", "can_see_managers_in_campaigns_table"]
 
     def setUp(self):
         super().setUp()

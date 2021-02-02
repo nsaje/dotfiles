@@ -22,8 +22,10 @@ import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
+from utils import test_helper
 from utils.base_test_case import BaseTestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission as ZemPermission
 from zemauth.models import User
 
 
@@ -727,10 +729,9 @@ class AllAccountsOverviewTestCase(BaseTestCase):
     def test_run_empty(self, mock_query_yd, mock_query_mtd):
         mock_query_yd.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
         mock_query_mtd.return_value = {"e_media_cost": 10, "et_cost": 20, "etfm_cost": 30}
-        permission_2 = Permission.objects.get(codename="can_access_all_accounts_infobox")
+
         user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission_2)
-        user.save()
+        test_helper.add_entity_permissions(user, permissions=[ZemPermission.READ], entity=None)
 
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response["success"])

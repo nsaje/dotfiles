@@ -80,7 +80,6 @@ angular
                 value: 'e_data_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
@@ -89,7 +88,6 @@ angular
                 value: 'e_media_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
@@ -98,7 +96,6 @@ angular
                 value: 'b_data_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             B_MEDIA_COST: {
@@ -106,7 +103,6 @@ angular
                 value: 'b_media_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             ETFM_COST: {
@@ -122,7 +118,6 @@ angular
                 value: 'etf_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_view_agency_cost_breakdown',
                 shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 costMode: constants.costMode.ANY,
             },
@@ -139,7 +134,6 @@ angular
                 value: 'bt_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
                 costMode: constants.costMode.ANY,
             },
@@ -149,7 +143,6 @@ angular
                 value: 'service_fee',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_see_service_fee',
                 shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             LICENSE_FEE: {
@@ -157,7 +150,6 @@ angular
                 value: 'license_fee',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_view_platform_cost_breakdown',
                 shownForEntity:
                     EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },

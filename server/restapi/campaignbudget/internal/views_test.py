@@ -7,7 +7,6 @@ import dash.constants
 import dash.models
 import dash.views.helpers
 from restapi.common.views_base_test_case import RESTAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -70,9 +69,6 @@ class CampaignBudgetViewSetTest(RESTAPITestCase):
         )
 
     def test_get_limited(self):
-        test_helper.remove_permissions(
-            self.user, ["can_manage_agency_margin", "can_view_platform_cost_breakdown", "can_see_service_fee"]
-        )
         account = self.mix_account(self.user, permissions=[Permission.READ])
         campaign = magic_mixer.blend(
             dash.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
