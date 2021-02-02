@@ -43,7 +43,10 @@ def _post_to_slack(data):
     if settings.SLACK_LOG_ENABLE:
         data = urllib.parse.urlencode({"payload": json.dumps(data)})
         req = urllib.request.Request(settings.SLACK_INCOMING_HOOK_URL, data.encode("utf-8"))
-        response = urllib.request.urlopen(req)
+        try:
+            response = urllib.request.urlopen(req)
+        except urllib.error.HTTPError:
+            return False
         return response.read() == "ok"
     else:
         logger.warning("Slack log disabled", message=data)
