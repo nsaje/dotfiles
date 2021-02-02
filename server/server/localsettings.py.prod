@@ -46,7 +46,7 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "eins.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
         "PORT": 5432,
-        "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1E6))},
+        "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1e6))},
     },
     "read-replica": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -541,7 +541,7 @@ VAST_URL = "https://s3.amazonaws.com/zemvideos/vast/{filename}"
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = (
     Secret(
-        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAK8wgawGCSqGSIb3DQEHBqCBnjCBmwIBADCBlQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz4+a1DcIRBrHZBPskCARCAaPU0x3588xc9fS9kXb9ngIXyAogQqbaS8//n6Zttn9flzqED9rOS1xr6SGU+tnS10IJIho7m2wTdQNs8O4WCKYfrSXa2H9SEMYaQ/okjbpKv3ioOMuM9NzdS3GtE3yof+hJRUbwQUSdI"  # noqa
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAALEwga4GCSqGSIb3DQEHBqCBoDCBnQIBADCBlwYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzcgh1kI5WRQzXyuCwCARCAauuTFk3CPkppyryIyY2K2OQsBKGRARNvEVqYb32glLzQ5/fsvIhCW0iektoP4Nqu+9yGYSPM4z/YJKadqZER0pvZBG2qpb+6EfYgLq10eUjARr1TfjHcSeXlTnHLziqeQlAJaEcExh+HTbQ="
     )
     .get()
     .decode("utf-8")
