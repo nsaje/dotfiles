@@ -1,3 +1,5 @@
+import abc
+
 from django.db import models
 from django.db import transaction
 
@@ -10,18 +12,27 @@ class CreativeTagMixin(models.Model):
 
     tags = models.ManyToManyField("CreativeTag")
 
+    @abc.abstractmethod
+    def get_agency(self):
+        raise NotImplementedError("Not implemented.")
+
+    @abc.abstractmethod
+    def get_account(self):
+        raise NotImplementedError("Not implemented.")
+
     @transaction.atomic
     def set_creative_tags(self, request, data):
+        agency = self.get_agency()
+        account = self.get_account()
+
         tags = []
         for item in data or []:
             if isinstance(item, str):
-                tag = core.models.tags.creative.CreativeTag.objects.create(
-                    item, agency=self.agency, account=self.account
-                )
+                tag = core.models.tags.creative.CreativeTag.objects.create(item, agency=agency, account=account)
                 tags.append(tag)
             elif isinstance(item, core.models.tags.creative.CreativeTag):
-                self._validate_agency(item, agency=self.agency)
-                self._validate_account(item, agency=self.agency, account=self.account)
+                self._validate_agency(item, agency=agency)
+                self._validate_account(item, agency=agency, account=account)
                 tags.append(item)
 
         self.tags.set(tags)

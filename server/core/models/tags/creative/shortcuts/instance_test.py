@@ -49,43 +49,39 @@ class CreativeTagTestCaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError("Not implemented.")
 
     def _test_for_new(self, instance):
+        agency = instance.get_agency()
+        account = instance.get_account()
+
         instance.clear_creative_tags()
         self.assertEqual(instance.get_creative_tags(), [])
 
         data = ["tag_1", "tag_2", "tag_3"]
 
-        tags_count = core.models.tags.CreativeTag.objects.filter(
-            name__in=data, agency=instance.agency, account=instance.account
-        ).count()
+        tags_count = core.models.tags.CreativeTag.objects.filter(name__in=data, agency=agency, account=account).count()
         self.assertEqual(tags_count, 0)
 
         instance.set_creative_tags(None, data)
 
-        count = core.models.tags.CreativeTag.objects.filter(
-            name__in=data, agency=instance.agency, account=instance.account
-        ).count()
+        count = core.models.tags.CreativeTag.objects.filter(name__in=data, agency=agency, account=account).count()
         self.assertEqual(count, len(data))
 
         self.assertCountEqual([x.name for x in instance.get_creative_tags()], data)
 
     def _test_for_existing(self, instance):
+        agency = instance.get_agency()
+        account = instance.get_account()
+
         instance.clear_creative_tags()
         self.assertEqual(instance.get_creative_tags(), [])
 
-        tag_4 = core.models.tags.CreativeTag.objects.create(
-            name="tag_4", agency=instance.agency, account=instance.account
-        )
-        tag_5 = core.models.tags.CreativeTag.objects.create(
-            name="tag_5", agency=instance.agency, account=instance.account
-        )
-        tag_6 = core.models.tags.CreativeTag.objects.create(
-            name="tag_6", agency=instance.agency, account=instance.account
-        )
+        tag_4 = core.models.tags.CreativeTag.objects.create(name="tag_4", agency=agency, account=account)
+        tag_5 = core.models.tags.CreativeTag.objects.create(name="tag_5", agency=agency, account=account)
+        tag_6 = core.models.tags.CreativeTag.objects.create(name="tag_6", agency=agency, account=account)
 
         data = [tag_4, tag_5, tag_6]
 
         count = core.models.tags.CreativeTag.objects.filter(
-            name__in=[x.name for x in data], agency=instance.agency, account=instance.account
+            name__in=[x.name for x in data], agency=agency, account=account
         ).count()
         self.assertEqual(count, len(data))
 
@@ -94,28 +90,23 @@ class CreativeTagTestCaseMixin(metaclass=abc.ABCMeta):
         self.assertCountEqual([x.id for x in instance.get_creative_tags()], [x.id for x in data])
 
     def _test_for_mixed(self, instance):
+        agency = instance.get_agency()
+        account = instance.get_account()
+
         instance.clear_creative_tags()
         self.assertEqual(instance.get_creative_tags(), [])
 
-        tag_7 = core.models.tags.CreativeTag.objects.create(
-            name="tag_7", agency=instance.agency, account=instance.account
-        )
-        tag_8 = core.models.tags.CreativeTag.objects.create(
-            name="tag_8", agency=instance.agency, account=instance.account
-        )
+        tag_7 = core.models.tags.CreativeTag.objects.create(name="tag_7", agency=agency, account=account)
+        tag_8 = core.models.tags.CreativeTag.objects.create(name="tag_8", agency=agency, account=account)
 
         data = [tag_7.name, tag_8.name, "tag_9"]
 
-        tags_count = core.models.tags.CreativeTag.objects.filter(
-            name__in=data, agency=instance.agency, account=instance.account
-        ).count()
+        tags_count = core.models.tags.CreativeTag.objects.filter(name__in=data, agency=agency, account=account).count()
         self.assertEqual(tags_count, 2)
 
         instance.set_creative_tags(None, data)
 
-        tags_count = core.models.tags.CreativeTag.objects.filter(
-            name__in=data, agency=instance.agency, account=instance.account
-        ).count()
+        tags_count = core.models.tags.CreativeTag.objects.filter(name__in=data, agency=agency, account=account).count()
         self.assertEqual(tags_count, 3)
 
         self.assertCountEqual([x.name for x in instance.get_creative_tags()], data)

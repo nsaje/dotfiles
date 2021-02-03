@@ -41,6 +41,12 @@ class CreativeBatch(
         default=dash.constants.CreativeBatchStatus.IN_PROGRESS, choices=dash.constants.CreativeBatchStatus.get_choices()
     )
 
+    type = models.IntegerField(
+        default=dash.constants.CreativeBatchType.INSERT, choices=dash.constants.CreativeBatchType.get_choices()
+    )
+
+    ad_type = models.IntegerField(default=dash.constants.AdType.CONTENT, choices=dash.constants.AdType.get_choices())
+
     original_filename = models.CharField(max_length=1024, null=False, default="", blank=True)
 
     image_crop = models.TextField(null=True, blank=True, default=dash.constants.ImageCrop.CENTER)
@@ -58,3 +64,9 @@ class CreativeBatch(
         null=True,
         blank=True,
     )
+
+    def get_agency(self):
+        return self.agency
+
+    def get_account(self):
+        return self.account
