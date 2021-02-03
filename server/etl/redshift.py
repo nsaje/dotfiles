@@ -158,6 +158,7 @@ def prepare_copy_query(
     bucket_name=None,
     truncate_columns=False,
     delimiter=constants.CSV_DELIMITER,
+    maxerror=0,
 ):
     sql = backtosql.generate_sql(
         "etl_copy.sql",
@@ -170,6 +171,7 @@ def prepare_copy_query(
             "null_as": null_as,
             "gzip": gzip,
             "truncate_columns": truncate_columns,
+            "maxerror": maxerror,
         },
     )
 
