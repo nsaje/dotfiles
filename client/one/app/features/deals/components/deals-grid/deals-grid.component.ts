@@ -4,7 +4,6 @@ import {
     Component,
     EventEmitter,
     Input,
-    OnChanges,
     Output,
 } from '@angular/core';
 import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
@@ -35,7 +34,7 @@ import {FormattedDeal} from '../../types/formatted-deal';
     templateUrl: './deals-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DealsGridComponent implements OnChanges {
+export class DealsGridComponent {
     @Input()
     deals: FormattedDeal[];
     @Input()
@@ -70,16 +69,7 @@ export class DealsGridComponent implements OnChanges {
 
     private gridApi: GridApi;
 
-    ngOnChanges() {
-        if (this.gridApi && this.isLoading) {
-            this.gridApi.showLoadingOverlay();
-        }
-    }
-
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
-        if (this.isLoading) {
-            this.gridApi.showLoadingOverlay();
-        }
     }
 }

@@ -30,6 +30,7 @@
             [rowData]="store.state.explicitEntities"
             [columnDefs]="columnDefs"
             [context]="context"
+            [isLoading]="this.store.state.requests.listExplicit.inProgress"
             [paginationOptions]="explicitPaginationOptions"
             [paginationCount]="state.requests.listExplicit.count"
             (paginationChange)="onPaginationChange($event, false)"
@@ -59,6 +60,9 @@
                     [rowData]="store.state.implicitEntities"
                     [columnDefs]="implicitColumnDefs"
                     [context]="context"
+                    [isLoading]="
+                        this.store.state.requests.listImplicit.inProgress
+                    "
                     [paginationOptions]="implicitPaginationOptions"
                     [paginationCount]="state.requests.listImplicit.count"
                     (paginationChange)="onPaginationChange($event, true)"

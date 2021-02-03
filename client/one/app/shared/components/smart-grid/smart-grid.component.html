@@ -1,5 +1,6 @@
 <ag-grid-angular
     class="zem-smart-grid__table"
+    [class.zem-smart-grid__table--no-horizontal-scroll]="isLoading"
     [gridOptions]="gridOptions"
     [columnDefs]="columnDefs"
     [rowData]="rowData"
