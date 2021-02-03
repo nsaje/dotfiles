@@ -11,7 +11,7 @@ from utils.command_helpers import Z1Command
 
 logger = zlogging.getLogger(__name__)
 
-HISTORY_DATA_KEEP_DAYS = 14
+HISTORY_DATA_KEEP_DAYS = 7
 PARTITION_CHECK_DAYS = 2
 
 
