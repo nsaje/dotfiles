@@ -204,26 +204,34 @@ class CreditViewSetTest(RESTAPITestCase):
     def test_list_active_pagination(self, mock_log_to_slack):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits
-        active_credits = magic_mixer.cycle(20).blend(
+        active_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
             start_date=datetime.date.today() - datetime.timedelta(5),
             end_date=datetime.date.today() + datetime.timedelta(30),
-            amount=200000,
-            currency=dash.constants.Currency.USD,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        ending_credits = magic_mixer.cycle(10).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today() - datetime.timedelta(5),
+            end_date=datetime.date.today(),
+        )
+        future_credits = magic_mixer.cycle(10).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today() + datetime.timedelta(5),
+            end_date=datetime.date.today() + datetime.timedelta(30),
         )
         # past credits
-        magic_mixer.cycle(20).blend(
+        magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
             start_date=datetime.date.today() - datetime.timedelta(30),
-            end_date=datetime.date.today() - datetime.timedelta(10),
-            amount=200000,
-            currency=dash.constants.Currency.USD,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
+            end_date=datetime.date.today() - datetime.timedelta(1),
         )
 
         r = self.client.get(
@@ -231,23 +239,23 @@ class CreditViewSetTest(RESTAPITestCase):
             {"agencyId": agency.id, "offset": 0, "limit": 40, "active": True},
         )
         resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(resp_json["count"], 20)
+        self.assertEqual(resp_json["count"], 30)
         self.assertIsNone(resp_json["next"])
 
-        active_credit_ids = sorted([credit.id for credit in active_credits])
+        active_credit_ids = sorted([credit.id for credit in active_credits + ending_credits + future_credits])
         resp_json_ids = sorted([int(item.get("id")) for item in resp_json["data"]])
         self.assertEqual(active_credit_ids, resp_json_ids)
 
         r_paginated = self.client.get(
             reverse("restapi.credit.internal:credits_list"),
-            {"agencyId": agency.id, "offset": 10, "limit": 10, "active": True},
+            {"agencyId": agency.id, "offset": 10, "limit": 20, "active": True},
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
-        self.assertEqual(resp_json_paginated["count"], 20)
+        self.assertEqual(resp_json_paginated["count"], 30)
         self.assertIsNotNone(resp_json_paginated["previous"])
         self.assertIsNone(resp_json_paginated["next"])
 
-        active_credit_paginated_ids = sorted([int(item.get("id")) for item in resp_json["data"][10:20]])
+        active_credit_paginated_ids = sorted([int(item.get("id")) for item in resp_json["data"][10:30]])
         resp_json_paginated_ids = sorted([int(item.get("id")) for item in resp_json_paginated["data"]])
         self.assertEqual(active_credit_paginated_ids, resp_json_paginated_ids)
 
@@ -255,26 +263,34 @@ class CreditViewSetTest(RESTAPITestCase):
     def test_list_past_pagination(self, mock_log_to_slack):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits
-        magic_mixer.cycle(20).blend(
+        magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today(),
+            start_date=datetime.date.today() - datetime.timedelta(5),
             end_date=datetime.date.today() + datetime.timedelta(30),
-            amount=200000,
-            currency=dash.constants.Currency.USD,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        magic_mixer.cycle(10).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today() - datetime.timedelta(5),
+            end_date=datetime.date.today(),
+        )
+        magic_mixer.cycle(10).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today() + datetime.timedelta(5),
+            end_date=datetime.date.today() + datetime.timedelta(30),
         )
         # past credits
-        past_credits = magic_mixer.cycle(20).blend(
+        past_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
             start_date=datetime.date.today() - datetime.timedelta(30),
-            end_date=datetime.date.today() - datetime.timedelta(10),
-            amount=200000,
-            currency=dash.constants.Currency.USD,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
+            end_date=datetime.date.today() - datetime.timedelta(1),
         )
 
         r = self.client.get(
@@ -282,7 +298,7 @@ class CreditViewSetTest(RESTAPITestCase):
             {"agencyId": agency.id, "offset": 0, "limit": 40, "active": False},
         )
         resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(resp_json["count"], 20)
+        self.assertEqual(resp_json["count"], 10)
         self.assertIsNone(resp_json["next"])
 
         past_credit_ids = sorted([credit.id for credit in past_credits])
@@ -291,14 +307,14 @@ class CreditViewSetTest(RESTAPITestCase):
 
         r_paginated = self.client.get(
             reverse("restapi.credit.internal:credits_list"),
-            {"agencyId": agency.id, "offset": 10, "limit": 10, "active": False},
+            {"agencyId": agency.id, "offset": 5, "limit": 5, "active": False},
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
-        self.assertEqual(resp_json_paginated["count"], 20)
+        self.assertEqual(resp_json_paginated["count"], 10)
         self.assertIsNotNone(resp_json_paginated["previous"])
         self.assertIsNone(resp_json_paginated["next"])
 
-        past_credit_paginated_ids = sorted([int(item.get("id")) for item in resp_json["data"][10:20]])
+        past_credit_paginated_ids = sorted([int(item.get("id")) for item in resp_json["data"][5:10]])
         resp_json_paginated_ids = sorted([int(item.get("id")) for item in resp_json_paginated["data"]])
         self.assertEqual(past_credit_paginated_ids, resp_json_paginated_ids)
 

@@ -49,9 +49,9 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         if active is not None:
             date = dates_helper.local_today()
             if active:
-                credits_qs = credits_qs.filter(start_date__lte=date, end_date__gte=date)
+                credits_qs = credits_qs.filter(end_date__gte=date)
             else:
-                credits_qs = credits_qs.filter(end_date__lte=date)
+                credits_qs = credits_qs.filter(end_date__lt=date)
 
         if exclude_canceled:
             credits_qs = credits_qs.exclude(status=dash.constants.CreditLineItemStatus.CANCELED)
