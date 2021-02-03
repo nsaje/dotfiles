@@ -117,5 +117,8 @@ export class RefundsGridComponent implements OnInit {
 
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+        if (this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 }

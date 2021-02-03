@@ -80,5 +80,8 @@ export class CampaignBudgetsGridComponent {
 
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+        if (this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 }

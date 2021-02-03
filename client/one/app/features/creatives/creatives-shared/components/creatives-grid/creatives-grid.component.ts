@@ -67,6 +67,9 @@ export class CreativesGridComponent implements OnChanges {
     private gridApi: GridApi;
 
     ngOnChanges(changes: SimpleChanges) {
+        if (this.gridApi && this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
         if (this.gridApi && changes.creatives) {
             refreshSelectColumn(this.gridApi);
         }
@@ -74,6 +77,9 @@ export class CreativesGridComponent implements OnChanges {
 
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+        if (this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 
     private getRowNodeId(creative: Creative): string {

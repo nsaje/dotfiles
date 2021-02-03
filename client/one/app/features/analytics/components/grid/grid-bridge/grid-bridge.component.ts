@@ -7,9 +7,11 @@ import {
     Inject,
     Input,
     NgZone,
+    OnChanges,
     OnDestroy,
     OnInit,
     Output,
+    SimpleChanges,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {
@@ -53,7 +55,7 @@ import {Breakdown, Level} from '../../../../../app.constants';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [GridBridgeStore],
 })
-export class GridBridgeComponent implements OnInit, OnDestroy {
+export class GridBridgeComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     grid: Grid;
     @Input()
@@ -118,6 +120,12 @@ export class GridBridgeComponent implements OnInit, OnDestroy {
         this.subscribeToStoreStateUpdates();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (this.gridApi && this.isDataLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
+    }
+
     ngOnDestroy(): void {
         if (commonHelpers.isDefined(this.onSelectionUpdatedHandler)) {
             this.onSelectionUpdatedHandler();
@@ -135,6 +143,9 @@ export class GridBridgeComponent implements OnInit, OnDestroy {
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
         this.columnApi = $event.columnApi;
+        if (this.isDataLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 
     onGridColumnsChange($event: GridColumnsChangedEvent) {

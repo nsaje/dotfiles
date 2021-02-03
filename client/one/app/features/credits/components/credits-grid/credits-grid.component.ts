@@ -6,6 +6,7 @@ import {
     OnInit,
     Output,
     EventEmitter,
+    OnChanges,
 } from '@angular/core';
 import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {Credit} from '../../../../core/credits/types/credit';
@@ -38,7 +39,7 @@ import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/sm
     templateUrl: './credits-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CreditsGridComponent implements OnInit {
+export class CreditsGridComponent implements OnInit, OnChanges {
     @Input()
     credits: Credit[];
     @Input()
@@ -123,6 +124,12 @@ export class CreditsGridComponent implements OnInit {
             column => column.field === 'serviceFee'
         ).hide = !this.showServiceFee;
         this.columnDefs = this.commonColumnDefs[this.creditGridType];
+    }
+
+    ngOnChanges() {
+        if (this.gridApi && this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 
     onGridReady($event: DetailGridInfo) {

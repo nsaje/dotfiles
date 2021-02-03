@@ -5,6 +5,7 @@ import {
     ChangeDetectionStrategy,
     Output,
     EventEmitter,
+    OnChanges,
     TemplateRef,
     ViewChild,
 } from '@angular/core';
@@ -29,7 +30,7 @@ import {UsersView} from '../../views/users.view';
     templateUrl: './users-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UsersGridComponent {
+export class UsersGridComponent implements OnChanges {
     @Input()
     users: User[];
     @Input()
@@ -60,6 +61,12 @@ export class UsersGridComponent {
 
     private gridApi: GridApi;
 
+    ngOnChanges() {
+        if (this.gridApi && this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
+    }
+
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
 
@@ -70,6 +77,10 @@ export class UsersGridComponent {
         $event.columnApi
             .getColumn(COLUMN_ACCESS.colId)
             .setColDef(columnAccessWithTemplate, null);
+
+        if (this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 
     private getColDefWithTemplate(

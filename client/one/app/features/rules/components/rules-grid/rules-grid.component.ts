@@ -5,6 +5,7 @@ import {
     ChangeDetectionStrategy,
     Output,
     EventEmitter,
+    OnChanges,
 } from '@angular/core';
 import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
@@ -28,7 +29,7 @@ import {
     templateUrl: './rules-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RulesGridComponent {
+export class RulesGridComponent implements OnChanges {
     @Input()
     rules: Rule[];
     @Input()
@@ -63,8 +64,17 @@ export class RulesGridComponent {
 
     private gridApi: GridApi;
 
+    ngOnChanges() {
+        if (this.gridApi && this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
+    }
+
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+        if (this.isLoading) {
+            this.gridApi.showLoadingOverlay();
+        }
     }
 
     private getRowNodeId(rule: Rule): string {

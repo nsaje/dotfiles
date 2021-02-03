@@ -136,10 +136,18 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
 
     onExplicitGridReady($event: DetailGridInfo) {
         this.explicitGridApi = $event.api;
+        this.toggleLoadingOverlay(
+            this.store.state.requests.listExplicit.inProgress,
+            this.explicitGridApi
+        );
     }
 
     onImplicitGridReady($event: DetailGridInfo) {
         this.implicitGridApi = $event.api;
+        this.toggleLoadingOverlay(
+            this.store.state.requests.listImplicit.inProgress,
+            this.implicitGridApi
+        );
     }
 
     onPaginationChange($event: PaginationState, implicit: boolean) {
@@ -423,7 +431,20 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                     requestState => requestState.inProgress
                 )
             ),
-            distinctUntilChanged()
+            distinctUntilChanged(),
+            tap(inProgress =>
+                this.toggleLoadingOverlay(inProgress, gridApiGetter())
+            )
         );
+    }
+
+    private toggleLoadingOverlay(show: boolean, gridApi: GridApi) {
+        if (gridApi) {
+            if (show) {
+                gridApi.showLoadingOverlay();
+            } else {
+                gridApi.hideOverlay();
+            }
+        }
     }
 }

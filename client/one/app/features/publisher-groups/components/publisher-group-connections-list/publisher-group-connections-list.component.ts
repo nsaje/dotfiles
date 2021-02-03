@@ -6,11 +6,14 @@ import {
     Input,
     Output,
     EventEmitter,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {
     COLUMN_ACTIONS,
@@ -18,6 +21,7 @@ import {
     COLUMN_USED_ON,
     PAGINATION_OPTIONS,
 } from './publisher-groups-connections-list.component.config';
+import {DealConnectionRowData} from '../../../deals/types/deal-connection-row-data';
 
 @Component({
     selector: 'zem-publisher-group-connections-list',
@@ -25,7 +29,9 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublisherGroupConnectionsListComponent
-    implements ConnectionRowParentComponent<PublisherGroupConnection> {
+    implements
+        ConnectionRowParentComponent<PublisherGroupConnection>,
+        OnChanges {
     @Input()
     connections: PublisherGroupConnection[];
     @Input()
@@ -49,6 +55,12 @@ export class PublisherGroupConnectionsListComponent
         this.context = {componentParent: this};
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (isDefined(changes.isLoading)) {
+            this.toggleLoadingOverlay(this.isLoading);
+        }
+    }
+
     onRemoveConnection(connection: PublisherGroupConnection) {
         if (
             confirm(
@@ -65,5 +77,16 @@ export class PublisherGroupConnectionsListComponent
 
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
+        this.toggleLoadingOverlay(this.isLoading);
+    }
+
+    private toggleLoadingOverlay(show: boolean) {
+        if (this.gridApi) {
+            if (show) {
+                this.gridApi.showLoadingOverlay();
+            } else {
+                this.gridApi.hideOverlay();
+            }
+        }
     }
 }
