@@ -39,6 +39,8 @@ export class CreativesActionsComponent implements OnInit, OnChanges {
     >();
     @Output()
     tagSearch: EventEmitter<string> = new EventEmitter<string>();
+    @Output()
+    batchCreate: EventEmitter<void> = new EventEmitter<void>();
 
     readonly creativeTypes: {id: AdType; name: string}[] = CREATIVE_TYPES;
 

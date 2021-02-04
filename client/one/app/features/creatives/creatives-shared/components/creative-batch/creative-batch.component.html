@@ -1,0 +1,43 @@
+<ng-container *ngIf="store.state$ | async as state">
+    <ng-container *ngIf="state.entity?.id">
+        <div class="zem-panel zem-panel--with-padding">
+            <div class="zem-creative-batch__batch-name">
+                Batch name: <strong>{{ state.entity.name }}</strong>
+            </div>
+            <div class="zem-creative-batch__actions">
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="true"
+                    [icon]="'check'"
+                    [isDisabled]="true"
+                >
+                    Save
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [isHighlighted]="false"
+                    [isDisabled]="true"
+                >
+                    Cancel
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [icon]="'add'"
+                    [isDisabled]="true"
+                >
+                    Add new creative
+                </zem-button>
+                <zem-button
+                    class="zem-button"
+                    [icon]="'add'"
+                    [isDisabled]="true"
+                >
+                    Add new creative from existing
+                </zem-button>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="!state.entity?.id">
+        Creative batch does not exist.
+    </ng-container>
+</ng-container>

@@ -32,4 +32,14 @@
         (search)="tagSearch.emit($event)"
     ></zem-tag-picker>
 </div>
-<div class="zem-creatives-actions__buttons zem-creatives-actions__action"></div>
+<div class="zem-creatives-actions__buttons zem-creatives-actions__action">
+    <zem-button
+        class="zem-button zem-creatives-actions__button"
+        [icon]="'add'"
+        [isHighlighted]="true"
+        [isDisabled]="isDisabled || isReadOnly"
+        (click)="batchCreate.emit()"
+    >
+        Add new creative
+    </zem-button>
+</div>

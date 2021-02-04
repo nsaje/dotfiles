@@ -81,10 +81,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         function getBreadcrumb(entity) {
             var breadcrumb = [];
 
-            var administrationPage = getAdministrationPage(entity);
-            if (administrationPage) {
-                breadcrumb.push(administrationPage);
-                if (administrationPage.root) {
+            var administrationPages = getAdministrationPages(entity);
+            if (administrationPages) {
+                if (!Array.isArray(administrationPages)) {
+                    administrationPages = [administrationPages];
+                }
+                breadcrumb = breadcrumb.concat(administrationPages);
+                if (administrationPages[0].root) {
                     return breadcrumb;
                 }
             }
@@ -122,7 +125,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         }
 
         // prettier-ignore
-        function getAdministrationPage(entity) { // eslint-disable-line complexity
+        function getAdministrationPages(entity) { // eslint-disable-line complexity
             var entityId = entity ? entity.id : null;
             var levelParam = entity
                 ? LEVEL_TO_LEVEL_PARAM_MAP[
@@ -213,6 +216,28 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'User management',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREATIVES)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.CREATIVES
+                ];
+
+                var urls = [];
+                urls.push({
+                    typeName: 'Management Console',
+                    name: 'Creative library',
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
+                });
+
+                if (NgRouter.url.includes(RoutePathName.CREATIVES_BATCH)) {
+                    urls.push({
+                        typeName: 'Management Console',
+                        name: 'Creative batch',
+                        href: NgRouter.url,
+                    });
+                }
+
+                return urls;
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {
                 urlTree = [
                     RoutePathName.APP_BASE,

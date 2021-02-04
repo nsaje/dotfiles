@@ -1,6 +1,6 @@
 import './creatives.view.less';
 
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {filter, takeUntil} from 'rxjs/operators';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
@@ -17,7 +17,7 @@ import {isNotEmpty} from '../../../../shared/helpers/common.helpers';
     selector: 'zem-creatives-view',
     templateUrl: './creatives.view.html',
 })
-export class CreativesView implements OnInit {
+export class CreativesView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-creatives-view';
 
@@ -40,6 +40,11 @@ export class CreativesView implements OnInit {
             .subscribe(queryParams => {
                 this.updateInternalState(queryParams);
             });
+    }
+
+    ngOnDestroy() {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
     onPaginationChange($event: PaginationState) {

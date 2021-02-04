@@ -1,0 +1,26 @@
+@import 'variables';
+
+@add-new-creative-image-width: 96px;
+
+.zem-creative-batch {
+    display: block;
+}
+
+.zem-creative-batch__batch-name {
+    padding-bottom: @spacing--default;
+}
+
+.zem-creative-batch__actions {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 1px solid @color--lighter-neutral;
+    padding-top: @spacing--default;
+}
+
+.zem-creative-batch__actions .zem-button {
+    display: block;
+}
+
+.zem-creative-batch__actions .zem-button:not(:last-child) {
+    margin-right: @spacing--between-buttons;
+}
