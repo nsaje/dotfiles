@@ -5,7 +5,6 @@ import {
     ChangeDetectionStrategy,
     Output,
     EventEmitter,
-    OnChanges,
 } from '@angular/core';
 import {SmartGridColDef} from '../../../../shared/components/smart-grid/types/smart-grid-col-def';
 import {DetailGridInfo, GridApi} from 'ag-grid-community';
@@ -25,7 +24,7 @@ import {RuleHistory} from '../../../../core/rules/types/rule-history';
     templateUrl: './rules-histories-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RulesHistoriesGridComponent implements OnChanges {
+export class RulesHistoriesGridComponent {
     @Input()
     rulesHistories: RuleHistory[];
     @Input()
@@ -51,16 +50,7 @@ export class RulesHistoriesGridComponent implements OnChanges {
 
     private gridApi: GridApi;
 
-    ngOnChanges() {
-        if (this.gridApi && this.isLoading) {
-            this.gridApi.showLoadingOverlay();
-        }
-    }
-
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
-        if (this.isLoading) {
-            this.gridApi.showLoadingOverlay();
-        }
     }
 }

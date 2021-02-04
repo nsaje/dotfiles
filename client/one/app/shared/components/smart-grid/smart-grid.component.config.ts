@@ -23,6 +23,7 @@ export const DEFAULT_GRID_OPTIONS: SmartGridOptions = {
     cellFlashDelay: 1000,
     cellFadeDelay: 1000,
     enableCellFlashOnColumnsAdd: false,
+    suppressPropertyNamesCheck: true,
 };
 
 export const DEFAULT_PAGE_SIZE_OPTIONS: PageSizeConfig[] = [

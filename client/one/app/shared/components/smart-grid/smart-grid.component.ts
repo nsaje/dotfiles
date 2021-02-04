@@ -67,6 +67,8 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     paginationCount: number;
     @Input()
     context: any;
+    @Input()
+    isLoading: boolean = false;
     @Output()
     rowSelected = new EventEmitter<any>();
     @Output()
@@ -97,6 +99,8 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     paginationPage: number;
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
+
+    hideHorizontalScroll: boolean = false;
 
     private gridWidth$: Subject<number> = new Subject<number>();
     private ngUnsubscribe$: Subject<void> = new Subject();
@@ -134,6 +138,10 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
                 DEFAULT_PAGE_SIZE_OPTIONS
             );
         }
+
+        if (changes.isLoading && this.gridApi) {
+            this.toggleLoading();
+        }
     }
 
     ngOnDestroy(): void {
@@ -154,6 +162,7 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     onGridReady(params: DetailGridInfo) {
         this.isGridReady = true;
         this.gridApi = params.api;
+        this.toggleLoading();
         this.gridReady.emit(params);
 
         if (
@@ -351,6 +360,17 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
             this.gridApi.flashCells({
                 columns: colIds,
             });
+        }
+    }
+
+    private toggleLoading() {
+        if (this.isLoading) {
+            this.hideHorizontalScroll = true;
+            this.gridApi.showLoadingOverlay();
+        } else {
+            setTimeout(() => {
+                this.hideHorizontalScroll = false;
+            }, 250);
         }
     }
 }
