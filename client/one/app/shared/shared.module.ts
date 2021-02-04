@@ -89,6 +89,7 @@ import {MultiStepStepDirective} from './components/multi-step/multi-step-step.di
 import {TagPickerComponent} from './components/tag-picker/tag-picker.component';
 import {LoaderComponent} from './components/loader/loader.component';
 import {ButtonComponent} from './components/button/button.component';
+import {TagFormGroupComponent} from './components/tag-form-group/tag-form-group.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -168,6 +169,7 @@ const EXPORTED_DECLARATIONS = [
     MultiStepComponent,
     MultiStepStepDirective,
     TagPickerComponent,
+    TagFormGroupComponent,
     LoaderComponent,
     ButtonComponent,
 ];

@@ -1,0 +1,35 @@
+<div class="zem-form-group">
+    <label
+        class="zem-form-group__label zem-form-group__label--match-input-height"
+    >
+        {{ label }}
+        <zem-help-popover
+            class="zem-help-popover"
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content">
+        <zem-tag-picker
+            class="zem-form-group__content-item zem-tag-picker"
+            [value]="value"
+            [items]="items"
+            [placeholder]="placeholder"
+            [canCreateTags]="canCreateTags"
+            [appendTo]="appendTo"
+            [isDisabled]="isDisabled"
+            [isLoading]="isLoading"
+            [debounceTime]="debounceTime"
+            [hasError]="errors && errors.length > 0"
+            (valueChange)="valueChange.emit($event)"
+            (search)="search.emit($event)"
+        ></zem-tag-picker>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+    </div>
+</div>

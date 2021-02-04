@@ -12,6 +12,7 @@
     [appendTo]="appendTo"
     [debounceTime]="0"
     [searchOnFocus]="true"
+    [hasError]="hasError"
     (search)="onSearch($event)"
     (valueChange)="valueChange.emit($event)"
     (keydown.enter)="canCreateTags && onKeyEnter()"

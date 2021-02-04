@@ -37,6 +37,8 @@ export class TagPickerComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     isLoading: boolean = false;
     @Input()
+    hasError: boolean = false;
+    @Input()
     debounceTime: number = 200;
     @Output()
     valueChange: EventEmitter<string[]> = new EventEmitter<string[]>();
