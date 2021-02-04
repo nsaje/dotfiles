@@ -78,7 +78,7 @@ class Command(Z1Command):
     )
     def _detach_partition_with_retry(self, cursor, partition_name):
         try:
-            cursor.execute(f"ALTER TABLE dash_historystacktrace DETACH PARTITION {partition_name};")
+            cursor.execute(f"ALTER TABLE dash_historystacktrace DETACH PARTITION IF EXISTS {partition_name};")
         except ProgrammingError:
             # skipping due to non-existing partition
             pass
