@@ -1,43 +1,62 @@
 <ng-container *ngIf="store.state$ | async as state">
-    <ng-container *ngIf="state.entity?.id">
-        <div class="zem-panel zem-panel--with-padding">
-            <div class="zem-creative-batch__batch-name">
-                Batch name: <strong>{{ state.entity.name }}</strong>
+    <ng-container *ngIf="tagsStore.state$ | async as tagsState">
+        <ng-container *ngIf="state.entity?.id">
+            <div class="zem-panel zem-panel--with-padding">
+                <div class="zem-creative-batch__props">
+                    <zem-text-form-group
+                        class="zem-text-form-group"
+                        [label]="'Batch name'"
+                        [value]="state.entity.name"
+                        [placeholder]="'Batch name'"
+                        (valueChange)="onBatchNameChange($event)"
+                    ></zem-text-form-group>
+                    <zem-tag-form-group
+                        class="zem-tag-form-group"
+                        [label]="'Tags'"
+                        [value]="state.entity.tags"
+                        [placeholder]="'Select tags'"
+                        [items]="tagsState.availableTags"
+                        [canCreateTags]="true"
+                        [isLoading]="tagsState.requests.list.inProgress"
+                        (valueChange)="store.updateTags($event)"
+                        (search)="onTagsSearch($event)"
+                    ></zem-tag-form-group>
+                </div>
+                <div class="zem-creative-batch__actions">
+                    <zem-button
+                        class="zem-button"
+                        [isHighlighted]="true"
+                        [icon]="'check'"
+                        [isDisabled]="true"
+                    >
+                        Save
+                    </zem-button>
+                    <zem-button
+                        class="zem-button"
+                        [isHighlighted]="false"
+                        [isDisabled]="true"
+                    >
+                        Cancel
+                    </zem-button>
+                    <zem-button
+                        class="zem-button"
+                        [icon]="'add'"
+                        [isDisabled]="true"
+                    >
+                        Add new creative
+                    </zem-button>
+                    <zem-button
+                        class="zem-button"
+                        [icon]="'add'"
+                        [isDisabled]="true"
+                    >
+                        Add new creative from existing
+                    </zem-button>
+                </div>
             </div>
-            <div class="zem-creative-batch__actions">
-                <zem-button
-                    class="zem-button"
-                    [isHighlighted]="true"
-                    [icon]="'check'"
-                    [isDisabled]="true"
-                >
-                    Save
-                </zem-button>
-                <zem-button
-                    class="zem-button"
-                    [isHighlighted]="false"
-                    [isDisabled]="true"
-                >
-                    Cancel
-                </zem-button>
-                <zem-button
-                    class="zem-button"
-                    [icon]="'add'"
-                    [isDisabled]="true"
-                >
-                    Add new creative
-                </zem-button>
-                <zem-button
-                    class="zem-button"
-                    [icon]="'add'"
-                    [isDisabled]="true"
-                >
-                    Add new creative from existing
-                </zem-button>
-            </div>
-        </div>
-    </ng-container>
-    <ng-container *ngIf="!state.entity?.id">
-        Creative batch does not exist.
+        </ng-container>
+        <ng-container *ngIf="!state.entity?.id">
+            Creative batch does not exist.
+        </ng-container>
     </ng-container>
 </ng-container>

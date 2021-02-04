@@ -67,7 +67,7 @@ class CreativeBatchSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
     tags = rest_framework.serializers.ListSerializer(child=rest_framework.serializers.CharField(), default=[])
     image_crop = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
-    display_url = rest_framework.serializers.URLField(allow_null=True, required=False)
+    display_url = rest_framework.serializers.URLField(allow_blank=True, allow_null=True, required=False)
     brand_name = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     description = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     call_to_action = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)

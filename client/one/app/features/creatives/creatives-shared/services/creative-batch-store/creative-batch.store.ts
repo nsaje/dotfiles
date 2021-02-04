@@ -33,6 +33,7 @@ import {
     EditCreativeBatchAction,
     EditCreativeBatchActionEffect,
 } from './effects/edit-creative-batch.effect';
+import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -53,6 +54,14 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
     >[] {
         return [
             {
+                provide: SetEntityAction,
+                useClass: SetEntityActionReducer,
+            },
+            {
+                provide: SetFieldsErrorsAction,
+                useClass: SetFieldsErrorsActionReducer,
+            },
+            {
                 provide: FetchCreativeBatchAction,
                 useClass: FetchCreativeBatchActionEffect,
             },
@@ -67,14 +76,6 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
             {
                 provide: ValidateCreativeBatchAction,
                 useClass: ValidateCreativeBatchActionEffect,
-            },
-            {
-                provide: SetEntityAction,
-                useClass: SetEntityActionReducer,
-            },
-            {
-                provide: SetFieldsErrorsAction,
-                useClass: SetFieldsErrorsActionReducer,
             },
         ];
     }
@@ -111,5 +112,19 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
                 requestStateUpdater: this.requestStateUpdater,
             })
         );
+    }
+
+    updateBatchName(name: string) {
+        this.updateBatch({name});
+    }
+
+    updateTags(tags: string[]) {
+        this.updateBatch({tags});
+    }
+
+    private updateBatch(updates: Partial<CreativeBatch>) {
+        this.dispatch(
+            new SetEntityAction({...this.state.entity, ...updates})
+        ).then(x => this.saveEntity());
     }
 }

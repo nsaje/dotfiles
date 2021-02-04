@@ -67,7 +67,7 @@ export class TagPickerComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnChanges() {
-        this.formattedItems = this.items.map(item => ({
+        this.formattedItems = (this.items || []).map(item => ({
             tag: item,
         }));
     }

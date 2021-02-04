@@ -129,7 +129,7 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
         batch.update(request, **data)
 
         tags = data.get("tags")
-        if tags:
+        if tags is not None:
             batch.set_creative_tags(request, tags)
 
         return self.response_ok(self.serializer(batch, context={"request": request}).data)
