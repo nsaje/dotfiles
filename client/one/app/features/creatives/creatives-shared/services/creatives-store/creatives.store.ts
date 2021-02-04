@@ -3,7 +3,6 @@ import {Store} from '../../../../../shared/services/store/store';
 import {CreativesStoreState} from './creatives.store.state';
 import {RequestStateUpdater} from '../../../../../shared/types/request-state-updater';
 import {getStoreRequestStateUpdater} from '../../../../../shared/helpers/store.helpers';
-import {CreativesService} from '../../../../../core/creatives/services/creatives.service';
 import {StoreProvider} from '../../../../../shared/services/store/store.provider';
 import {StoreAction} from '../../../../../shared/services/store/store.action';
 import {StoreReducer} from '../../../../../shared/services/store/store.reducer';
@@ -23,15 +22,6 @@ import {
 import {ScopeParams} from '../../../../../shared/types/scope-params';
 import {CreativesSearchParams} from '../../types/creatives-search-params';
 import {PaginationState} from '../../../../../shared/components/smart-grid/types/pagination-state';
-import {CreativeTagsService} from '../../../../../core/creative-tags/services/creative-tags.service';
-import {
-    SetCreativeTagsAction,
-    SetCreativeTagsActionReducer,
-} from './reducers/set-creative-tags.reducer';
-import {
-    FetchCreativeTagsAction,
-    FetchCreativeTagsActionEffect,
-} from './effects/fetch-creative-tags.effect';
 import {
     SetEntitySelectedAction,
     SetEntitySelectedActionReducer,
@@ -43,18 +33,12 @@ import {
     SetAllEntitiesSelectedAction,
     SetAllEntitiesSelectedActionReducer,
 } from './reducers/set-all-entities-selected.reducer';
-import {MAX_LOADED_TAGS} from '../../creatives-shared.config';
 
 @Injectable()
 export class CreativesStore extends Store<CreativesStoreState> {
     private requestStateUpdater: RequestStateUpdater;
 
-    constructor(
-        private creativesService: CreativesService,
-        private creativeTagsService: CreativeTagsService,
-        private authStore: AuthStore,
-        injector: Injector
-    ) {
+    constructor(private authStore: AuthStore, injector: Injector) {
         super(new CreativesStoreState(), injector);
         this.requestStateUpdater = getStoreRequestStateUpdater(this);
     }
@@ -68,10 +52,6 @@ export class CreativesStore extends Store<CreativesStoreState> {
             {
                 provide: SetEntitiesAction,
                 useClass: SetEntitiesActionReducer,
-            },
-            {
-                provide: SetCreativeTagsAction,
-                useClass: SetCreativeTagsActionReducer,
             },
             {
                 provide: SetScopeAction,
@@ -89,10 +69,6 @@ export class CreativesStore extends Store<CreativesStoreState> {
                 provide: FetchCreativesAction,
                 useClass: FetchCreativesActionEffect,
             },
-            {
-                provide: FetchCreativeTagsAction,
-                useClass: FetchCreativeTagsActionEffect,
-            },
         ];
     }
 
@@ -102,7 +78,6 @@ export class CreativesStore extends Store<CreativesStoreState> {
         searchParams: CreativesSearchParams
     ) {
         this.loadCreatives(scope, pagination, searchParams);
-        this.loadTags(scope, null, true);
     }
 
     loadEntities(
@@ -137,21 +112,6 @@ export class CreativesStore extends Store<CreativesStoreState> {
         return this.authStore.hasReadOnlyAccessOn(
             this.state.scope.agencyId,
             creative.accountId
-        );
-    }
-
-    loadTags(
-        scope: ScopeParams,
-        keyword: string = null,
-        forceReload: boolean = false
-    ) {
-        this.dispatch(
-            new FetchCreativeTagsAction({
-                scope,
-                searchParams: {keyword},
-                forceReload,
-                requestStateUpdater: this.requestStateUpdater,
-            })
         );
     }
 

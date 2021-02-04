@@ -2,14 +2,14 @@ import {StoreAction} from '../../../../../../shared/services/store/store.action'
 import {RequestStateUpdater} from '../../../../../../shared/types/request-state-updater';
 import {Injectable} from '@angular/core';
 import {StoreEffect} from '../../../../../../shared/services/store/store.effect';
-import {CreativesStoreState} from '../creatives.store.state';
 import {takeUntil} from 'rxjs/operators';
-import {SetCreativeTagsAction} from '../reducers/set-creative-tags.reducer';
+import {SetAvailableTagsAction} from '../reducers/set-available-tags.reducer';
 import {CreativeTagsService} from '../../../../../../core/creative-tags/services/creative-tags.service';
 import {ScopeParams} from '../../../../../../shared/types/scope-params';
 import {CreativeTagsSearchParams} from '../../../types/creative-tags-search-params';
 import {isNotEmpty} from '../../../../../../shared/helpers/common.helpers';
 import {MAX_LOADED_TAGS} from '../../../creatives-shared.config';
+import {CreativeTagsStoreState} from '../creative-tags-store.state';
 
 export interface FetchCreativeTagsParams {
     scope: ScopeParams;
@@ -25,7 +25,7 @@ export class FetchCreativeTagsAction extends StoreAction<
 // tslint:disable-next-line: max-classes-per-file
 @Injectable()
 export class FetchCreativeTagsActionEffect extends StoreEffect<
-    CreativesStoreState,
+    CreativeTagsStoreState,
     FetchCreativeTagsAction
 > {
     constructor(private service: CreativeTagsService) {
@@ -33,7 +33,7 @@ export class FetchCreativeTagsActionEffect extends StoreEffect<
     }
 
     effect(
-        state: CreativesStoreState,
+        state: CreativeTagsStoreState,
         action: FetchCreativeTagsAction
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
@@ -59,8 +59,8 @@ export class FetchCreativeTagsActionEffect extends StoreEffect<
                             !isNotEmpty(params.searchParams?.keyword) &&
                             creativeTags.length < MAX_LOADED_TAGS;
                         this.dispatch(
-                            new SetCreativeTagsAction({
-                                tags: creativeTags,
+                            new SetAvailableTagsAction({
+                                availableTags: creativeTags,
                                 allTagsLoaded,
                             })
                         );

@@ -5,8 +5,8 @@ const creativeTagsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/creativetags`;
 export const CREATIVE_TAGS_CONFIG = {
     requests: {
         creativeTags: {
-            listTags: {
-                name: 'listTags',
+            list: {
+                name: 'list',
                 url: `${creativeTagsApiUrl}/`,
             },
         },

@@ -3,14 +3,14 @@ import {
     FetchCreativeTagsAction,
 } from './fetch-creative-tags.effect';
 import {of, asapScheduler} from 'rxjs';
-import {SetCreativeTagsAction} from '../reducers/set-creative-tags.reducer';
+import {SetAvailableTagsAction} from '../reducers/set-available-tags.reducer';
 import {fakeAsync, tick} from '@angular/core/testing';
 import {CreativeTagsService} from '../../../../../../core/creative-tags/services/creative-tags.service';
 import {RequestStateUpdater} from '../../../../../../shared/types/request-state-updater';
-import {CreativesStoreState} from '../creatives.store.state';
 import {ScopeParams} from '../../../../../../shared/types/scope-params';
 import {CreativeTagsSearchParams} from '../../../types/creative-tags-search-params';
 import {MAX_LOADED_TAGS} from '../../../creatives-shared.config';
+import {CreativeTagsStoreState} from '../creative-tags-store.state';
 
 function range(n: number): number[] {
     return [...Array(n).keys()];
@@ -22,14 +22,21 @@ describe('FetchCreativeTagsActionEffect', () => {
     let mockedMaxCreativeTags: string[];
     let effect: FetchCreativeTagsActionEffect;
     let requestStateUpdater: RequestStateUpdater;
+    const mockedOriginalState: CreativeTagsStoreState = {
+        ...new CreativeTagsStoreState(),
+        scope: {
+            agencyId: '123',
+            accountId: null,
+        },
+    };
 
     function testEffect(
         scope: ScopeParams,
         searchParams: CreativeTagsSearchParams,
         forceReload: boolean,
         mockedResponse: string[],
-        expectedResult: SetCreativeTagsAction,
-        originalStoreState: CreativesStoreState,
+        expectedResult: SetAvailableTagsAction,
+        originalStoreState: CreativeTagsStoreState,
         expectListCall: boolean
     ) {
         spyOn(effect, 'dispatch').and.returnValue(Promise.resolve(true));
@@ -84,9 +91,9 @@ describe('FetchCreativeTagsActionEffect', () => {
         const searchParams: CreativeTagsSearchParams = {
             keyword: 'test',
         };
-        const expectedResult: SetCreativeTagsAction = new SetCreativeTagsAction(
+        const expectedResult: SetAvailableTagsAction = new SetAvailableTagsAction(
             {
-                tags: mockedCreativeTags,
+                availableTags: mockedCreativeTags,
                 allTagsLoaded: false, // In this case we know that all tags could not have been loaded, because a keyword filter was used
             }
         );
@@ -96,7 +103,7 @@ describe('FetchCreativeTagsActionEffect', () => {
             false,
             mockedCreativeTags,
             expectedResult,
-            new CreativesStoreState(),
+            mockedOriginalState,
             true
         );
     }));
@@ -106,9 +113,9 @@ describe('FetchCreativeTagsActionEffect', () => {
         const searchParams: CreativeTagsSearchParams = {
             keyword: null,
         };
-        const expectedResult: SetCreativeTagsAction = new SetCreativeTagsAction(
+        const expectedResult: SetAvailableTagsAction = new SetAvailableTagsAction(
             {
-                tags: mockedCreativeTags,
+                availableTags: mockedCreativeTags,
                 allTagsLoaded: true,
             }
         );
@@ -118,7 +125,7 @@ describe('FetchCreativeTagsActionEffect', () => {
             false,
             mockedCreativeTags,
             expectedResult,
-            new CreativesStoreState(),
+            mockedOriginalState,
             true
         );
     }));
@@ -128,9 +135,9 @@ describe('FetchCreativeTagsActionEffect', () => {
         const searchParams: CreativeTagsSearchParams = {
             keyword: null,
         };
-        const expectedResult: SetCreativeTagsAction = new SetCreativeTagsAction(
+        const expectedResult: SetAvailableTagsAction = new SetAvailableTagsAction(
             {
-                tags: mockedMaxCreativeTags,
+                availableTags: mockedMaxCreativeTags,
                 allTagsLoaded: false,
             }
         );
@@ -140,7 +147,7 @@ describe('FetchCreativeTagsActionEffect', () => {
             false,
             mockedMaxCreativeTags,
             expectedResult,
-            new CreativesStoreState(),
+            mockedOriginalState,
             true
         );
     }));
@@ -151,8 +158,10 @@ describe('FetchCreativeTagsActionEffect', () => {
             keyword: 'test',
         };
 
-        const storeStateWithLoadedTags: CreativesStoreState = new CreativesStoreState();
-        storeStateWithLoadedTags.allTagsLoaded = true;
+        const storeStateWithLoadedTags: CreativeTagsStoreState = {
+            ...mockedOriginalState,
+            allTagsLoaded: true,
+        };
 
         testEffect(
             scope,
@@ -170,15 +179,17 @@ describe('FetchCreativeTagsActionEffect', () => {
         const searchParams: CreativeTagsSearchParams = {
             keyword: 'test',
         };
-        const expectedResult: SetCreativeTagsAction = new SetCreativeTagsAction(
+        const expectedResult: SetAvailableTagsAction = new SetAvailableTagsAction(
             {
-                tags: mockedCreativeTags,
+                availableTags: mockedCreativeTags,
                 allTagsLoaded: false, // In this case we know that all tags could not have been loaded, because a keyword filter was used
             }
         );
 
-        const storeStateWithLoadedTags: CreativesStoreState = new CreativesStoreState();
-        storeStateWithLoadedTags.allTagsLoaded = true;
+        const storeStateWithLoadedTags: CreativeTagsStoreState = {
+            ...mockedOriginalState,
+            allTagsLoaded: true,
+        };
 
         testEffect(
             scope,

@@ -1,6 +1,4 @@
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
-import {asapScheduler, of} from 'rxjs';
-import {CreativesService} from '../../../../../core/creatives/services/creatives.service';
 import {AuthStore} from '../../../../../core/auth/services/auth.store';
 import {CreativesStore} from './creatives.store';
 import {Creative} from '../../../../../core/creatives/types/creative';
@@ -14,17 +12,9 @@ import {ScopeParams} from '../../../../../shared/types/scope-params';
 import {PaginationState} from '../../../../../shared/components/smart-grid/types/pagination-state';
 import {CreativesSearchParams} from '../../types/creatives-search-params';
 import {CreativesStoreState} from './creatives.store.state';
-import {CreativeTagsService} from '../../../../../core/creative-tags/services/creative-tags.service';
-import {
-    FetchCreativeTagsAction,
-    FetchCreativeTagsActionEffect,
-} from './effects/fetch-creative-tags.effect';
 
 describe('CreativesStore', () => {
     let fetchCreativesActionEffectStub: jasmine.SpyObj<FetchCreativesActionEffect>;
-    let fetchCreativeTagsActionEffectStub: jasmine.SpyObj<FetchCreativeTagsActionEffect>;
-    let creativesServiceStub: jasmine.SpyObj<CreativesService>;
-    let creativeTagsServiceStub: jasmine.SpyObj<CreativeTagsService>;
     let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: CreativesStore;
 
@@ -72,22 +62,11 @@ describe('CreativesStore', () => {
     ];
 
     beforeEach(() => {
-        creativesServiceStub = jasmine.createSpyObj(CreativesService.name, [
-            'list',
-        ]);
-        creativeTagsServiceStub = jasmine.createSpyObj(
-            CreativeTagsService.name,
-            ['list']
-        );
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
             'hasReadOnlyAccessOn',
         ]);
         fetchCreativesActionEffectStub = jasmine.createSpyObj(
-            FetchCreativesActionEffect.name,
-            ['effect', 'dispatch']
-        );
-        fetchCreativeTagsActionEffectStub = jasmine.createSpyObj(
             FetchCreativesActionEffect.name,
             ['effect', 'dispatch']
         );
@@ -97,19 +76,10 @@ describe('CreativesStore', () => {
                     provide: FetchCreativesActionEffect,
                     useValue: fetchCreativesActionEffectStub,
                 },
-                {
-                    provide: FetchCreativeTagsActionEffect,
-                    useValue: fetchCreativeTagsActionEffectStub,
-                },
             ],
         });
 
-        store = new CreativesStore(
-            creativesServiceStub,
-            creativeTagsServiceStub,
-            authStoreStub,
-            TestBed.get(Injector)
-        );
+        store = new CreativesStore(authStoreStub, TestBed.get(Injector));
     });
 
     it('should correctly initialize store', fakeAsync(() => {
@@ -128,27 +98,16 @@ describe('CreativesStore', () => {
         };
 
         spyOn(store, 'dispatch').and.returnValue(Promise.resolve(true));
-        creativesServiceStub.list.and
-            .returnValue(of(mockedEntities, asapScheduler))
-            .calls.reset();
 
         store.setStore(mockedScopeParams, mockedPagination, mockedSearchParams);
         tick();
 
-        expect(store.dispatch).toHaveBeenCalledTimes(2);
+        expect(store.dispatch).toHaveBeenCalledTimes(1);
         expect(store.dispatch).toHaveBeenCalledWith(
             new FetchCreativesAction({
                 scope: mockedScopeParams,
                 pagination: mockedPagination,
                 searchParams: mockedSearchParams,
-                requestStateUpdater: (<any>store).requestStateUpdater,
-            })
-        );
-        expect(store.dispatch).toHaveBeenCalledWith(
-            new FetchCreativeTagsAction({
-                scope: mockedScopeParams,
-                searchParams: {keyword: null},
-                forceReload: true,
                 requestStateUpdater: (<any>store).requestStateUpdater,
             })
         );
@@ -190,27 +149,5 @@ describe('CreativesStore', () => {
         });
 
         expect(store.areAllEntitiesSelected()).toBeFalse();
-    }));
-
-    it('should correctly load tags on keyword change', fakeAsync(() => {
-        const mockedScopeParams: ScopeParams = {
-            agencyId: '24',
-            accountId: '367',
-        };
-
-        spyOn(store, 'dispatch').and.returnValue(Promise.resolve(true));
-
-        store.loadTags(mockedScopeParams, 'test');
-        tick();
-
-        expect(store.dispatch).toHaveBeenCalledTimes(1);
-        expect(store.dispatch).toHaveBeenCalledWith(
-            new FetchCreativeTagsAction({
-                scope: mockedScopeParams,
-                searchParams: {keyword: 'test'},
-                forceReload: false,
-                requestStateUpdater: (<any>store).requestStateUpdater,
-            })
-        );
     }));
 });

@@ -6,11 +6,8 @@ export class CreativesStoreState {
     scope: ScopeParams = null;
     hasAgencyScope: boolean = null;
     entities: Creative[] = [];
-    allTagsLoaded: boolean = null;
-    availableTags: string[] = [];
     selectedEntityIds: string[] = [];
     requests = {
         list: {} as RequestState,
-        listTags: {} as RequestState,
     };
 }

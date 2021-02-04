@@ -1,26 +1,28 @@
 <ng-container *ngIf="store.state$ | async as state">
-    <div class="zem-panel zem-panel--with-padding">
-        <zem-creatives-actions
-            class="zem-creatives-actions zem-creatives__item"
-            [searchParams]="searchParams"
-            [availableTags]="state.availableTags"
-            [isReadOnly]="isReadOnly"
-            [isDisabled]="!state.scope?.agencyId"
-            [isLoadingTags]="state.requests.listTags.inProgress"
-            (searchParamsChange)="searchParamsChange.emit($event)"
-            (tagSearch)="store.loadTags(state.scope, $event)"
-            (batchCreate)="onBatchCreate()"
-        >
-        </zem-creatives-actions>
-        <zem-creatives-grid
-            class="zem-creatives-grid zem-creatives__item"
-            [creatives]="state.entities"
-            [context]="context"
-            [isLoading]="state.requests.list.inProgress"
-            [paginationOptions]="paginationOptions"
-            [paginationCount]="state.requests.list.count"
-            (paginationChange)="paginationChange.emit($event)"
-        >
-        </zem-creatives-grid>
-    </div>
+    <ng-container *ngIf="tagsStore.state$ | async as tagsState">
+        <div class="zem-panel zem-panel--with-padding">
+            <zem-creatives-actions
+                class="zem-creatives-actions zem-creatives__item"
+                [searchParams]="searchParams"
+                [availableTags]="tagsState.availableTags"
+                [isReadOnly]="isReadOnly"
+                [isDisabled]="!state.scope?.agencyId"
+                [isLoadingTags]="tagsState.requests.list.inProgress"
+                (searchParamsChange)="searchParamsChange.emit($event)"
+                (tagSearch)="tagsStore.loadTags(state.scope, $event)"
+                (batchCreate)="onBatchCreate()"
+            >
+            </zem-creatives-actions>
+            <zem-creatives-grid
+                class="zem-creatives-grid zem-creatives__item"
+                [creatives]="state.entities"
+                [context]="context"
+                [isLoading]="state.requests.list.inProgress"
+                [paginationOptions]="paginationOptions"
+                [paginationCount]="state.requests.list.count"
+                (paginationChange)="paginationChange.emit($event)"
+            >
+            </zem-creatives-grid>
+        </div>
+    </ng-container>
 </ng-container>

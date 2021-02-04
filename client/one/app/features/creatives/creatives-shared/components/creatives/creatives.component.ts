@@ -20,8 +20,9 @@ import {DEFAULT_PAGINATION_OPTIONS} from '../../creatives-shared.config';
 import * as deepEqual from 'fast-deep-equal';
 import {FetchCreativesActionEffect} from '../../services/creatives-store/effects/fetch-creatives.effect';
 import {isDefined} from '../../../../../shared/helpers/common.helpers';
-import {FetchCreativeTagsActionEffect} from '../../services/creatives-store/effects/fetch-creative-tags.effect';
+import {FetchCreativeTagsActionEffect} from '../../services/creative-tags-store/effects/fetch-creative-tags.effect';
 import {AuthStore} from '../../../../../core/auth/services/auth.store';
+import {CreativeTagsStore} from '../../services/creative-tags-store/creative-tags.store';
 import {CreativeBatchStore} from '../../services/creative-batch-store/creative-batch.store';
 import {merge, Observable, Subject} from 'rxjs';
 import {
@@ -44,6 +45,7 @@ import {ValidateCreativeBatchActionEffect} from '../../services/creative-batch-s
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         CreativesStore,
+        CreativeTagsStore,
         CreativeBatchStore,
         FetchCreativesActionEffect,
         FetchCreativeTagsActionEffect,
@@ -77,6 +79,7 @@ export class CreativesComponent implements OnInit, OnChanges, OnDestroy {
 
     constructor(
         public store: CreativesStore,
+        public tagsStore: CreativeTagsStore,
         public batchStore: CreativeBatchStore,
         public authStore: AuthStore,
         private router: Router
@@ -103,6 +106,7 @@ export class CreativesComponent implements OnInit, OnChanges, OnDestroy {
                     this.pagination,
                     this.searchParams
                 );
+                this.tagsStore.setStore(this.scopeParams);
             } else {
                 this.store.loadEntities(this.pagination, this.searchParams);
             }
