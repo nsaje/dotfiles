@@ -22,6 +22,7 @@ import {
 export class ThumbnailCellComponent implements ICellRendererAngularComp {
     stats: GridRowDataStats;
 
+    url: string;
     displayUrl: string;
     breakdownName: string;
     brandName: string;
@@ -45,6 +46,10 @@ export class ThumbnailCellComponent implements ICellRendererAngularComp {
     agInit(params: ICellRendererParams): void {
         this.stats = (params.data as GridRow).data.stats;
 
+        this.url = commonHelpers.getValueOrDefault(
+            (this.stats.urlLink as GridRowDataStatsValue)?.url as string,
+            ''
+        );
         this.displayUrl = commonHelpers.getValueOrDefault(
             (this.stats.display_url as GridRowDataStatsValue)?.value as string,
             ''
