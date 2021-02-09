@@ -164,7 +164,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
             "target_os": "Operating Systems",
             "target_regions": "Locations",
             "exclusion_target_regions": "Excluded Locations",
-            "autopilot": "Budget Optimization Autopilot",
+            "autopilot": "Campaign Budget Optimization",
             "enable_ga_tracking": "Enable GA tracking",
             "ga_tracking_type": "GA tracking type (via API or e-mail).",
             "ga_property_id": "GA web property ID",

@@ -2898,9 +2898,10 @@ Include traffic that meets the following conditions:
 <a name="autopilot-state"></a>
 ## Autopilot State
 
-- `ACTIVE_CPC` - Optimize Bids
-- `ACTIVE_CPC_BUDGET` - Optimize Bids and Daily Budgets
-- `INACTIVE` - Disabled
+- `ACTIVE_CPC` - Optimize Bids (deprecated)
+- `ACTIVE_CPC_BUDGET` - Optimize Bids and Daily Spend Caps (deprecated)
+- `ACTIVE` - Minimal Bid Bidding Strategy
+- `INACTIVE` - Target Bid Bidding Strategy
 
 <a name="campaign-types"></a>
 ## Campaign type

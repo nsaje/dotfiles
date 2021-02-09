@@ -32,8 +32,8 @@ class AdGroupSettingsAutopilotState(ConstantBase):
     _VALUES = {
         ACTIVE_CPC: "Optimize Bids",
         ACTIVE_CPC_BUDGET: "Optimize Bids and Daily Spend Caps",
-        ACTIVE: "Optimal Bid Bidding Strategy",
-        INACTIVE: "Disabled",  # TODO: RTAP: Change this after all agencies are migrated
+        ACTIVE: "Minimal Bid Bidding Strategy",
+        INACTIVE: "Target Bid Bidding Strategy",
     }
 
 

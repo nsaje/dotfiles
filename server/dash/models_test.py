@@ -1229,7 +1229,7 @@ class HistoryTest(TestCase):
             . Name set to "test"
             , Campaign Manager set to "luka.silovinac@zemanta.com"
             , Device targeting set to "Desktop, Tablet, Mobile"
-            , Budget Optimization Autopilot set to "True"
+            , Campaign Budget Optimization set to "True"
             """
             ).replace("\n", ""),
             hist.changes_text,
