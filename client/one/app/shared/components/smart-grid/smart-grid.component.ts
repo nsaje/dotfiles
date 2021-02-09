@@ -100,8 +100,6 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
 
-    hideHorizontalScroll: boolean = false;
-
     private gridWidth$: Subject<number> = new Subject<number>();
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -365,12 +363,7 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
 
     private toggleLoading() {
         if (this.isLoading) {
-            this.hideHorizontalScroll = true;
             this.gridApi.showLoadingOverlay();
-        } else {
-            setTimeout(() => {
-                this.hideHorizontalScroll = false;
-            }, 250);
         }
     }
 }
