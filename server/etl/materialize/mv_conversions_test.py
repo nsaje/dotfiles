@@ -66,7 +66,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 DELIMITER AS %(delimiter)s
                 BLANKSASNULL EMPTYASNULL
                 CREDENTIALS %(credentials)s
-                MAXERROR 5;"""
+                MAXERROR 0;"""
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
@@ -381,7 +381,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                 DELIMITER AS %(delimiter)s
                 BLANKSASNULL EMPTYASNULL
                 CREDENTIALS %(credentials)s
-                MAXERROR 5;"""
+                MAXERROR 0;"""
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
