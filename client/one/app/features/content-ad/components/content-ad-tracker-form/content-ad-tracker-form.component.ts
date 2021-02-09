@@ -51,6 +51,7 @@ export class ContentAdTrackerFormComponent implements OnChanges {
 
     showFallbackUrlInput: boolean = false;
     showMacroFormatWarning: boolean = false;
+    showGdprWarning: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.contentAdTracker && this.contentAdTracker.fallbackUrl) {
@@ -61,6 +62,7 @@ export class ContentAdTrackerFormComponent implements OnChanges {
             this.showMacroFormatWarning = this.contentAdTracker.url.includes(
                 '${'
             );
+            this.showGdprWarning = !this.contentAdTracker.url.includes('gdpr');
         }
 
         if (changes.contentAdTracker && this.contentAdTracker.method) {

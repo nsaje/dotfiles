@@ -57,6 +57,19 @@
         >.
     </div>
     <div
+        *ngIf="showGdprWarning"
+        class="zem-content-ad-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+    >
+        GDPR macros were not detected in the tracker you provided. We will not
+        be able to append it to responses coming from GDPR restricted areas. You
+        can learn more about GDPR macros
+        <a
+            href="https://help.zemanta.com/article/show/12985-tracking-parameters--macros"
+            target="_blank"
+            >here</a
+        >.
+    </div>
+    <div
         *ngIf="contentAdTracker.method === trackerMethod.JS"
         class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__input-help"
     >
