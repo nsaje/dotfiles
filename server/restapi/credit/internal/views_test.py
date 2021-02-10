@@ -8,8 +8,8 @@ import core.features.bcm
 import core.models
 import dash.constants
 import utils.test_helper
-from utils import dates_helper
 from restapi.common.views_base_test_case import RESTAPITestCase
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
