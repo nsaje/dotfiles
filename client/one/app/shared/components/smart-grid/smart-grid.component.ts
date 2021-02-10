@@ -11,6 +11,7 @@ import {
     OnChanges,
     SimpleChanges,
     OnDestroy,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {
     DetailGridInfo,
@@ -100,11 +101,15 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
 
+    hideHorizontalScroll: boolean = false;
+
     private gridWidth$: Subject<number> = new Subject<number>();
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     private previousColumnStateCache: ColumnState[] = [];
     private columnStateCache: ColumnState[] = [];
+
+    constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
     ngOnInit(): void {
         this.gridOptions = {
@@ -363,7 +368,13 @@ export class SmartGridComponent implements OnInit, OnChanges, OnDestroy {
 
     private toggleLoading() {
         if (this.isLoading) {
+            this.hideHorizontalScroll = true;
             this.gridApi.showLoadingOverlay();
+        } else {
+            setTimeout(() => {
+                this.hideHorizontalScroll = false;
+                this.changeDetectorRef.markForCheck();
+            }, 250);
         }
     }
 }
