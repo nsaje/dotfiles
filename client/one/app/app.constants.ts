@@ -107,6 +107,18 @@ export enum AdType {
     AD_TAG = 4,
 }
 
+export enum CreativeBatchType {
+    NATIVE = 1,
+    VIDEO = 2,
+    DISPLAY = 3,
+}
+
+export enum CreativeBatchMode {
+    INSERT = 1,
+    EDIT = 2,
+    CLONE = 3, // TODO: Do we really need this?
+}
+
 export enum AdSize {
     MOBILE_LEADERBOARD = 1,
     INLINE_RECTANGLE = 2,

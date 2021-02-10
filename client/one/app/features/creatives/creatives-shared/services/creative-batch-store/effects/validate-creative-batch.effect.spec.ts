@@ -11,6 +11,10 @@ import {asapScheduler, of, throwError} from 'rxjs';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
 import {CreativeBatchStoreFieldsErrorsState} from '../creative-batch.store.fields-errors-state';
 import {SetFieldsErrorsAction} from '../reducers/set-fields-errors.reducer';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../../app.constants';
 
 describe('ValidateCreativeBatchActionEffect', () => {
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -32,6 +36,8 @@ describe('ValidateCreativeBatchActionEffect', () => {
             id: '1',
             agencyId: '2',
             accountId: null,
+            type: CreativeBatchType.NATIVE,
+            mode: CreativeBatchMode.INSERT,
             name: 'test',
             status: CreativeBatchStatus.IN_PROGRESS,
             tags: [],

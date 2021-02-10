@@ -38,6 +38,10 @@ import {FetchCreativeBatchActionEffect} from '../../services/creative-batch-stor
 import {CreateCreativeBatchActionEffect} from '../../services/creative-batch-store/effects/create-creative-batch.effect';
 import {EditCreativeBatchActionEffect} from '../../services/creative-batch-store/effects/edit-creative-batch.effect';
 import {ValidateCreativeBatchActionEffect} from '../../services/creative-batch-store/effects/validate-creative-batch.effect';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../app.constants';
 
 @Component({
     selector: 'zem-creatives',
@@ -125,13 +129,21 @@ export class CreativesComponent implements OnInit, OnChanges, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    onBatchCreate() {
-        this.batchStore.createEntity({
-            accountId: this.scopeParams.accountId,
-            agencyId: this.scopeParams.accountId
-                ? null
-                : this.scopeParams.agencyId,
-        });
+    createInsertBatch(type: CreativeBatchType) {
+        this.createBatch(type, CreativeBatchMode.INSERT);
+    }
+
+    createBatch(type: CreativeBatchType, mode: CreativeBatchMode) {
+        this.batchStore.createEntity(
+            {
+                accountId: this.scopeParams.accountId,
+                agencyId: this.scopeParams.accountId
+                    ? null
+                    : this.scopeParams.agencyId,
+            },
+            type,
+            mode
+        );
     }
 
     private subscribeToStateUpdates() {

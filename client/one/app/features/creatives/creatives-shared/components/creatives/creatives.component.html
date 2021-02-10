@@ -10,7 +10,7 @@
                 [isLoadingTags]="tagsState.requests.list.inProgress"
                 (searchParamsChange)="searchParamsChange.emit($event)"
                 (tagSearch)="tagsStore.loadTags(state.scope, $event)"
-                (batchCreate)="onBatchCreate()"
+                (batchCreate)="createInsertBatch($event)"
             >
             </zem-creatives-actions>
             <zem-creatives-grid

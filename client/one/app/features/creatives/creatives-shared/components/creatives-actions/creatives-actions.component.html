@@ -33,13 +33,25 @@
     ></zem-tag-picker>
 </div>
 <div class="zem-creatives-actions__buttons zem-creatives-actions__action">
-    <zem-button
-        class="zem-button zem-creatives-actions__button"
-        [icon]="'add'"
-        [isHighlighted]="true"
-        [isDisabled]="isDisabled || isReadOnly"
-        (click)="batchCreate.emit()"
+    <div
+        zemDropdown
+        class="zem-creatives-actions__button"
+        [suppressDropdownMobileStyle]="true"
     >
-        Add new creative
-    </zem-button>
+        <zem-button
+            zemDropdownToggle
+            class="zem-button"
+            [icon]="'add-icon zem-button__button--dropdown-toggle'"
+            [isHighlighted]="true"
+            [isDisabled]="isDisabled || isReadOnly"
+        >
+            <!--TODO: remove the [icon] input hack when adding both icons is enabled-->
+            Add new creative
+        </zem-button>
+        <zem-multi-step-menu
+            zemDropdownContent
+            class="zem-multi-step-menu"
+            [options]="addCreativeOptions"
+        ></zem-multi-step-menu>
+    </div>
 </div>

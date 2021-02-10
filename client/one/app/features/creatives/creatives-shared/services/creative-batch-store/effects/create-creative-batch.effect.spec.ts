@@ -11,6 +11,10 @@ import {asapScheduler, of} from 'rxjs';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
 import {SetEntityAction} from '../reducers/set-entity.reducer';
 import {ScopeParams} from '../../../../../../shared/types/scope-params';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../../app.constants';
 
 describe('CreateCreativeBatchActionEffect', () => {
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -32,6 +36,8 @@ describe('CreateCreativeBatchActionEffect', () => {
             id: '1',
             agencyId: '2',
             accountId: null,
+            type: CreativeBatchType.NATIVE,
+            mode: CreativeBatchMode.INSERT,
             name: 'test',
             status: CreativeBatchStatus.IN_PROGRESS,
             tags: [],
@@ -62,6 +68,8 @@ describe('CreateCreativeBatchActionEffect', () => {
             new CreativeBatchStoreState(),
             new CreateCreativeBatchAction({
                 scope: mockedScope,
+                type: CreativeBatchType.NATIVE,
+                mode: CreativeBatchMode.INSERT,
                 requestStateUpdater,
             })
         );
@@ -73,6 +81,8 @@ describe('CreateCreativeBatchActionEffect', () => {
                 name: '',
                 agencyId: mockedScope.agencyId,
                 accountId: mockedScope.accountId,
+                type: CreativeBatchType.NATIVE,
+                mode: CreativeBatchMode.INSERT,
             },
             requestStateUpdater
         );

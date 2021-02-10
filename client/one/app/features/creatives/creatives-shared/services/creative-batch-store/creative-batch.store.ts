@@ -34,6 +34,10 @@ import {
     EditCreativeBatchActionEffect,
 } from './effects/edit-creative-batch.effect';
 import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../app.constants';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -89,10 +93,16 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
         );
     }
 
-    createEntity(scope: ScopeParams) {
+    createEntity(
+        scope: ScopeParams,
+        type: CreativeBatchType,
+        mode: CreativeBatchMode
+    ) {
         this.dispatch(
             new CreateCreativeBatchAction({
                 scope,
+                type,
+                mode,
                 requestStateUpdater: this.requestStateUpdater,
             })
         );

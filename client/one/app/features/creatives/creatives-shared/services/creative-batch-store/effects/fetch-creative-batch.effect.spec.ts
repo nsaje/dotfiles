@@ -10,6 +10,10 @@ import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of} from 'rxjs';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
 import {SetEntityAction} from '../reducers/set-entity.reducer';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../../app.constants';
 
 describe('FetchCreativeBatchActionEffect', () => {
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -30,6 +34,8 @@ describe('FetchCreativeBatchActionEffect', () => {
             id: '1',
             agencyId: '2',
             accountId: null,
+            type: CreativeBatchType.NATIVE,
+            mode: CreativeBatchMode.INSERT,
             name: 'test',
             status: CreativeBatchStatus.IN_PROGRESS,
             tags: [],

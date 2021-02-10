@@ -1,8 +1,11 @@
-import {SetEntityActionReducer} from './set-entity.reducer';
+import {SetEntityAction, SetEntityActionReducer} from './set-entity.reducer';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
 import {CreativeBatch} from '../../../../../../core/creatives/types/creative-batch';
 import {CreativeBatchStatus} from '../../../../../../core/creatives/types/creative-batch-status';
-import {SetEntityAction} from './set-entity.reducer';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../../app.constants';
 
 describe('SetEntityActionReducer', () => {
     let reducer: SetEntityActionReducer;
@@ -10,6 +13,8 @@ describe('SetEntityActionReducer', () => {
         id: '1',
         agencyId: '2',
         accountId: null,
+        type: CreativeBatchType.NATIVE,
+        mode: CreativeBatchMode.INSERT,
         name: 'test',
         status: CreativeBatchStatus.IN_PROGRESS,
         tags: [],

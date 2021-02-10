@@ -7,6 +7,8 @@ export class CreativeBatchStoreState {
         id: null,
         agencyId: null,
         accountId: null,
+        type: null,
+        mode: null,
         name: null,
         status: null,
         tags: [],

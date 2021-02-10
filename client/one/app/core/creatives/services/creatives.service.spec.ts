@@ -4,7 +4,11 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {CreativesEndpoint} from './creatives.endpoint';
 import {CreativesService} from './creatives.service';
 import {Creative} from '../types/creative';
-import {AdType} from '../../../app.constants';
+import {
+    AdType,
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../app.constants';
 import {TrackerEventType, TrackerMethod} from '../creatives.constants';
 import {CreativeBatch} from '../types/creative-batch';
 import {CreativeBatchStatus} from '../types/creative-batch-status';
@@ -73,6 +77,8 @@ describe('CreativesService', () => {
             id: mockedBatchId,
             agencyId: '71',
             accountId: null,
+            type: CreativeBatchType.NATIVE,
+            mode: CreativeBatchMode.INSERT,
             name: 'Test batch',
             status: CreativeBatchStatus.IN_PROGRESS,
             tags: ['test'],
@@ -89,6 +95,8 @@ describe('CreativesService', () => {
             name: 'Test batch',
             agencyId: '71',
             accountId: null,
+            type: CreativeBatchType.NATIVE,
+            mode: CreativeBatchMode.INSERT,
         };
     });
 

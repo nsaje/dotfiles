@@ -14,8 +14,9 @@ import {CreativesSearchParams} from '../../types/creatives-search-params';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
-import {AdType} from '../../../../../app.constants';
+import {AdType, CreativeBatchType} from '../../../../../app.constants';
 import {CREATIVE_TYPES} from '../../creatives-shared.config';
+import {MultiStepMenuOption} from '../../../../../shared/components/multi-step-menu/types/multi-step-menu-option';
 
 @Component({
     selector: 'zem-creatives-actions',
@@ -40,12 +41,38 @@ export class CreativesActionsComponent implements OnInit, OnChanges {
     @Output()
     tagSearch: EventEmitter<string> = new EventEmitter<string>();
     @Output()
-    batchCreate: EventEmitter<void> = new EventEmitter<void>();
+    batchCreate: EventEmitter<CreativeBatchType> = new EventEmitter<
+        CreativeBatchType
+    >();
 
     readonly creativeTypes: {id: AdType; name: string}[] = CREATIVE_TYPES;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private keywordDebouncer$: Subject<string> = new Subject<string>();
+
+    readonly addCreativeOptions: MultiStepMenuOption[] = [
+        {
+            name: 'One by one',
+            description: 'Add ads one by one. You can add multiple ads.',
+            nextOptions: [
+                {
+                    name: 'Native',
+                    handler: () =>
+                        this.batchCreate.emit(CreativeBatchType.NATIVE),
+                },
+                {
+                    name: 'Video',
+                    handler: () =>
+                        this.batchCreate.emit(CreativeBatchType.VIDEO),
+                },
+                {
+                    name: 'Display',
+                    handler: () =>
+                        this.batchCreate.emit(CreativeBatchType.DISPLAY),
+                },
+            ],
+        },
+    ];
 
     ngOnInit() {
         this.keywordDebouncer$

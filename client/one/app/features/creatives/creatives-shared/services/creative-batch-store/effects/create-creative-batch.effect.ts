@@ -8,9 +8,15 @@ import {CreativesService} from '../../../../../../core/creatives/services/creati
 import {CreativeBatch} from '../../../../../../core/creatives/types/creative-batch';
 import {SetEntityAction} from '../reducers/set-entity.reducer';
 import {ScopeParams} from '../../../../../../shared/types/scope-params';
+import {
+    CreativeBatchMode,
+    CreativeBatchType,
+} from '../../../../../../app.constants';
 
 export interface CreateCreativeBatchParams {
     scope: ScopeParams;
+    type: CreativeBatchType;
+    mode: CreativeBatchMode;
     requestStateUpdater: RequestStateUpdater;
 }
 
@@ -38,6 +44,8 @@ export class CreateCreativeBatchActionEffect extends StoreEffect<
                 name: '',
                 accountId: params.scope.accountId,
                 agencyId: params.scope.agencyId,
+                type: params.type,
+                mode: params.mode,
             };
             this.service
                 .createBatch(newBatch, params.requestStateUpdater)
