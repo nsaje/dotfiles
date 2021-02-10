@@ -8,7 +8,10 @@ import {
     EventEmitter,
     Output,
     Input,
+    ContentChild,
+    TemplateRef,
 } from '@angular/core';
+import {StatusIconType} from '../../types/status-icon-type';
 
 @Component({
     selector: 'zem-textarea',
@@ -18,6 +21,8 @@ import {
 export class TextAreaComponent implements OnChanges {
     @Input()
     value: string;
+    @Input()
+    statusIcon: StatusIconType;
     @Input()
     placeholder: string;
     @Input()
@@ -36,6 +41,9 @@ export class TextAreaComponent implements OnChanges {
     inputBlur = new EventEmitter<string>();
     @Output()
     inputFocus = new EventEmitter<null>();
+
+    @ContentChild('loaderTemplate', {read: TemplateRef, static: false})
+    loaderTemplate: TemplateRef<any>;
 
     model: string;
 

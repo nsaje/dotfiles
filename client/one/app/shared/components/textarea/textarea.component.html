@@ -1,6 +1,7 @@
 <textarea
-    class="zem-input-textarea"
-    [ngClass]="{'zem-input-textarea--error': hasError}"
+    class="zem-input-textarea zem-textarea__text zem-scroller"
+    [class.zem-input-textarea--error]="hasError"
+    [class.zem-textarea__text--with-icon]="statusIcon"
     placeholder="{{ placeholder }}"
     maxlength="{{ maxLength }}"
     rows="{{ rows }}"
@@ -11,3 +12,20 @@
     [disabled]="isDisabled"
     [zemFocus]="isFocused"
 ></textarea>
+<span
+    *ngIf="statusIcon === 'valid'"
+    class="zem-textarea__icon zem-textarea__icon--valid icon-check"
+></span>
+<ng-container *ngIf="statusIcon === 'loading'">
+    <ng-container
+        *ngTemplateOutlet="
+            loaderTemplate ? loaderTemplate : defaultLoaderTemplate
+        "
+    ></ng-container>
+</ng-container>
+
+<ng-template #defaultLoaderTemplate>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-textarea__icon zem-textarea__icon--loading"
+    ></zem-loader>
+</ng-template>

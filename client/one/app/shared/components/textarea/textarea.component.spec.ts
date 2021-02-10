@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {SimpleChange} from '@angular/core';
 import {TextAreaComponent} from './textarea.component';
 import {FocusDirective} from '../../directives/focus/focus.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('TextAreaComponent', () => {
     let component: TextAreaComponent;
@@ -10,7 +11,7 @@ describe('TextAreaComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [TextAreaComponent, FocusDirective],
+            declarations: [TextAreaComponent, LoaderComponent, FocusDirective],
             imports: [FormsModule],
         });
     });

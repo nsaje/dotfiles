@@ -1,3 +1,32 @@
+@import 'variables';
+
 .zem-textarea {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.zem-textarea__text {
     display: block;
+}
+
+.zem-textarea__text--with-icon {
+    padding-right: 36px;
+}
+
+.zem-textarea__icon {
+    position: absolute;
+    width: 24px;
+    background-size: 24px;
+    right: 12px;
+}
+
+.zem-textarea__icon--valid {
+    color: #9c0;
+    margin-top: 4px;
+    font-size: 24px;
+}
+
+.zem-textarea__icon--loading {
+    right: 16px;
 }
