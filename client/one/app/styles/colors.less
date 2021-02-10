@@ -1,0 +1,145 @@
+@color--1: #2e222f;
+@color--2: #3e3546;
+@color--3: #625565;
+@color--4: #966c6c;
+@color--5: #ab947a;
+@color--6: #694f62;
+@color--7: #7f708a;
+@color--8: #9babb2;
+@color--9: #c7dcd0;
+@color--10: #ffffff;
+@color--11: #6e2727;
+@color--12: #b33831;
+@color--13: #ea4f36;
+@color--14: #f57d4a;
+@color--15: #ae2334;
+@color--16: #e83b3b;
+@color--17: #fb6b1d;
+@color--18: #f79617;
+@color--19: #f9c22b;
+@color--20: #7a3045;
+@color--21: #9e4539;
+@color--22: #cd683d;
+@color--23: #e6904e;
+@color--24: #fbb954;
+@color--25: #4c3e24;
+@color--26: #676633;
+@color--27: #a2a947;
+@color--28: #d5e04b;
+@color--29: #fbff86;
+@color--30: #165a4c;
+@color--31: #239063;
+@color--32: #1ebc73;
+@color--33: #91db69;
+@color--34: #cddf6c;
+@color--35: #313638;
+@color--36: #374e4a;
+@color--37: #547e64;
+@color--38: #92a984;
+@color--39: #b2ba90;
+@color--40: #0b5e65;
+@color--41: #0b8a8f;
+@color--42: #0eaf9b;
+@color--43: #30e1b9;
+@color--44: #8ff8e2;
+@color--45: #323353;
+@color--46: #484a77;
+@color--47: #4d65b4;
+@color--48: #4d9be6;
+@color--49: #8fd3ff;
+@color--50: #45293f;
+@color--51: #6b3e75;
+@color--52: #905ea9;
+@color--53: #a884f3;
+@color--54: #eaaded;
+@color--55: #753c54;
+@color--56: #a24b6f;
+@color--57: #cf657f;
+@color--58: #ed8099;
+@color--59: #831c5d;
+@color--60: #c32454;
+@color--61: #f04f78;
+@color--62: #f68181;
+@color--63: #fca790;
+@color--64: #fdcbb0;
+
+/************************/
+/* COLORS LOOP */
+/************************/
+
+@colors: @color--1, @color--2, @color--3, @color--4, @color--5, @color--6,
+    @color--7, @color--8, @color--9, @color--10, @color--11, @color--12,
+    @color--13, @color--14, @color--15, @color--16, @color--17, @color--18,
+    @color--19, @color--20, @color--21, @color--22, @color--23, @color--24,
+    @color--25, @color--26, @color--27, @color--28, @color--29, @color--30,
+    @color--31, @color--32, @color--33, @color--34, @color--35, @color--36,
+    @color--37, @color--38, @color--39, @color--40, @color--41, @color--42,
+    @color--43, @color--44, @color--45, @color--46, @color--47, @color--48,
+    @color--49, @color--50, @color--51, @color--52, @color--53, @color--54,
+    @color--55, @color--56, @color--57, @color--58, @color--59, @color--60,
+    @color--61, @color--62, @color--63, @color--64;
+
+.generate-colors(@colors; @index: 1) when (@index =< length(@colors)) {
+    .generate-colors(@colors; (@index + 1));
+
+    @color: extract(@colors, @index);
+
+    .zem-background-color-@{index} {
+        background-color: @color !important;
+        color: contrast(@color) !important;
+    }
+
+    .zem-background-color-@{index}--before {
+        &::before {
+            background-color: @color !important;
+        }
+    }
+
+    .zem-background-color-@{index}--after {
+        &::after {
+            background-color: @color !important;
+        }
+    }
+
+    .zem-background-color-@{index}--hover {
+        transition: all @duration-and-timing-fn--default;
+
+        &:hover {
+            background-color: darken(@color, 10%) !important;
+        }
+    }
+
+    .zem-border-color-@{index} {
+        border-color: @color !important;
+    }
+
+    .zem-border-color-@{index}--before {
+        &::before {
+            border-color: @color !important;
+        }
+    }
+
+    .zem-border-color-@{index}--after {
+        &::after {
+            border-color: @color !important;
+        }
+    }
+
+    .zem-text-color-@{index} {
+        color: @color !important;
+    }
+
+    .zem-text-color-@{index}--before {
+        &::before {
+            color: @color !important;
+        }
+    }
+
+    .zem-text-color-@{index}--after {
+        &::after {
+            color: @color !important;
+        }
+    }
+}
+
+.generate-colors(@colors);

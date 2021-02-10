@@ -19,6 +19,7 @@ import {
     COLUMN_ACTIONS,
     COLUMN_SCOPE,
     COLUMN_SELECT,
+    COLUMN_TAGS,
     COLUMN_TITLE,
     COLUMN_TYPE,
     refreshSelectColumn,
@@ -49,6 +50,7 @@ export class CreativesGridComponent implements OnChanges {
     columnDefs: SmartGridColDef[] = [
         COLUMN_SELECT,
         COLUMN_TITLE,
+        COLUMN_TAGS,
         COLUMN_SCOPE,
         COLUMN_TYPE,
         COLUMN_ACTIONS,

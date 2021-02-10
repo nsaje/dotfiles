@@ -1,0 +1,9 @@
+<div class="zem-creative-tags-cell">
+    <div
+        *ngFor="let coloredTag of coloredTags"
+        class="zem-creative-tags-cell__tag"
+        [ngClass]="'zem-background-color-' + coloredTag.color"
+    >
+        {{ coloredTag.tag }}
+    </div>
+</div>

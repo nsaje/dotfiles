@@ -7,6 +7,7 @@ import {CreativesGridComponent} from './components/creatives-grid/creatives-grid
 import {CreativeAssetCellComponent} from './components/creative-asset-cell/creative-asset-cell.component';
 import {CreativeActionsCellComponent} from './components/creative-actions-cell/creative-actions-cell.component';
 import {CreativeBatchComponent} from './components/creative-batch/creative-batch.component';
+import {CreativeTagsCellComponent} from './components/creative-tags-cell/creative-tags-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     CreativesComponent,
@@ -15,11 +16,16 @@ const EXPORTED_DECLARATIONS = [
     CreativeAssetCellComponent,
     CreativeActionsCellComponent,
     CreativeBatchComponent,
+    CreativeTagsCellComponent,
 ];
 
 @NgModule({
     imports: [SharedModule],
-    entryComponents: [CreativeAssetCellComponent, CreativeActionsCellComponent],
+    entryComponents: [
+        CreativeAssetCellComponent,
+        CreativeActionsCellComponent,
+        CreativeTagsCellComponent,
+    ],
     declarations: EXPORTED_DECLARATIONS,
     exports: EXPORTED_DECLARATIONS,
 })
