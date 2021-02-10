@@ -24,7 +24,7 @@ class TrackerSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             "invalid_schema": "Fallback tracker URL has to be HTTPS",
         },
     )
-    tracker_optional = rest_framework.fields.BooleanField(required=False, default=False)
+    tracker_optional = rest_framework.fields.BooleanField(required=False, default=True)
 
     def validate(self, data):
         data = super().validate(data)

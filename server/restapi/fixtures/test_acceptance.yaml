@@ -27,7 +27,7 @@
       - ['can_see_deals_in_ui', 'zemauth', 'user']
       - ['account_credit_view', 'zemauth', 'user']
       - ["can_see_backend_hacks", "zemauth", "user"]
-
+      - ["can_use_3rdparty_js_trackers", "zemauth", "user"]
 - model: oauth2_provider.application
   pk: 1
   fields: {client_id: ZCSx2WjxHxxV6rKZC3hdb6ejO8GLwcdUtltmpt9J, user: 1, redirect_uris: '',
@@ -506,7 +506,21 @@
         batch: 1302
         archived: False
         url: 'http://testurl.com'
-        tracker_urls: ['http://testurl.com', 'http://testurl2.com']
+        trackers: [
+            {
+                event_type: "viewability",
+                method: "img",
+                url: "https://example.com/t1",
+                tracker_optional: True
+            },
+            {
+                event_type: "impression",
+                method: "js",
+                url: "https://example.com/t2",
+                fallback_url: "https://example.com/fallback",
+                tracker_optional: True
+            }
+        ]
         title: 'Test Article unicode Čžš'
         ad_group: 2040
         created_dt: '2015-02-21T00:00:00'

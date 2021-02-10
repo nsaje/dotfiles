@@ -30,6 +30,8 @@ class Command(Z1Command):
                     "osv": self.generate_constants_section(dash.constants.OperatingSystemVersion),
                     "os": self.generate_constants_section(dash.constants.OperatingSystem),
                     "delivery": self.generate_constants_section(core.features.delivery_status.DeliveryStatus),
+                    "trackerEventType": self.generate_constants_section(dash.constants.TrackerEventType),
+                    "trackerMethod": self.generate_constants_section(dash.constants.TrackerMethod),
                 }
             }
         )

@@ -1845,7 +1845,8 @@ displayUrl   | string                    | the URL displayed with the Ad        
 brandName    | string                    | the brand name of the Content Ad                                                                                              | required | read only
 description  | string                    | the description of the Content Ad                                                                                             | required | read only
 callToAction | string                    | call to action, most commonly `Read more`                                                                                     | required | read only
-trackerUrls  | array[string]             | tracker URLs                                                                                                                  | optional | read only
+trackerUrls (deprecated) | array[string] | tracker URLs                                                                                                                  | optional | read only
+trackers     | array[[trackers](#trackers)]  | 3rd party image pixel or javascript trackers. Maximum of 3 trackers is allowed.                                           | optional | optional
 videoAssetId | string                    | ID of the uploaded [video asset](#video-asset). Required on [video campaigns](#campaign-types).                               | optional | read only
 
 #### Upload Batch
@@ -1856,6 +1857,17 @@ id                 | string                           | id of the upload batch
 status             | [batch status](#batch-status)    | status of the upload batch
 validationStatus   | array[validation status]         | An array of validation statuses for each Content Ad uploaded in this batch. The statuses are in the same order as the ads were uploaded.
 approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains the uploaded Content Ads if/when all the ads pass the validation process. The Content Ads are in the same order as they were uploaded, but with added Zemanta IDs.
+
+
+<a name="trackers"></a>
+#### Content Ad Trackers
+Property         | Type                                     | Description                                                            | Create/Update |
+-----------------|------------------------------------------|------------------------------------------------------------------------|---------------|
+eventType        | [trackerEventType](#tracker-event-type)  | Tracker event type. VIEWABILITY type is available only with IMG method | required
+method           | [trackerMethod](#tracker-method)         | Tracker method                                                         | required
+url              | string                                   | URL of the tracker                                                     | required 
+fallbackUrl      | string                                   | URL of a fallback image pixel tracker (only for JS method)             | optional
+trackerOptional  | bool                                     | Allow Zemanta to purchase traffic where 3rd party tracking is not supported | optional
 
 
 ### Create a new content ad upload batch [POST /rest/v1/contentads/batch/{?adGroupId}]
@@ -1876,7 +1888,21 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                "trackers": [
+                        {
+                            "eventType": "VIEWABILITY",
+                            "method": "IMG",
+                            "url": "https://example.com/t1",
+                            "trackerOptional": true
+                        },
+                        {
+                            "eventType": "IMPRESSION",
+                            "method": "JS",
+                            "url": "https://example.com/t2",
+                            "fallbackUrl": "https://example.com/fallback",
+                            "trackerOptional": true
+                        }
+                ]
             }
         ]
 
@@ -1918,7 +1944,21 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                         "brandName": "My Company",
                         "description": "My description",
                         "callToAction": "Read more",
-                        "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                        "trackers": [
+                            {
+                                "eventType": "VIEWABILITY",
+                                "method": "IMG",
+                                "url": "https://example.com/t1",
+                                "trackerOptional": true
+                            },
+                            {
+                                "eventType": "IMPRESSION",
+                                "method": "JS",
+                                "url": "https://example.com/t2",
+                                "fallbackUrl": "https://example.com/fallback",
+                                "trackerOptional": true
+                            }
+                        ]
                     }
                 ]
             }
@@ -1950,7 +1990,21 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                     "brandName": "My Company",
                     "description": "My description",
                     "callToAction": "Read more",
-                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"],
+                    "trackers": [
+                        {
+                            "eventType": "VIEWABILITY",
+                            "method": "IMG",
+                            "url": "https://example.com/t1",
+                            "trackerOptional": true
+                        },
+                        {
+                            "eventType": "IMPRESSION",
+                            "method": "JS",
+                            "url": "https://example.com/t2",
+                            "fallbackUrl": "https://example.com/fallback",
+                            "trackerOptional": true
+                        }
+                    ],
                     "approvalStatus": [{"slug": "source_slug", "status": "REJECTED", "reason": ""}]
                 }
             ]
@@ -1980,7 +2034,21 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"],
+                "trackers": [
+                    {
+                        "eventType": "VIEWABILITY",
+                        "method": "IMG",
+                        "url": "https://example.com/t1",
+                        "trackerOptional": true
+                    },
+                    {
+                        "eventType": "IMPRESSION",
+                        "method": "JS",
+                        "url": "https://example.com/t2",
+                        "fallbackUrl": "https://example.com/fallback",
+                        "trackerOptional": true
+                    }
+                ],
                 "approvalStatus": [{"slug": "source_slug", "status": "REJECTED", "reason": ""}]
             }
         }
@@ -1988,7 +2056,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 
 ### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
 
-Note: At the moment only the `state`, `label` and `trackerUrls` fields can be modified through the API.
+Note: At the moment only the `state`, `label` and `trackers` fields can be modified through the API.
 As an alternative to editing other fields, please pause and/or archive the existing ads you want to change
 and create new ones via the API.
 
@@ -2018,7 +2086,21 @@ and create new ones via the API.
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                "trackers": [
+                    {
+                        "eventType": "VIEWABILITY",
+                        "method": "IMG",
+                        "url": "https://example.com/t1",
+                        "trackerOptional": true
+                    },
+                    {
+                        "eventType": "IMPRESSION",
+                        "method": "JS",
+                        "url": "https://example.com/t2",
+                        "fallbackUrl": "https://example.com/fallback",
+                        "trackerOptional": true
+                    }
+                ]
             }
         }
 
@@ -3374,6 +3456,18 @@ Include traffic that meets the following conditions:
 - `RIGHT`
 - `TOP`
 - `BOTTOM`
+
+<a name="tracker-event-type"></a>
+## Tracker event type
+{% for key, value in constants.trackerEventType.items %}
+- `{{ key }}` - {{ value }}
+{% endfor %}
+
+<a name="tracker-method"></a>
+## Tracker method
+{% for key, value in constants.trackerMethod.items %}
+- `{{ key }}` - {{ value }}
+{% endfor %}
 
 <a name="batch-status"></a>
 ## Content ad upload batch status
