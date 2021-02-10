@@ -1,5 +1,7 @@
 {% autoescape off %}
 
+SET statement_timeout TO 600000;  -- 10 min
+
 INSERT INTO mv_adgroup_placement (
     SELECT
         a.date,
@@ -193,5 +195,7 @@ INSERT INTO mv_adgroup_placement (
         AND c.account_id=%(account_id)s
         {% endif %}
 );
+
+SET statement_timeout TO 0;
 
 {% endautoescape %}
