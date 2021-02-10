@@ -5,6 +5,7 @@ import {SelectInputComponent} from './select-input.component';
 import {FocusDirective} from '../../directives/focus/focus.directive';
 import {SimpleChange} from '@angular/core';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('SelectInputComponent', () => {
     let component: SelectInputComponent;
@@ -16,6 +17,7 @@ describe('SelectInputComponent', () => {
                 FocusDirective,
                 TextHighlightDirective,
                 SelectInputComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule],
         });

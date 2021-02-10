@@ -20,7 +20,8 @@ import * as clone from 'clone';
 import {NgSelectComponent} from '@ng-select/ng-select';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
-import {isEmpty} from '../../helpers/array.helpers';
+import {StatusIconType} from '../../types/status-icon-type';
+import {isDefined} from '../../helpers/common.helpers';
 
 @Component({
     selector: 'zem-select-input',
@@ -30,6 +31,8 @@ import {isEmpty} from '../../helpers/array.helpers';
 export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     value: string | string[];
+    @Input()
+    statusIcon: StatusIconType;
     @Input()
     bindLabel: string;
     @Input()
@@ -82,6 +85,9 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     search = new EventEmitter<string>();
     @Output()
     open = new EventEmitter<void>();
+
+    @ContentChild('loaderTemplate', {read: TemplateRef, static: false})
+    loaderTemplate: TemplateRef<any>;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private searchDebouncer$: Subject<string> = new Subject<string>();

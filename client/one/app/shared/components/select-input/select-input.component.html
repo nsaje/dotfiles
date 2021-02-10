@@ -1,10 +1,9 @@
 <ng-select
     #zemSelect
-    class="zem-ng-select"
-    [ngClass]="{
-        'zem-ng-select--error': hasError,
-        'zem-ng-select--warning': isWarning
-    }"
+    class="zem-ng-select zem-select-input__dropdown"
+    [class.zem-ng-select--error]="hasError"
+    [class.zem-ng-select--warning]="isWarning"
+    [class.zem-select-input__dropdown--with-icon]="statusIcon"
     placeholder="{{ placeholder }}"
     bindLabel="{{ bindLabel }}"
     bindValue="{{ bindValue }}"
@@ -16,7 +15,6 @@
     [groupBy]="groupByValue"
     [clearable]="isClearable"
     [closeOnSelect]="closeOnSelect"
-    [loading]="isLoading"
     [searchFn]="searchFn"
     [addTag]="addCustomItemFn"
     addTagText="{{ addCustomItemText }}"
@@ -53,4 +51,22 @@
 </ng-template>
 <ng-template #defaultOptionTemplate let-item="item" let-search="search">
     <span [zemTextHighlight]="search">{{ item[bindLabel] }}</span>
+</ng-template>
+
+<span
+    *ngIf="statusIcon === 'valid'"
+    class="zem-select-input__icon zem-select-input__icon--valid icon-check"
+></span>
+<ng-container *ngIf="statusIcon === 'loading' || isLoading">
+    <ng-container
+        *ngTemplateOutlet="
+            loaderTemplate ? loaderTemplate : defaultLoaderTemplate
+        "
+    ></ng-container>
+</ng-container>
+
+<ng-template #defaultLoaderTemplate>
+    <zem-loader
+        class="zem-loader zem-loader--small zem-select-input__icon zem-select-input__icon--loading"
+    ></zem-loader>
 </ng-template>

@@ -1,1 +1,1 @@
-export type StatusIconType = 'validating' | 'valid';
+export type StatusIconType = 'loading' | 'valid';

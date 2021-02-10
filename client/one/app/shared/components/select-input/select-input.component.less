@@ -1,5 +1,37 @@
 @import 'variables';
 
+.zem-select-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.zem-select-input__dropdown {
+    flex-grow: 1;
+}
+
+.zem-select-input__dropdown--with-icon .ng-arrow-wrapper {
+    margin-left: 30px;
+}
+
+.zem-select-input__icon {
+    position: absolute;
+    width: 24px;
+    background-size: 24px;
+    right: 26px;
+    z-index: 1001;
+}
+
+.zem-select-input__icon--valid {
+    color: #9c0;
+    margin-top: 4px;
+    font-size: 24px;
+}
+
+.zem-select-input__icon--loading {
+    right: 26px;
+}
+
 /////////////////////////
 // ng-select overrides //
 /////////////////////////

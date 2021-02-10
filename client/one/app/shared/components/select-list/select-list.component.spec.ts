@@ -6,6 +6,7 @@ import {NgSelectModule} from '@ng-select/ng-select';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 import {SimpleChange} from '@angular/core';
 import {group} from '@angular/animations';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('SelectListComponent', () => {
     let component: SelectListComponent;
@@ -17,6 +18,7 @@ describe('SelectListComponent', () => {
                 SelectInputComponent,
                 TextHighlightDirective,
                 SelectListComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule],
         });

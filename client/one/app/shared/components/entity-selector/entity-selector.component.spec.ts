@@ -5,6 +5,7 @@ import {SelectListComponent} from '../select-list/select-list.component';
 import {SelectInputComponent} from '../select-input/select-input.component';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 import {NgSelectModule} from '@ng-select/ng-select';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('EntitySelectorComponent', () => {
     let component: EntitySelectorComponent;
@@ -17,6 +18,7 @@ describe('EntitySelectorComponent', () => {
                 SelectListComponent,
                 SelectInputComponent,
                 TextHighlightDirective,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule],
         });

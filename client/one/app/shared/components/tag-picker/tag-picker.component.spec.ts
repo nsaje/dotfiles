@@ -6,6 +6,7 @@ import {FocusDirective} from '../../directives/focus/focus.directive';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {OnChanges, SimpleChange, SimpleChanges} from '@angular/core';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('TagPickerComponent', () => {
     let component: TagPickerComponent;
@@ -35,6 +36,7 @@ describe('TagPickerComponent', () => {
                 TextHighlightDirective,
                 SelectInputComponent,
                 TagPickerComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule],
         });

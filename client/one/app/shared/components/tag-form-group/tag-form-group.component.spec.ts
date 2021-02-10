@@ -8,6 +8,7 @@ import {SelectInputComponent} from '../select-input/select-input.component';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {HelpPopoverComponent} from '../help-popover/help-popover.component';
 import {PopoverDirective} from '../popover/popover.directive';
+import {LoaderComponent} from '../loader/loader.component';
 
 describe('TagFormGroupComponent', () => {
     let component: TagFormGroupComponent;
@@ -23,6 +24,7 @@ describe('TagFormGroupComponent', () => {
                 TagFormGroupComponent,
                 PopoverDirective,
                 HelpPopoverComponent,
+                LoaderComponent,
             ],
             imports: [FormsModule, NgSelectModule],
         });
