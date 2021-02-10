@@ -8,6 +8,7 @@ import core.features.bcm
 import core.models
 import dash.constants
 import utils.test_helper
+from utils import dates_helper
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -208,30 +209,30 @@ class CreditViewSetTest(RESTAPITestCase):
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(5),
-            end_date=datetime.date.today() + datetime.timedelta(30),
+            start_date=dates_helper.local_today() - datetime.timedelta(5),
+            end_date=dates_helper.local_today() + datetime.timedelta(30),
         )
         ending_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(5),
-            end_date=datetime.date.today(),
+            start_date=dates_helper.local_today() - datetime.timedelta(5),
+            end_date=dates_helper.local_today(),
         )
         future_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() + datetime.timedelta(5),
-            end_date=datetime.date.today() + datetime.timedelta(30),
+            start_date=dates_helper.local_today() + datetime.timedelta(5),
+            end_date=dates_helper.local_today() + datetime.timedelta(30),
         )
         # past credits
         magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(30),
-            end_date=datetime.date.today() - datetime.timedelta(1),
+            start_date=dates_helper.local_today() - datetime.timedelta(30),
+            end_date=dates_helper.local_today() - datetime.timedelta(1),
         )
 
         r = self.client.get(
@@ -267,30 +268,30 @@ class CreditViewSetTest(RESTAPITestCase):
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(5),
-            end_date=datetime.date.today() + datetime.timedelta(30),
+            start_date=dates_helper.local_today() - datetime.timedelta(5),
+            end_date=dates_helper.local_today() + datetime.timedelta(30),
         )
         magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(5),
-            end_date=datetime.date.today(),
+            start_date=dates_helper.local_today() - datetime.timedelta(5),
+            end_date=dates_helper.local_today(),
         )
         magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() + datetime.timedelta(5),
-            end_date=datetime.date.today() + datetime.timedelta(30),
+            start_date=dates_helper.local_today() + datetime.timedelta(5),
+            end_date=dates_helper.local_today() + datetime.timedelta(30),
         )
         # past credits
         past_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
             account=None,
-            start_date=datetime.date.today() - datetime.timedelta(30),
-            end_date=datetime.date.today() - datetime.timedelta(1),
+            start_date=dates_helper.local_today() - datetime.timedelta(30),
+            end_date=dates_helper.local_today() - datetime.timedelta(1),
         )
 
         r = self.client.get(
