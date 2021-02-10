@@ -1,0 +1,76 @@
+@import 'variables';
+
+.zem-multi-step-menu {
+}
+
+.zem-multi-step-menu.zem-dropdown__content {
+    padding: 0px;
+}
+
+.zem-multi-step-menu__list {
+    margin: 0;
+    padding: @spacing--xsmall;
+    list-style: none;
+}
+
+.zem-multi-step-menu__title {
+    font-weight: @font-weight--strong;
+    margin: -@spacing--xsmall -@spacing--xsmall @spacing--xsmall -@spacing--xsmall;
+    padding: @spacing--small 10px + @spacing--xsmall;
+    border-bottom: 1px solid fade(@color--secondary, 10%);
+}
+
+.zem-multi-step-menu__item {
+    position: relative;
+    padding: 7px 10px; // TODO: define all multi-step item + buttons paddings paddings with variables
+    font-size: @font-size--default;
+    transition: background-color @duration-and-timing-fn--default;
+    border-radius: @border-radius--default;
+}
+
+.zem-multi-step-menu__item:hover {
+    cursor: pointer;
+    background-color: fade(@color--secondary, 10%);
+}
+
+.zem-multi-step-menu__item-description {
+    font-size: @font-size--small;
+    color: @color--neutral;
+    margin-top: @spacing--xxsmall;
+}
+
+.zem-multi-step-menu__item--next-step::before,
+.zem-multi-step-menu__item--previous-step::before {
+    position: absolute;
+    content: ' ';
+    background: url('@{images-folder}/arrow-sec.svg') center center no-repeat;
+    width: 8px;
+    height: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    right: @spacing--xsmall;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-multi-step-menu__item--next-step:hover::before,
+.zem-multi-step-menu__item--previous-step:hover::before {
+    opacity: 1;
+}
+
+.zem-multi-step-menu__item--next-step {
+    padding-right: 16px + @spacing--xsmall;
+}
+
+.zem-multi-step-menu__item--previous-step {
+    color: @color--neutral;
+    margin: @spacing--xsmall -@spacing--xsmall -@spacing--xsmall -@spacing--xsmall;
+    padding: @spacing--small 10px + @spacing--xsmall @spacing--small 10px + 14px; // TODO: redefine with variables
+    border-top: 1px solid fade(@color--secondary, 10%);
+    border-radius: 0;
+}
+
+.zem-multi-step-menu__item--previous-step::before {
+    left: @spacing--xsmall + @spacing--xsmall;
+    transform: translateY(-50%) rotate(180deg);
+}

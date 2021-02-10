@@ -1,0 +1,34 @@
+<zem-multi-step class="zem-multi-step" [currentStep]="currentStep">
+    <ng-container *ngFor="let step of steps">
+        <div *zemMultiStepStep="step.stepId">
+            <ul class="zem-multi-step-menu__list">
+                <li *ngIf="step.name" class="zem-multi-step-menu__title">
+                    {{ step.name }}
+                </li>
+                <li
+                    *ngFor="let item of step.items"
+                    class="zem-multi-step-menu__item"
+                    [class.zem-multi-step-menu__item--next-step]="
+                        item.hasNextStep
+                    "
+                    (click)="item.handler()"
+                >
+                    {{ item.name }}
+                    <div
+                        *ngIf="item.description"
+                        class="zem-multi-step-menu__item-description"
+                    >
+                        {{ item.description }}
+                    </div>
+                </li>
+                <li
+                    *ngIf="step.parentStepId"
+                    class="zem-multi-step-menu__item zem-multi-step-menu__item--previous-step"
+                    (click)="currentStep = step.parentStepId"
+                >
+                    Back
+                </li>
+            </ul>
+        </div>
+    </ng-container>
+</zem-multi-step>

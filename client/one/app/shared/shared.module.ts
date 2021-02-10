@@ -92,6 +92,7 @@ import {ButtonComponent} from './components/button/button.component';
 import {TagFormGroupComponent} from './components/tag-form-group/tag-form-group.component';
 import {TabsComponent} from './components/tabs/tabs.component';
 import {TabDirective} from './components/tabs/tab.directive';
+import {MultiStepMenuComponent} from './components/multi-step-menu/multi-step-menu.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -176,6 +177,7 @@ const EXPORTED_DECLARATIONS = [
     ButtonComponent,
     TabsComponent,
     TabDirective,
+    MultiStepMenuComponent,
 ];
 
 @NgModule({
