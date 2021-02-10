@@ -10,6 +10,7 @@ from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
 
+from . import helpers
 from . import serializers
 
 
@@ -113,7 +114,12 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
 
         with transaction.atomic():
             batch = core.features.creatives.CreativeBatch.objects.create(
-                request, data.get("name"), agency=data.get("agency"), account=data.get("account")
+                request,
+                data.get("name", helpers.generate_batch_name()),
+                agency=data.get("agency"),
+                account=data.get("account"),
+                type=data.get("type"),
+                ad_type=data.get("ad_type"),
             )
             batch.update(request, **data)
             batch.set_creative_tags(request, data.get("tags"))

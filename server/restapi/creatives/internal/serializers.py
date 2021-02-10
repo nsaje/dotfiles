@@ -60,10 +60,14 @@ class CreativeBatchSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     agency_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
     account_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
 
-    name = rest_framework.serializers.CharField(max_length=1024, allow_null=False, allow_blank=False, required=True)
+    name = rest_framework.serializers.CharField(max_length=1024, allow_null=True, allow_blank=True, required=False)
     status = restapi.serializers.fields.DashConstantField(
         dash.constants.CreativeBatchStatus, default=dash.constants.CreativeBatchStatus.IN_PROGRESS, read_only=True
     )
+    type = restapi.serializers.fields.DashConstantField(
+        dash.constants.CreativeBatchType, default=dash.constants.CreativeBatchType.INSERT
+    )
+    ad_type = restapi.serializers.fields.DashConstantField(dash.constants.AdType, default=dash.constants.AdType.CONTENT)
 
     tags = rest_framework.serializers.ListSerializer(child=rest_framework.serializers.CharField(), default=[])
     image_crop = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)

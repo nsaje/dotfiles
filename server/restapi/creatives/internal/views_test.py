@@ -1,3 +1,4 @@
+import mock
 from django.urls import reverse
 
 import core.features.creatives
@@ -239,17 +240,6 @@ class CreativeBatchViewSetTestCase(RESTAPITestCase):
         r = self.client.post(reverse("restapi.creatives.internal:creative_batch_validate"))
         self.assertResponseValid(r, data_type=type(None))
 
-    def test_validate(self):
-        data = {"name": "test_batch", "agencyId": self.agency.id}
-        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_validate"), data=data, format="json")
-        self.assertResponseValid(r, data_type=type(None))
-
-    def test_validate_error(self):
-        data = {"name": None, "agencyId": self.agency.id}
-        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_validate"), data=data, format="json")
-        r = self.assertResponseError(r, "ValidationError")
-        self.assertIn("This field may not be null.", r["details"]["name"][0])
-
     def test_post_for_agency(self):
         data = {"name": "test_batch", "agencyId": self.agency.id}
 
@@ -277,6 +267,38 @@ class CreativeBatchViewSetTestCase(RESTAPITestCase):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
         self.assertEqual(resp_json["data"]["name"], "test_batch")
+
+    @mock.patch("restapi.creatives.internal.helpers.generate_batch_name")
+    def test_post_without_name(self, mock_generate_batch_name):
+        mock_generate_batch_name.return_value = "02/03/2021 10:25 AM"
+
+        data = {"agencyId": self.agency.id}
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_list"), data=data, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual(resp_json["data"]["name"], "02/03/2021 10:25 AM")
+
+    def test_post_type(self):
+        data = {
+            "type": dash.constants.CreativeBatchType.get_name(dash.constants.CreativeBatchType.EDIT),
+            "agencyId": self.agency.id,
+        }
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_list"), data=data, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual(
+            resp_json["data"]["type"], dash.constants.CreativeBatchType.get_name(dash.constants.CreativeBatchType.EDIT)
+        )
+
+    def test_post_ad_type(self):
+        data = {"adType": dash.constants.AdType.get_name(dash.constants.AdType.VIDEO), "agencyId": self.agency.id}
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_list"), data=data, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual(resp_json["data"]["adType"], dash.constants.AdType.get_name(dash.constants.AdType.VIDEO))
 
     def test_post_tags(self):
         tags = ["tag_one", "tag_two", "tag_three"]
