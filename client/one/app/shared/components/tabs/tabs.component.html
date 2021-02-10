@@ -1,0 +1,22 @@
+<div class="zem-tabs__buttons">
+    <div
+        *ngFor="let tab of tabs; let i = index"
+        class="zem-tabs__button"
+        [class.zem-tabs__button--active]="i === currentTabIndex"
+        (click)="currentTabIndex = i"
+    >
+        {{ tab.tabName }}
+    </div>
+</div>
+
+<zem-multi-step
+    class="zem-multi-step"
+    [currentStep]="currentTabIndex"
+    [animated]="animated"
+>
+    <ng-container *ngFor="let tab of tabs; let i = index">
+        <div *zemMultiStepStep="i">
+            <ng-template [ngTemplateOutlet]="tab.content"></ng-template>
+        </div>
+    </ng-container>
+</zem-multi-step>

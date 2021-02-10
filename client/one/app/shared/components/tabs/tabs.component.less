@@ -1,0 +1,52 @@
+@import 'variables';
+
+.zem-tabs {
+    display: block;
+}
+
+@zem-tabs-line-height: 3px;
+
+.zem-tabs__buttons {
+    display: flex;
+    border-bottom: 1px solid @color--lighter-neutral;
+}
+
+.zem-tabs__button {
+    position: relative;
+    padding: @spacing--small @spacing--default;
+    cursor: pointer;
+    transition: color @duration-and-timing-fn--default;
+
+    &:not(:last-child) {
+        margin-right: @spacing--between-buttons;
+    }
+
+    &::before {
+        content: ' ';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        height: @zem-tabs-line-height;
+        width: 0px;
+        transition: width @duration-and-timing-fn--default;
+        background-color: @color--lighter-neutral;
+    }
+
+    &:hover {
+        color: @color--secondary;
+
+        &::before {
+            width: 100%;
+        }
+    }
+}
+
+.zem-tabs__button--active {
+    color: @color--secondary;
+    font-weight: @font-weight--strong;
+
+    &::before {
+        width: 100%;
+        background-color: @color--secondary;
+    }
+}

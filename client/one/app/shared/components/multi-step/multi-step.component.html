@@ -4,6 +4,7 @@
     [class.zem-multi-step__step--previous]="step.stepId < currentStep"
     [class.zem-multi-step__step--current]="step.stepId === currentStep"
     [class.zem-multi-step__step--next]="step.stepId > currentStep"
+    [class.zem-multi-step__step--animated]="animated"
 >
     <ng-template [ngTemplateOutlet]="step.content"></ng-template>
 </div>

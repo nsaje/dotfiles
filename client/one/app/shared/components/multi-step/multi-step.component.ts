@@ -20,4 +20,6 @@ export class MultiStepComponent {
 
     @Input()
     currentStep: number = 0;
+    @Input()
+    animated: boolean = true;
 }

@@ -10,9 +10,12 @@
 .zem-multi-step__step {
     position: absolute;
     width: 100%;
-    transition: left @duration-and-timing-fn--default;
     left: 100%;
     top: 0;
+}
+
+.zem-multi-step__step--animated {
+    transition: left @duration-and-timing-fn--default;
 }
 
 .zem-multi-step__step--current {
