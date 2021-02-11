@@ -8,10 +8,4 @@ export const SIDEBAR_ROUTER_PATH_NAMES: RoutePathName[][] = [
     [RoutePathName.APP_BASE, RoutePathName.RULES],
     [RoutePathName.APP_BASE, RoutePathName.RULES, RoutePathName.RULES_HISTORY],
     [RoutePathName.APP_BASE, RoutePathName.CREATIVES],
-    [
-        RoutePathName.APP_BASE,
-        RoutePathName.CREATIVES,
-        RoutePathName.CREATIVES_BATCH,
-        RoutePathName.ANY,
-    ],
 ];

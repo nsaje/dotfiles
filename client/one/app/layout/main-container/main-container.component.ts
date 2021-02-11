@@ -12,7 +12,8 @@ import {Router, NavigationEnd, PRIMARY_OUTLET} from '@angular/router';
 import {takeUntil, filter} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {RoutePathName} from '../../app.constants';
-import {isDefined} from '../../shared/helpers/common.helpers';
+import * as commonHelpers from '../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../shared/helpers/array.helpers';
 
 @Component({
     selector: 'zem-main-container',
@@ -32,12 +33,22 @@ export class MainContainerComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.updateSidebar();
+        this.routePathNames = this.getRoutePathNames(
+            this.router,
+            SIDEBAR_ROUTER_PATH_NAMES
+        );
+        this.isSidebarVisible = commonHelpers.isDefined(this.routePathNames);
         this.router.events
             .pipe(takeUntil(this.ngUnsubscribe$))
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => {
-                this.updateSidebar();
+                this.routePathNames = this.getRoutePathNames(
+                    this.router,
+                    SIDEBAR_ROUTER_PATH_NAMES
+                );
+                this.isSidebarVisible = commonHelpers.isDefined(
+                    this.routePathNames
+                );
                 this.changeDetectorRef.markForCheck();
             });
     }
@@ -47,38 +58,17 @@ export class MainContainerComponent implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    private updateSidebar() {
-        this.routePathNames = this.getCurrentRoutePathNames(
-            this.router,
-            SIDEBAR_ROUTER_PATH_NAMES
-        );
-        this.isSidebarVisible = isDefined(this.routePathNames);
-    }
-
-    private getCurrentRoutePathNames(
+    private getRoutePathNames(
         router: Router,
-        allPathNames: RoutePathName[][]
+        pathNames: RoutePathName[][]
     ): RoutePathName[] {
-        const currentPath: string[] = router
+        const currentPath = router
             .parseUrl(router.url)
             .root.children[PRIMARY_OUTLET].segments.map(
                 segment => segment.path
             );
-        return allPathNames.find(path =>
-            this.urlMatchesPath(currentPath, path)
-        );
-    }
-
-    private urlMatchesPath(
-        urlParts: string[],
-        pathParts: RoutePathName[]
-    ): boolean {
-        urlParts.forEach((urlPart, index) => {
-            const pathPart: RoutePathName = pathParts[index];
-            if (pathPart !== RoutePathName.ANY && pathPart !== urlPart) {
-                return false;
-            }
-        });
-        return true;
+        return (this.routePathNames = pathNames.find(path =>
+            arrayHelpers.isEqual(currentPath, path)
+        ));
     }
 }

@@ -771,7 +771,6 @@ export enum AccountType {
 }
 
 export enum RoutePathName {
-    ANY = '*',
     APP_BASE = 'v2',
     ANALYTICS = 'analytics',
     NEW_ENTITY_ANALYTICS_MOCK = 'create',
