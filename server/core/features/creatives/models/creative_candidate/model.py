@@ -1,6 +1,5 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.utils.functional import cached_property
 
 import core.models.tags.creative.shortcuts
 import dash.constants
@@ -23,6 +22,7 @@ class CreativeCandidate(
     objects = manager.CreativeCandidateManager.from_queryset(queryset.CreativeCandidateQuerySet)()
 
     _update_fields = [
+        "type",
         "url",
         "title",
         "display_url",
@@ -54,6 +54,8 @@ class CreativeCandidate(
     ]
 
     batch = models.ForeignKey("CreativeBatch", on_delete=models.PROTECT)
+
+    type = models.IntegerField(default=dash.constants.AdType.CONTENT, choices=dash.constants.AdType.get_choices())
 
     url = models.TextField(null=True, blank=True, default="")
     title = models.TextField(null=True, blank=True, default="")
@@ -99,10 +101,6 @@ class CreativeCandidate(
     original_creative = models.ForeignKey("Creative", null=True, blank=True, on_delete=models.CASCADE)
 
     additional_data = JSONField(null=True, blank=True)
-
-    @cached_property
-    def type(self):
-        return self.batch.ad_type
 
     def get_agency(self):
         return self.batch.agency

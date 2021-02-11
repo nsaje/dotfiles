@@ -9,6 +9,7 @@ import core.models.tags.creative.shortcuts
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from . import model
 
 TEST_CASES = [
@@ -77,10 +78,36 @@ class CreativeCandidateInstanceTestCase(core.models.tags.creative.shortcuts.Crea
         item = magic_mixer.blend(model.CreativeCandidate, **{field_name: field_value, "batch": self.batch})
         self.assertEqual(getattr(item, field_name), field_value)
 
-        item.update(**{field_name: field_new_value})
+        item.update(None, **{field_name: field_new_value})
         item.refresh_from_db()
 
         self.assertEqual(getattr(item, field_name), field_new_value)
+
+    def test_update_type(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.DISPLAY
+        )
+        item = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.IMAGE
+        )
+        self.assertEqual(item.type, dash.constants.AdType.IMAGE)
+
+        item.update(None, type=dash.constants.AdType.AD_TAG)
+        item.refresh_from_db()
+
+        self.assertEqual(item.type, dash.constants.AdType.AD_TAG)
+
+    def test_validate_type(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+        )
+        item = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.VIDEO
+        )
+        self.assertEqual(item.type, dash.constants.AdType.VIDEO)
+
+        with self.assertRaises(exceptions.AdTypeInvalid):
+            item.update(None, type=dash.constants.AdType.AD_TAG)
 
     def _get_model_with_agency_scope(self, agency: core.models.Agency):
         batch = magic_mixer.blend(core.features.creatives.models.CreativeBatch, agency=agency, account=None)

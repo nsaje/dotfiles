@@ -32,17 +32,19 @@ class CreativeBatchManagerTestCase(TestCase):
         self.assertIsNone(item.agency)
         self.assertEqual(item.account, self.account)
 
-    def test_create_with_type(self):
+    def test_create_with_mode(self):
         item = model.CreativeBatch.objects.create(
-            None, "test", agency=self.agency, type=dash.constants.CreativeBatchType.EDIT
+            None, "test", agency=self.agency, mode=dash.constants.CreativeBatchMode.EDIT
         )
         self.assertIsNotNone(item.id)
-        self.assertEqual(item.type, dash.constants.CreativeBatchType.EDIT)
+        self.assertEqual(item.mode, dash.constants.CreativeBatchMode.EDIT)
 
-    def test_create_with_ad_type(self):
-        item = model.CreativeBatch.objects.create(None, "test", agency=self.agency, ad_type=dash.constants.AdType.VIDEO)
+    def test_create_with_type(self):
+        item = model.CreativeBatch.objects.create(
+            None, "test", agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+        )
         self.assertIsNotNone(item.id)
-        self.assertEqual(item.ad_type, dash.constants.AdType.VIDEO)
+        self.assertEqual(item.type, dash.constants.CreativeBatchType.VIDEO)
 
     def test_validate_agency_account(self):
         with self.assertRaises(ValidationError):

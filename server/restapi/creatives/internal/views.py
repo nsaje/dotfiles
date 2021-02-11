@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Q
 
 import core.features.creatives
+import dash.constants
 import utils.exc
 import zemauth.access
 from restapi.common.pagination import StandardPagination
@@ -118,8 +119,8 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
                 data.get("name", helpers.generate_batch_name()),
                 agency=data.get("agency"),
                 account=data.get("account"),
+                mode=data.get("mode"),
                 type=data.get("type"),
-                ad_type=data.get("ad_type"),
             )
             batch.update(request, **data)
             batch.set_creative_tags(request, data.get("tags"))
@@ -139,3 +140,75 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
             batch.set_creative_tags(request, tags)
 
         return self.response_ok(self.serializer(batch, context={"request": request}).data)
+
+
+# TODO (msuber): add delete api
+class CreativeCandidateViewSet(RESTAPIBaseViewSet):
+    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
+    serializer = serializers.CreativeCandidateSerializer
+
+    def list(self, request, batch_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.READ, batch_id)
+
+        candidates_qs = core.features.creatives.CreativeCandidate.objects.filter_by_batch(batch)
+
+        paginator = StandardPagination()
+        candidates_qs_paginated = paginator.paginate_queryset(candidates_qs, request)
+        return paginator.get_paginated_response(
+            self.serializer(candidates_qs_paginated, many=True, context={"request": request}).data
+        )
+
+    def get(self, request, batch_id, candidate_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.READ, batch_id)
+        candidate = self._get_candidate(batch, candidate_id)
+
+        return self.response_ok(self.serializer(candidate, context={"request": request}).data)
+
+    # TODO (msuber): add support for mode (edit, clone) and bulk create
+    def create(self, request, batch_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.WRITE, batch_id)
+
+        with transaction.atomic():
+            candidate = core.features.creatives.CreativeCandidate.objects.create(batch)
+
+        return self.response_ok(self.serializer(candidate, context={"request": request}).data, status=201)
+
+    def put(self, request, batch_id, candidate_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.WRITE, batch_id)
+
+        ad_type_serializer = serializers.AdTypeSerializer(data=request.data)
+        ad_type_serializer.is_valid(raise_exception=True)
+        ad_type = ad_type_serializer.validated_data.get("type")
+
+        serializer_class = self._get_serializer_class(ad_type)
+
+        serializer = serializer_class(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        candidate = self._get_candidate(batch, candidate_id)
+        candidate.update(request, **data)
+
+        tags = data.get("tags")
+        if tags is not None:
+            candidate.set_creative_tags(request, tags)
+
+        return self.response_ok(self.serializer(candidate, context={"request": request}).data)
+
+    @staticmethod
+    def _get_candidate(batch, candidate_id):
+        try:
+            candidate = core.features.creatives.CreativeCandidate.objects.filter_by_batch(batch).get(pk=candidate_id)
+        except core.features.creatives.CreativeCandidate.DoesNotExist:
+            raise utils.exc.MissingDataError("Candidate does not exist!")
+        return candidate
+
+    @staticmethod
+    def _get_serializer_class(ad_type):
+        if ad_type == dash.constants.AdType.VIDEO:
+            return serializers.VideoCreativeCandidateSerializer
+        if ad_type == dash.constants.AdType.IMAGE:
+            return serializers.ImageCreativeCandidateSerializer
+        if ad_type == dash.constants.AdType.AD_TAG:
+            return serializers.AdTagCreativeCandidateSerializer
+        return serializers.NativeCreativeCandidateSerializer

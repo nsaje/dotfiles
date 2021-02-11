@@ -1475,7 +1475,7 @@ class UploadBatchType(ConstantBase):
     _VALUES = {INSERT: "Insert", EDIT: "Edit", CLONE: "Clone"}
 
 
-class CreativeBatchType(ConstantBase):
+class CreativeBatchMode(ConstantBase):
     INSERT = 1
     EDIT = 2
     CLONE = 3
@@ -1489,6 +1489,18 @@ class CreativeBatchStatus(ConstantBase):
     IN_PROGRESS = 3
 
     _VALUES = {DONE: "Done", FAILED: "Failed", IN_PROGRESS: "In progress"}
+
+
+class CreativeBatchType(ConstantBase):
+    NATIVE = 1
+    VIDEO = 2
+    DISPLAY = 3
+
+    _VALUES = {
+        NATIVE: "Native",
+        VIDEO: "Video",
+        DISPLAY: "Display",
+    }
 
 
 class RegionType(ConstantBase):

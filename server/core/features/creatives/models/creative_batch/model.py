@@ -40,12 +40,12 @@ class CreativeBatch(
     status = models.IntegerField(
         default=dash.constants.CreativeBatchStatus.IN_PROGRESS, choices=dash.constants.CreativeBatchStatus.get_choices()
     )
-
-    type = models.IntegerField(
-        default=dash.constants.CreativeBatchType.INSERT, choices=dash.constants.CreativeBatchType.get_choices()
+    mode = models.IntegerField(
+        default=dash.constants.CreativeBatchMode.INSERT, choices=dash.constants.CreativeBatchMode.get_choices()
     )
-
-    ad_type = models.IntegerField(default=dash.constants.AdType.CONTENT, choices=dash.constants.AdType.get_choices())
+    type = models.IntegerField(
+        default=dash.constants.CreativeBatchType.NATIVE, choices=dash.constants.CreativeBatchType.get_choices()
+    )
 
     original_filename = models.CharField(max_length=1024, null=False, default="", blank=True)
 

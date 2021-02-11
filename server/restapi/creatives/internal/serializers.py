@@ -64,10 +64,12 @@ class CreativeBatchSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     status = restapi.serializers.fields.DashConstantField(
         dash.constants.CreativeBatchStatus, default=dash.constants.CreativeBatchStatus.IN_PROGRESS, read_only=True
     )
-    type = restapi.serializers.fields.DashConstantField(
-        dash.constants.CreativeBatchType, default=dash.constants.CreativeBatchType.INSERT
+    mode = restapi.serializers.fields.DashConstantField(
+        dash.constants.CreativeBatchMode, default=dash.constants.CreativeBatchMode.INSERT
     )
-    ad_type = restapi.serializers.fields.DashConstantField(dash.constants.AdType, default=dash.constants.AdType.CONTENT)
+    type = restapi.serializers.fields.DashConstantField(
+        dash.constants.CreativeBatchType, default=dash.constants.CreativeBatchType.NATIVE
+    )
 
     tags = rest_framework.serializers.ListSerializer(child=rest_framework.serializers.CharField(), default=[])
     image_crop = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
@@ -78,3 +80,63 @@ class CreativeBatchSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
     created_by = rest_framework.serializers.EmailField(read_only=True)
     created_dt = rest_framework.serializers.DateTimeField(read_only=True)
+
+
+class AdTypeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    type = restapi.serializers.fields.DashConstantField(dash.constants.AdType, required=True)
+
+
+class CreativeCandidateCommonSerializer(AdTypeSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    original_creative_id = restapi.serializers.fields.IdField(read_only=True)
+
+    url = rest_framework.serializers.URLField(required=True)
+    title = restapi.serializers.fields.PlainCharField(required=True)
+    display_url = rest_framework.serializers.URLField(required=True)
+
+    tags = rest_framework.serializers.ListSerializer(child=rest_framework.serializers.CharField(), default=[])
+    trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
+
+
+# TODO (msuber): add support for icon and image
+class NativeCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
+    brand_name = restapi.serializers.fields.PlainCharField(required=True)
+    description = restapi.serializers.fields.PlainCharField(required=True)
+    call_to_action = restapi.serializers.fields.PlainCharField(required=True)
+    image_crop = restapi.serializers.fields.PlainCharField(required=True)
+
+
+# TODO (msuber): add support for video_asset
+class VideoCreativeCandidateSerializer(NativeCreativeCandidateSerializer):
+    video_asset_id = rest_framework.serializers.UUIDField(required=True)
+
+
+# TODO (msuber): add support for image
+class ImageCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
+    pass
+
+
+# TODO (msuber): add support for ad_tag_width, ad_tag_height
+class AdTagCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
+    ad_tag = rest_framework.serializers.CharField(required=True)
+
+
+# TODO (msuber): add trackers_status
+class CreativeCandidateSerializer(
+    VideoCreativeCandidateSerializer, ImageCreativeCandidateSerializer, AdTagCreativeCandidateSerializer
+):
+    url_status = restapi.serializers.fields.DashConstantField(
+        dash.constants.AsyncUploadJobStatus, default=dash.constants.AsyncUploadJobStatus.PENDING_START, read_only=True
+    )
+    image_status = restapi.serializers.fields.DashConstantField(
+        dash.constants.AsyncUploadJobStatus, default=dash.constants.AsyncUploadJobStatus.PENDING_START, read_only=True
+    )
+    icon_status = restapi.serializers.fields.DashConstantField(
+        dash.constants.AsyncUploadJobStatus, default=dash.constants.AsyncUploadJobStatus.PENDING_START, read_only=True
+    )
+
+    hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    landscape_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    portrait_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    display_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    hosted_icon_url = rest_framework.serializers.URLField(read_only=True)

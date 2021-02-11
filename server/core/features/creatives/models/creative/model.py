@@ -27,7 +27,7 @@ class Creative(
     agency = models.ForeignKey("Agency", null=True, blank=True, on_delete=models.PROTECT)
     account = models.ForeignKey("Account", null=True, blank=True, on_delete=models.PROTECT)
 
-    type = models.IntegerField(choices=dash.constants.AdType.get_choices(), default=dash.constants.AdType.CONTENT)
+    type = models.IntegerField(default=dash.constants.AdType.CONTENT, choices=dash.constants.AdType.get_choices())
 
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)

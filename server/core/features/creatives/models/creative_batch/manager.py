@@ -15,9 +15,9 @@ class CreativeBatchManager(core.common.BaseManager):
         *,
         agency=None,
         account=None,
-        type=dash.constants.CreativeBatchType.INSERT,
-        ad_type=dash.constants.AdType.CONTENT,
+        mode=dash.constants.CreativeBatchMode.INSERT,
+        type=dash.constants.CreativeBatchType.NATIVE,
     ):
-        batch = model.CreativeBatch(name=name, agency=agency, account=account, type=type, ad_type=ad_type)
+        batch = model.CreativeBatch(name=name, agency=agency, account=account, mode=mode, type=type)
         batch.save(request)
         return batch
