@@ -73,12 +73,16 @@ export class MainContainerComponent implements OnInit, OnDestroy {
         urlParts: string[],
         pathParts: RoutePathName[]
     ): boolean {
-        urlParts.forEach((urlPart, index) => {
+        if (urlParts.length !== pathParts.length) {
+            return false;
+        }
+        for (let index = 0; index < urlParts.length; index++) {
+            const urlPart: string = urlParts[index];
             const pathPart: RoutePathName = pathParts[index];
             if (pathPart !== RoutePathName.ANY && pathPart !== urlPart) {
                 return false;
             }
-        });
+        }
         return true;
     }
 }
