@@ -120,8 +120,6 @@ export class CreativesComponent implements OnInit, OnChanges, OnDestroy {
             this.scopeParams.agencyId,
             this.scopeParams.accountId
         );
-
-        this.batchStore.state$.subscribe();
     }
 
     ngOnDestroy(): void {
@@ -158,7 +156,9 @@ export class CreativesComponent implements OnInit, OnChanges, OnDestroy {
             filter(isDefined),
             distinctUntilChanged(),
             tap(batchId => {
-                this.router.navigate([...CREATIVE_BATCH_PATH, batchId]);
+                this.router.navigate([...CREATIVE_BATCH_PATH, batchId], {
+                    queryParams: {...this.scopeParams},
+                });
             })
         );
     }
