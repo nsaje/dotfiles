@@ -1314,6 +1314,7 @@ class UserTestCase(TestCase):
         self.client.force_authenticate(user=self.service_user)
         self.request_mock = RequestFactory()
         constants.SALES_OFFICE_AGENCY_MAPPING = {"USBIZ": 1, "Spain": 2}
+        self.date_joined = datetime.date(2021, 1, 1)
 
     def test_get_valid(self):
         magic_mixer.blend(
@@ -1325,6 +1326,7 @@ class UserTestCase(TestCase):
             is_active=True,
             sales_office="USBIZ",
             is_externally_managed=True,
+            date_joined=self.date_joined,
         )
 
         url = reverse("service.salesforce.user", kwargs={"user_id": 1})
@@ -1339,6 +1341,8 @@ class UserTestCase(TestCase):
                     "lastName": "Doe",
                     "email": "john@doe.com",
                     "salesOffice": "USBIZ",
+                    "isActive": True,
+                    "dateJoined": "2021-01-01T00:00:00",
                 }
             },
         )
@@ -1353,6 +1357,7 @@ class UserTestCase(TestCase):
             is_active=True,
             sales_office="USBIZ",
             is_externally_managed=False,
+            date_joined=self.date_joined,
         )
 
         url = reverse("service.salesforce.user", kwargs={"user_id": 1})
@@ -1366,8 +1371,9 @@ class UserTestCase(TestCase):
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json(), {"errorCode": "DoesNotExist", "details": "User matching query does not exist."})
 
+    @mock.patch("django.utils.timezone.now", return_value=datetime.datetime(2021, 1, 1))
     @mock.patch("utils.email_helper.send_unknown_sales_office_email")
-    def test_post_valid(self, send_email_mock):
+    def test_post_valid(self, send_email_mock, now_mock):
         url = reverse("service.salesforce.user")
         r = self.client.post(
             url,
@@ -1387,13 +1393,16 @@ class UserTestCase(TestCase):
                     "lastName": "Doe",
                     "email": "john@doe.com",
                     "salesOffice": "USBIZ",
+                    "isActive": True,
+                    "dateJoined": "2021-01-01T00:00:00",
                 }
             },
         )
         send_email_mock.assert_not_called()
 
+    @mock.patch("django.utils.timezone.now", return_value=datetime.datetime(2021, 1, 1))
     @mock.patch("utils.email_helper.send_unknown_sales_office_email")
-    def test_post_valid_unkown_sales_office(self, send_email_mock):
+    def test_post_valid_unkown_sales_office(self, send_email_mock, now_mock):
         url = reverse("service.salesforce.user")
         r = self.client.post(
             url,
@@ -1413,6 +1422,8 @@ class UserTestCase(TestCase):
                     "lastName": "Doe",
                     "email": "john@doe.com",
                     "salesOffice": "ABCD",
+                    "isActive": True,
+                    "dateJoined": "2021-01-01T00:00:00",
                 }
             },
         )
@@ -1428,6 +1439,7 @@ class UserTestCase(TestCase):
             is_active=True,
             sales_office="USBIZ",
             is_externally_managed=True,
+            date_joined=self.date_joined,
         )
 
         url = reverse("service.salesforce.user")
@@ -1453,12 +1465,20 @@ class UserTestCase(TestCase):
             is_active=True,
             sales_office="USBIZ",
             is_externally_managed=True,
+            date_joined=self.date_joined,
         )
 
         url = reverse("service.salesforce.user", kwargs={"user_id": 1})
         r = self.client.put(
             url,
-            data={"email": "jane@deen.com", "first_name": "Jane", "last_name": "Deen", "sales_office": "Spain"},
+            data={
+                "email": "jane@deen.com",
+                "first_name": "Jane",
+                "last_name": "Deen",
+                "sales_office": "Spain",
+                "is_active": False,
+                "dateJoined": "2021-01-01T00:00:00",
+            },
             format="json",
         )
 
@@ -1472,6 +1492,8 @@ class UserTestCase(TestCase):
                     "firstName": "Jane",
                     "lastName": "Deen",
                     "salesOffice": "Spain",
+                    "isActive": False,
+                    "dateJoined": "2021-01-01T00:00:00",
                 }
             },
         )
@@ -1488,6 +1510,7 @@ class UserTestCase(TestCase):
             is_active=True,
             sales_office="USBIZ",
             is_externally_managed=True,
+            date_joined=self.date_joined,
         )
 
         url = reverse("service.salesforce.user", kwargs={"user_id": 1})
@@ -1505,6 +1528,8 @@ class UserTestCase(TestCase):
                     "lastName": "Doe",
                     "email": "john@doe.com",
                     "salesOffice": "ABCD",
+                    "isActive": True,
+                    "dateJoined": "2021-01-01T00:00:00",
                 }
             },
         )

@@ -89,10 +89,12 @@ class UserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     sales_office = serializers.CharField(required=True)
+    is_active = serializers.BooleanField(required=False)
+    date_joined = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = zemUser
-        fields = ("id", "email", "first_name", "last_name", "sales_office")
+        fields = ("id", "email", "first_name", "last_name", "sales_office", "is_active", "date_joined")
 
     def validate_email(self, email):
         user_id = self.context.get("user_id")

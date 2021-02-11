@@ -100,6 +100,7 @@ class User(
         "status",
         "email",
         "sales_office",
+        "is_active",
     ]
 
     USERNAME_FIELD = "email"
