@@ -34,6 +34,7 @@ class MVAdGroupPlacementTest(TestCase, backtosql.TestSQLMixin):
                     ),
                     {"date_from": datetime.date(2016, 7, 1), "date_to": datetime.date(2016, 7, 3)},
                 ),
+                mock.call(backtosql.SQLMatcher("SET statement_timeout TO 600000;")),
                 mock.call(
                     insert_into_mv_adgroup_placement_sql,
                     {
@@ -45,6 +46,7 @@ class MVAdGroupPlacementTest(TestCase, backtosql.TestSQLMixin):
                         "date_to": "2016-07-03",
                     },
                 ),
+                mock.call(backtosql.SQLMatcher("SET statement_timeout TO 0;")),
             ]
         )
 
@@ -78,6 +80,7 @@ class MVAdGroupPlacementTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         "account_id": account_id,
                     },
                 ),
+                mock.call(backtosql.SQLMatcher("SET statement_timeout TO 600000;")),
                 mock.call(
                     insert_into_mv_adgroup_placement_sql,
                     {
@@ -91,5 +94,6 @@ class MVAdGroupPlacementTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         "ad_group_id": utils.test_helper.ListMatcher([1, 3, 4]),
                     },
                 ),
+                mock.call(backtosql.SQLMatcher("SET statement_timeout TO 0;")),
             ]
         )

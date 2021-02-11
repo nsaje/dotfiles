@@ -27,6 +27,9 @@ class MVAdGroupPlacement(Materialize):
                 )
                 c.execute(sql, params)
 
+                # TODO: remove the 10 min statement timeout when the after midnight hangup is fixed
+                c.execute("SET statement_timeout TO 600000;")
+
                 logger.info(
                     "Running insert traffic data into table",
                     table=self.TABLE_NAME,
@@ -36,6 +39,8 @@ class MVAdGroupPlacement(Materialize):
                 )
                 sql, params = self.prepare_insert_traffic_data_query()
                 c.execute(sql, params)
+
+                c.execute("SET statement_timeout TO 0;")
 
     def prepare_insert_traffic_data_query(self):
         params = helpers.get_local_multiday_date_context(self.date_from, self.date_to)
