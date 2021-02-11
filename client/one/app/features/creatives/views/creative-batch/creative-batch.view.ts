@@ -1,9 +1,10 @@
 import './creative-batch.view.less';
 
 import {Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
-import {Subject} from 'rxjs';
+import {combineLatest, Subject} from 'rxjs';
 import {ActivatedRoute, Params} from '@angular/router';
-import {takeUntil} from 'rxjs/operators';
+import {map, takeUntil} from 'rxjs/operators';
+import {ScopeParams} from '../../../../shared/types/scope-params';
 
 @Component({
     selector: 'zem-creative-batch-view',
@@ -14,14 +15,21 @@ export class CreativeBatchView implements OnInit, OnDestroy {
     cssClass = 'zem-creative-batch-view';
 
     batchId: string | null = null;
+    scopeParams: ScopeParams;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(private route: ActivatedRoute) {}
 
     ngOnInit() {
-        this.route.params
+        combineLatest([this.route.params, this.route.queryParams])
             .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe(
+                map(([routeParams, queryParams]) => ({
+                    ...routeParams,
+                    ...queryParams,
+                }))
+            )
             .subscribe(params => {
                 this.updateInternalState(params);
             });
@@ -33,6 +41,10 @@ export class CreativeBatchView implements OnInit, OnDestroy {
     }
 
     private updateInternalState(params: Params) {
+        this.scopeParams = {
+            agencyId: params.agencyId,
+            accountId: params.accountId || null,
+        };
         this.batchId = params.batchId;
     }
 }
