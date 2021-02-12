@@ -27,8 +27,8 @@ class MVAdGroupPlacement(Materialize):
                 )
                 c.execute(sql, params)
 
-                # TODO: remove the 10 min statement timeout when the after midnight hangup is fixed
-                c.execute("SET statement_timeout TO 600000;")
+                # TODO: remove the 1h statement timeout when the after midnight hangup is fixed
+                c.execute("SET statement_timeout TO 3600000;")
 
                 logger.info(
                     "Running insert traffic data into table",
