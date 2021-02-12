@@ -45,7 +45,9 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
                 account_id integer encode lzo,
                 campaign_id integer encode lzo,
                 ad_group_id integer encode lzo
-            ) sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
+            )
+            diststyle all
+            sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
                     )
                 ),
                 mock.call(
@@ -101,7 +103,9 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
                 account_id integer encode lzo,
                 campaign_id integer encode lzo,
                 ad_group_id integer encode lzo
-            ) sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
+            )
+            diststyle all
+            sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
                     )
                 ),
                 mock.call(

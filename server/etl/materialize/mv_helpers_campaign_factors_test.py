@@ -60,7 +60,9 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                 pct_service_fee decimal(22, 18) encode AZ64,
                 pct_license_fee decimal(22, 18) encode AZ64,
                 pct_margin decimal(22, 18) encode AZ64
-            ) sortkey(date, campaign_id)"""
+            )
+            diststyle all
+            sortkey(date, campaign_id)"""
                     )
                 ),
                 mock.call(
@@ -140,7 +142,9 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                 pct_service_fee decimal(22, 18) encode AZ64,
                 pct_license_fee decimal(22, 18) encode AZ64,
                 pct_margin decimal(22, 18) encode AZ64
-            ) sortkey(date, campaign_id)"""
+            )
+            diststyle all
+            sortkey(date, campaign_id)"""
                     )
                 ),
                 mock.call(

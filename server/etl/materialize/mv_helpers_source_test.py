@@ -44,7 +44,9 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
                 source_id int2 encode bytedict,
                 bidder_slug varchar(127) encode lzo,
                 clean_slug varchar(127) encode lzo
-            ) sortkey(bidder_slug);"""
+            )
+            diststyle all
+            sortkey(bidder_slug)"""
                     )
                 ),
                 mock.call(
