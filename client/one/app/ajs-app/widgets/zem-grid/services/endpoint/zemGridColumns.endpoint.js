@@ -1919,14 +1919,14 @@ angular
             COLUMNS.videoMidpoint,
             COLUMNS.videoThirdQuartile,
             COLUMNS.videoComplete,
-            COLUMNS.videoEtfmCpv,
-            COLUMNS.videoEtfmCpcv,
             COLUMNS.videoStartPercent,
             COLUMNS.videoProgress3sPercent,
             COLUMNS.videoFirstQuartilePercent,
             COLUMNS.videoMidpointPercent,
             COLUMNS.videoThirdQuartilePercent,
             COLUMNS.videoCompletePercent,
+            COLUMNS.videoEtfmCpv,
+            COLUMNS.videoEtfmCpcv,
         ];
 
         var METRICS_GROUP = [].concat(
