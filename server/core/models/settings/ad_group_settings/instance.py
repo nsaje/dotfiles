@@ -26,7 +26,6 @@ logger = zlogging.getLogger(__name__)
 
 
 class AdGroupSettingsMixin(object):
-    @transaction.atomic
     def update(
         self,
         request,
@@ -42,46 +41,56 @@ class AdGroupSettingsMixin(object):
         is_create=False,
         **updates,
     ):
-        updates = self._filter_and_remap_input(request, updates, skip_permission_check)
-        if not skip_validation:
-            self._validate_update(updates)
+        changes = None
+        new_settings = None
+        with transaction.atomic():
+            updates = self._filter_and_remap_input(request, updates, skip_permission_check)
+            if not skip_validation:
+                self._validate_update(updates)
 
-        updates = self._set_bid_defaults(updates)
-        if updates:
-            new_settings = self.copy_settings()
-            self._apply_updates(new_settings, updates)
-            self._handle_legacy_changes(new_settings, skip_validation)
-            is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
-            if not skip_validation and not is_pause:
-                self.clean(new_settings, is_create)
-            self._handle_archived(new_settings)
-            self._handle_max_autopilot_bid_change(new_settings)
-            self._handle_b1_sources_group_adjustments(new_settings)
-            self._handle_bid_autopilot_initial_bids(
-                new_settings, skip_notification=skip_notification, write_source_history=write_source_history
+            updates = self._set_bid_defaults(updates)
+            if updates:
+                new_settings = self.copy_settings()
+                self._apply_updates(new_settings, updates)
+                self._handle_legacy_changes(new_settings, skip_validation)
+                is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
+                if not skip_validation and not is_pause:
+                    self.clean(new_settings, is_create)
+                self._handle_archived(new_settings)
+                self._handle_max_autopilot_bid_change(new_settings)
+                self._handle_b1_sources_group_adjustments(new_settings)
+                self._handle_bid_autopilot_initial_bids(
+                    new_settings, skip_notification=skip_notification, write_source_history=write_source_history
+                )
+                changes = self.get_setting_changes(new_settings)
+                if changes:
+                    if not skip_field_change_validation_autopilot:
+                        self._check_if_fields_are_allowed_to_be_changed_with_autopilot_on(changes)
+                    new_settings.save(request, system_user=system_user, write_history=write_history)
+                    max_autopilot_bid_changed = helpers.check_max_autopilot_bid_changed(self, changes)
+                    b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
+                    self.apply_bids_to_sources(
+                        max_autopilot_bid_changed=max_autopilot_bid_changed,
+                        b1_sources_group_bid_changed=b1_sources_group_bid_changed,
+                        write_source_history=write_source_history,
+                    )
+
+                    core.signals.settings_change.send_robust(
+                        sender=self.__class__, request=request, instance=new_settings, changes=changes
+                    )
+
+                    self._update_ad_group(request, changes)
+                    # autopilot reloads settings so changes have to be saved when it is called
+                    if not skip_automation:
+                        self._handle_budget_autopilot(changes)
+                    self._recalculate_multicurrency_values_if_necessary(changes)
+
+        if changes and new_settings:
+            self._propagate_changes(
+                request, new_settings, changes, system_user, k1_sync, skip_notification=skip_notification
             )
-            changes = self.get_setting_changes(new_settings)
-            if changes:
-                if not skip_field_change_validation_autopilot:
-                    self._check_if_fields_are_allowed_to_be_changed_with_autopilot_on(changes)
-                new_settings.save(request, system_user=system_user, write_history=write_history)
-                max_autopilot_bid_changed = helpers.check_max_autopilot_bid_changed(self, changes)
-                b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
-                self.apply_bids_to_sources(
-                    max_autopilot_bid_changed=max_autopilot_bid_changed,
-                    b1_sources_group_bid_changed=b1_sources_group_bid_changed,
-                    write_source_history=write_source_history,
-                )
-                self._propagate_changes(
-                    request, new_settings, changes, system_user, k1_sync, skip_notification=skip_notification
-                )
-                self._update_ad_group(request, changes)
-                # autopilot reloads settings so changes have to be saved when it is called
-                if not skip_automation:
-                    self._handle_budget_autopilot(changes)
-                self._recalculate_multicurrency_values_if_necessary(changes)
-                return changes
-        return None
+
+        return changes
 
     # TODO: RTAP: remove after migration
     def update_daily_budget(self, request):
@@ -496,10 +505,6 @@ class AdGroupSettingsMixin(object):
     def _propagate_changes(self, request, new_settings, changes, system_user, k1_sync, skip_notification=False):
         k1_priority = self.state == constants.AdGroupSettingsState.ACTIVE and any(
             field in changes for field in PRIORITY_UPDATE_FIELDS
-        )
-
-        core.signals.settings_change.send_robust(
-            sender=self.__class__, request=request, instance=new_settings, changes=changes
         )
 
         if k1_sync:

@@ -8,19 +8,19 @@ from . import constants
 from . import service
 
 
-def calculate_source_bid_value(ad_group_bid_value, ad_group, target):
-    bid_modifier = (
-        dash.models.BidModifier.objects.only("modifier")
-        .filter(type=constants.BidModifierType.SOURCE, ad_group=ad_group, target=target)
-        .first()
-    )
+def calculate_source_bid_values_map(ad_group_bid_value, ad_group, source_ids):
+    bid_modifiers = dash.models.BidModifier.objects.filter(
+        type=constants.BidModifierType.SOURCE, ad_group=ad_group, target__in=[str(i) for i in source_ids]
+    ).values("modifier", "target")
 
-    if bid_modifier is not None:
-        modifier = Decimal(bid_modifier.modifier)
-    else:
-        modifier = Decimal("1.0000")
+    bid_modifiers_map = {int(bm["target"]): Decimal(bm["modifier"]) for bm in bid_modifiers}
 
-    return decimal_helpers.multiply_as_decimals(ad_group_bid_value, modifier)
+    bid_values_map = {}
+    for source_id in source_ids:
+        modifier = bid_modifiers_map.get(source_id, Decimal("1.0000"))
+        bid_values_map[source_id] = decimal_helpers.multiply_as_decimals(ad_group_bid_value, modifier)
+
+    return bid_values_map
 
 
 def handle_ad_group_source_settings_change(
@@ -54,17 +54,7 @@ def handle_ad_group_source_settings_change(
     )
 
 
-def create_source_bid_modifier(ad_group, source, ad_group_bid_value, ad_group_source_bid_value):
+def create_source_bid_modifier_data(source, ad_group_bid_value, ad_group_source_bid_value):
     modifier = Decimal(ad_group_source_bid_value) / Decimal(ad_group_bid_value)
 
-    service.set(
-        ad_group,
-        constants.BidModifierType.SOURCE,
-        str(source.id),
-        None,
-        float(modifier),
-        user=None,
-        write_history=False,
-        propagate_to_k1=False,
-        skip_validation=True,
-    )
+    return service.BidModifierData(constants.BidModifierType.SOURCE, str(source.id), None, float(modifier))

@@ -84,7 +84,12 @@ def set(
 
 @transaction.atomic
 def set_bulk(
-    ad_group, bid_modifiers_to_set: Sequence[BidModifierData], user=None, write_history=True, propagate_to_k1=True
+    ad_group,
+    bid_modifiers_to_set: Sequence[BidModifierData],
+    user=None,
+    write_history=True,
+    propagate_to_k1=True,
+    skip_validation=False,
 ):
     to_delete_count = sum(1 for bm in bid_modifiers_to_set if _is_unset(bm.type, bm.modifier))
     core.common.entity_limits.enforce(
@@ -110,6 +115,7 @@ def set_bulk(
             bid_modifier_data.modifier,
             user,
             write_history=write_history,
+            skip_validation=skip_validation,
         )
         if instance:
             instances.append(instance)

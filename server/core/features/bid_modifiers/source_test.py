@@ -1483,7 +1483,10 @@ class SkipSourceValidationTestCase(TestCase):
 
         target_source_cpc = decimal.Decimal("0.1000")
         # must not raise MinimaCPCTooLow
-        bid_modifiers.create_source_bid_modifier(ad_group, source, ad_group.settings.cpc, target_source_cpc)
+        bm = bid_modifiers.create_source_bid_modifier_data(source, ad_group.settings.cpc, target_source_cpc)
+        bid_modifiers.set_bulk(
+            ad_group, [bm], user=None, write_history=False, propagate_to_k1=False, skip_validation=True
+        )
 
         ad_group_source.refresh_from_db()
 
@@ -1521,7 +1524,10 @@ class SkipSourceValidationTestCase(TestCase):
 
         target_source_cpc = decimal.Decimal("4.0000")
         # must not raise MinimaCPCTooHigh
-        bid_modifiers.create_source_bid_modifier(ad_group, source, ad_group.settings.cpc, target_source_cpc)
+        bm = bid_modifiers.create_source_bid_modifier_data(source, ad_group.settings.cpc, target_source_cpc)
+        bid_modifiers.set_bulk(
+            ad_group, [bm], user=None, write_history=False, propagate_to_k1=False, skip_validation=True
+        )
 
         ad_group_source.refresh_from_db()
 
