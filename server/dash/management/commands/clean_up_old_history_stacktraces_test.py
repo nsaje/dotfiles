@@ -14,6 +14,7 @@ class CleanUpOldHistoryStackTracesTest(TestCase):
         self.assertEqual(
             mock_cursor().execute.call_args_list,
             [
+                mock.call("SET lock_timeout TO '2s';"),
                 mock.call(
                     """
             CREATE TABLE IF NOT EXISTS

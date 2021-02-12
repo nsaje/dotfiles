@@ -13,6 +13,7 @@ logger = zlogging.getLogger(__name__)
 
 HISTORY_DATA_KEEP_DAYS = 7
 PARTITION_CHECK_DAYS = 2
+LOCK_TIMEOUT = "2s"
 
 
 class Command(Z1Command):
@@ -42,22 +43,39 @@ class Command(Z1Command):
 
     def _create_new_partitions(self, today):
         cursor = connection.cursor()
-        sql = """
-            CREATE TABLE IF NOT EXISTS
-                dash_historystacktrace_{date_postfix}
-            PARTITION OF
-                dash_historystacktrace
-            FOR VALUES FROM ('{date_from}') TO ('{date_to}');
-        """
+        self._set_lock_timeout(cursor, LOCK_TIMEOUT)
 
         for i in range(1, PARTITION_CHECK_DAYS + 1):
             date_from = today + datetime.timedelta(i)
             date_to = today + datetime.timedelta(i + 1)
-            cursor.execute(sql.format(date_postfix=date_from.strftime("%Y%m%d"), date_from=date_from, date_to=date_to))
+            self._create_partition_with_retry(cursor, date_from, date_to)
+
+    @retrying.retry(
+        retry_on_exception=lambda e: isinstance(e, OperationalError)
+        and "canceling statement due to lock timeout" in str(e)
+        or "deadlock detected" in str(e),
+        stop_max_attempt_number=50,
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=10000,
+    )
+    def _create_partition_with_retry(self, cursor, date_from, date_to):
+        partition_name = "dash_historystacktrace_{date_postfix}".format(date_postfix=date_from.strftime("%Y%m%d"))
+        sql = """
+            CREATE TABLE IF NOT EXISTS
+                {partition_name}
+            PARTITION OF
+                dash_historystacktrace
+            FOR VALUES FROM ('{date_from}') TO ('{date_to}');
+        """
+        try:
+            cursor.execute(sql.format(partition_name=partition_name, date_from=date_from, date_to=date_to))
+        except OperationalError as e:
+            logger.info("Failed creating partiton", partition=partition_name)
+            raise e
 
     def _delete_old_partitions(self, today):
         cursor = connection.cursor()
-        cursor.execute("SET lock_timeout TO '2s';")
+        self._set_lock_timeout(cursor, LOCK_TIMEOUT)
 
         for i in range(1, PARTITION_CHECK_DAYS + 1):
             date = today - datetime.timedelta(HISTORY_DATA_KEEP_DAYS + i)
@@ -85,3 +103,6 @@ class Command(Z1Command):
         except OperationalError as e:
             logger.info("Failed detaching partiton", partition=partition_name)
             raise e
+
+    def _set_lock_timeout(self, cursor, timeout):
+        cursor.execute(f"SET lock_timeout TO '{timeout}';")
