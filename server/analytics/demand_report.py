@@ -1,5 +1,6 @@
 import io
 import json
+import re
 from collections import defaultdict
 from decimal import Decimal
 
@@ -38,11 +39,17 @@ from utils import queryset_helper
 from utils import zlogging
 from zemauth.models import User
 
+REX_WHITESPACE_MANY = re.compile(r"[\s]+")
+
 DATASET_NAME = "ba"
-TABLE_NAME = "demand"
+AD_GROUP_TABLE_NAME = "demand"
+MEDIA_SOURCE_TABLE_NAME = "demand_media_source"
+CONTENT_AD_TABLE_NAME = "demand_ad"
 BIGQUERY_TIMEOUT = 300
 
 AD_GROUP_CHUNK_SIZE = 2000
+MEDIA_SOURCE_CHUNK_SIZE = 10000
+CONTENT_AD_CHUNK_SIZE = 10000
 
 logger = zlogging.getLogger(__name__)
 
@@ -52,37 +59,48 @@ def create_report():
     Create demand report from AdGroup spend data and Z1 entities and their settings and upload it to BigQuery.
     """
     date = dates_helper.local_yesterday()
-    rows = _rows_generator(date)
-    output_stream = _generate_bq_csv_file(rows)
-    _update_big_query(output_stream, date)
+    ad_group_ids = set()
+
+    logger.info("Creating ad group data.")
+    rows = _ad_group_rows_generator(date, ad_group_ids)
+    ad_group_stream = _generate_bq_csv_file(rows, demand_report_definitions.AD_GROUP_COLUMN_NAMES)
+    _update_big_query(ad_group_stream, date, DATASET_NAME, AD_GROUP_TABLE_NAME)
+    del ad_group_stream
+
+    logger.info("Creating media source data.")
+    rows = _media_sources_rows_generator(date, ad_group_ids)
+    media_source_stream = _generate_bq_csv_file(rows, demand_report_definitions.MEDIA_SOURCE_COLUMN_NAMES)
+    _update_big_query(media_source_stream, date, DATASET_NAME, MEDIA_SOURCE_TABLE_NAME)
+    del media_source_stream
+
+    logger.info("Creating content ad data.")
+    rows = _content_ad_rows_generator(date, ad_group_ids)
+    content_ad_stream = _generate_bq_csv_file(rows, demand_report_definitions.CONTENT_AD_COLUMN_NAMES)
+    _update_big_query(content_ad_stream, date, DATASET_NAME, CONTENT_AD_TABLE_NAME)
+    del content_ad_stream
 
     logger.info("Demand report done.")
 
 
-def _update_big_query(output_stream, date):
-    logger.info("Updating BigQuery.")
-    _delete_big_query_records(date)
-    logger.info("Uploading data to BigQuery.")
-    bigquery_helper.upload_csv_file(
-        output_stream, DATASET_NAME, TABLE_NAME, timeout=BIGQUERY_TIMEOUT, skip_leading_rows=1
-    )
+def _update_big_query(output_stream, date, dataset, table):
+    _delete_big_query_records(date, dataset, table)
+    logger.info("Uploading data to BigQuery.", table=f"{dataset}.{table}")
+    bigquery_helper.upload_csv_file(output_stream, dataset, table, timeout=BIGQUERY_TIMEOUT, skip_leading_rows=1)
 
 
-def _delete_big_query_records(date):
+def _delete_big_query_records(date, dataset, table):
     date_string = date.strftime("%Y-%m-%d")
 
-    logger.info("Deleting existing records for date from BigQuery.", date=date_string)
-    delete_query = "delete from %s.%s where date = '%s'" % (DATASET_NAME, TABLE_NAME, date_string)
+    logger.info("Deleting existing records for date from BigQuery.", table=f"{dataset}.{table}", date=date_string)
+    delete_query = "delete from %s.%s where date = '%s'" % (dataset, table, date_string)
     bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
 
 
-def _generate_bq_csv_file(rows):
+def _generate_bq_csv_file(rows, field_names):
     logger.info("Generating CSV file.")
     output_stream = io.BytesIO()
 
-    csv_writer = csv.DictWriter(
-        output_stream, fieldnames=demand_report_definitions.OUTPUT_COLUMN_NAMES, extrasaction="ignore"
-    )
+    csv_writer = csv.DictWriter(output_stream, fieldnames=field_names, extrasaction="ignore", quoting=csv.QUOTE_ALL)
     csv_writer.writeheader()
 
     for row in rows:
@@ -93,7 +111,7 @@ def _generate_bq_csv_file(rows):
     return output_stream
 
 
-def _rows_generator(date):
+def _ad_group_rows_generator(date, ad_group_ids):
     ad_group_stats_dict = {e["ad_group_id"]: e for e in _get_ad_group_stats()}
     account_data_dict = _get_account_data_dict()
 
@@ -102,42 +120,46 @@ def _rows_generator(date):
 
     missing_ad_group_ids = set(ad_group_stats_dict.keys())
 
-    for row in _ad_group_rows_generator(_get_ad_group_data(), account_data_dict, ad_group_stats_dict, source_id_map):
+    for row in _ad_group_qs_rows_generator(_get_ad_group_data(), account_data_dict, ad_group_stats_dict, source_id_map):
         row["date"] = date_string
         missing_ad_group_ids.discard(row["adgroup_id"])
+        ad_group_ids.add(row["adgroup_id"])
         yield row
 
-    for row in _ad_group_rows_generator(
+    for row in _ad_group_qs_rows_generator(
         _get_ad_group_data(ad_group_ids=missing_ad_group_ids), account_data_dict, ad_group_stats_dict, source_id_map
     ):
         row["date"] = date_string
+        ad_group_ids.add(row["adgroup_id"])
         yield row
 
 
-def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_stats_dict, source_id_map):
+def _ad_group_qs_rows_generator(ad_group_query_set, account_data_dict, ad_group_stats_dict, source_id_map):
     chunk_id = 0
 
     for ad_group_data_chunk in queryset_helper.chunk_iterator(ad_group_query_set, chunk_size=AD_GROUP_CHUNK_SIZE):
         chunk_id += 1
-        logger.info("Processing ad group chunk #%s", chunk_id)
+        logger.info("Processing ad group chunk.", chunk=chunk_id)
 
         campaign_ids = set(e["campaign_id"] for e in ad_group_data_chunk)
 
         campaign_data_dict = {e["campaign_id"]: e for e in _get_campaign_data(campaign_ids)}
-        logger.info("Fetched %s campaign data rows for chunk #%s", len(campaign_data_dict), chunk_id)
+        logger.info("Fetched campaign data rows for chunk.", count=len(campaign_data_dict), chunk=chunk_id)
 
         user_email_dict = _get_user_email_dict(account_data_dict.values())
-        logger.info("Fetched %s user data rows for chunk #%s", len(user_email_dict), chunk_id)
+        logger.info("Fetched user data rows for chunk.", count=len(user_email_dict), chunk=chunk_id)
 
         remaining_budget_dict = _get_remaining_budget_data_map(campaign_ids)
-        logger.info("Fetched %s remaining budget data rows for chunk #%s", len(remaining_budget_dict), chunk_id)
+        logger.info("Fetched remaining budget data rows for chunk.", count=len(remaining_budget_dict), chunk=chunk_id)
 
         ad_group_ids = set(e["adgroup_id"] for e in ad_group_data_chunk)
 
         ad_group_source_data_dict = defaultdict(list)
         for ad_group_source_row in _get_ad_group_source_data(ad_group_ids):
             ad_group_source_data_dict[ad_group_source_row["adgroup_id"]].append(ad_group_source_row)
-        logger.info("Fetched %s ad group source data rows for chunk #%s", len(ad_group_source_data_dict), chunk_id)
+        logger.info(
+            "Fetched ad group source data rows for chunk.", count=len(ad_group_source_data_dict), chunk=chunk_id
+        )
 
         ad_group_stats_prepared = _calculate_ad_group_stats(
             ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_stats_dict, source_id_map
@@ -171,10 +193,10 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_sta
             row["rules_count"] = len(rules_by_ad_group_id[row["adgroup_id"]])
             row["js_tracking"] = trackers_count_by_ad_group_id[row["adgroup_id"]]
 
-            _normalize_row(row)
+            _normalize_ad_group_row(row)
             yield row
 
-        logger.info("Done processing ad group chunk #%s", chunk_id)
+        logger.info("Done processing ad group chunk.", chunk=chunk_id)
 
 
 def _get_budget_data_dict(campaign_ids):
@@ -235,7 +257,7 @@ def _calculate_ad_group_stats(
 
     for campaign_id, ad_group_id_set in campaign_adgroup_map.items():
         if campaign_id not in budget_data_dict:
-            logger.warning("No budget data for campaign", campaign=campaign_id)
+            logger.warning("No budget data for campaign.", campaign=campaign_id)
             continue
 
         budget_data = budget_data_dict[campaign_id]
@@ -318,7 +340,7 @@ def _calculate_budget_and_bid(campaign_data_row, ad_group_data_row, ad_group_sou
 
         # TODO RTAP: don't fail the job until we fix daily budgets
         if calculated_daily_budget is None:
-            logger.error("Unassigned daily budget", ad_group_id=adgroup_row["adgroup_id"])
+            logger.error("Unassigned daily budget.", ad_group_id=adgroup_row["adgroup_id"])
             calculated_daily_budget = Decimal(0.0)
     else:
         raise ValueError("Unhandled autopilot_state: %s" % adgroup_row["autopilot_state"])
@@ -360,7 +382,7 @@ def _source_id_map(*source_types):
     return source_id_map
 
 
-def _normalize_row(row):
+def _normalize_ad_group_row(row):
     _normalize_list_to_bool(
         row,
         "whitelist_publisher_groups",
@@ -472,6 +494,17 @@ def _normalize_array_value(val):
         raise ValueError("%s is not iterable" % type(val))
 
 
+def _normalize_text_field(row, field_name):
+    row[field_name] = _normalize_text(row[field_name])
+
+
+def _normalize_text(text):
+    if not text:
+        return ""
+
+    return REX_WHITESPACE_MANY.sub(" ", text.strip())
+
+
 def _normalize_field(row, field_name):
     val = row[field_name]
     result = _normalize_value(val)
@@ -554,7 +587,7 @@ def _get_user_email_dict(account_data):
 
 def _get_account_data_dict(account_ids=None, date=None):
     account_data_dict = {e["account_id"]: e for e in _get_account_data(account_ids=account_ids, date=date)}
-    logger.info("Fetched %s account data entries", len(account_data_dict))
+    logger.info("Fetched account data entries.", count=len(account_data_dict))
     return account_data_dict
 
 
@@ -906,7 +939,7 @@ def _get_ad_group_source_data(ad_group_ids=None, date=None):
 
 
 def _get_ad_group_stats():
-    logger.info("Querying AdGroup spend.")
+    logger.info("Querying ad group spend.")
 
     sql = """
 SELECT
@@ -940,5 +973,207 @@ HAVING SUM(impressions) > 0
         cursor.execute(sql)
         rows = db.dictfetchall(cursor)
 
-    logger.info("Got %s AdGroup spend rows.", len(rows))
+    logger.info("Got ad group spend rows.", count=len(rows))
     return rows
+
+
+def _media_sources_rows_generator(date, ad_group_ids):
+    media_source_stats_dict = {(e["ad_group_id"], e["source_id"]): e for e in _get_media_source_stats()}
+    source_bid_modifiers_dict = {
+        (e["ad_group_id"], int(e["target"])): e["modifier"]
+        for e in _get_bid_modifiers(ad_group_ids, bid_modifiers.BidModifierType.SOURCE)
+    }
+
+    date_string = date.strftime("%Y-%m-%d")
+
+    chunk_id = 0
+
+    for source_chunk in queryset_helper.chunk_iterator(
+        _get_media_source_data(ad_group_ids), chunk_size=MEDIA_SOURCE_CHUNK_SIZE
+    ):
+        chunk_id += 1
+        logger.info("Processing media source chunk.", chunk=chunk_id)
+
+        for source_row in source_chunk:
+            row = source_row.copy()
+            stats_data = media_source_stats_dict.get((row["adgroup_id"], row["source_id"]))
+            modifier = source_bid_modifiers_dict.get((row["adgroup_id"], row["source_id"]))
+            _update_row_with_stats_and_modifier(row, stats_data, modifier)
+
+            _normalize_field(row, "state")
+            row["date"] = date_string
+            yield row
+
+        logger.info("Done processing media source chunk.", chunk=chunk_id)
+
+
+def _get_media_source_data(ad_group_ids):
+    field_mapping = {
+        "adgroup_id": F("ad_group_id"),
+        "state": F("settings__state"),
+        "name": F("source__name"),
+        "bidder_slug": F("source__bidder_slug"),
+        "tracking_slug": F("source__tracking_slug"),
+    }
+
+    output_values = list(field_mapping.keys()) + ["source_id"]
+
+    return (
+        models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids)
+        .select_related("settings", "source")
+        .annotate(**field_mapping)
+        .values(*output_values)
+    )
+
+
+def _get_media_source_stats():
+    logger.info("Querying media source spend.")
+
+    sql = """
+SELECT
+    ad_group_id,
+    source_id,
+    impressions,
+    clicks,
+    COALESCE(effective_cost_nano, 0)
+    + COALESCE(effective_data_cost_nano, 0)
+    + COALESCE(service_fee_nano, 0)
+    + COALESCE(license_fee_nano, 0)
+    + COALESCE(margin_nano, 0)
+    AS spend_nano,
+    license_fee_nano,
+    visits,
+    video_midpoint,
+    video_complete,
+    mrc50_measurable,
+    mrc50_viewable,
+    mrc100_measurable,
+    mrc100_viewable,
+    vast4_measurable,
+    vast4_viewable
+FROM mv_adgroup
+WHERE
+    date = DATE(CURRENT_DATE - interval '1 day') AND impressions > 0
+    """
+
+    with db.get_stats_cursor() as cursor:
+        cursor.execute(sql)
+        rows = db.dictfetchall(cursor)
+
+    logger.info("Got media source spend rows.", count=len(rows))
+    return rows
+
+
+def _content_ad_rows_generator(date, ad_group_ids):
+    content_ad_stats_dict = {e["content_ad_id"]: e for e in _get_content_ad_stats()}
+    ad_bid_modifiers_dict = {
+        int(e["target"]): e["modifier"] for e in _get_bid_modifiers(ad_group_ids, bid_modifiers.BidModifierType.AD)
+    }
+
+    date_string = date.strftime("%Y-%m-%d")
+
+    chunk_id = 0
+
+    for ad_chunk in queryset_helper.chunk_iterator(
+        _get_content_ad_data(ad_group_ids), chunk_size=CONTENT_AD_CHUNK_SIZE
+    ):
+        chunk_id += 1
+        logger.info("Processing content ad chunk.", chunk=chunk_id)
+
+        for ad_row in ad_chunk:
+            row = ad_row.copy()
+            stats_data = content_ad_stats_dict.get(row["content_ad_id"])
+            modifier = ad_bid_modifiers_dict.get(row["content_ad_id"])
+            _update_row_with_stats_and_modifier(row, stats_data, modifier)
+
+            _normalize_field(row, "state")
+            _normalize_text_field(row, "title")
+            _normalize_text_field(row, "description")
+            row["date"] = date_string
+            yield row
+
+        logger.info("Done processing content ad chunk.", chunk=chunk_id)
+
+
+def _get_content_ad_data(ad_group_ids):
+    field_mapping = {
+        "content_ad_id": F("id"),
+    }
+
+    output_values = list(field_mapping.keys()) + ["ad_group_id", "type", "title", "url", "description", "state"]
+    return (
+        models.ContentAd.objects.filter(ad_group_id__in=ad_group_ids).annotate(**field_mapping).values(*output_values)
+    )
+
+
+def _get_content_ad_stats():
+    logger.info("Querying content ad spend.")
+
+    sql = """
+SELECT
+    content_ad_id,
+    SUM(impressions) AS impressions,
+    SUM(clicks) AS clicks,
+    SUM(COALESCE(effective_cost_nano, 0)
+      + COALESCE(effective_data_cost_nano, 0)
+      + COALESCE(service_fee_nano, 0)
+      + COALESCE(license_fee_nano, 0)
+      + COALESCE(margin_nano, 0)
+    ) AS spend_nano,
+    SUM(license_fee_nano) AS license_fee_nano,
+    SUM(visits) AS visits,
+    SUM(video_midpoint) AS video_midpoint,
+    SUM(video_complete) AS video_complete,
+    SUM(mrc50_measurable) AS mrc50_measurable,
+    SUM(mrc50_viewable) AS mrc50_viewable,
+    SUM(mrc100_measurable) AS mrc100_measurable,
+    SUM(mrc100_viewable) AS mrc100_viewable,
+    SUM(vast4_measurable) AS vast4_measurable,
+    SUM(vast4_viewable) AS vast4_viewable
+FROM mv_contentad
+WHERE
+    date = DATE(CURRENT_DATE - interval '1 day')
+GROUP BY content_ad_id
+HAVING SUM(impressions) > 0
+    """
+
+    with db.get_stats_cursor() as cursor:
+        cursor.execute(sql)
+        rows = db.dictfetchall(cursor)
+
+    logger.info("Got content ad spend rows.", count=len(rows))
+    return rows
+
+
+def _get_bid_modifiers(ad_group_ids, bm_type):
+    return (
+        bid_modifiers.BidModifier.objects.filter(type=bm_type)
+        .filter(ad_group_id__in=ad_group_ids)
+        .values("ad_group_id", "target", "modifier")
+    )
+
+
+def _update_row_with_stats_and_modifier(row, stats, modifier):
+    if stats is None:
+        stats = {}
+    if modifier is None:
+        modifier = 0.0
+
+    row.update(
+        {
+            "impressions": stats.get("impressions", 0),
+            "clicks": stats.get("clicks", 0),
+            "spend": float(stats["spend_nano"]) / 10 ** 9 if "spend_nano" in stats else 0,
+            "license_fee": float(stats["license_fee_nano"]) / 10 ** 9 if "license_fee_nano" in stats else 0,
+            "visits": stats.get("visits", 0),
+            "video_midpoint": stats.get("video_midpoint", 0),
+            "video_complete": stats.get("video_complete", 0),
+            "mrc50_measurable": stats.get("mrc50_measurable", 0),
+            "mrc50_viewable": stats.get("mrc50_viewable", 0),
+            "mrc100_measurable": stats.get("mrc100_measurable", 0),
+            "mrc100_viewable": stats.get("mrc100_viewable", 0),
+            "vast4_measurable": stats.get("vast4_measurable", 0),
+            "vast4_viewable": stats.get("vast4_viewable", 0),
+            "modifier": modifier,
+        }
+    )

@@ -1,6 +1,7 @@
 import datetime
 import json
 from decimal import Decimal
+from random import choice
 
 import mock
 import unicodecsv as csv
@@ -48,7 +49,7 @@ def _create_daily_budget_statements(budget, dates, **kwargs):
 
 
 class DemandReportTestCase(test.TestCase):
-    def _assert_row_data(
+    def _assert_ad_group_row_data(
         self,
         ad_group,
         row,
@@ -265,11 +266,136 @@ class DemandReportTestCase(test.TestCase):
                 expected = str(value) if value is not None else ""
             self.assertEqual(actual, expected, msg=column)
 
+    def _get_modifier(self, bm_qs):
+        bm = bm_qs.first()
+        if bm:
+            return bm.modifier
+
+        return "0.0"
+
+    def _assert_media_source_row_data(
+        self,
+        ad_group_source,
+        row,
+        impressions="0",
+        clicks="0",
+        spend="0",
+        license_fee="0",
+        visits="0",
+        video_midpoint="0",
+        video_complete="0",
+        mrc50_measurable="0",
+        mrc50_viewable="0",
+        mrc100_measurable="0",
+        mrc100_viewable="0",
+        vast4_measurable="0",
+        vast4_viewable="0",
+    ):
+
+        ad_group_source.refresh_from_db()
+
+        checks = {
+            "date": (dates_helper.local_today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            "adgroup_id": ad_group_source.ad_group.id,
+            "source_id": ad_group_source.source.id,
+            "state": demand_report._bool_repr(ad_group_source.ad_group.settings.state),
+            "name": ad_group_source.source.name,
+            "bidder_slug": ad_group_source.source.bidder_slug,
+            "tracking_slug": ad_group_source.source.tracking_slug,
+            "impressions": impressions,
+            "clicks": clicks,
+            "spend": spend,
+            "license_fee": license_fee,
+            "visits": visits,
+            "video_midpoint": video_midpoint,
+            "video_complete": video_complete,
+            "mrc50_measurable": mrc50_measurable,
+            "mrc50_viewable": mrc50_viewable,
+            "mrc100_measurable": mrc100_measurable,
+            "mrc100_viewable": mrc100_viewable,
+            "vast4_measurable": vast4_measurable,
+            "vast4_viewable": vast4_viewable,
+            "modifier": self._get_modifier(
+                ad_group_source.ad_group.bidmodifier_set.filter(
+                    type=core.features.bid_modifiers.BidModifierType.SOURCE, target=int(ad_group_source.source_id)
+                ).only("modifier")
+            ),
+        }
+
+        for column, value in checks.items():
+            if isinstance(value, Decimal):
+                actual = Decimal(row[column])
+                expected = value
+            else:
+                actual = row[column]
+                expected = str(value) if value is not None else ""
+            self.assertEqual(actual, expected, msg=column)
+
+    def _assert_content_ad_row_data(
+        self,
+        content_ad,
+        row,
+        impressions="0",
+        clicks="0",
+        spend="0",
+        license_fee="0",
+        visits="0",
+        video_midpoint="0",
+        video_complete="0",
+        mrc50_measurable="0",
+        mrc50_viewable="0",
+        mrc100_measurable="0",
+        mrc100_viewable="0",
+        vast4_measurable="0",
+        vast4_viewable="0",
+    ):
+
+        content_ad.refresh_from_db()
+
+        checks = {
+            "date": (dates_helper.local_today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            "ad_group_id": content_ad.ad_group.id,
+            "content_ad_id": content_ad.id,
+            "state": demand_report._bool_repr(content_ad.state),
+            "type": content_ad.type,
+            "title": content_ad.title,
+            "url": content_ad.url,
+            "description": content_ad.description,
+            "impressions": impressions,
+            "clicks": clicks,
+            "spend": spend,
+            "license_fee": license_fee,
+            "visits": visits,
+            "video_midpoint": video_midpoint,
+            "video_complete": video_complete,
+            "mrc50_measurable": mrc50_measurable,
+            "mrc50_viewable": mrc50_viewable,
+            "mrc100_measurable": mrc100_measurable,
+            "mrc100_viewable": mrc100_viewable,
+            "vast4_measurable": vast4_measurable,
+            "vast4_viewable": vast4_viewable,
+            "modifier": self._get_modifier(
+                content_ad.ad_group.bidmodifier_set.filter(
+                    type=core.features.bid_modifiers.BidModifierType.AD, target=int(content_ad.id)
+                ).only("modifier")
+            ),
+        }
+
+        for column, value in checks.items():
+            if isinstance(value, Decimal):
+                actual = Decimal(row[column])
+                expected = value
+            else:
+                actual = row[column]
+                expected = str(value) if value is not None else ""
+            self.assertEqual(actual, expected, msg=column)
+
     def setUp(self):
         self._create_entities()
 
+    @mock.patch("core.features.bid_modifiers.source.handle_ad_group_source_settings_change")
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
-    def _create_entities(self, mock_autopilot):
+    def _create_entities(self, mock_autopilot, mock_handle_source_change):
         self.user = magic_mixer.blend(zemauth.models.User)
         self.mock_request = mock.MagicMock()
         self.mock_request.user = self.user
@@ -278,6 +404,8 @@ class DemandReportTestCase(test.TestCase):
         self.source_type_yahoo = magic_mixer.blend(core.models.SourceType, type=constants.SourceType.YAHOO)
         self.source_outbrain = magic_mixer.blend(core.models.Source, source_type=self.source_type_outbrain)
         self.source_yahoo = magic_mixer.blend(core.models.Source, source_type=self.source_type_yahoo)
+        self.source_1 = magic_mixer.blend(core.models.Source)
+        self.source_2 = magic_mixer.blend(core.models.Source)
 
         self.user_1 = magic_mixer.blend(zemauth.models.User)
         self.user_2 = magic_mixer.blend(zemauth.models.User)
@@ -383,7 +511,9 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=["wifi"],
         )
 
-        self.ad_group_source_1_1_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_1_1)
+        self.ad_group_source_1_1_1 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_1_1, source=self.source_1
+        )
         self.ad_group_source_1_1_1.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -409,7 +539,9 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=["cellular"],
         )
 
-        self.ad_group_source_1_2_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_1_2)
+        self.ad_group_source_1_2_1 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_1_2, source=self.source_1
+        )
         self.ad_group_source_1_2_1.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -417,7 +549,9 @@ class DemandReportTestCase(test.TestCase):
             daily_budget_cc=Decimal("2000.0"),
         )
 
-        self.ad_group_source_1_2_2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_1_2)
+        self.ad_group_source_1_2_2 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_1_2, source=self.source_2
+        )
         self.ad_group_source_1_2_2.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -451,7 +585,9 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=[],
         )
 
-        self.ad_group_source_2_1_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_1)
+        self.ad_group_source_2_1_1 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_2_1, source=self.source_1
+        )
         self.ad_group_source_2_1_1.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -475,7 +611,9 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=[],
         )
 
-        self.ad_group_source_2_2_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_2)
+        self.ad_group_source_2_2_1 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_2_2, source=self.source_1
+        )
         self.ad_group_source_2_2_1.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -483,12 +621,35 @@ class DemandReportTestCase(test.TestCase):
             daily_budget_cc=Decimal("20.0"),
         )
 
-        self.ad_group_source_2_2_2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_2)
+        self.ad_group_source_2_2_2 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_2_2, source=self.source_2
+        )
         self.ad_group_source_2_2_2.settings.update_unsafe(
             None,
             state=constants.AdGroupSourceSettingsState.ACTIVE,
             cpc_cc=Decimal("1.0"),
             daily_budget_cc=Decimal("30.0"),
+        )
+
+        self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
+        self.ad_group_2_3.settings.update(
+            None,
+            archived=True,
+            state=constants.AdGroupSettingsState.INACTIVE,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            daily_budget=Decimal("10.0"),
+            autopilot_daily_budget=Decimal("10.0"),
+        )
+
+        self.ad_group_source_2_3_1 = magic_mixer.blend(
+            core.models.AdGroupSource, ad_group=self.ad_group_2_3, source=self.source_1
+        )
+        self.ad_group_source_2_3_1.settings.update_unsafe(
+            None,
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+            cpc_cc=Decimal("1.0"),
+            daily_budget_cc=Decimal("10.0"),
         )
 
         _create_daily_budget_statements(
@@ -503,20 +664,117 @@ class DemandReportTestCase(test.TestCase):
         magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group_1_1, trackers=[{}, {}, {}])
         magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group_1_1, trackers=[])
 
-        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_1)
-        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_2)
-        magic_mixer.cycle(50).blend(core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_2_2)
+        self.content_ad_1_2_1 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group_1_2, trackers=[])
+        self.content_ad_2_1_1 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group_2_1, trackers=[])
+        self.content_ad_2_1_2 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group_2_1, trackers=[])
+        self.content_ad_2_3_1 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group_2_3, trackers=[])
 
+        def random_bm_types():
+            while True:
+                yield choice(
+                    list(
+                        set(core.features.bid_modifiers.BidModifierType.get_all())
+                        - {
+                            core.features.bid_modifiers.BidModifierType.SOURCE,
+                            core.features.bid_modifiers.BidModifierType.AD,
+                        }
+                    )
+                )
+
+        magic_mixer.cycle(50).blend(
+            core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_1, type=random_bm_types()
+        )
+        magic_mixer.cycle(50).blend(
+            core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_1_2, type=random_bm_types()
+        )
+        magic_mixer.cycle(50).blend(
+            core.features.bid_modifiers.BidModifier, ad_group=self.ad_group_2_2, type=random_bm_types()
+        )
+
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_1_1,
+            target=str(self.ad_group_source_1_1_1.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_1_2,
+            target=str(self.ad_group_source_1_2_1.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_1_2,
+            target=str(self.ad_group_source_1_2_2.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_1,
+            target=str(self.ad_group_source_2_1_1.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_2,
+            target=str(self.ad_group_source_2_2_1.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_2,
+            target=str(self.ad_group_source_2_2_2.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_3,
+            target=str(self.ad_group_source_2_3_1.id),
+            type=core.features.bid_modifiers.BidModifierType.SOURCE,
+        )
+
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_1_2,
+            target=str(self.content_ad_1_2_1.id),
+            type=core.features.bid_modifiers.BidModifierType.AD,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_1,
+            target=str(self.content_ad_2_1_1.id),
+            type=core.features.bid_modifiers.BidModifierType.AD,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_1,
+            target=str(self.content_ad_2_1_2.id),
+            type=core.features.bid_modifiers.BidModifierType.AD,
+        )
+        magic_mixer.blend(
+            core.features.bid_modifiers.BidModifier,
+            ad_group=self.ad_group_2_3,
+            target=str(self.content_ad_2_3_1.id),
+            type=core.features.bid_modifiers.BidModifierType.AD,
+        )
+
+    @mock.patch("analytics.demand_report._get_content_ad_stats")
+    @mock.patch("analytics.demand_report._get_media_source_stats")
     @mock.patch("analytics.demand_report._get_ad_group_stats")
     @mock.patch("utils.bigquery_helper.query")
     @mock.patch("utils.bigquery_helper.upload_csv_file")
     @mock.patch("redshiftapi.db.get_stats_cursor")
-    def test_create_report(self, mock_db, mock_upload, mock_query, mock_stats):
+    def test_create_report(
+        self, mock_db, mock_upload, mock_query, mock_ad_group_stats, mock_media_source_stats, mock_content_ad_stats
+    ):
+        # Ad group stats
         stats_rows = [
             [self.ad_group_1_1.id, 318199, 75, 143754891637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
             [self.ad_group_1_2.id, 405265, 407, 152348436441, 13252900000, 308, 0, 0, 250, 188, 144, 132, 100, 80],
             [self.ad_group_2_1.id, 308172, 75, 143785991637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
             # no stats for ad_group_2_2
+            [self.ad_group_2_3.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
         columns = [
             "ad_group_id",
@@ -534,17 +792,149 @@ class DemandReportTestCase(test.TestCase):
             "vast4_measurable",
             "vast4_viewable",
         ]
+        mock_ad_group_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
 
-        mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
+        # Media source stats
+        stats_rows = [
+            [
+                self.ad_group_1_1.id,
+                self.ad_group_source_1_1_1.source_id,
+                318199,
+                75,
+                143754891637,
+                24610000000,
+                57,
+                12,
+                3,
+                50,
+                25,
+                40,
+                15,
+                8,
+                2,
+            ],
+            [
+                self.ad_group_1_2.id,
+                self.ad_group_source_1_2_1.source_id,
+                405265,
+                407,
+                152348436441,
+                13252900000,
+                308,
+                0,
+                0,
+                250,
+                188,
+                144,
+                132,
+                100,
+                80,
+            ],
+            [
+                self.ad_group_2_1.id,
+                self.ad_group_source_2_1_1.source_id,
+                308172,
+                75,
+                143785991637,
+                24610000000,
+                57,
+                12,
+                3,
+                50,
+                25,
+                40,
+                15,
+                8,
+                2,
+            ],
+            # no stats for ad_group_2_2
+            [self.ad_group_2_3.id, self.ad_group_source_2_3_1.source_id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        columns = [
+            "ad_group_id",
+            "source_id",
+            "impressions",
+            "clicks",
+            "spend_nano",
+            "license_fee_nano",
+            "visits",
+            "video_midpoint",
+            "video_complete",
+            "mrc50_measurable",
+            "mrc50_viewable",
+            "mrc100_measurable",
+            "mrc100_viewable",
+            "vast4_measurable",
+            "vast4_viewable",
+        ]
 
-        with self.assertNumQueries(11):
+        mock_media_source_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
+
+        # Content ad stats
+        stats_rows = [
+            [
+                self.content_ad_1_2_1.id,
+                405265,
+                407,
+                152348436441,
+                13252900000,
+                308,
+                0,
+                0,
+                250,
+                188,
+                144,
+                132,
+                100,
+                80,
+            ],
+            [
+                self.content_ad_2_1_1.id,
+                308172,
+                75,
+                143785991637,
+                24610000000,
+                57,
+                12,
+                3,
+                50,
+                25,
+                40,
+                15,
+                8,
+                2,
+            ],
+            # no stats for ad_group_2_2
+            [self.content_ad_2_3_1.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        columns = [
+            "content_ad_id",
+            "impressions",
+            "clicks",
+            "spend_nano",
+            "license_fee_nano",
+            "visits",
+            "video_midpoint",
+            "video_complete",
+            "mrc50_measurable",
+            "mrc50_viewable",
+            "mrc100_measurable",
+            "mrc100_viewable",
+            "vast4_measurable",
+            "vast4_viewable",
+        ]
+
+        mock_content_ad_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
+
+        with self.assertNumQueries(24):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
-        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls), 3)
+
         args, kwargs = calls[0]
         self.assertEqual(args[1], demand_report.DATASET_NAME)
-        self.assertEqual(args[2], demand_report.TABLE_NAME)
+        self.assertEqual(args[2], demand_report.AD_GROUP_TABLE_NAME)
         self.assertEqual(kwargs["timeout"], demand_report.BIGQUERY_TIMEOUT)
         self.assertEqual(kwargs["skip_leading_rows"], 1)
 
@@ -552,9 +942,9 @@ class DemandReportTestCase(test.TestCase):
 
         rows = sorted([row for row in csv_reader], key=lambda x: int(x["adgroup_id"]))
 
-        self.assertEqual(len(rows), 4)
+        self.assertEqual(len(rows), 5)
 
-        self._assert_row_data(
+        self._assert_ad_group_row_data(
             self.ad_group_1_1,
             rows[0],
             blacklist_publisher_groups="TRUE",
@@ -582,7 +972,7 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=["wifi"],
         )
 
-        self._assert_row_data(
+        self._assert_ad_group_row_data(
             self.ad_group_1_2,
             rows[1],
             blacklist_publisher_groups="TRUE",
@@ -610,7 +1000,7 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=["cellular"],
         )
 
-        self._assert_row_data(
+        self._assert_ad_group_row_data(
             self.ad_group_2_1,
             rows[2],
             blacklist_publisher_groups="TRUE",
@@ -638,188 +1028,7 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=[],
         )
 
-        self._assert_row_data(
-            self.ad_group_2_2,
-            rows[3],
-            blacklist_publisher_groups="TRUE",
-            impressions="0",
-            clicks="0",
-            spend="0",
-            license_fee=0,
-            visits="0",
-            video_midpoint="0",
-            video_complete="0",
-            mrc50_measurable="0",
-            mrc50_viewable="0",
-            mrc100_measurable="0",
-            mrc100_viewable="0",
-            vast4_measurable="0",
-            vast4_viewable="0",
-            calculated_daily_budget="50.0000",
-            calculated_bid="0.4500",
-            target_regions=[""],
-            world_region="World",
-            geo_targeting_type=[""],
-            rules=[self.rule_campaign_2, self.rule_account_1],
-            target_browsers=[],
-            exclusion_target_browsers=[],
-            target_connection_types=[],
-        )
-
-    @mock.patch("analytics.demand_report._get_ad_group_stats")
-    @mock.patch("utils.bigquery_helper.query")
-    @mock.patch("utils.bigquery_helper.upload_csv_file")
-    @mock.patch("redshiftapi.db.get_stats_cursor")
-    def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_stats):
-
-        with mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group"):
-            self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
-            self.ad_group_2_3.settings.update(
-                None,
-                archived=True,
-                state=constants.AdGroupSettingsState.INACTIVE,
-                start_date=self.start_date,
-                end_date=self.end_date,
-                daily_budget=Decimal("10.0"),
-                autopilot_daily_budget=Decimal("10.0"),
-            )
-
-            self.ad_group_source_2_3_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_3)
-            self.ad_group_source_2_3_1.settings.update_unsafe(
-                None,
-                state=constants.AdGroupSourceSettingsState.ACTIVE,
-                cpc_cc=Decimal("1.0"),
-                daily_budget_cc=Decimal("10.0"),
-            )
-
-        stats_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 143754891637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
-            [self.ad_group_1_2.id, 405265, 407, 152348436441, 13252900000, 308, 0, 0, 250, 188, 144, 132, 100, 80],
-            [self.ad_group_2_1.id, 308172, 75, 143785991637, 24610000000, 57, 12, 3, 50, 25, 40, 15, 8, 2],
-            # no stats for ad_group_2_2
-            [self.ad_group_2_3.id, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ]
-        columns = [
-            "ad_group_id",
-            "impressions",
-            "clicks",
-            "spend_nano",
-            "license_fee_nano",
-            "visits",
-            "video_midpoint",
-            "video_complete",
-            "mrc50_measurable",
-            "mrc50_viewable",
-            "mrc100_measurable",
-            "mrc100_viewable",
-            "vast4_measurable",
-            "vast4_viewable",
-        ]
-
-        mock_stats.return_value = [dict(zip(columns, row)) for row in stats_rows]
-
-        with self.assertNumQueries(20):
-            demand_report.create_report()
-
-        calls = mock_upload.call_args_list
-        self.assertEqual(len(calls), 1)
-        args, kwargs = calls[0]
-        self.assertEqual(args[1], demand_report.DATASET_NAME)
-        self.assertEqual(args[2], demand_report.TABLE_NAME)
-        self.assertEqual(kwargs["timeout"], demand_report.BIGQUERY_TIMEOUT)
-        self.assertEqual(kwargs["skip_leading_rows"], 1)
-
-        csv_reader = csv.DictReader(args[0])
-
-        rows = sorted([row for row in csv_reader], key=lambda x: int(x["adgroup_id"]))
-
-        self.assertEqual(len(rows), 5)
-
-        self._assert_row_data(
-            self.ad_group_1_1,
-            rows[0],
-            blacklist_publisher_groups="TRUE",
-            impressions="318199",
-            clicks="75",
-            spend="143.754891637",
-            license_fee="24.61",
-            visits="57",
-            video_midpoint="12",
-            video_complete="3",
-            mrc50_measurable="50",
-            mrc50_viewable="25",
-            mrc100_measurable="40",
-            mrc100_viewable="15",
-            vast4_measurable="8",
-            vast4_viewable="2",
-            calculated_daily_budget="161.2548916369999858488881728",
-            calculated_bid="0.4500",
-            target_regions=[""],
-            world_region="World",
-            geo_targeting_type=[""],
-            rules=[self.rule_ad_group_1, self.rule_account_1],
-            target_browsers=[{"family": "CHROME"}],
-            exclusion_target_browsers=[],
-            target_connection_types=["wifi"],
-        )
-
-        self._assert_row_data(
-            self.ad_group_1_2,
-            rows[1],
-            blacklist_publisher_groups="TRUE",
-            impressions="405265",
-            clicks="407",
-            spend="152.348436441",
-            license_fee="13.2529",
-            visits="308",
-            video_midpoint="0",
-            video_complete="0",
-            mrc50_measurable="250",
-            mrc50_viewable="188",
-            mrc100_measurable="144",
-            mrc100_viewable="132",
-            vast4_measurable="100",
-            vast4_viewable="80",
-            calculated_daily_budget="239.8484364409999898271053098",
-            calculated_bid="0.4500",
-            target_regions=[""],
-            world_region="World",
-            geo_targeting_type=[""],
-            rules=[self.rule_account_1],
-            target_browsers=[{"family": "CHROME"}],
-            exclusion_target_browsers=[],
-            target_connection_types=["cellular"],
-        )
-
-        self._assert_row_data(
-            self.ad_group_2_1,
-            rows[2],
-            blacklist_publisher_groups="TRUE",
-            impressions="308172",
-            clicks="75",
-            spend="143.785991637",
-            license_fee="24.61",
-            visits="57",
-            video_midpoint="12",
-            video_complete="3",
-            mrc50_measurable="50",
-            mrc50_viewable="25",
-            mrc100_measurable="40",
-            mrc100_viewable="15",
-            vast4_measurable="8",
-            vast4_viewable="2",
-            calculated_daily_budget="100.0000",
-            calculated_bid="0.4500",
-            target_regions=[""],
-            world_region="World",
-            geo_targeting_type=[""],
-            rules=[self.rule_campaign_2, self.rule_account_1],
-            target_browsers=[],
-            exclusion_target_browsers=[{"family": "FIREFOX"}],
-            target_connection_types=[],
-        )
-
-        self._assert_row_data(
+        self._assert_ad_group_row_data(
             self.ad_group_2_2,
             rows[3],
             blacklist_publisher_groups="TRUE",
@@ -847,7 +1056,7 @@ class DemandReportTestCase(test.TestCase):
             target_connection_types=[],
         )
 
-        self._assert_row_data(
+        self._assert_ad_group_row_data(
             self.ad_group_2_3,
             rows[4],
             blacklist_publisher_groups="TRUE",
@@ -870,6 +1079,231 @@ class DemandReportTestCase(test.TestCase):
             world_region="World",
             geo_targeting_type=[""],
             rules=[self.rule_campaign_2, self.rule_account_1],
+        )
+
+        args, kwargs = calls[1]
+        self.assertEqual(args[1], demand_report.DATASET_NAME)
+        self.assertEqual(args[2], demand_report.MEDIA_SOURCE_TABLE_NAME)
+        self.assertEqual(kwargs["timeout"], demand_report.BIGQUERY_TIMEOUT)
+        self.assertEqual(kwargs["skip_leading_rows"], 1)
+
+        csv_reader = csv.DictReader(args[0])
+
+        rows = sorted([row for row in csv_reader], key=lambda x: (int(x["adgroup_id"]), int(x["source_id"])))
+
+        self.assertEqual(len(rows), 7)
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_1_1_1,
+            rows[0],
+            impressions="318199",
+            clicks="75",
+            spend="143.754891637",
+            license_fee="24.61",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_1_2_1,
+            rows[1],
+            impressions="405265",
+            clicks="407",
+            spend="152.348436441",
+            license_fee="13.2529",
+            visits="308",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="250",
+            mrc50_viewable="188",
+            mrc100_measurable="144",
+            mrc100_viewable="132",
+            vast4_measurable="100",
+            vast4_viewable="80",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_1_2_2,
+            rows[2],
+            impressions="0",
+            clicks="0",
+            spend="0",
+            license_fee="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_2_1_1,
+            rows[3],
+            impressions="308172",
+            clicks="75",
+            spend="143.785991637",
+            license_fee="24.61",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_2_2_1,
+            rows[4],
+            impressions="0",
+            clicks="0",
+            spend="0",
+            license_fee="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_2_2_2,
+            rows[5],
+            impressions="0",
+            clicks="0",
+            spend="0",
+            license_fee="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
+        )
+
+        self._assert_media_source_row_data(
+            self.ad_group_source_2_3_1,
+            rows[6],
+            impressions="3",
+            clicks="1",
+            spend="0.0",
+            license_fee="0.0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
+        )
+
+        args, kwargs = calls[2]
+        self.assertEqual(args[1], demand_report.DATASET_NAME)
+        self.assertEqual(args[2], demand_report.CONTENT_AD_TABLE_NAME)
+        self.assertEqual(kwargs["timeout"], demand_report.BIGQUERY_TIMEOUT)
+        self.assertEqual(kwargs["skip_leading_rows"], 1)
+
+        csv_reader = csv.DictReader(args[0])
+
+        rows = sorted([row for row in csv_reader], key=lambda x: (int(x["ad_group_id"]), int(x["content_ad_id"])))
+
+        self.assertEqual(len(rows), 17)
+
+        for i in range(13):
+            self.assertEqual(rows[i]["ad_group_id"], str(self.ad_group_1_1.id))
+
+        self._assert_content_ad_row_data(
+            self.content_ad_1_2_1,
+            rows[13],
+            impressions="405265",
+            clicks="407",
+            spend="152.348436441",
+            license_fee="13.2529",
+            visits="308",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="250",
+            mrc50_viewable="188",
+            mrc100_measurable="144",
+            mrc100_viewable="132",
+            vast4_measurable="100",
+            vast4_viewable="80",
+        )
+
+        self._assert_content_ad_row_data(
+            self.content_ad_2_1_1,
+            rows[14],
+            impressions="308172",
+            clicks="75",
+            spend="143.785991637",
+            license_fee="24.61",
+            visits="57",
+            video_midpoint="12",
+            video_complete="3",
+            mrc50_measurable="50",
+            mrc50_viewable="25",
+            mrc100_measurable="40",
+            mrc100_viewable="15",
+            vast4_measurable="8",
+            vast4_viewable="2",
+        )
+
+        self._assert_content_ad_row_data(
+            self.content_ad_2_1_2,
+            rows[15],
+            impressions="0",
+            clicks="0",
+            spend="0",
+            license_fee="0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
+        )
+
+        self._assert_content_ad_row_data(
+            self.content_ad_2_3_1,
+            rows[16],
+            impressions="3",
+            clicks="1",
+            spend="0.0",
+            license_fee="0.0",
+            visits="0",
+            video_midpoint="0",
+            video_complete="0",
+            mrc50_measurable="0",
+            mrc50_viewable="0",
+            mrc100_measurable="0",
+            mrc100_viewable="0",
+            vast4_measurable="0",
+            vast4_viewable="0",
         )
 
 
@@ -974,3 +1408,11 @@ class SourceIdMapTestCase(test.TestCase):
     def test_missing(self):
         with self.assertRaises(ValueError):
             demand_report._source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO, "missing")
+
+
+class NormalizeTextTestCase(test.TestCase):
+    def test_many_whitespaces(self):
+        self.assertEqual(demand_report._normalize_text(" \n This  \n\t  is   some\n text.  "), "This is some text.")
+
+    def test_none(self):
+        self.assertEqual(demand_report._normalize_text(None), "")

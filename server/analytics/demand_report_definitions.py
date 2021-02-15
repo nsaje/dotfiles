@@ -1,4 +1,4 @@
-OUTPUT_COLUMN_NAMES = [
+AD_GROUP_COLUMN_NAMES = [
     "date",
     "agency_id",
     "agency_name",
@@ -176,3 +176,53 @@ WORLD_REGIONS = {
     "HU": "Europe",
     "EE": "Europe",
 }
+
+MEDIA_SOURCE_COLUMN_NAMES = [
+    "date",
+    "adgroup_id",
+    "source_id",
+    "state",
+    "name",
+    "bidder_slug",
+    "tracking_slug",
+    "impressions",
+    "clicks",
+    "spend",
+    "visits",
+    "video_midpoint",
+    "video_complete",
+    "mrc50_measurable",
+    "mrc50_viewable",
+    "mrc100_measurable",
+    "mrc100_viewable",
+    "vast4_measurable",
+    "vast4_viewable",
+    "license_fee",
+    "modifier",
+]
+
+
+CONTENT_AD_COLUMN_NAMES = [
+    "date",
+    "ad_group_id",
+    "content_ad_id",
+    "state",
+    "type",
+    "title",
+    "url",
+    "description",
+    "impressions",
+    "clicks",
+    "spend",
+    "visits",
+    "video_midpoint",
+    "video_complete",
+    "mrc50_measurable",
+    "mrc50_viewable",
+    "mrc100_measurable",
+    "mrc100_viewable",
+    "vast4_measurable",
+    "vast4_viewable",
+    "license_fee",
+    "modifier",
+]
