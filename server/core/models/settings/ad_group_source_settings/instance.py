@@ -45,6 +45,8 @@ class AdGroupSourceSettingsMixin(object):
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user, write_history=write_history)
+        if hasattr(self, "bid_modifier"):
+            del self.bid_modifier
 
         self._update_ad_group_daily_budget(request, changes, is_create)
 
@@ -79,8 +81,12 @@ class AdGroupSourceSettingsMixin(object):
     def _filter_and_remap_input(self, updates):
         if self.ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:
             self._remove_no_change_fields(updates, "cpc_cc")
+            if "local_cpm_proxy" in updates:
+                updates["local_cpm"] = updates.pop("local_cpm_proxy")
         else:
             self._remove_no_change_fields(updates, "cpm")
+            if "local_cpc_cc_proxy" in updates:
+                updates["local_cpc_cc"] = updates.pop("local_cpc_cc_proxy")
         return updates
 
     def _remove_no_change_fields(self, updates, field):

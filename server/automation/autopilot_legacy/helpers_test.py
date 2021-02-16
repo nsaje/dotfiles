@@ -80,7 +80,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
-        mock_set_ad_group_sources_bids.assert_called()
+        mock_set_ad_group_sources_bids.assert_not_called()
         mock_k1_update_ad_group.assert_called()
 
         self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal("0.123"))
@@ -98,7 +98,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
-        mock_set_ad_group_sources_bids.assert_called()
+        mock_set_ad_group_sources_bids.assert_not_called()
         mock_k1_update_ad_group.assert_called()
 
         self.assertEqual(ag.settings.b1_sources_group_cpm, Decimal("0.123"))

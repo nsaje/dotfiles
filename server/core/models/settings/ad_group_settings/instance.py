@@ -68,12 +68,7 @@ class AdGroupSettingsMixin(object):
                         self._check_if_fields_are_allowed_to_be_changed_with_autopilot_on(changes)
                     new_settings.save(request, system_user=system_user, write_history=write_history)
                     max_autopilot_bid_changed = helpers.check_max_autopilot_bid_changed(self, changes)
-                    b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
-                    self.apply_bids_to_sources(
-                        max_autopilot_bid_changed=max_autopilot_bid_changed,
-                        b1_sources_group_bid_changed=b1_sources_group_bid_changed,
-                        write_source_history=write_source_history,
-                    )
+                    helpers.adjust_to_autopilot_bid_if_needed(self, max_autopilot_bid_changed)
 
                     core.signals.settings_change.send_robust(
                         sender=self.__class__, request=request, instance=new_settings, changes=changes

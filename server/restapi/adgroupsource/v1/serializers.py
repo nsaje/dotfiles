@@ -59,10 +59,10 @@ class AdGroupSourceSerializer(restapi.serializers.serializers.PermissionedFields
 
     source = restapi.serializers.fields.SourceIdSlugField(source="ad_group_source.source")
     cpc = serializers.DecimalField(
-        max_digits=10, decimal_places=4, source="local_cpc_cc", required=False, rounding=decimal.ROUND_HALF_DOWN
+        max_digits=10, decimal_places=4, source="local_cpc_cc_proxy", required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     cpm = serializers.DecimalField(
-        max_digits=10, decimal_places=4, source="local_cpm", required=False, rounding=decimal.ROUND_HALF_DOWN
+        max_digits=10, decimal_places=4, source="local_cpm_proxy", required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     daily_budget = serializers.DecimalField(
         max_digits=10,

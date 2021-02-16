@@ -39,11 +39,11 @@ class AdGroupSourcesTest(RESTAPITestCase):
 
         if agss_db.ad_group_source.ad_group.bidding_type == constants.BiddingType.CPM:
             expected = self.adgroupsource_repr(
-                source=slug, cpm=agss_db.cpm, daily_budget=agss_db.daily_budget_cc, state=agss_db.state
+                source=slug, cpm=agss_db.local_cpm_proxy, daily_budget=agss_db.daily_budget_cc, state=agss_db.state
             )
         else:
             expected = self.adgroupsource_repr(
-                source=slug, cpc=agss_db.cpc_cc, daily_budget=agss_db.daily_budget_cc, state=agss_db.state
+                source=slug, cpc=agss_db.local_cpc_cc_proxy, daily_budget=agss_db.daily_budget_cc, state=agss_db.state
             )
 
         self.assertEqual(expected, adgroupsourcesettings)

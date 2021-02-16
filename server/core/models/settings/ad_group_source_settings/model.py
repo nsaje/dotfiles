@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django.db import models
+from django.utils.functional import cached_property
 
 import core.common
 import core.features.audiences
@@ -11,7 +12,9 @@ import core.features.history
 import core.features.multicurrency
 import core.models
 import core.models.helpers
+from core.features import bid_modifiers
 from dash import constants
+from utils import decimal_helpers
 from utils import lc_helper
 
 from .. import multicurrency_mixin
@@ -70,6 +73,38 @@ class AdGroupSourceSettings(
     landing_mode = models.NullBooleanField(default=False, blank=True, null=True)
 
     objects = core.common.QuerySetManager()
+
+    @property
+    def local_cpc_cc_proxy(self):
+        return self._calculate_bid(self.ad_group_source.ad_group.settings.local_cpc)
+
+    @property
+    def local_cpm_proxy(self):
+        return self._calculate_bid(self.ad_group_source.ad_group.settings.local_cpm)
+
+    def _calculate_bid(self, bid):
+        if bid is None:
+            # If ad group bid is undefined (unlimited autopilot), source bids are not defined.
+            return None
+
+        return decimal_helpers.multiply_as_decimals(bid, self.bid_modifier)
+
+    @cached_property
+    def bid_modifier(self):
+        bid_modifier = (
+            bid_modifiers.BidModifier.objects.only("modifier")
+            .filter(
+                type=bid_modifiers.BidModifierType.SOURCE,
+                ad_group=self.ad_group_source.ad_group,
+                target=str(self.ad_group_source.source.id),
+            )
+            .first()
+        )
+
+        if bid_modifier is None:
+            return Decimal("1.0000")
+
+        return Decimal(bid_modifier.modifier)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):

@@ -641,7 +641,7 @@ class AutopilotPlusTestCase(test.TestCase):
         service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes, ad_group=ad_group)
 
         self.assertEqual(
-            dash.models.History.objects.filter(ad_group=ad_group).count(), initial_history_records_count + 4
+            dash.models.History.objects.filter(ad_group=ad_group).count(), initial_history_records_count + 3
         )
 
         history_records = dash.models.History.objects.filter(ad_group=ad_group).order_by("created_dt")[

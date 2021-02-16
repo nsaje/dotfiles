@@ -4,8 +4,10 @@ from datetime import timedelta
 import mock
 from django.test import TestCase
 
+import utils.exc
 from core.features import bid_modifiers
 from core.features.multicurrency.service.update import _recalculate_ad_group_amounts
+from core.models.settings.ad_group_settings import exceptions as ag_exceptions
 from core.models.settings.ad_group_source_settings import exceptions as ags_exceptions
 from dash import constants
 from dash import models
@@ -65,12 +67,6 @@ class SourceBidValidationMixin(object):
         )
         self.assertEqual(output_bid_modifiers_list, expected_bid_modifiers_list)
 
-    def _assert_source_bid_values(self, bidding_type, expected_bid_value_list):
-        attribute = "settings__cpc_cc" if bidding_type == constants.BiddingType.CPC else "settings__cpm"
-        output_bid_value_list = list(self.ad_group.adgroupsource_set.order_by("id").values_list(attribute, flat=True))
-
-        self.assertEqual(output_bid_value_list, expected_bid_value_list)
-
     def _assert_ad_group_bid_values(self, cpc=None, cpm=None):
         if cpc is not None:
             self.assertEqual(self.ad_group.settings.cpc, cpc)
@@ -127,7 +123,6 @@ class AdGroupSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.2"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
-        self._assert_source_bid_values(constants.BiddingType.CPC, [decimal.Decimal("0.06"), decimal.Decimal("0.28")])
 
         self.assertEqual(mock_send_task.call_count, 1)
         mock_send_task.assert_has_calls(
@@ -151,24 +146,6 @@ class AdGroupSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
                         "changes": {"local_cpc": decimal.Decimal("0.2000")},
                         "system_user": None,
                         "user": self.request.user,
-                    },
-                ],
-                [
-                    ["Source", 'CPC set from "$0.140" to "$0.280"'],
-                    {
-                        "action_type": constants.HistoryActionType.SETTINGS_CHANGE,
-                        "changes": {"local_cpc_cc": decimal.Decimal("0.2800")},
-                        "system_user": None,
-                        "user": None,
-                    },
-                ],
-                [
-                    ["Source", 'CPC set from "$0.030" to "$0.060"'],
-                    {
-                        "action_type": constants.HistoryActionType.SETTINGS_CHANGE,
-                        "changes": {"local_cpc_cc": decimal.Decimal("0.0600")},
-                        "system_user": None,
-                        "user": None,
                     },
                 ],
             ],
@@ -202,7 +179,6 @@ class AdGroupSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("2.0"))
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
-        self._assert_source_bid_values(constants.BiddingType.CPM, [decimal.Decimal("0.6"), decimal.Decimal("2.8")])
 
         self.assertEqual(mock_send_task.call_count, 1)
         mock_send_task.assert_has_calls(
@@ -226,24 +202,6 @@ class AdGroupSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
                         "changes": {"local_cpm": decimal.Decimal("2.0000")},
                         "system_user": None,
                         "user": self.request.user,
-                    },
-                ],
-                [
-                    ["Source", 'CPM set from "$1.400" to "$2.800"'],
-                    {
-                        "action_type": constants.HistoryActionType.SETTINGS_CHANGE,
-                        "changes": {"local_cpm": decimal.Decimal("2.8000")},
-                        "system_user": None,
-                        "user": None,
-                    },
-                ],
-                [
-                    ["Source", 'CPM set from "$0.300" to "$0.600"'],
-                    {
-                        "action_type": constants.HistoryActionType.SETTINGS_CHANGE,
-                        "changes": {"local_cpm": decimal.Decimal("0.6000")},
-                        "system_user": None,
-                        "user": None,
                     },
                 ],
             ],
@@ -272,7 +230,6 @@ class AdGroupSourceSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers([0.6, 3.0])
-        self._assert_source_bid_values(constants.BiddingType.CPC, [decimal.Decimal("0.06"), decimal.Decimal("0.3")])
 
         self.assertEqual(mock_send_task.call_count, 2)
         mock_send_task.assert_has_calls(
@@ -349,7 +306,6 @@ class AdGroupSourceSettingsChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers([0.6, 3.0])
-        self._assert_source_bid_values(constants.BiddingType.CPM, [decimal.Decimal("0.6"), decimal.Decimal("3.0")])
 
         self.assertEqual(mock_send_task.call_count, 2)
         mock_send_task.assert_has_calls(
@@ -429,7 +385,6 @@ class SourceBidModifierChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers([0.6, 3.0])
-        self._assert_source_bid_values(constants.BiddingType.CPC, [decimal.Decimal("0.06"), decimal.Decimal("0.3")])
 
         self.assertEqual(mock_send_task.call_count, 2)
         mock_send_task.assert_has_calls(
@@ -509,7 +464,6 @@ class SourceBidModifierChangeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers([0.6, 3.0])
-        self._assert_source_bid_values(constants.BiddingType.CPM, [decimal.Decimal("0.6"), decimal.Decimal("3.0")])
 
         self.assertEqual(mock_send_task.call_count, 2)
         mock_send_task.assert_has_calls(
@@ -608,8 +562,6 @@ class SwitchBiddingTypeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
-        self._assert_source_bid_values(constants.BiddingType.CPC, [decimal.Decimal("0.03"), decimal.Decimal("0.14")])
-        self._assert_source_bid_values(constants.BiddingType.CPM, [decimal.Decimal("0.3"), decimal.Decimal("1.4")])
 
         self.assertEqual(mock_send_task.call_count, 1)
         mock_send_task.assert_has_calls(
@@ -668,8 +620,6 @@ class SwitchBiddingTypeTestCase(SourceBidValidationMixin, TestCase):
 
         self._assert_ad_group_bid_values(cpc=decimal.Decimal("0.1"), cpm=decimal.Decimal("1.0"))
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
-        self._assert_source_bid_values(constants.BiddingType.CPC, [decimal.Decimal("0.03"), decimal.Decimal("0.14")])
-        self._assert_source_bid_values(constants.BiddingType.CPM, [decimal.Decimal("0.3"), decimal.Decimal("1.4")])
 
         self.assertEqual(mock_send_task.call_count, 1)
         mock_send_task.assert_has_calls(
@@ -767,16 +717,16 @@ class ValidationTestCase(TestCase):
         self.ad_group_source_1_1.refresh_from_db()
         self.ad_group_source_1_2.refresh_from_db()
         # no validation error, should be handled by blocker
-        self.assertEqual(self.ad_group_source_1_1.settings.cpc_cc, decimal.Decimal("12.0"))
-        self.assertEqual(self.ad_group_source_1_2.settings.cpc_cc, decimal.Decimal("12.0"))
+        self.assertEqual(self.ad_group_source_1_1.settings.local_cpc_cc_proxy, decimal.Decimal("12.0"))
+        self.assertEqual(self.ad_group_source_1_2.settings.local_cpc_cc_proxy, decimal.Decimal("12.0"))
 
     def test_ad_group_cpc_under_limit(self):
         self.ad_group_1.settings.update(None, cpc=decimal.Decimal("0.01"))
         self.ad_group_source_1_1.refresh_from_db()
         self.ad_group_source_1_2.refresh_from_db()
         # no validation error, should be handled by blocker
-        self.assertEqual(self.ad_group_source_1_1.settings.cpc_cc, decimal.Decimal("0.01"))
-        self.assertEqual(self.ad_group_source_1_2.settings.cpc_cc, decimal.Decimal("0.01"))
+        self.assertEqual(self.ad_group_source_1_1.settings.local_cpc_cc_proxy, decimal.Decimal("0.01"))
+        self.assertEqual(self.ad_group_source_1_2.settings.local_cpc_cc_proxy, decimal.Decimal("0.01"))
 
     def test_ad_group_cpm_over_limit(self):
         self.ad_group_1.update(None, bidding_type=constants.BiddingType.CPM)
@@ -784,8 +734,8 @@ class ValidationTestCase(TestCase):
         self.ad_group_source_1_1.refresh_from_db()
         self.ad_group_source_1_2.refresh_from_db()
         # no validation error, should be handled by blocker
-        self.assertEqual(self.ad_group_source_1_1.settings.cpm, decimal.Decimal("12.0"))
-        self.assertEqual(self.ad_group_source_1_2.settings.cpm, decimal.Decimal("12.0"))
+        self.assertEqual(self.ad_group_source_1_1.settings.local_cpm_proxy, decimal.Decimal("12.0"))
+        self.assertEqual(self.ad_group_source_1_2.settings.local_cpm_proxy, decimal.Decimal("12.0"))
 
     def test_ad_group_cpm_under_limit(self):
         self.ad_group_1.update(None, bidding_type=constants.BiddingType.CPM)
@@ -793,8 +743,8 @@ class ValidationTestCase(TestCase):
         self.ad_group_source_1_1.refresh_from_db()
         self.ad_group_source_1_2.refresh_from_db()
         # no validation error, should be handled by blocker
-        self.assertEqual(self.ad_group_source_1_1.settings.cpm, decimal.Decimal("0.01"))
-        self.assertEqual(self.ad_group_source_1_2.settings.cpm, decimal.Decimal("0.01"))
+        self.assertEqual(self.ad_group_source_1_1.settings.local_cpm_proxy, decimal.Decimal("0.01"))
+        self.assertEqual(self.ad_group_source_1_2.settings.local_cpm_proxy, decimal.Decimal("0.01"))
 
     def test_ad_group_source_cpc_over_limit(self):
         with self.assertRaises(ags_exceptions.MaximalCPCTooHigh):
@@ -896,53 +846,12 @@ class WorkflowTestCase(TestCase):
         self.ad_group_source.refresh_from_db()
 
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("4.5"))
-        self.assertEqual(self.ad_group_source.settings.cpc_cc, decimal.Decimal("1.5"))
         self.assertTrue(
             decimal_helpers.equal_decimals(
                 self.ad_group.bidmodifier_set.get(
                     type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
                 ).modifier,
                 decimal.Decimal("1.5") / decimal.Decimal("4.5"),
-            )
-        )
-
-    @mock.patch("core.models.settings.ad_group_settings.helpers._replace_with_b1_sources_group_bid_if_needed")
-    @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
-    def test_create_and_update_ad_group_no_change_on_source(self, mock_autopilot, mock_replace):
-        mock_replace.return_value = decimal.Decimal("0.15")
-
-        self.ad_group = models.AdGroup.objects.create(self.request, self.campaign)
-
-        self.ad_group_source = self.ad_group.adgroupsource_set.get(source=self.source)
-
-        self.assertEqual(self.ad_group.bidding_type, constants.BiddingType.CPC)
-        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("0.45"))
-        self.assertEqual(self.ad_group_source.settings.cpc_cc, decimal.Decimal("0.15"))
-        self.assertTrue(
-            self.ad_group.bidmodifier_set.filter(
-                type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
-            ).exists()
-        )
-        self.assertTrue(
-            decimal_helpers.equal_decimals(
-                self.ad_group.bidmodifier_set.get(
-                    type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
-                ).modifier,
-                decimal.Decimal("0.15") / decimal.Decimal("0.45"),
-            )
-        )
-
-        self.ad_group.settings.update(None, cpc=decimal.Decimal("4.5"))
-        self.ad_group_source.refresh_from_db()
-
-        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("4.5"))
-        self.assertEqual(self.ad_group_source.settings.cpc_cc, decimal.Decimal("0.15"))
-        self.assertTrue(
-            decimal_helpers.equal_decimals(
-                self.ad_group.bidmodifier_set.get(
-                    type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
-                ).modifier,
-                decimal.Decimal("0.15") / decimal.Decimal("4.5"),
             )
         )
 
@@ -1085,8 +994,8 @@ class MissingBidModifiersTestCase(TestCase):
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("1.2000"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("1.2000"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("1.2000"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("1.2000"))
 
         self.assertFalse(self._bid_modifier_qs(self.ad_group_source_1).exists())
         self.assertFalse(self._bid_modifier_qs(self.ad_group_source_2).exists())
@@ -1118,7 +1027,10 @@ class AllRTBUpdateTestCase(TestCase):
         )
 
         self.ad_group = magic_mixer.blend(
-            models.AdGroup, bidding_type=constants.BiddingType.CPC, campaign__account__currency=constants.Currency.EUR
+            models.AdGroup,
+            bidding_type=constants.BiddingType.CPC,
+            campaign__account__currency=constants.Currency.EUR,
+            campaign__account__agency__uses_realtime_autopilot=True,
         )
 
     def _setup_ad_group_and_sources(self, ad_group_settings, ad_group_source_settings_1, ad_group_source_settings_2):
@@ -1167,14 +1079,7 @@ class AllRTBUpdateTestCase(TestCase):
                 "{}: expected {}, got {}".format(k, v, getattr(self.ad_group.settings, k)),
             )
 
-    def _assert_ad_group_source_state(self, ad_group_source, settings, bid_modifier_value):
-        for k, v in settings.items():
-            self.assertEqual(
-                getattr(ad_group_source.settings, k),
-                v,
-                "{}: expected {}, got {}".format(k, v, getattr(ad_group_source.settings, k)),
-            )
-
+    def _assert_source_bid_modifier(self, ad_group_source, bid_modifier_value):
         self.assertAlmostEqual(
             self.ad_group.bidmodifier_set.get(
                 type=bid_modifiers.BidModifierType.SOURCE, target=str(ad_group_source.source.id)
@@ -1190,6 +1095,17 @@ class AllRTBUpdateTestCase(TestCase):
         ad_group_source_settings = self._initial_ad_group_source_settings()
         self._setup_ad_group_and_sources(ad_group_settings, ad_group_source_settings, ad_group_source_settings)
 
+        sbm_1 = bid_modifiers.BidModifier.objects.get(
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(self.ad_group_source_1.source.id),
+        ).modifier
+        sbm_2 = bid_modifiers.BidModifier.objects.get(
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(self.ad_group_source_2.source.id),
+        ).modifier
+
         self.ad_group.settings.update(None, b1_sources_group_cpc_cc=decimal.Decimal("0.4000"))
 
         self.ad_group.refresh_from_db()
@@ -1198,30 +1114,33 @@ class AllRTBUpdateTestCase(TestCase):
 
         self._assert_ad_group_state(
             {
-                "cpc": decimal.Decimal("20.0000"),
-                "local_cpc": decimal.Decimal("17.9360"),
+                "cpc": decimal.Decimal("0.4000"),
+                "local_cpc": decimal.Decimal("0.3587"),
                 "b1_sources_group_cpc_cc": decimal.Decimal("0.4000"),
                 "local_b1_sources_group_cpc_cc": decimal.Decimal("0.3587"),
             }
         )
 
-        self._assert_ad_group_source_state(
-            self.ad_group_source_1,
-            {"cpc_cc": decimal.Decimal("0.2230"), "local_cpc_cc": decimal.Decimal("0.2000")},
-            float(decimal.Decimal("0.2230") / decimal.Decimal("20.0000")),
-        )
+        self._assert_source_bid_modifier(self.ad_group_source_1, sbm_1)
 
-        self._assert_ad_group_source_state(
-            self.ad_group_source_2,
-            {"cpc_cc": decimal.Decimal("0.4000"), "local_cpc_cc": decimal.Decimal("0.3587")},
-            float(decimal.Decimal("0.4000") / decimal.Decimal("20.0000")),
-        )
+        self._assert_source_bid_modifier(self.ad_group_source_2, sbm_2)
 
     def test_manual_ad_group_cpc_update(self):
         ad_group_settings = self._initial_ad_group_settings()
         ad_group_settings.update({"autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE})
         ad_group_source_settings = self._initial_ad_group_source_settings()
         self._setup_ad_group_and_sources(ad_group_settings, ad_group_source_settings, ad_group_source_settings)
+
+        sbm_1 = bid_modifiers.BidModifier.objects.get(
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(self.ad_group_source_1.source.id),
+        ).modifier
+        sbm_2 = bid_modifiers.BidModifier.objects.get(
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(self.ad_group_source_2.source.id),
+        ).modifier
 
         self.ad_group.settings.update(None, cpc=decimal.Decimal("15.0000"))
 
@@ -1233,22 +1152,14 @@ class AllRTBUpdateTestCase(TestCase):
             {
                 "cpc": decimal.Decimal("15.0000"),
                 "local_cpc": decimal.Decimal("13.4520"),
-                "b1_sources_group_cpc_cc": decimal.Decimal("0.2230"),
-                "local_b1_sources_group_cpc_cc": decimal.Decimal("0.2000"),
+                "b1_sources_group_cpc_cc": decimal.Decimal("15.0000"),
+                "local_b1_sources_group_cpc_cc": decimal.Decimal("13.4520"),
             }
         )
 
-        self._assert_ad_group_source_state(
-            self.ad_group_source_1,
-            {"cpc_cc": decimal.Decimal("0.1673"), "local_cpc_cc": decimal.Decimal("0.1500")},
-            float(decimal.Decimal("0.1673") / decimal.Decimal("15.0000")),
-        )
+        self._assert_source_bid_modifier(self.ad_group_source_1, sbm_1)
 
-        self._assert_ad_group_source_state(
-            self.ad_group_source_2,
-            {"cpc_cc": decimal.Decimal("0.1673"), "local_cpc_cc": decimal.Decimal("0.1500")},
-            float(decimal.Decimal("0.1673") / decimal.Decimal("15.0000")),
-        )
+        self._assert_source_bid_modifier(self.ad_group_source_2, sbm_2)
 
     def test_manual_b1_sources_group_bid_update_outside_limits(self):
         ad_group_settings = self._initial_ad_group_settings(b1_sources_group_enabled=False)
@@ -1256,28 +1167,32 @@ class AllRTBUpdateTestCase(TestCase):
         ad_group_source_settings = self._initial_ad_group_source_settings()
         self._setup_ad_group_and_sources(ad_group_settings, ad_group_source_settings, ad_group_source_settings)
 
-        with self.assertRaises(ags_exceptions.MaximalCPCTooHigh):
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             self.ad_group.settings.update(
                 None, b1_sources_group_enabled=True, local_b1_sources_group_cpc_cc=decimal.Decimal("91.0000")
             )
+        self.assertCountEqual([type(e) for e in err.exception.errors], [ag_exceptions.CPCTooHigh])
 
-        with self.assertRaises(ags_exceptions.MinimalCPCTooLow):
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             self.ad_group.settings.update(
                 None, b1_sources_group_enabled=True, local_b1_sources_group_cpc_cc=decimal.Decimal("0.0010")
             )
+        self.assertCountEqual([type(e) for e in err.exception.errors], [ag_exceptions.CPCTooLow])
 
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(None)
 
-        with self.assertRaises(ags_exceptions.MaximalCPMTooHigh):
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             self.ad_group.settings.update(
                 None, b1_sources_group_enabled=True, local_b1_sources_group_cpm=decimal.Decimal("91.0000")
             )
+        self.assertCountEqual([type(e) for e in err.exception.errors], [ag_exceptions.CPMTooHigh])
 
-        with self.assertRaises(ags_exceptions.MinimalCPMTooLow):
+        with self.assertRaises(utils.exc.MultipleValidationError) as err:
             self.ad_group.settings.update(
                 None, b1_sources_group_enabled=True, local_b1_sources_group_cpm=decimal.Decimal("0.0010")
             )
+        self.assertCountEqual([type(e) for e in err.exception.errors], [ag_exceptions.CPMTooLow])
 
 
 class MulticurrencyUpdateTestCase(TestCase):
@@ -1604,8 +1519,8 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_2.refresh_from_db()
 
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("3.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_bid_autopilot_cpc(self, mock_autopilot):
@@ -1621,8 +1536,8 @@ class MaxAutopilotBidTestCase(TestCase):
 
         # changing max autopilot bid changes cpc
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("3.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_disable_autopilot_increase_cpc(self, mock_autopilot):
@@ -1640,8 +1555,8 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_2.refresh_from_db()
 
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("20.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("20.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("20.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_increase_max_autopilot_bid_cpc_bid_modifier_resets(self, mock_autopilot):
@@ -1676,8 +1591,8 @@ class MaxAutopilotBidTestCase(TestCase):
 
         # changing max autopilot bid changes cpc
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("15.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("15.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("15.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_max_autopilot_bid_to_unlimited(self, mock_autopilot):
@@ -1709,8 +1624,8 @@ class MaxAutopilotBidTestCase(TestCase):
 
         self.assertEqual(self.ad_group.settings.max_autopilot_bid, None)
         self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("10.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("10.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpc_cc_proxy, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpc_cc_proxy, decimal.Decimal("10.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_disable_autopilot_cpm(self, mock_autopilot):
@@ -1722,8 +1637,8 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("20.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpm_proxy, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpm_proxy, decimal.Decimal("20.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_full_autopilot_cpm(self, mock_autopilot):
@@ -1738,8 +1653,8 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_2.refresh_from_db()
 
         self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpm_proxy, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpm_proxy, decimal.Decimal("3.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_enable_bid_autopilot_cpm(self, mock_autopilot):
@@ -1755,8 +1670,8 @@ class MaxAutopilotBidTestCase(TestCase):
 
         # changing max autopilot bid changes cpm
         self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpm_proxy, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpm_proxy, decimal.Decimal("3.0"))
 
     @mock.patch("automation.autopilot_legacy.recalculate_budgets_ad_group")
     def test_increase_max_autopilot_bid_reset_bid_modifier(self, mock_autopilot):
@@ -1787,8 +1702,8 @@ class MaxAutopilotBidTestCase(TestCase):
 
         # changing max autopilot bid changes cpm
         self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("15.0"))
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("15.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_1.settings.local_cpm_proxy, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_2.settings.local_cpm_proxy, decimal.Decimal("15.0"))
 
     def _init_ad_group(self, bidding_type):
         initial_bid = decimal.Decimal("5.0")

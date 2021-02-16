@@ -99,13 +99,6 @@ def set_ad_group_sources_bids(
         )
 
 
-def check_b1_sources_group_bid_changed(ad_group_settings, changes):
-    if ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPM:
-        return "local_b1_sources_group_cpm" in changes
-    else:
-        return "local_b1_sources_group_cpc_cc" in changes
-
-
 def check_max_autopilot_bid_changed(ad_group_settings, changes):
     autopilot_state = changes.get("autopilot_state", ad_group_settings.autopilot_state)
     return autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE and "local_max_autopilot_bid" in changes
@@ -175,6 +168,11 @@ def _adjust_to_autopilot_bid_if_needed(ad_group_settings, proposed_bid, max_auto
     ):
         proposed_bid = ad_group_settings.max_autopilot_bid
     return proposed_bid
+
+
+def adjust_to_autopilot_bid_if_needed(ad_group_settings, max_autopilot_bid_changed):
+    if ad_group_settings.max_autopilot_bid and max_autopilot_bid_changed:
+        bid_modifiers.delete_types(ad_group_settings.ad_group, [bid_modifiers.BidModifierType.SOURCE])
 
 
 def get_browser_targeting_errors(browsers, target_devices):

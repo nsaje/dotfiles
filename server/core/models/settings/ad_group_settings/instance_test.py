@@ -429,14 +429,12 @@ class InstanceTest(TestCase):
         # updating usd value
         ad_group.settings.update(None, cpc=Decimal("0.50"))
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpc_cc, Decimal("0.5"))
-            self.assertEqual(source.settings.local_cpc_cc, Decimal("1.0"))
+            self.assertEqual(source.settings.local_cpc_cc_proxy, Decimal("1.0"))
 
         # updating local value
         ad_group.settings.update(None, local_cpc=Decimal("1.20"))
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpc_cc, Decimal("0.6"))
-            self.assertEqual(source.settings.local_cpc_cc, Decimal("1.2"))
+            self.assertEqual(source.settings.local_cpc_cc_proxy, Decimal("1.2"))
 
         # updating just exchange rate shouldn't reset source bid modifiers
         mock_get_exchange_rate.return_value = Decimal("3.0")
@@ -446,7 +444,7 @@ class InstanceTest(TestCase):
         self.assertEqual(ad_group.settings.cpc, Decimal("0.4"))
         # assert source bids haven't changed
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpc_cc, Decimal("0.4"))
+            self.assertEqual(source.settings.local_cpc_cc_proxy, Decimal("1.2"))
 
     @patch("automation.autopilot.recalculate_ad_group_budgets")
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
@@ -475,14 +473,12 @@ class InstanceTest(TestCase):
         # updating usd value
         ad_group.settings.update(None, cpm=Decimal("0.50"))
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpm, Decimal("0.5"))
-            self.assertEqual(source.settings.local_cpm, Decimal("1.0"))
+            self.assertEqual(source.settings.local_cpm_proxy, Decimal("1.0"))
 
         # updating local value
         ad_group.settings.update(None, local_cpm=Decimal("1.20"))
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpm, Decimal("0.6"))
-            self.assertEqual(source.settings.local_cpm, Decimal("1.2"))
+            self.assertEqual(source.settings.local_cpm_proxy, Decimal("1.2"))
 
         # updating just exchange rate shouldn't reset source bid modifiers
         mock_get_exchange_rate.return_value = Decimal("3.0")
@@ -492,7 +488,7 @@ class InstanceTest(TestCase):
         self.assertEqual(ad_group.settings.cpm, Decimal("0.4"))
         # assert source bids haven't changed
         for source in ad_group.adgroupsource_set.all():
-            self.assertEqual(source.settings.cpm, Decimal("0.4"))
+            self.assertEqual(source.settings.local_cpm_proxy, Decimal("1.2"))
 
     @patch("utils.k1_helper.update_ad_group")
     def test_k1_priority(self, mock_update_ad_group):
