@@ -17,7 +17,7 @@ class GeolocationQuerySet(models.QuerySet):
         return self.filter(type__in=types)
 
     def name_contains(self, query):
-        return self.filter(name__unaccent__icontains=query).annotate(
+        return self.filter(name__icontains=query).annotate(
             name_match_count=RawSQL("select count(*) from regexp_matches(lower(name), %s, 'g')", (query.lower(),))
         )
 
