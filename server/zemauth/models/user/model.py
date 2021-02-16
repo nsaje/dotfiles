@@ -208,4 +208,5 @@ class User(
             ("can_use_oen_browser_targeting", "User can use OEN browser targeting"),
             ("can_see_creative_library", "User can see the Creative library"),
             ("can_use_realtimestats_api", "User can use realtimestats API"),
+            ("can_see_bid_insights", "User can see bid insights"),
         )
