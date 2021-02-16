@@ -13,6 +13,7 @@ import {TrackerEventType, TrackerMethod} from '../creatives.constants';
 import {CreativeBatch} from '../types/creative-batch';
 import {CreativeBatchStatus} from '../types/creative-batch-status';
 import {fakeAsync, tick} from '@angular/core/testing';
+import {CreativeCandidate} from '../types/creative-candidate';
 
 describe('CreativesService', () => {
     let service: CreativesService;
@@ -26,6 +27,10 @@ describe('CreativesService', () => {
     let mockedBatch: CreativeBatch;
     let mockedBatchId: string;
     let mockedBatchCreateParams: CreativeBatch;
+    let mockedCreativeCandidateId: string;
+    let mockedCandidateCreateParams: CreativeCandidate;
+    let mockedCreativeCandidate: CreativeCandidate;
+    let mockedCreativeCandidates: CreativeCandidate[];
 
     beforeEach(() => {
         creativesEndpointStub = jasmine.createSpyObj(CreativesEndpoint.name, [
@@ -34,6 +39,10 @@ describe('CreativesService', () => {
             'createBatch',
             'editBatch',
             'validateBatch',
+            'listCandidates',
+            'createCandidate',
+            'getCandidate',
+            'editCandidate',
         ]);
         service = new CreativesService(creativesEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -98,6 +107,40 @@ describe('CreativesService', () => {
             type: CreativeBatchType.NATIVE,
             mode: CreativeBatchMode.INSERT,
         };
+
+        mockedCreativeCandidates = [
+            {
+                id: '10000000',
+                type: AdType.CONTENT,
+                url: 'https://one.zemanta.com',
+                title: 'Test candidate',
+                displayUrl: 'https://one.zemanta.com',
+                brandName: 'Zemanta',
+                description: 'Best advertising platform ever',
+                callToAction: 'Advertise now!',
+                tags: ['zemanta', 'native', 'advertising'],
+                imageUrl: 'http://placekitten.com/200/300',
+                iconUrl: 'http://placekitten.com/64/64',
+                adTag: 'adTag',
+                videoAssetId: '123',
+                trackers: [
+                    {
+                        eventType: TrackerEventType.IMPRESSION,
+                        method: TrackerMethod.IMG,
+                        url: 'https://test.com',
+                        fallbackUrl: 'http://test.com',
+                        trackerOptional: false,
+                    },
+                ],
+            },
+        ];
+
+        mockedCandidateCreateParams = {
+            title: 'Test candidate',
+        };
+
+        mockedCreativeCandidate = mockedCreativeCandidates[0];
+        mockedCreativeCandidateId = mockedCreativeCandidate.id;
     });
 
     it('should get creatives via endpoint', () => {
@@ -205,6 +248,97 @@ describe('CreativesService', () => {
         expect(creativesEndpointStub.validateBatch).toHaveBeenCalledTimes(1);
         expect(creativesEndpointStub.validateBatch).toHaveBeenCalledWith(
             mockedBatch,
+            requestStateUpdater
+        );
+    });
+
+    it('should get creative candidates via endpoint', () => {
+        const limit = 10;
+        const offset = 0;
+        creativesEndpointStub.listCandidates.and
+            .returnValue(of(mockedCreativeCandidates, asapScheduler))
+            .calls.reset();
+
+        service
+            .listCandidates(mockedBatchId, offset, limit, requestStateUpdater)
+            .subscribe(candidates => {
+                expect(candidates).toEqual(mockedCreativeCandidates);
+            });
+        expect(creativesEndpointStub.listCandidates).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.listCandidates).toHaveBeenCalledWith(
+            mockedBatchId,
+            offset,
+            limit,
+            requestStateUpdater
+        );
+    });
+
+    it('should create new creative candidate', fakeAsync(() => {
+        creativesEndpointStub.createCandidate.and
+            .returnValue(of(mockedCreativeCandidate, asapScheduler))
+            .calls.reset();
+
+        const mockedNewCandidate = clone(mockedCandidateCreateParams);
+        service
+            .createCandidate(
+                mockedBatchId,
+                mockedNewCandidate,
+                requestStateUpdater
+            )
+            .subscribe(candidate => {
+                expect(candidate).toEqual(mockedCreativeCandidate);
+            });
+        tick();
+
+        expect(creativesEndpointStub.createCandidate).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.createCandidate).toHaveBeenCalledWith(
+            mockedBatchId,
+            mockedNewCandidate,
+            requestStateUpdater
+        );
+    }));
+
+    it('should get creative candidate via endpoint', () => {
+        creativesEndpointStub.getCandidate.and
+            .returnValue(of(mockedCreativeCandidate, asapScheduler))
+            .calls.reset();
+
+        service
+            .getCandidate(
+                mockedBatchId,
+                mockedCreativeCandidateId,
+                requestStateUpdater
+            )
+            .subscribe(candidate => {
+                expect(candidate).toEqual(mockedCreativeCandidate);
+            });
+        expect(creativesEndpointStub.getCandidate).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.getCandidate).toHaveBeenCalledWith(
+            mockedBatchId,
+            mockedCreativeCandidateId,
+            requestStateUpdater
+        );
+    });
+
+    it('should edit creative candidate via endpoint', () => {
+        creativesEndpointStub.editCandidate.and
+            .returnValue(of(mockedCreativeCandidate, asapScheduler))
+            .calls.reset();
+
+        service
+            .editCandidate(
+                mockedBatchId,
+                mockedCreativeCandidate,
+                requestStateUpdater
+            )
+            .subscribe(newCandidate => {
+                expect(newCandidate).toEqual(mockedCreativeCandidate);
+            });
+
+        expect(creativesEndpointStub.editCandidate).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.editCandidate).toHaveBeenCalledWith(
+            mockedBatchId,
+            mockedCreativeCandidate,
             requestStateUpdater
         );
     });

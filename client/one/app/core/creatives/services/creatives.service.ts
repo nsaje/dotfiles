@@ -5,6 +5,7 @@ import {Observable} from 'rxjs';
 import {Creative} from '../types/creative';
 import {AdType} from '../../../app.constants';
 import {CreativeBatch} from '../types/creative-batch';
+import {CreativeCandidate} from '../types/creative-candidate';
 
 @Injectable()
 export class CreativesService {
@@ -58,5 +59,55 @@ export class CreativesService {
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreativeBatch> {
         return this.endpoint.editBatch(batch, requestStateUpdater);
+    }
+
+    listCandidates(
+        batchId: string,
+        offset: number | null,
+        limit: number | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate[]> {
+        return this.endpoint.listCandidates(
+            batchId,
+            offset,
+            limit,
+            requestStateUpdater
+        );
+    }
+
+    createCandidate(
+        batchId: string,
+        candidate: CreativeCandidate,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        return this.endpoint.createCandidate(
+            batchId,
+            candidate,
+            requestStateUpdater
+        );
+    }
+
+    getCandidate(
+        batchId: string,
+        candidateId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        return this.endpoint.getCandidate(
+            batchId,
+            candidateId,
+            requestStateUpdater
+        );
+    }
+
+    editCandidate(
+        batchId: string,
+        candidate: CreativeCandidate,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        return this.endpoint.editCandidate(
+            batchId,
+            candidate,
+            requestStateUpdater
+        );
     }
 }

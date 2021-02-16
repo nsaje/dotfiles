@@ -9,6 +9,8 @@ import {ApiResponse} from '../../../shared/types/api-response';
 import {catchError, map} from 'rxjs/operators';
 import {AdType} from '../../../app.constants';
 import {CreativeBatch} from '../types/creative-batch';
+import {replaceUrl} from '../../../shared/helpers/endpoint.helpers';
+import {CreativeCandidate} from '../types/creative-candidate';
 
 @Injectable()
 export class CreativesEndpoint {
@@ -68,30 +70,33 @@ export class CreativesEndpoint {
         batchId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreativeBatch> {
-        const request = CREATIVES_CONFIG.requests.creativeBatches.get;
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeBatches.get,
+            {
+                batchId,
+            }
+        );
 
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
-        return this.http
-            .get<ApiResponse<CreativeBatch>>(`${request.url}${batchId}`)
-            .pipe(
-                map(response => {
-                    requestStateUpdater(request.name, {
-                        inProgress: false,
-                    });
-                    return response.data;
-                }),
-                catchError((error: HttpErrorResponse) => {
-                    requestStateUpdater(request.name, {
-                        inProgress: false,
-                        error: true,
-                        errorMessage: error.message,
-                    });
-                    return throwError(error);
-                })
-            );
+        return this.http.get<ApiResponse<CreativeBatch>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
     }
 
     createBatch(
@@ -127,13 +132,18 @@ export class CreativesEndpoint {
         batch: CreativeBatch,
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreativeBatch> {
-        const request = CREATIVES_CONFIG.requests.creativeBatches.edit;
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeBatches.edit,
+            {
+                batchId: batch.id,
+            }
+        );
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http
-            .put<ApiResponse<CreativeBatch>>(`${request.url}${batch.id}`, batch)
+            .put<ApiResponse<CreativeBatch>>(request.url, batch)
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -176,5 +186,155 @@ export class CreativesEndpoint {
                 return throwError(error);
             })
         );
+    }
+
+    listCandidates(
+        batchId: string,
+        offset: number | null,
+        limit: number | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate[]> {
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeCandidates.list,
+            {
+                batchId,
+            }
+        );
+        const params = {
+            offset: `${offset}`,
+            limit: `${limit}`,
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<CreativeCandidate[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    createCandidate(
+        batchId: string,
+        candidate: CreativeCandidate,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeCandidates.create,
+            {
+                batchId,
+            }
+        );
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .post<ApiResponse<CreativeCandidate>>(request.url, candidate)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    getCandidate(
+        batchId: string,
+        candidateId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeCandidates.get,
+            {
+                batchId,
+                candidateId,
+            }
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.get<ApiResponse<CreativeCandidate>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    editCandidate(
+        batchId: string,
+        candidate: CreativeCandidate,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<CreativeCandidate> {
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeCandidates.edit,
+            {
+                batchId,
+                candidateId: candidate.id,
+            }
+        );
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .put<ApiResponse<CreativeCandidate>>(request.url, candidate)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 }
