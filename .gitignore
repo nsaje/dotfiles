@@ -147,3 +147,4 @@ server/src/
 *.tar
 
 server/**/.mypy_cache/
+scripts/.z1profiles

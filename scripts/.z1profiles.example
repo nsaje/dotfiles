@@ -1,0 +1,18 @@
+
+{
+    "default": {
+        "base_url": "http://localhost:8000",
+        "client_id": "tJRwNMOSw4ACNUSZnP7NtIKPs7YvSErTacSWvxkR",
+        "client_secret": "FgNGaPknPkZk4iljOL3qbmkTEJVO9hP6P1FJF5Sdv1egC3cL5FixrGi7rS3wXAhKVtZHtEIi1CDxgUe32xDmvW4MBGliG165EfRFX3b7KQMDVyQV0e21JXBca2kqcQky"
+    }
+    "prod": {
+        "base_url": "https://oneapi.zemanta.com",
+        "client_id": "",
+        "client_secret": ""
+    }
+    "tunnel": {
+        "base_url": "http://localhost:9871",
+        "client_id": "",
+        "client_secret": ""
+    }
+}

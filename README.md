@@ -61,6 +61,16 @@ make pull PULL_TAG=the_branch_name
 
 ### Server specifics
 
+#### API client for exploration
+
+There's a python client for interactive use of our REST API in the `scripts` folder. Before using it, you must copy the `.z1profiles.example` file into `.z1profiles`. By default it will connect to the locally running Z1.
+
+```python
+python -i z1_api_client.py
+```
+
+If you add your credentials to the `.z1profiles` file, you can run it like `Z1_PROFILE=prod python -i z1_api_client.py` to use a different profile. Example profiles are `prod` for accessing production API and `tunnel` to access the API that's being tunneled from runssh (port 9871, see [section about test riding your PR in production](#tunnel)).
+
 #### Work with a copy of the production DB (pg01)
 To use a copy of the production DB on the local network instead of a local postgres container, run
 ```
@@ -255,6 +265,7 @@ Then you can run acceptance tests with
 
 
 ### Test ride your pull request in production
+<a name="tunnel"></a>
 
 **WARNING** Using this you can change production data through code that has not been reviewed yet. Use with care.
 
