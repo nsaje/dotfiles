@@ -21,6 +21,26 @@ class CreativeInstanceMixin(object):
         self._apply_updates(request, cleaned_updates)
         self.save(request)
 
+    @property
+    def hosted_image_url(self):
+        return self.get_image_url(300, 300)
+
+    @property
+    def landscape_hosted_image_url(self):
+        return self.get_image_url(720, 450)
+
+    @property
+    def portrait_hosted_image_url(self):
+        return self.get_image_url(375, 480)
+
+    @property
+    def display_hosted_image_url(self):
+        return self.get_image_url()
+
+    @property
+    def hosted_icon_url(self):
+        return self.get_icon_url(300)
+
     def get_image_url(self, width=None, height=None):
         if not self.image:
             return None

@@ -8,9 +8,9 @@ import {
     SimpleChanges,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
-import * as iframeHelpers from '../../../../../../shared/helpers/iframe.helpers';
-import {APP_CONFIG} from '../../../../../../app.config';
-import {AdType} from '../../../../../../app.constants';
+import * as iframeHelpers from '../../helpers/iframe.helpers';
+import {APP_CONFIG} from '../../../app.config';
+import {AdType} from '../../../app.constants';
 import {DOCUMENT} from '@angular/common';
 
 @Component({

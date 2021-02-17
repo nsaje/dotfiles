@@ -1,8 +1,8 @@
 import './native-ad-preview.component.less';
 import {Component, Input, ChangeDetectionStrategy, OnInit} from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
-import {APP_CONFIG} from '../../../../../../app.config';
-import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
+import {APP_CONFIG} from '../../../app.config';
+import * as commonHelpers from '../../helpers/common.helpers';
 import {NativeAdPreviewConfig} from './types/native-ad-preview.config';
 import {DEFAULT_NATIVE_AD_PREVIEW_CONFIG} from './native-ad-preview.config';
 

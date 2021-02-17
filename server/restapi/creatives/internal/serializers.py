@@ -29,8 +29,13 @@ class CreativeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=rest_framework.serializers.CharField(), default=[], read_only=True
     )
 
-    image_url = rest_framework.serializers.URLField(source="get_image_url", read_only=True)
-    icon_url = rest_framework.serializers.URLField(source="get_icon_url", read_only=True)
+    hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    landscape_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    portrait_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    display_hosted_image_url = rest_framework.serializers.URLField(read_only=True)
+    hosted_icon_url = rest_framework.serializers.URLField(read_only=True)
+    image_width = rest_framework.serializers.CharField(source="image.width", read_only=True)
+    image_height = rest_framework.serializers.CharField(source="image.height", read_only=True)
     ad_tag = rest_framework.serializers.CharField(read_only=True)
     video_asset_id = rest_framework.serializers.UUIDField(read_only=True)
 

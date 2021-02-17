@@ -7,10 +7,10 @@ import {CREATIVE_TYPES} from '../../creatives-shared.config';
 import {ItemScopeCellComponent} from '../../../../../shared/components/smart-grid/components/cells/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../../shared/components/smart-grid/components/cells/item-scope-cell/types/item-scope.renderer-params';
 import {Creative} from '../../../../../core/creatives/types/creative';
-import {CreativeAssetCellComponent} from '../creative-asset-cell/creative-asset-cell.component';
 import {CreativeActionsCellComponent} from '../creative-actions-cell/creative-actions-cell.component';
 import {HeaderParams} from '../../../../../shared/components/smart-grid/components/cells/header-cell/types/header-params';
 import {CreativeTagsCellComponent} from '../creative-tags-cell/creative-tags-cell.component';
+import {ThumbnailCellComponent} from '../../../../../shared/components/thumbnail-cell/thumbnail-cell.component';
 
 const COLUMN_SELECT_ID = 'select';
 
@@ -69,30 +69,42 @@ export const COLUMN_SELECT: SmartGridColDef = {
     unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
+export const COLUMN_THUMBNAIL: SmartGridColDef = {
+    headerName: 'Thumbnail',
+    field: 'imageUrl',
+    width: 80,
+    suppressSizeToFit: true,
+    cellRendererFramework: ThumbnailCellComponent,
+    valueGetter: (params: {data: Creative}) => params.data,
+    pinned: 'left',
+    unpinBelowGridWidth: ViewportBreakpoint.Tablet,
+};
+
 export const COLUMN_TITLE: SmartGridColDef = {
-    headerName: 'Title/Description',
-    cellRendererFramework: CreativeAssetCellComponent,
-    valueGetter: params => {
-        return {
-            imageUrl: params.data.imageUrl,
-            title: params.data.title,
-            description: params.data.description,
-        };
-    },
-    width: 500,
-    minWidth: 320,
+    headerName: 'Title',
+    field: 'title',
+    width: 300,
+    minWidth: 100,
     suppressSizeToFit: true,
     resizable: true,
     pinned: 'left',
     unpinBelowGridWidth: ViewportBreakpoint.Tablet,
 };
 
+export const COLUMN_DESCRIPTION: SmartGridColDef = {
+    headerName: 'Description',
+    field: 'description',
+    width: 300,
+    minWidth: 100,
+    resizable: true,
+};
+
 export const COLUMN_TAGS: SmartGridColDef = {
     headerName: 'Tags',
     field: 'tags',
     cellRendererFramework: CreativeTagsCellComponent,
-    width: 80,
-    minWidth: 80,
+    width: 200,
+    minWidth: 100,
     resizable: true,
 };
 

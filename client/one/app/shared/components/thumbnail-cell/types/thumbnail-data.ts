@@ -1,12 +1,6 @@
-import {AdType} from '../../../app.constants';
-import {Tracker} from './tracker';
+import {AdType} from '../../../../app.constants';
 
-export interface Creative {
-    id: string;
-    agencyId: string | null;
-    agencyName: string | null;
-    accountId: string | null;
-    accountName: string | null;
+export interface ThumbnailData {
     type: AdType;
     url: string;
     title: string | null;
@@ -14,7 +8,6 @@ export interface Creative {
     brandName: string | null;
     description: string | null;
     callToAction: string | null;
-    tags: string[];
     displayHostedImageUrl: string | null;
     hostedImageUrl: string | null;
     landscapeHostedImageUrl: string | null;
@@ -23,6 +16,4 @@ export interface Creative {
     imageWidth: string | null;
     imageHeight: string | null;
     adTag: string | null;
-    videoAssetId: string | null;
-    trackers: Tracker[];
 }

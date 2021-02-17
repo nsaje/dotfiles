@@ -93,6 +93,9 @@ import {TagFormGroupComponent} from './components/tag-form-group/tag-form-group.
 import {TabsComponent} from './components/tabs/tabs.component';
 import {TabDirective} from './components/tabs/tab.directive';
 import {MultiStepMenuComponent} from './components/multi-step-menu/multi-step-menu.component';
+import {ThumbnailCellComponent} from './components/thumbnail-cell/thumbnail-cell.component';
+import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
+import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -178,6 +181,9 @@ const EXPORTED_DECLARATIONS = [
     TabsComponent,
     TabDirective,
     MultiStepMenuComponent,
+    ThumbnailCellComponent,
+    NativeAdPreviewComponent,
+    DisplayAdPreviewComponent,
 ];
 
 @NgModule({
@@ -215,6 +221,6 @@ const EXPORTED_DECLARATIONS = [
         HighchartsChartModule,
         ...EXPORTED_DECLARATIONS,
     ],
-    entryComponents: [ConnectionActionsCellComponent],
+    entryComponents: [ConnectionActionsCellComponent, ThumbnailCellComponent],
 })
 export class SharedModule {}

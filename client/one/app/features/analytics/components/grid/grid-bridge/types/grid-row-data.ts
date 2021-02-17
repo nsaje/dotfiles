@@ -29,6 +29,7 @@ export interface GridRowDataStatsValue {
     image?: string;
     square?: string;
     landscape?: string;
+    portrait?: string;
     icon?: string;
     ad_tag?: string;
     editMessage?: string;

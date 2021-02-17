@@ -1,0 +1,48 @@
+<div class="zem-thumbnail-cell">
+    <div
+        class="zem-thumbnail-cell__popover zem-thumbnail-cell__popover--trigger"
+        [zemPopover]="adPreviewTemplate"
+        [stayOpenOnHover]="true"
+        [popoverOpenDelay]="500"
+        triggers="mouseenter:mouseleave"
+        [popoverPlacement]="['left', 'auto']"
+        popoverContainer="body"
+    >
+        <img
+            *ngIf="thumbnail.landscapeHostedImageUrl"
+            class="zem-thumbnail-cell__landscape"
+            src="{{ thumbnail.landscapeHostedImageUrl }}"
+        />
+        <div *ngIf="thumbnail.adTag" class="zem-thumbnail-cell__ad-tag"></div>
+    </div>
+</div>
+
+<ng-template #adPreviewTemplate>
+    <div class="zem-ad-preview">
+        <!-- NATIVE CREATIVES -->
+        <zem-native-ad-preview
+            *ngIf="isNative"
+            class="zem-native-ad-preview"
+            [url]="thumbnail.url"
+            [landscapeHostedImageUrl]="thumbnail.landscapeHostedImageUrl"
+            [hostedImageUrl]="thumbnail.hostedImageUrl"
+            [hostedIconUrl]="thumbnail.hostedIconUrl"
+            [title]="thumbnail.title"
+            [brandName]="thumbnail.brandName"
+            [description]="thumbnail.description"
+            [displayUrl]="thumbnail.displayUrl"
+            [callToAction]="thumbnail.callToAction"
+        ></zem-native-ad-preview>
+        <!-- DISPLAY CREATIVES -->
+        <zem-display-ad-preview
+            *ngIf="!isNative"
+            class="zem-display-ad-preview"
+            [url]="thumbnail.url"
+            [adType]="thumbnail.type"
+            [displayHostedImageUrl]="thumbnail.displayHostedImageUrl"
+            [adTag]="thumbnail.adTag"
+            [imageWidth]="thumbnail.imageWidth || DEFAULT_CREATIVE_WIDTH"
+            [imageHeight]="thumbnail.imageHeight || DEFAULT_CREATIVE_HEIGHT"
+        ></zem-display-ad-preview>
+    </div>
+</ng-template>

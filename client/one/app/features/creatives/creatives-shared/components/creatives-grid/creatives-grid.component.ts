@@ -17,9 +17,11 @@ import {SmartGridColDef} from '../../../../../shared/components/smart-grid/types
 import {DetailGridInfo, GridApi, GridOptions} from 'ag-grid-community';
 import {
     COLUMN_ACTIONS,
+    COLUMN_DESCRIPTION,
     COLUMN_SCOPE,
     COLUMN_SELECT,
     COLUMN_TAGS,
+    COLUMN_THUMBNAIL,
     COLUMN_TITLE,
     COLUMN_TYPE,
     refreshSelectColumn,
@@ -49,7 +51,9 @@ export class CreativesGridComponent implements OnChanges {
 
     columnDefs: SmartGridColDef[] = [
         COLUMN_SELECT,
+        COLUMN_THUMBNAIL,
         COLUMN_TITLE,
+        COLUMN_DESCRIPTION,
         COLUMN_TAGS,
         COLUMN_SCOPE,
         COLUMN_TYPE,
@@ -60,7 +64,6 @@ export class CreativesGridComponent implements OnChanges {
         immutableData: true,
         suppressChangeDetection: true,
         getRowNodeId: this.getRowNodeId,
-        rowHeight: 72,
         frameworkComponents: {
             agColumnHeader: HeaderCellComponent,
         },
