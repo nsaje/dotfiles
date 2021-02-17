@@ -770,6 +770,7 @@ if os.environ.get("IS_RUNSSH"):
     SENTRY_CONFIG = {"dsn": ""}
 
     # disable security flags so dashboard can be accessed locally
+    GOOGLE_OAUTH_ENABLED = False
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
