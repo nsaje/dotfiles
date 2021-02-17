@@ -26,6 +26,11 @@ import {FetchCreativeTagsActionEffect} from '../../services/creative-tags-store/
 import {ScopeParams} from '../../../../../shared/types/scope-params';
 import {CreativeTagsStore} from '../../services/creative-tags-store/creative-tags.store';
 import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
+import {FetchCreativeCandidatesActionEffect} from '../../services/creative-batch-store/effects/fetch-creative-candidates.effect';
+import {CreateCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/create-creative-candidate.effect';
+import {EditCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/edit-creative-candidate.effect';
+import {SetCandidatesActionReducer} from '../../services/creative-batch-store/reducers/set-candidates.reducer';
+import {SetSelectedCandidateActionReducer} from '../../services/creative-batch-store/reducers/set-selected-candidate.reducer';
 
 @Component({
     selector: 'zem-creative-batch',
@@ -39,6 +44,11 @@ import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch'
         FetchCreativeBatchActionEffect,
         ValidateCreativeBatchActionEffect,
         FetchCreativeTagsActionEffect,
+        FetchCreativeCandidatesActionEffect,
+        CreateCreativeCandidateActionEffect,
+        EditCreativeCandidateActionEffect,
+        SetCandidatesActionReducer,
+        SetSelectedCandidateActionReducer,
     ],
 })
 export class CreativeBatchComponent implements OnChanges, OnDestroy {

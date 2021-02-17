@@ -88,3 +88,24 @@ export function arrayToObject<T>(value: T | T[]): T {
     }
     return value;
 }
+
+export function replaceArrayItem<T, S>(
+    array: T[],
+    idGetter: (item: T) => S,
+    newItem: T
+): T[] {
+    if (isEmpty(array)) {
+        return array;
+    }
+    const itemIndex: number = array.findIndex(item =>
+        deepEqual(idGetter(item), idGetter(newItem))
+    );
+    if (itemIndex === -1) {
+        return [...array];
+    }
+    return [
+        ...array.slice(0, itemIndex),
+        newItem,
+        ...array.slice(itemIndex + 1),
+    ];
+}

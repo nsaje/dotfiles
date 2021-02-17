@@ -38,6 +38,28 @@ import {
     CreativeBatchMode,
     CreativeBatchType,
 } from '../../../../../app.constants';
+import {
+    CreateCreativeCandidateAction,
+    CreateCreativeCandidateActionEffect,
+} from './effects/create-creative-candidate.effect';
+import {
+    EditCreativeCandidateAction,
+    EditCreativeCandidateActionEffect,
+} from './effects/edit-creative-candidate.effect';
+import {
+    SetCandidatesAction,
+    SetCandidatesActionReducer,
+} from './reducers/set-candidates.reducer';
+import {
+    FetchCreativeCandidatesAction,
+    FetchCreativeCandidatesActionEffect,
+} from './effects/fetch-creative-candidates.effect';
+import {CreativeCandidate} from '../../../../../core/creatives/types/creative-candidate';
+import {MAX_LOADED_CANDIDATES} from '../../creatives-shared.config';
+import {
+    SetSelectedCandidateAction,
+    SetSelectedCandidateActionReducer,
+} from './reducers/set-selected-candidate.reducer';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -81,6 +103,26 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
                 provide: ValidateCreativeBatchAction,
                 useClass: ValidateCreativeBatchActionEffect,
             },
+            {
+                provide: FetchCreativeCandidatesAction,
+                useClass: FetchCreativeCandidatesActionEffect,
+            },
+            {
+                provide: CreateCreativeCandidateAction,
+                useClass: CreateCreativeCandidateActionEffect,
+            },
+            {
+                provide: EditCreativeCandidateAction,
+                useClass: EditCreativeCandidateActionEffect,
+            },
+            {
+                provide: SetCandidatesAction,
+                useClass: SetCandidatesActionReducer,
+            },
+            {
+                provide: SetSelectedCandidateAction,
+                useClass: SetSelectedCandidateActionReducer,
+            },
         ];
     }
 
@@ -88,6 +130,13 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
         this.dispatch(
             new FetchCreativeBatchAction({
                 batchId,
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
+        this.dispatch(
+            new FetchCreativeCandidatesAction({
+                batchId,
+                pagination: {page: 1, pageSize: MAX_LOADED_CANDIDATES}, // TODO: What if there are more candidates than this?
                 requestStateUpdater: this.requestStateUpdater,
             })
         );
@@ -122,6 +171,31 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
                 requestStateUpdater: this.requestStateUpdater,
             })
         );
+    }
+
+    addCandidate() {
+        this.dispatch(
+            new CreateCreativeCandidateAction({
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
+    }
+
+    updateCandidate(candidate: CreativeCandidate) {
+        this.dispatch(
+            new EditCreativeCandidateAction({
+                candidate,
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
+    }
+
+    selectCandidate(candidate: CreativeCandidate) {
+        this.dispatch(new SetSelectedCandidateAction(candidate));
+    }
+
+    deleteCandidate(candidate: CreativeCandidate) {
+        // TODO: Implement when backend is ready
     }
 
     updateBatchName(name: string) {

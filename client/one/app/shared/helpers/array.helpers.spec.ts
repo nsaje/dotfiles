@@ -190,4 +190,82 @@ describe('ArrayHelpers', () => {
             address: ['Enter a valid address'],
         });
     });
+
+    it('should correctly replace an array item', () => {
+        const mockedOldItems = [
+            {
+                id: 1,
+                name: 'One',
+            },
+            {
+                id: 2,
+                name: 'Two',
+            },
+            {
+                id: 3,
+                name: 'Three',
+            },
+        ];
+        const mockedDifferentItems = [
+            {
+                id: 4,
+                name: 'Four',
+            },
+            {
+                id: 5,
+                name: 'Five',
+            },
+            {
+                id: 6,
+                name: 'Six',
+            },
+        ];
+        const mockedNewItem = {
+            id: 2,
+            name: 'II',
+        };
+        const mockedNewItems = [
+            {
+                id: 1,
+                name: 'One',
+            },
+            {
+                id: 2,
+                name: 'II',
+            },
+            {
+                id: 3,
+                name: 'Three',
+            },
+        ];
+        const mockedIdGetter = (item: {id: number; name: string}) => item.id;
+
+        expect(
+            arrayHelpers.replaceArrayItem(null, mockedIdGetter, mockedNewItem)
+        ).toEqual(null);
+        expect(
+            arrayHelpers.replaceArrayItem(
+                undefined,
+                mockedIdGetter,
+                mockedNewItem
+            )
+        ).toEqual(undefined);
+        expect(
+            arrayHelpers.replaceArrayItem([], mockedIdGetter, mockedNewItem)
+        ).toEqual([]);
+        expect(
+            arrayHelpers.replaceArrayItem(
+                mockedDifferentItems,
+                mockedIdGetter,
+                mockedNewItem
+            )
+        ).toEqual(mockedDifferentItems);
+        expect(
+            arrayHelpers.replaceArrayItem(
+                mockedOldItems,
+                mockedIdGetter,
+                mockedNewItem
+            )
+        ).toEqual(mockedNewItems);
+    });
 });

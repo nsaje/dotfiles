@@ -25,3 +25,4 @@ export const CREATIVE_TYPES: {id: AdType; name: string}[] = [
 ];
 
 export const MAX_LOADED_TAGS = 100;
+export const MAX_LOADED_CANDIDATES = 100;

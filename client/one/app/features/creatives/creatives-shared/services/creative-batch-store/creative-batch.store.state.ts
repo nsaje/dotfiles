@@ -1,6 +1,7 @@
 import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
 import {CreativeBatchStoreFieldsErrorsState} from './creative-batch.store.fields-errors-state';
 import {RequestState} from '../../../../../shared/types/request-state';
+import {CreativeCandidate} from '../../../../../core/creatives/types/creative-candidate';
 
 export class CreativeBatchStoreState {
     entity: CreativeBatch = {
@@ -20,6 +21,8 @@ export class CreativeBatchStoreState {
         createdBy: null,
         createdDt: null,
     };
+    candidates: CreativeCandidate[] = [];
+    selectedCandidateId: string | undefined = undefined;
     fieldsErrors = new CreativeBatchStoreFieldsErrorsState();
     requests = {
         getBatch: {} as RequestState,
