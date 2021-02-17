@@ -41,6 +41,7 @@ VALID_UPDATE_FIELDS = set(
     ]
 )
 MAX_TRACKERS = 3
+MAX_TRACKERS_EXTRA = 6
 
 
 def insert_candidates(

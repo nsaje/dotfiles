@@ -51,6 +51,13 @@ class TrackersSerializer(rest_framework.serializers.ListSerializer):
         super().__init__(*args, **kwargs)
 
     def validate(self, trackers):
-        if len(trackers) > 3:
-            raise rest_framework.serializers.ValidationError("A maximum of three trackers is supported.")
+        tracker_limit = dash.features.contentupload.MAX_TRACKERS
+        request = self.context.get("request")
+        if request and request.user.has_perm("zemauth.can_use_extra_trackers"):
+            tracker_limit = dash.features.contentupload.MAX_TRACKERS_EXTRA
+
+        if len(trackers) > tracker_limit:
+            raise rest_framework.serializers.ValidationError(
+                "A maximum of {} trackers is supported.".format(tracker_limit)
+            )
         return trackers

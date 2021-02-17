@@ -50,3 +50,4 @@ export const TRACKER_METHOD_OPTIONS: {
 ];
 
 export const MAX_TRACKERS_LIMIT = 3;
+export const MAX_TRACKERS_EXTRA_LIMIT = 6;

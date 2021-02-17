@@ -1152,9 +1152,6 @@ class ContentAdForm(ContentAdCandidateForm):
     def _get_trackers_error_msg(self, cleaned_data):
         trackers = cleaned_data.get("trackers", [])
 
-        if len(trackers) > dash.features.contentupload.MAX_TRACKERS:
-            return "A maximum of three trackers is supported."
-
         trackers_status_errors = []
         has_status_error = False
         for tracker in trackers:

@@ -209,4 +209,5 @@ class User(
             ("can_see_creative_library", "User can see the Creative library"),
             ("can_use_realtimestats_api", "User can use realtimestats API"),
             ("can_see_bid_insights", "User can see bid insights"),
+            ("can_use_extra_trackers", "User can use higher trackers limit"),
         )

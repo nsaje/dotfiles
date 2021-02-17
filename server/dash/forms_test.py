@@ -638,42 +638,6 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
 
-    def test_too_many_trackers(self):
-        data, files = self._get_valid_data()
-        data["trackers"] = [
-            {
-                "url": "https://zemanta.com/px1",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px2",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px3",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-            {
-                "url": "https://zemanta.com/px4",
-                "fallback_url": None,
-                "method": constants.TrackerMethod.IMG,
-                "event_type": constants.TrackerEventType.IMPRESSION,
-                "tracker_optional": False,
-            },
-        ]
-        f = forms.ContentAdForm(None, data, files)
-        self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["trackers"], ["A maximum of three trackers is supported."])
-
     def test_invalid_url_trackers(self):
         data, files = self._get_valid_data()
         data["trackers"] = [
