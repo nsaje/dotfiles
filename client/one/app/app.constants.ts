@@ -100,23 +100,30 @@ export enum SpecialAccount {
     OEN = 305,
 }
 
-export enum AdType {
+export enum LegacyAdType {
     CONTENT = 1,
     VIDEO = 2,
     IMAGE = 3,
     AD_TAG = 4,
 }
 
+export enum AdType {
+    CONTENT = 'CONTENT',
+    VIDEO = 'VIDEO',
+    IMAGE = 'IMAGE',
+    AD_TAG = 'AD_TAG',
+}
+
 export enum CreativeBatchType {
-    NATIVE = 1,
-    VIDEO = 2,
-    DISPLAY = 3,
+    NATIVE = 'NATIVE',
+    VIDEO = 'VIDEO',
+    DISPLAY = 'DISPLAY',
 }
 
 export enum CreativeBatchMode {
-    INSERT = 1,
-    EDIT = 2,
-    CLONE = 3, // TODO: Do we really need this?
+    INSERT = 'INSERT',
+    EDIT = 'EDIT',
+    CLONE = 'CLONE',
 }
 
 export enum AdSize {
@@ -1574,6 +1581,7 @@ export const APP_CONSTANTS = {
         ERROR: 'Error',
         INVALID: 'Invalid',
     },
+    legacyAdType: LegacyAdType,
     adType: AdType,
     adSize: AdSize,
     imageCrop: {

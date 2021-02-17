@@ -78,7 +78,6 @@ describe('CreateCreativeBatchActionEffect', () => {
         expect(creativesServiceStub.createBatch).toHaveBeenCalledTimes(1);
         expect(creativesServiceStub.createBatch).toHaveBeenCalledWith(
             {
-                name: '',
                 agencyId: mockedScope.agencyId,
                 accountId: mockedScope.accountId,
                 type: CreativeBatchType.NATIVE,

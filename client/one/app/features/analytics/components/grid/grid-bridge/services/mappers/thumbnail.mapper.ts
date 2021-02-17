@@ -12,7 +12,6 @@ import {
     GridRowDataStatsValue,
     SubmissionStatus,
 } from '../../types/grid-row-data';
-import * as commonHelpers from '../../../../../../../shared/helpers/common.helpers';
 import {AdType} from '../../../../../../../app.constants';
 import {APP_OPTIONS} from '../../../../../../../app.options';
 import {ThumbnailCellComponent} from '../../../../../../../shared/components/thumbnail-cell/thumbnail-cell.component';

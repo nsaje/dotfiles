@@ -221,6 +221,11 @@ const EXPORTED_DECLARATIONS = [
         HighchartsChartModule,
         ...EXPORTED_DECLARATIONS,
     ],
-    entryComponents: [ConnectionActionsCellComponent, ThumbnailCellComponent],
+    entryComponents: [
+        ConnectionActionsCellComponent,
+        ThumbnailCellComponent,
+        NativeAdPreviewComponent,
+        DisplayAdPreviewComponent,
+    ],
 })
 export class SharedModule {}

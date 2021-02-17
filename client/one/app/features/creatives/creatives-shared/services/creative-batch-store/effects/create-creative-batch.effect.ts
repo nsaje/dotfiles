@@ -41,7 +41,6 @@ export class CreateCreativeBatchActionEffect extends StoreEffect<
         return new Promise<boolean>(resolve => {
             const params: CreateCreativeBatchParams = action.payload;
             const newBatch: CreativeBatch = {
-                name: '',
                 accountId: params.scope.accountId,
                 agencyId: params.scope.agencyId,
                 type: params.type,

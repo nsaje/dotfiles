@@ -3135,6 +3135,7 @@ export const APP_OPTIONS = {
     adTypes: [
         {
             name: 'Content ad',
+            legacyValue: APP_CONSTANTS.legacyAdType.CONTENT,
             value: APP_CONSTANTS.adType.CONTENT,
             campaignTypes: [
                 APP_CONSTANTS.campaignTypes.CONTENT,
@@ -3144,16 +3145,19 @@ export const APP_OPTIONS = {
         },
         {
             name: 'Video ad',
+            legacyValue: APP_CONSTANTS.legacyAdType.VIDEO,
             value: APP_CONSTANTS.adType.VIDEO,
             campaignTypes: [APP_CONSTANTS.campaignTypes.VIDEO],
         },
         {
             name: 'Image display ad',
+            legacyValue: APP_CONSTANTS.legacyAdType.IMAGE,
             value: APP_CONSTANTS.adType.IMAGE,
             campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
         },
         {
             name: 'Display ad tag',
+            legacyValue: APP_CONSTANTS.legacyAdType.AD_TAG,
             value: APP_CONSTANTS.adType.AD_TAG,
             campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
         },

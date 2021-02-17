@@ -46,7 +46,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             image_url: candidate.imageUrl,
             image_crop: candidate.imageCrop,
             icon_url: candidate.iconUrl,
-            type: candidate.adType,
+            type: convertAdTypeToApi(candidate.adType),
             ad_tag: candidate.adTag,
             video_asset_id: candidate.videoAssetId,
             display_url: candidate.displayUrl,
@@ -150,7 +150,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             iconHash: candidate.icon_hash,
             iconWidth: candidate.icon_width,
             iconHeight: candidate.icon_height,
-            adType: candidate.type,
+            adType: convertAdTypeFromApi(candidate.type),
             adSize: getAdSize(candidate.image_width, candidate.image_height),
             adTag: candidate.ad_tag,
             videoAssetId: candidate.video_asset_id,
@@ -260,5 +260,25 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
         if (errorsImageWidth || errorsImageHeight) {
             return ['Missing ad size.'];
         }
+    }
+
+    function convertAdTypeFromApi(apiAdType) {
+        if (!apiAdType) {
+            return undefined;
+        }
+        var uiAdType = options.adTypes.find(function(x) {
+            return x.legacyValue === apiAdType;
+        });
+        return uiAdType && uiAdType.value;
+    }
+
+    function convertAdTypeToApi(uiAdType) {
+        if (!uiAdType) {
+            return undefined;
+        }
+        var apiAdType = options.adTypes.find(function(x) {
+            return x.value === uiAdType;
+        });
+        return apiAdType && apiAdType.legacyValue;
     }
 });
