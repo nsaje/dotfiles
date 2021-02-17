@@ -15,7 +15,11 @@ logger = zlogging.getLogger(__name__)
 
 STATS_DB_HOT_CLUSTER = settings.STATS_DB_HOT_CLUSTER
 STATS_DB_HOT_CLUSTER_MAX_DAYS = settings.STATS_DB_HOT_CLUSTER_MAX_DAYS
-RAW_TABLES_CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]
+RAW_TABLES_CONFIG = [
+    {"table_name": "supply_stats", "keep_days": 31},
+    {"table_name": "stats", "keep_days": 93},
+    {"table_name": "stats_placement", "keep_days": 93},
+]
 
 
 class Command(Z1Command):
