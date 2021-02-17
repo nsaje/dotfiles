@@ -42,6 +42,9 @@ import {
     CreativeBatchMode,
     CreativeBatchType,
 } from '../../../../../app.constants';
+import {FetchCreativeCandidatesActionEffect} from '../../services/creative-batch-store/effects/fetch-creative-candidates.effect';
+import {CreateCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/create-creative-candidate.effect';
+import {EditCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/edit-creative-candidate.effect';
 
 @Component({
     selector: 'zem-creatives',
@@ -57,6 +60,9 @@ import {
         FetchCreativeBatchActionEffect,
         EditCreativeBatchActionEffect,
         ValidateCreativeBatchActionEffect,
+        FetchCreativeCandidatesActionEffect,
+        CreateCreativeCandidateActionEffect,
+        EditCreativeCandidateActionEffect,
     ],
 })
 export class CreativesComponent implements OnInit, OnChanges, OnDestroy {

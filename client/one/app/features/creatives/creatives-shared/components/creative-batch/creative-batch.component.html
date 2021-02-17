@@ -22,6 +22,18 @@
                         (search)="onTagsSearch($event)"
                     ></zem-tag-form-group>
                 </div>
+                <div class="zem-creative-batch__candidates">
+                    <zem-creative-candidate
+                        *ngFor="let candidate of state.candidates"
+                        class="zem-creative-candidate"
+                        [candidate]="candidate"
+                        [isSelected]="
+                            candidate.id === state.selectedCandidateId
+                        "
+                        (click)="store.selectCandidate(candidate)"
+                        (remove)="store.deleteCandidate(candidate)"
+                    ></zem-creative-candidate>
+                </div>
                 <div class="zem-creative-batch__actions">
                     <zem-button
                         class="zem-button"
@@ -41,7 +53,7 @@
                     <zem-button
                         class="zem-button"
                         [icon]="'add'"
-                        [isDisabled]="true"
+                        (click)="store.addCandidate()"
                     >
                         Add new creative
                     </zem-button>

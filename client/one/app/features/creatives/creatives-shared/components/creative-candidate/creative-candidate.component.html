@@ -1,0 +1,36 @@
+<div class="zem-creative-candidate__overview">
+    <div class="zem-creative-candidate__image">
+        <img *ngIf="candidate.imageUrl" [src]="candidate.imageUrl" />
+        <span *ngIf="!candidate.imageUrl" class="icon-image"></span>
+    </div>
+    <div class="zem-creative-candidate__content">
+        <div class="zem-creative-candidate__details">
+            <div class="zem-creative-candidate__title">
+                {{ candidate.title }}
+            </div>
+            <div class="zem-creative-candidate__description">
+                {{ candidate.description }}
+            </div>
+            <div class="zem-creative-candidate__labels">
+                <div
+                    *ngFor="let coloredTag of coloredTags"
+                    class="zem-creative-candidate__tag"
+                    [ngClass]="'zem-background-color-' + coloredTag.color"
+                >
+                    {{ coloredTag.tag }}
+                </div>
+            </div>
+        </div>
+        <div class="zem-creative-candidate__actions">
+            <zem-button
+                class="zem-button"
+                [isSmall]="true"
+                [isIconOnly]="true"
+                [icon]="'remove'"
+                [isDanger]="true"
+                (click)="removeButtonClicked($event)"
+            >
+            </zem-button>
+        </div>
+    </div>
+</div>
