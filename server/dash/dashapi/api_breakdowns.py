@@ -2,6 +2,7 @@ from functools import partial
 
 import newrelic.agent
 
+import dash.constants
 import stats.constants
 import stats.constraints_helper
 import stats.helpers
@@ -96,6 +97,10 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
             ):
                 # when dealing with publishers, placement or delivery create dash rows from stats rows - not everything
                 # can be queried out of dash database as in other dimensions that are augmented by dash.
+
+                # jholas quick fix to skip invalid browser values in conversions
+                if target_dimension == "browser" and row["browser"] not in dash.constants.BrowserFamily.get_all():
+                    continue
 
                 dash_row = augmenter.make_row(target_dimension, row[target_dimension], parent)
 
