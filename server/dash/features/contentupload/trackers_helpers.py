@@ -88,4 +88,8 @@ def _get_privacy_frameworks_from_url(url: str) -> List[str]:
     if "{us_privacy}" in url or "[us_privacy]" in url:
         privacy_frameworks.append(constants.TrackerPrivacyFramework.CCPA)
 
+    # oen special macro
+    if "privacyconsent" in url:
+        privacy_frameworks = [constants.TrackerPrivacyFramework.GDPR, constants.TrackerPrivacyFramework.CCPA]
+
     return privacy_frameworks
