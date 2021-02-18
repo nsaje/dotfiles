@@ -9,7 +9,7 @@ logger = zlogging.getLogger(__name__)
 
 CACHE_NAME = "cluster_level_cache"
 CACHE_PREFIX = "adreviewlistener-"
-CACHE_TIMEOUT = 2 * 24 * 60 * 60  # 2 days
+CACHE_TIMEOUT = 7 * 24 * 60 * 60  # 7 days
 
 
 def mark_ad_pending(content_ad_source):
