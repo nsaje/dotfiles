@@ -156,6 +156,7 @@ class ContentAd(
             adobe_tracking_enabled=self.ad_group.campaign.settings.enable_adobe_tracking,
             tracking_codes=self.ad_group.settings.get_tracking_codes(),
             adobe_tracking_param=self.ad_group.campaign.settings.adobe_tracking_param,
+            bid_id="68f81ef4-6bb2-11eb-a67c-6edbe9a2cbeb",  # dummy bid id to fill {postclick} macro correctly
         )
 
     def get_sspd_url(self):

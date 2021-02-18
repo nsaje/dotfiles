@@ -33,6 +33,7 @@ def construct_redirector_url(
     adobe_tracking_enabled=False,
     tracking_codes="",
     adobe_tracking_param="",
+    bid_id=None,
 ):
     url_params_seq = list((url_params or {}).items())
     # handle AdTags
@@ -48,6 +49,8 @@ def construct_redirector_url(
     redirect_data.adobe_tracking_enabled = adobe_tracking_enabled
     redirect_data.tracking_codes = tracking_codes
     redirect_data.adobe_tracking_param = adobe_tracking_param
+    if bid_id:
+        redirect_data.bid_id = bid_id
 
     for key, value in list((protobuf_params or {}).items()):
         if hasattr(redirect_data, key):
