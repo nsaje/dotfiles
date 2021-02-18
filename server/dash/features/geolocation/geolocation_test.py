@@ -33,6 +33,22 @@ class GeolocationTestCase(TestCase):
         self.assertEqual(len(geolocation.Geolocation.objects.all()), 6)
         self.assertEqual(len(geolocation.Geolocation.objects.name_contains("ion mat")), 4)
 
+    def test_name_contains_accents(self):
+        """ Geolocation should return a subset of location objects filtered by name (accented characters match) """
+        mixer.blend(geolocation.Geolocation, name="Dvůr Králové nad Labem")
+        mixer.blend(geolocation.Geolocation, name="Český Těšín")
+        mixer.blend(geolocation.Geolocation, name="Hyōgo")
+        mixer.blend(geolocation.Geolocation, name="Saarbrücken")
+        mixer.blend(geolocation.Geolocation, name="Español")
+        mixer.blend(geolocation.Geolocation, name="Cádiz")
+
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("dvur kralove")), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("cesky tesin")), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("hyo")), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("bruck")), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("espanol")), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.name_contains("cad")), 1)
+
     def test_search(self):
         """ Geolocation should return a subset of location objects when searching by key, type and/ or name """
         params = {
