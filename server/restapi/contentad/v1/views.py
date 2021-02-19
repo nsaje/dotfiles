@@ -29,7 +29,14 @@ class ContentAdViewSet(RESTAPIBaseViewSet):
         if include_approval_status:
             approval_status_map = core.features.ad_review.get_per_source_submission_status_map([content_ad])
             content_ad.approval_status = approval_status_map.get(content_ad.id, {}).values()
-        serializer = serializers.ContentAdSerializer(content_ad, context={"request": request})
+        serializer = serializers.ContentAdSerializer(
+            content_ad,
+            context={
+                "request": request,
+                "image_width": qpe.validated_data.get("image_width"),
+                "image_height": qpe.validated_data.get("image_height"),
+            },
+        )
         return self.response_ok(serializer.data)
 
     def list(self, request):

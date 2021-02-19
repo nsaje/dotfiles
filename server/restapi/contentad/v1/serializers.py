@@ -71,6 +71,11 @@ class ContentAdSerializer(
         if ad.ad_group.campaign.type != dash.constants.CampaignType.VIDEO:
             ret.pop("video_asset_id", None)
 
+        image_width = self.context.get("image_width")
+        image_height = self.context.get("image_height")
+        if "image_url" in ret.keys() and image_width is not None and image_height is not None:
+            ret["image_url"] = ad.get_image_url(image_width, image_height)
+
         return ret
 
     id = restapi.serializers.fields.IdField(required=False)
@@ -213,6 +218,8 @@ class ContentAdQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     include_approval_status = rest_framework.serializers.BooleanField(default=False)
+    image_width = rest_framework.serializers.IntegerField(required=False)
+    image_height = rest_framework.serializers.IntegerField(required=False)
 
 
 class ContentAdListQueryParams(

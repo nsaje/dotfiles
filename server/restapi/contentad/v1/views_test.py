@@ -149,6 +149,41 @@ class ContentAdsTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.assertIn("approvalStatus", resp_json["data"])
 
+    def test_contentads_get_with_image_width_and_image_height(self):
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group, image_width=250, image_height=150)
+
+        image_width = 450
+        image_height = 350
+
+        r = self.client.get(
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
+            {"imageWidth": image_width, "imageHeight": image_height},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertNotEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url())
+        self.assertEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url(image_width, image_height))
+
+        r = self.client.get(
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
+            {"imageWidth": image_width},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url())
+        self.assertNotEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url(image_width, image_height))
+
+        r = self.client.get(
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
+            {"imageHeight": image_height},
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url())
+        self.assertNotEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url(image_width, image_height))
+
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url())
+        self.assertNotEqual(resp_json["data"]["imageUrl"], content_ad.get_image_url(image_width, image_height))
+
     def test_contentads_get_video_ad(self):
         video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
