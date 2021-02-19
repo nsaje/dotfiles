@@ -333,7 +333,7 @@ export const RULE_ACTIONS_OPTIONS = {
         frequencies: [] as RuleActionFrequency[],
     },
     [RuleActionType.Blacklist]: {
-        valueLabel: 'Blacklist publisher',
+        valueLabel: 'Blacklist',
         type: RuleActionType.Blacklist,
         frequencies: [] as RuleActionFrequency[],
     },
