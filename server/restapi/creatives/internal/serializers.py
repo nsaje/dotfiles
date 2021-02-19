@@ -1,5 +1,6 @@
 import rest_framework.serializers
 
+import core.features.videoassets.models
 import dash.constants
 import restapi.serializers.base
 import restapi.serializers.fields
@@ -103,27 +104,79 @@ class CreativeCandidateCommonSerializer(AdTypeSerializer):
     trackers = restapi.serializers.trackers.TrackersSerializer(allow_null=True, required=False)
 
 
-# TODO (msuber): add support for icon and image
 class NativeCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
     brand_name = restapi.serializers.fields.PlainCharField(required=True)
     description = restapi.serializers.fields.PlainCharField(required=True)
     call_to_action = restapi.serializers.fields.PlainCharField(required=True)
     image_crop = restapi.serializers.fields.PlainCharField(required=True)
 
+    image_url = rest_framework.serializers.URLField(required=False)
+    image = rest_framework.serializers.ImageField(max_length=1024, allow_empty_file=False, required=False)
 
-# TODO (msuber): add support for video_asset
+    icon_url = rest_framework.serializers.URLField(required=False)
+    icon = rest_framework.serializers.ImageField(max_length=1024, allow_empty_file=False, required=False)
+
+
 class VideoCreativeCandidateSerializer(NativeCreativeCandidateSerializer):
     video_asset_id = rest_framework.serializers.UUIDField(required=True)
 
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
 
-# TODO (msuber): add support for image
+        if "video_asset_id" in value.keys():
+            value["video_asset"] = self.to_internal_value_video_asset(value["video_asset_id"])
+
+        return value
+
+    # TODO (msuber): add video asset scope validation
+    def to_internal_value_video_asset(self, data):
+        if data is None:
+            return data
+        return core.features.videoassets.models.VideoAsset.objects.get(pk=data)
+
+
 class ImageCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
-    pass
+    image_url = rest_framework.serializers.URLField(required=False)
+    image = rest_framework.serializers.ImageField(max_length=1024, allow_empty_file=False, required=False)
 
 
-# TODO (msuber): add support for ad_tag_width, ad_tag_height
 class AdTagCreativeCandidateSerializer(CreativeCandidateCommonSerializer):
+    image_width = rest_framework.serializers.IntegerField(required=True)
+    image_height = rest_framework.serializers.IntegerField(required=True)
     ad_tag = rest_framework.serializers.CharField(required=True)
+
+    def validate_image_width(self, value):
+        supported_widths = [s[0] for s in dash.constants.DisplayAdSize.get_all()]
+        if all(value != width for width in supported_widths):
+            widths = ", ".join([str(w) for w in supported_widths])
+            raise rest_framework.serializers.ValidationError(
+                ["Image width invalid. Supported widths are: {widths}".format(widths=widths)]
+            )
+        return value
+
+    def validate_image_height(self, value):
+        supported_heights = [s[1] for s in dash.constants.DisplayAdSize.get_all()]
+        if all(value != height for height in supported_heights):
+            heights = ", ".join([str(h) for h in supported_heights])
+            raise rest_framework.serializers.ValidationError(
+                ["Image height invalid. Supported heights are: {heights}".format(heights=heights)]
+            )
+        return value
+
+    def validate(self, value):
+        self._validate_ad_size(value.get("image_width"), value.get("image_height"))
+        return value
+
+    @staticmethod
+    def _validate_ad_size(width, height):
+        if not width and not height:
+            return
+        supported_sizes = dash.constants.DisplayAdSize.get_all()
+        if all(width != size[0] or height != size[1] for size in supported_sizes):
+            sizes = ", ".join([str(s[0]) + "x" + str(s[1]) for s in supported_sizes])
+            raise rest_framework.serializers.ValidationError(
+                "Ad size invalid. Supported sizes are (width x height): {sizes}".format(sizes=sizes)
+            )
 
 
 # TODO (msuber): add trackers_status

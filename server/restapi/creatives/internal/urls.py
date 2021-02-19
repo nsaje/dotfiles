@@ -20,7 +20,7 @@ urlpatterns = [
     ),
     url(
         r"^batch/(?P<batch_id>\d+)/candidates/(?P<candidate_id>\d+)$",
-        views.CreativeCandidateViewSet.as_view({"get": "get", "put": "put"}),
+        views.CreativeCandidateViewSet.as_view({"get": "get", "put": "put", "delete": "remove"}),
         name="creative_candidate_details",
     ),
 ]

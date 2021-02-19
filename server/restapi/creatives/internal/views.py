@@ -2,9 +2,11 @@ import rest_framework.permissions
 import rest_framework.response
 from django.db import transaction
 from django.db.models import Q
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 import core.features.creatives
 import dash.constants
+import restapi.common.parsers
 import utils.exc
 import zemauth.access
 from restapi.common.pagination import StandardPagination
@@ -142,10 +144,13 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(batch, context={"request": request}).data)
 
 
-# TODO (msuber): add delete api
 class CreativeCandidateViewSet(RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
     serializer = serializers.CreativeCandidateSerializer
+    parser_classes = (
+        restapi.common.parsers.CamelCaseJSONMultiPartParser,
+        CamelCaseJSONParser,
+    )
 
     def list(self, request, batch_id):
         batch = zemauth.access.get_creative_batch(request.user, Permission.READ, batch_id)
@@ -194,6 +199,12 @@ class CreativeCandidateViewSet(RESTAPIBaseViewSet):
             candidate.set_creative_tags(request, tags)
 
         return self.response_ok(self.serializer(candidate, context={"request": request}).data)
+
+    def remove(self, request, batch_id, candidate_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.WRITE, batch_id)
+        candidate = self._get_candidate(batch, candidate_id)
+        candidate.delete()
+        return rest_framework.response.Response(None, status=204)
 
     @staticmethod
     def _get_candidate(batch, candidate_id):

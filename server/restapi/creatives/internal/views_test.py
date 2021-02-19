@@ -1,4 +1,5 @@
 import mock
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from parameterized import param
 from parameterized import parameterized
@@ -361,45 +362,61 @@ class CreativeBatchViewSetTestCase(RESTAPITestCase):
 
 class CreativeCandidateViewSet(RESTAPITestCase):
     PUT_TYPE_VALIDATION_TEST_CASES = [
-        param("put_none", value=None),
         param("put_blank", value=""),
         param("put_invalid", value="invalid"),
     ]
 
     PUT_VALIDATION_TEST_CASES = [
-        param("put_brand_url_none", field_name="url", field_value=None),
         param("put_brand_url_blank", field_name="url", field_value=""),
         param("put_brand_url_invalid", field_name="url", field_value="invalid_url"),
-        param("put_title_none", field_name="title", field_value=None),
         param("put_title_blank", field_name="title", field_value=""),
-        param("put_display_url_none", field_name="displayUrl", field_value=None),
         param("put_display_url_blank", field_name="displayUrl", field_value=""),
         param("put_display_url_invalid", field_name="displayUrl", field_value="invalid_url"),
     ]
 
-    # TODO (msuber): add support for icon and image
     PUT_NATIVE_VALIDATION_TEST_CASES = PUT_VALIDATION_TEST_CASES + [
-        param("put_brand_name_none", field_name="brandName", field_value=None),
         param("put_brand_name_blank", field_name="brandName", field_value=""),
-        param("put_description_none", field_name="description", field_value=None),
         param("put_description_blank", field_name="description", field_value=""),
-        param("put_call_to_action_none", field_name="callToAction", field_value=None),
         param("put_call_to_action_blank", field_name="callToAction", field_value=""),
-        param("put_image_crop_none", field_name="imageCrop", field_value=None),
         param("put_image_crop_blank", field_name="imageCrop", field_value=""),
+        param(
+            "put_image_invalid",
+            field_name="image",
+            field_value=SimpleUploadedFile(
+                name="test.csv", content=open("./dash/test_files/test.csv", "rb").read(), content_type="text/csv"
+            ),
+        ),
+        param(
+            "put_icon_invalid",
+            field_name="icon",
+            field_value=SimpleUploadedFile(
+                name="test.csv", content=open("./dash/test_files/test.csv", "rb").read(), content_type="text/csv"
+            ),
+        ),
     ]
 
     PUT_VIDEO_VALIDATION_TEST_CASES = PUT_NATIVE_VALIDATION_TEST_CASES + [
-        param("put_video_asset_id_none", field_name="videoAssetId", field_value=None),
         param("put_video_asset_id_blank", field_name="videoAssetId", field_value=""),
     ]
 
-    # TODO (msuber): add add support for image
-    IMAGE_VALIDATION_TEST_CASES = PUT_VALIDATION_TEST_CASES + []
+    IMAGE_VALIDATION_TEST_CASES = PUT_VALIDATION_TEST_CASES + [
+        param(
+            "put_image_invalid",
+            field_name="image",
+            field_value=SimpleUploadedFile(
+                name="test.csv", content=open("./dash/test_files/test.csv", "rb").read(), content_type="text/csv"
+            ),
+        ),
+    ]
 
     AD_TAG_VALIDATION_TEST_CASES = PUT_VALIDATION_TEST_CASES + [
-        param("put_ad_tag_none", field_name="adTag", field_value=None),
         param("put_ad_tag_blank", field_name="adTag", field_value=""),
+        param("put_image_width_blank", field_name="imageWidth", field_value=""),
+        param("put_image_width_invalid", field_name="imageWidth", field_value="invalid_width"),
+        param("put_image_width_zero", field_name="imageWidth", field_value=0),
+        param("put_image_height_blank", field_name="imageHeight", field_value=""),
+        param("put_image_height_invalid", field_name="imageHeight", field_value="invalid_height"),
+        param("put_image_height_zero", field_name="imageHeight", field_value=0),
     ]
 
     @classmethod
@@ -414,8 +431,12 @@ class CreativeCandidateViewSet(RESTAPITestCase):
         description=None,
         call_to_action=None,
         image_crop=None,
+        image_url=None,
+        icon_url=None,
         video_asset_id=None,
         ad_tag=None,
+        image_width=None,
+        image_height=None,
     ):
         representation = {
             "type": dash.constants.AdType.get_name(type) if type is not None else None,
@@ -426,11 +447,17 @@ class CreativeCandidateViewSet(RESTAPITestCase):
             "description": description,
             "callToAction": call_to_action,
             "imageCrop": image_crop,
+            "imageUrl": image_url,
+            "iconUrl": icon_url,
             "videoAssetId": video_asset_id,
             "adTag": ad_tag,
+            "imageWidth": image_width,
+            "imageHeight": image_height,
         }
 
-        return cls.normalize(representation)
+        # (multipart/form-data) doesn't support None values
+        res = cls.normalize(representation)
+        return {k: v for k, v in res.items() if v is not None}
 
     def setUp(self):
         super(CreativeCandidateViewSet, self).setUp()
@@ -592,115 +619,133 @@ class CreativeCandidateViewSet(RESTAPITestCase):
 
     @parameterized.expand(PUT_NATIVE_VALIDATION_TEST_CASES)
     def test_put_native_with_validation(self, _, *, field_name, field_value):
-        batch = magic_mixer.blend(
-            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.NATIVE
-        )
-        candidate = magic_mixer.blend(
-            core.features.creatives.CreativeCandidate,
-            batch=batch,
-            type=dash.constants.AdType.CONTENT,
-        )
+        with mock.patch("dash.image_helper.upload_image_to_s3") as mock_upload_image_to_s3:
+            mock_upload_image_to_s3.return_value = "http://example.com/path/to/image"
 
-        put_data = self._get_native_representation()
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=200)
-        # TODO (msuber): add db validation
+            batch = magic_mixer.blend(
+                core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.NATIVE
+            )
+            candidate = magic_mixer.blend(
+                core.features.creatives.CreativeCandidate,
+                batch=batch,
+                type=dash.constants.AdType.CONTENT,
+            )
 
-        put_data = resp_json["data"].copy()
-        put_data[field_name] = field_value
+            put_data = self._get_native_representation()
+            put_data["image"] = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
+            put_data["icon"] = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
 
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertIsNotNone(resp_json["details"][field_name][0])
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            self.assertResponseValid(r, data_type=dict, status_code=200)
+            # TODO (msuber): add db validation
+
+            put_data[field_name] = field_value
+
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            resp_json = self.assertResponseError(r, "ValidationError")
+            self.assertIsNotNone(resp_json["details"][field_name][0])
 
     @parameterized.expand(PUT_VIDEO_VALIDATION_TEST_CASES)
     def test_put_video_with_validation(self, _, *, field_name, field_value):
-        batch = magic_mixer.blend(
-            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
-        )
-        candidate = magic_mixer.blend(
-            core.features.creatives.CreativeCandidate,
-            batch=batch,
-            type=dash.constants.AdType.VIDEO,
-        )
-        video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        with mock.patch("dash.image_helper.upload_image_to_s3") as mock_upload_image_to_s3:
+            mock_upload_image_to_s3.return_value = "http://example.com/path/to/image"
 
-        put_data = self._get_video_representation(video_asset_id=video_asset.id)
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=200)
-        # TODO (msuber): add db validation
+            batch = magic_mixer.blend(
+                core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+            )
+            candidate = magic_mixer.blend(
+                core.features.creatives.CreativeCandidate,
+                batch=batch,
+                type=dash.constants.AdType.VIDEO,
+            )
+            video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
 
-        put_data = resp_json["data"].copy()
-        put_data[field_name] = field_value
+            put_data = self._get_video_representation(video_asset_id=video_asset.id)
+            put_data["image"] = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
+            put_data["icon"] = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
 
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertIsNotNone(resp_json["details"][field_name][0])
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            self.assertResponseValid(r, data_type=dict, status_code=200)
+            # TODO (msuber): add db validation
+
+            put_data[field_name] = field_value
+
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            resp_json = self.assertResponseError(r, "ValidationError")
+            self.assertIsNotNone(resp_json["details"][field_name][0])
 
     @parameterized.expand(IMAGE_VALIDATION_TEST_CASES)
     def test_put_image_with_validation(self, _, *, field_name, field_value):
-        batch = magic_mixer.blend(
-            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.DISPLAY
-        )
-        candidate = magic_mixer.blend(
-            core.features.creatives.CreativeCandidate,
-            batch=batch,
-            type=dash.constants.AdType.IMAGE,
-        )
+        with mock.patch("dash.image_helper.upload_image_to_s3") as mock_upload_image_to_s3:
+            mock_upload_image_to_s3.return_value = "http://example.com/path/to/image"
 
-        put_data = self._get_image_representation()
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=200)
-        # TODO (msuber): add db validation
+            batch = magic_mixer.blend(
+                core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.DISPLAY
+            )
+            candidate = magic_mixer.blend(
+                core.features.creatives.CreativeCandidate,
+                batch=batch,
+                type=dash.constants.AdType.IMAGE,
+            )
 
-        put_data = resp_json["data"].copy()
-        put_data[field_name] = field_value
+            put_data = self._get_image_representation()
+            put_data["image"] = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
 
-        r = self.client.put(
-            reverse(
-                "restapi.creatives.internal:creative_candidate_details",
-                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
-            ),
-            data=put_data,
-            format="json",
-        )
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertIsNotNone(resp_json["details"][field_name][0])
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            self.assertResponseValid(r, data_type=dict, status_code=200)
+            # TODO (msuber): add db validation
+
+            put_data[field_name] = field_value
+
+            r = self.client.put(
+                reverse(
+                    "restapi.creatives.internal:creative_candidate_details",
+                    kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+                ),
+                data=put_data,
+            )
+            resp_json = self.assertResponseError(r, "ValidationError")
+            self.assertIsNotNone(resp_json["details"][field_name][0])
 
     @parameterized.expand(AD_TAG_VALIDATION_TEST_CASES)
     def test_put_ad_tag_with_validation(self, _, *, field_name, field_value):
@@ -713,19 +758,22 @@ class CreativeCandidateViewSet(RESTAPITestCase):
             type=dash.constants.AdType.AD_TAG,
         )
 
-        put_data = self._get_ad_tag_representation()
+        put_data = self._get_ad_tag_representation(
+            ad_tag="My ad tag",
+            image_width=dash.constants.DisplayAdSize.BANNER[0],
+            image_height=dash.constants.DisplayAdSize.BANNER[1],
+        )
+
         r = self.client.put(
             reverse(
                 "restapi.creatives.internal:creative_candidate_details",
                 kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
             ),
             data=put_data,
-            format="json",
         )
-        resp_json = self.assertResponseValid(r, data_type=dict, status_code=200)
+        self.assertResponseValid(r, data_type=dict, status_code=200)
         # TODO (msuber): add db validation
 
-        put_data = resp_json["data"].copy()
         put_data[field_name] = field_value
 
         r = self.client.put(
@@ -734,10 +782,68 @@ class CreativeCandidateViewSet(RESTAPITestCase):
                 kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
             ),
             data=put_data,
-            format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertIsNotNone(resp_json["details"][field_name][0])
+
+    def test_put_ad_tag_with_invalid_ad_size(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.DISPLAY
+        )
+        candidate = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.AD_TAG,
+        )
+
+        put_data = self._get_ad_tag_representation(
+            ad_tag="My ad tag",
+            image_width=dash.constants.DisplayAdSize.BANNER[0],
+            image_height=dash.constants.DisplayAdSize.BANNER[1],
+        )
+
+        r = self.client.put(
+            reverse(
+                "restapi.creatives.internal:creative_candidate_details",
+                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+            ),
+            data=put_data,
+        )
+        self.assertResponseValid(r, data_type=dict, status_code=200)
+
+        put_data["imageWidth"] = dash.constants.DisplayAdSize.BANNER[0]
+        put_data["imageHeight"] = dash.constants.DisplayAdSize.PORTRAIT[1]
+
+        r = self.client.put(
+            reverse(
+                "restapi.creatives.internal:creative_candidate_details",
+                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+            ),
+            data=put_data,
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertIsNotNone(resp_json["details"]["nonFieldErrors"][0])
+
+    def test_delete(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.NATIVE
+        )
+        candidate = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.CONTENT,
+        )
+
+        self.assertIsNotNone(core.features.creatives.CreativeCandidate.objects.filter(pk=candidate.id).first())
+
+        r = self.client.delete(
+            reverse(
+                "restapi.creatives.internal:creative_candidate_details",
+                kwargs={"batch_id": batch.id, "candidate_id": candidate.id},
+            ),
+        )
+        self.assertEqual(r.status_code, 204)
+        self.assertIsNone(core.features.creatives.CreativeCandidate.objects.filter(pk=candidate.id).first())
 
     def _get_native_representation(
         self,
@@ -749,6 +855,8 @@ class CreativeCandidateViewSet(RESTAPITestCase):
         description="My description",
         call_to_action="Read more...",
         image_crop="center",
+        image_url=None,
+        icon_url=None,
     ):
         return self.get_candidate_representation(
             type=dash.constants.AdType.CONTENT,
@@ -759,6 +867,8 @@ class CreativeCandidateViewSet(RESTAPITestCase):
             description=description,
             call_to_action=call_to_action,
             image_crop=image_crop,
+            image_url=image_url,
+            icon_url=icon_url,
         )
 
     def _get_video_representation(
@@ -771,6 +881,8 @@ class CreativeCandidateViewSet(RESTAPITestCase):
         description="My description",
         call_to_action="Read more...",
         image_crop="center",
+        image_url=None,
+        icon_url=None,
         video_asset_id=None,
     ):
         return self.get_candidate_representation(
@@ -782,6 +894,8 @@ class CreativeCandidateViewSet(RESTAPITestCase):
             description=description,
             call_to_action=call_to_action,
             image_crop=image_crop,
+            image_url=image_url,
+            icon_url=icon_url,
             video_asset_id=video_asset_id,
         )
 
@@ -791,12 +905,14 @@ class CreativeCandidateViewSet(RESTAPITestCase):
         url="http://example.com",
         title="My title",
         display_url="http://example.com",
+        image_url=None,
     ):
         return self.get_candidate_representation(
             type=dash.constants.AdType.IMAGE,
             url=url,
             title=title,
             display_url=display_url,
+            image_url=image_url,
         )
 
     def _get_ad_tag_representation(
@@ -805,7 +921,9 @@ class CreativeCandidateViewSet(RESTAPITestCase):
         url="http://example.com",
         title="My title",
         display_url="http://example.com",
-        ad_tag="My ad tag",
+        ad_tag=None,
+        image_width=None,
+        image_height=None,
     ):
         return self.get_candidate_representation(
             type=dash.constants.AdType.AD_TAG,
@@ -813,4 +931,6 @@ class CreativeCandidateViewSet(RESTAPITestCase):
             title=title,
             display_url=display_url,
             ad_tag=ad_tag,
+            image_width=image_width,
+            image_height=image_height,
         )

@@ -1,4 +1,6 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from mock import patch
 from parameterized import param
 from parameterized import parameterized
 
@@ -12,7 +14,7 @@ from utils.magic_mixer import magic_mixer
 from . import exceptions
 from . import model
 
-TEST_CASES = [
+UPDATE_TEST_CASES = [
     param("set_url", field_name="url", field_value="before", field_new_value="after"),
     param("set_title", field_name="title", field_value="before", field_new_value="after"),
     param("set_display_url", field_name="display_url", field_value="before", field_new_value="after"),
@@ -66,6 +68,11 @@ TEST_CASES = [
     ),
 ]
 
+UPDATE_WITH_FILE_TEST_CASES = [
+    param("set_image", file_field_name="image", file_url_field_name="image_url"),
+    param("set_icon", file_field_name="icon", file_url_field_name="icon_url"),
+]
+
 
 class CreativeCandidateInstanceTestCase(core.models.tags.creative.shortcuts.CreativeTagTestCaseMixin, TestCase):
     def setUp(self) -> None:
@@ -73,7 +80,7 @@ class CreativeCandidateInstanceTestCase(core.models.tags.creative.shortcuts.Crea
         self.agency = magic_mixer.blend(core.models.Agency)
         self.batch = magic_mixer.blend(core.features.creatives.models.CreativeBatch, agency=self.agency)
 
-    @parameterized.expand(TEST_CASES)
+    @parameterized.expand(UPDATE_TEST_CASES)
     def test_update(self, _, *, field_name, field_value, field_new_value):
         item = magic_mixer.blend(model.CreativeCandidate, **{field_name: field_value, "batch": self.batch})
         self.assertEqual(getattr(item, field_name), field_value)
@@ -108,6 +115,70 @@ class CreativeCandidateInstanceTestCase(core.models.tags.creative.shortcuts.Crea
 
         with self.assertRaises(exceptions.AdTypeInvalid):
             item.update(None, type=dash.constants.AdType.AD_TAG)
+
+    @parameterized.expand(UPDATE_WITH_FILE_TEST_CASES)
+    def test_update_with_file(self, _, *, file_field_name, file_url_field_name):
+        with patch("dash.image_helper.upload_image_to_s3") as mock_upload_image_to_s3:
+            file_url = "http://example.com/path/to/image"
+            mock_upload_image_to_s3.return_value = file_url
+
+            batch = magic_mixer.blend(
+                core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.NATIVE
+            )
+            item = magic_mixer.blend(
+                core.features.creatives.CreativeCandidate,
+                **{"batch": batch, "type": dash.constants.AdType.CONTENT, file_url_field_name: None},
+            )
+            self.assertIsNone(getattr(item, file_url_field_name))
+
+            file = SimpleUploadedFile(
+                name="test.jpg", content=open("./dash/test_files/test.jpg", "rb").read(), content_type="image/jpg"
+            )
+
+            item.update(None, **{file_field_name: file})
+            item.refresh_from_db()
+
+            self.assertEqual(getattr(item, file_url_field_name), file_url)
+
+    def test_update_video_asset(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+        )
+        item = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.VIDEO, video_asset=None
+        )
+        self.assertIsNone(item.video_asset)
+
+        video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+
+        item.update(None, video_asset=video_asset)
+        item.refresh_from_db()
+
+        self.assertEqual(item.video_asset, video_asset)
+
+    def test_delete(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+        )
+        item = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.VIDEO
+        )
+        self.assertIsNotNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
+        item.delete()
+        self.assertIsNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
+
+    def test_delete_with_error(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
+        )
+        item = magic_mixer.blend(
+            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.VIDEO
+        )
+        self.assertIsNotNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
+
+        batch.update(None, status=dash.constants.CreativeBatchStatus.DONE)
+        with self.assertRaises(AssertionError):
+            item.delete()
 
     def _get_model_with_agency_scope(self, agency: core.models.Agency):
         batch = magic_mixer.blend(core.features.creatives.models.CreativeBatch, agency=agency, account=None)
