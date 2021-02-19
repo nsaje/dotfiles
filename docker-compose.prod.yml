@@ -80,7 +80,7 @@ services:
         labels:
           SERVICE_NAME: one-cb
           SERVICE_IGNORE: "false"
-        scale: 6
+        scale: 12
 
     one-cb_ambassador:
         image: verb/socat
