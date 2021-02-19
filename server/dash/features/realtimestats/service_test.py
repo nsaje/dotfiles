@@ -22,7 +22,8 @@ class RealtimestatsServiceTest(TestCase):
             {"type": "outbrain", "source_campaign_key": {"campaign_id": "test_outbrain_1"}},
             {"type": "yahoo", "source_campaign_key": "test_yahoo_1"},
         ]
-        self.account = magic_mixer.blend(core.models.Account)
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group_sources = magic_mixer.cycle(len(ad_group_sources)).blend(
@@ -227,6 +228,63 @@ class RealtimestatsServiceTest(TestCase):
                 "impressions": 100,
             },
         )
+
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
+    @mock.patch("django.conf.settings.SOURCE_GROUPS", {80: [82, 83, 84], 81: [85, 86]})
+    def test_get_ad_group_sources_stats_source_groups(self, mock_k1_get):
+        self.agency.uses_source_groups = True
+        self.agency.save(None)
+
+        sources = magic_mixer.cycle(8).blend(
+            core.models.Source, bidder_slug=magic_mixer.RANDOM, id=(i for i in range(80, 88))
+        )
+        magic_mixer.cycle(8).blend(
+            core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
+        )
+        mock_k1_get.return_value = {
+            "spend": [
+                {"source_slug": sources[0].bidder_slug, "spend": 2.0},
+                {"source_slug": sources[1].bidder_slug, "spend": 3.0},
+                {"source_slug": sources[2].bidder_slug, "spend": 4.0},
+                {"source_slug": sources[3].bidder_slug, "spend": 5.0},
+                {"source_slug": sources[4].bidder_slug, "spend": 6.0},
+                {"source_slug": sources[5].bidder_slug, "spend": 7.0},
+                {"source_slug": sources[6].bidder_slug, "spend": 8.0},
+                {"source_slug": sources[7].bidder_slug, "spend": 9.0},
+            ],
+            "clicks": 15,
+            "impressions": 100,
+            "errors": {},
+        }
+
+        result = service.get_ad_group_sources_stats(self.ad_group)
+
+        self.assertEqual(
+            result,
+            {
+                "spend": [
+                    {
+                        "source_slug": sources[1].bidder_slug,
+                        "source": sources[1],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("38.9399")),
+                    },
+                    {
+                        "source_slug": sources[0].bidder_slug,
+                        "source": sources[0],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("36.7765")),
+                    },
+                    {
+                        "source_slug": sources[7].bidder_slug,
+                        "source": sources[7],
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("19.4699")),
+                    },
+                ],
+                "clicks": 15,
+                "impressions": 100,
+            },
+        )
+
+        mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):

@@ -2,9 +2,11 @@ import decimal
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import defaultdict
 from operator import itemgetter
 
 import core.features.bcm.calculations
+from core.features import source_groups
 from dash import models
 from utils import k1_helper
 from utils import metrics_compat
@@ -54,17 +56,41 @@ def _augment_source(stats, sources_by_slug):
 
 
 def _clean_sources(ad_group, stats):
+    source_slug_group_slug_map = source_groups.get_source_slug_group_slug_mapping()
     allowed_sources = set(
         models.AdGroupSource.objects.filter(ad_group=ad_group)
         .exclude(ad_review_only=True)
+        .exclude(
+            ad_group__campaign__account__agency__uses_source_groups=True,
+            source__bidder_slug__in=source_slug_group_slug_map.keys(),
+        )
         .values_list("source__bidder_slug", flat=True)
     )
+    grouped_stats_spend = _group_stats_spend(ad_group, stats, source_slug_group_slug_map)
+
     cleaned_stats = []
     for stat in stats["spend"]:
-        if stat["source_slug"] not in allowed_sources:
+        slug = stat["source_slug"]
+        if slug not in allowed_sources:
             continue
+
+        stat["spend"] += grouped_stats_spend.get(slug, 0)
         cleaned_stats.append(stat)
+
     stats["spend"] = cleaned_stats
+
+
+def _group_stats_spend(ad_group, stats, source_slug_group_slug_map):
+    if not ad_group.campaign.account.agency.uses_source_groups:
+        return {}
+
+    grouped_stats = defaultdict(float)
+    for stat in stats["spend"]:
+        group_slug = source_slug_group_slug_map.get(stat["source_slug"])
+        if group_slug:
+            grouped_stats[group_slug] += stat["spend"]
+
+    return grouped_stats
 
 
 def _add_fees_and_margin(ad_group, k1_stats):
