@@ -1,11 +1,7 @@
 <div class="zem-grid-cell-actions clearfix" ng-show="ctrl.isFieldVisible">
-    <zem-loader
-        ng-show="ctrl.showLoader || ctrl.isToggleStateInProgress"
-        class="zem-loader zem-loader--small zem-loader--inline"
-    ></zem-loader>
     <span
         class="switch-button"
-        ng-show="ctrl.showStateSwitch && !ctrl.showLoader"
+        ng-show="ctrl.showStateSwitch"
         ng-class="{
             'switch-button--checked': ctrl.active,
             'switch-button--transition-disabled': !ctrl.switchButtonTransitionEnabled,
@@ -38,7 +34,6 @@
             'copy-icon': ctrl.mainButton.type === 'clone',
             'settings-icon': ctrl.mainButton.type === 'settings',
         }"
-        ng-show="!ctrl.showLoader && !ctrl.isToggleStateInProgress"
         title="{{ ctrl.mainButton.name }}"
         ng-click="ctrl.execute(ctrl.mainButton)"
     ></button>
@@ -48,7 +43,6 @@
         top="19"
         title="More actions"
         ng-if="ctrl.buttons.length > 0"
-        ng-show="!ctrl.showLoader && !ctrl.isToggleStateInProgress"
         zem-grid-modal="zemGridCellActionsDropdown.html"
     ></button>
 </div>

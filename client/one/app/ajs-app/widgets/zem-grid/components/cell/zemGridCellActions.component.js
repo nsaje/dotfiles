@@ -106,7 +106,6 @@ angular
 
                 function updateState() {
                     vm.isFieldVisible = false;
-                    vm.showLoader = false;
                     vm.isToggleStateInProgress = false;
                     vm.active = false;
                     vm.isEditable = false;
@@ -185,9 +184,7 @@ angular
                 }
 
                 function execute(button) {
-                    vm.showLoader = true;
                     button.action(vm.row, vm.grid, button).finally(function() {
-                        vm.showLoader = false;
                         if (button !== vm.mainButton) {
                             vm.modal.close();
                         }
