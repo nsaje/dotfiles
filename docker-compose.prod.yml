@@ -176,12 +176,14 @@ services:
 
     einsworker_campaign_stop_update_handler:
       extends: eins-base
-      scale: 25
+      scale: 10
       environment:
         NEW_RELIC_APP_NAME: "Zemanta One (Campaign stop Update Handler)"
         USE_PG_POOLING: 1
       labels:
         SERVICE_IGNORE: "true"
+      mem_reservation: 128m
+      mem_limit: 512m
       entrypoint: ""
       command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-campaign-updates -l INFO -f /app/logs/campaign_update_handler.log --prefetch-multiplier 0 -P solo -c 1"
 
