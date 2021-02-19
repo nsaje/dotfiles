@@ -60,6 +60,10 @@ import {
     SetSelectedCandidateAction,
     SetSelectedCandidateActionReducer,
 } from './reducers/set-selected-candidate.reducer';
+import {
+    RemoveCreativeCandidateAction,
+    RemoveCreativeCandidateActionEffect,
+} from './effects/remove-creative-candidate.effect';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -122,6 +126,10 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
             {
                 provide: SetSelectedCandidateAction,
                 useClass: SetSelectedCandidateActionReducer,
+            },
+            {
+                provide: RemoveCreativeCandidateAction,
+                useClass: RemoveCreativeCandidateActionEffect,
             },
         ];
     }
@@ -195,7 +203,12 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
     }
 
     deleteCandidate(candidate: CreativeCandidate) {
-        // TODO: Implement when backend is ready
+        this.dispatch(
+            new RemoveCreativeCandidateAction({
+                candidate,
+                requestStateUpdater: this.requestStateUpdater,
+            })
+        );
     }
 
     updateBatchName(name: string) {

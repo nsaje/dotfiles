@@ -47,6 +47,10 @@ export const CREATIVES_CONFIG = {
                 name: 'editCandidate',
                 url: `${creativeCandidatesApiUrl}/{candidateId}`,
             },
+            remove: {
+                name: 'removeCandidate',
+                url: `${creativeCandidatesApiUrl}/{candidateId}`,
+            },
         },
     },
 };

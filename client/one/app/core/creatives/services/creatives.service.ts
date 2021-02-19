@@ -110,4 +110,16 @@ export class CreativesService {
             requestStateUpdater
         );
     }
+
+    removeCandidate(
+        batchId: string,
+        candidateId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.removeCandidate(
+            batchId,
+            candidateId,
+            requestStateUpdater
+        );
+    }
 }

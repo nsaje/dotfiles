@@ -31,6 +31,7 @@ import {CreateCreativeCandidateActionEffect} from '../../services/creative-batch
 import {EditCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/edit-creative-candidate.effect';
 import {SetCandidatesActionReducer} from '../../services/creative-batch-store/reducers/set-candidates.reducer';
 import {SetSelectedCandidateActionReducer} from '../../services/creative-batch-store/reducers/set-selected-candidate.reducer';
+import {RemoveCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/remove-creative-candidate.effect';
 
 @Component({
     selector: 'zem-creative-batch',
@@ -49,6 +50,7 @@ import {SetSelectedCandidateActionReducer} from '../../services/creative-batch-s
         EditCreativeCandidateActionEffect,
         SetCandidatesActionReducer,
         SetSelectedCandidateActionReducer,
+        RemoveCreativeCandidateActionEffect,
     ],
 })
 export class CreativeBatchComponent implements OnChanges, OnDestroy {

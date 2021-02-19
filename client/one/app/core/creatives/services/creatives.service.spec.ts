@@ -43,6 +43,7 @@ describe('CreativesService', () => {
             'createCandidate',
             'getCandidate',
             'editCandidate',
+            'removeCandidate',
         ]);
         service = new CreativesService(creativesEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -344,6 +345,26 @@ describe('CreativesService', () => {
         expect(creativesEndpointStub.editCandidate).toHaveBeenCalledWith(
             mockedBatchId,
             mockedCreativeCandidate,
+            requestStateUpdater
+        );
+    });
+
+    it('should remove creative candidate via endpoint', () => {
+        creativesEndpointStub.removeCandidate.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+
+        service
+            .removeCandidate(
+                mockedBatchId,
+                mockedCreativeCandidateId,
+                requestStateUpdater
+            )
+            .subscribe(x => {});
+        expect(creativesEndpointStub.removeCandidate).toHaveBeenCalledTimes(1);
+        expect(creativesEndpointStub.removeCandidate).toHaveBeenCalledWith(
+            mockedBatchId,
+            mockedCreativeCandidateId,
             requestStateUpdater
         );
     });

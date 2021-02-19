@@ -337,4 +337,38 @@ export class CreativesEndpoint {
                 })
             );
     }
+
+    removeCandidate(
+        batchId: string,
+        candidateId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = replaceUrl(
+            CREATIVES_CONFIG.requests.creativeCandidates.remove,
+            {
+                batchId,
+                candidateId,
+            }
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.delete<ApiResponse<void>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
 }
