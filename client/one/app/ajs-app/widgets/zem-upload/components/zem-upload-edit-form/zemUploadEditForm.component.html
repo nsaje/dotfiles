@@ -1761,12 +1761,10 @@
                         Tracking
                     </label>
                     <div class="zem-upload-edit-form__tracker-list">
-                        <zem-content-ad-trackers
-                            class="zem-content-ad-trackers"
-                            [content-ad-trackers]="
-                                ctrl.selectedCandidate.trackers
-                            "
-                            [content-ad-trackers-errors]="
+                        <zem-trackers
+                            class="zem-trackers"
+                            [trackers]="ctrl.selectedCandidate.trackers"
+                            [trackers-errors]="
                                 ctrl.selectedCandidate.errors.trackers
                             "
                             [is-loading]="ctrl.isEditLoading"
@@ -1775,13 +1773,13 @@
                                     'zemauth.can_use_extra_trackers'
                                 )
                             "
-                            (content-ad-trackers-change)="
+                            (trackers-change)="
                                 ctrl.saveTrackers(
                                     ctrl.selectedCandidate,
                                     $event
                                 )
                             "
-                        ></zem-content-ad-trackers>
+                        ></zem-trackers>
                     </div>
                 </div>
             </div>

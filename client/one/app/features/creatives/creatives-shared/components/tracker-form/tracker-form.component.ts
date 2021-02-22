@@ -1,4 +1,4 @@
-import './content-ad-tracker-form.component.less';
+import './tracker-form.component.less';
 import {
     Input,
     Output,
@@ -8,36 +8,36 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {Tracker} from '../../../../core/creatives/types/tracker';
+import {Tracker} from '../../../../../core/creatives/types/tracker';
 import {
     TRACKER_EVENT_TYPE_NAMES,
     TRACKER_EVENT_TYPE_OPTIONS,
     TRACKER_METHOD_EVENT_TYPES,
     TRACKER_METHOD_OPTIONS,
-} from '../../content-ad.config';
+} from '../../creatives-shared.config';
 import {
     TrackerEventType,
     TrackerMethod,
-} from '../../../../core/creatives/creatives.constants';
-import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
-import {ChangeEvent} from '../../../../shared/types/change-event';
+} from '../../../../../core/creatives/creatives.constants';
+import {TrackerErrors} from '../../types/tracker-errors';
+import {ChangeEvent} from '../../../../../shared/types/change-event';
 
 @Component({
-    selector: 'zem-content-ad-tracker-form',
-    templateUrl: './content-ad-tracker-form.component.html',
+    selector: 'zem-tracker-form',
+    templateUrl: './tracker-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContentAdTrackerFormComponent implements OnChanges {
+export class TrackerFormComponent implements OnChanges {
     @Input()
-    contentAdTracker: Tracker;
+    tracker: Tracker;
     @Input()
-    contentAdTrackerErrors: ContentAdTrackerErrors;
+    trackerErrors: TrackerErrors;
     @Input()
     isDisabled: boolean = false;
     @Output()
-    contentAdTrackerChange: EventEmitter<
+    trackerChange: EventEmitter<ChangeEvent<Tracker>> = new EventEmitter<
         ChangeEvent<Tracker>
-    > = new EventEmitter<ChangeEvent<Tracker>>();
+    >();
 
     allTrackerEventTypes = TRACKER_EVENT_TYPE_OPTIONS;
     availableTrackerEventTypes: {
@@ -54,20 +54,18 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     showGdprWarning: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.contentAdTracker && this.contentAdTracker.fallbackUrl) {
+        if (changes.tracker && this.tracker.fallbackUrl) {
             this.showFallbackUrlInput = true;
         }
 
-        if (changes.contentAdTracker && this.contentAdTracker.url) {
-            this.showMacroFormatWarning = this.contentAdTracker.url.includes(
-                '${'
-            );
-            this.showGdprWarning = !this.contentAdTracker.url.includes('gdpr');
+        if (changes.tracker && this.tracker.url) {
+            this.showMacroFormatWarning = this.tracker.url.includes('${');
+            this.showGdprWarning = !this.tracker.url.includes('gdpr');
         }
 
-        if (changes.contentAdTracker && this.contentAdTracker.method) {
+        if (changes.tracker && this.tracker.method) {
             this.availableTrackerEventTypes = this.getAvailableTrackerEventTypes(
-                this.contentAdTracker.method,
+                this.tracker.method,
                 this.allTrackerEventTypes,
                 TRACKER_METHOD_EVENT_TYPES
             );
@@ -75,8 +73,8 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onEventTypeChanged(eventType: TrackerEventType): void {
-        this.contentAdTrackerChange.emit({
-            target: this.contentAdTracker,
+        this.trackerChange.emit({
+            target: this.tracker,
             changes: {
                 eventType: eventType,
             },
@@ -84,21 +82,21 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onMethodChanged(method: TrackerMethod): void {
-        this.contentAdTrackerChange.emit({
-            target: this.contentAdTracker,
+        this.trackerChange.emit({
+            target: this.tracker,
             changes: {
                 method: method,
                 eventType:
                     method === TrackerMethod.JS
                         ? TrackerEventType.IMPRESSION
-                        : this.contentAdTracker.eventType,
+                        : this.tracker.eventType,
             },
         });
     }
 
     onUrlChanged(url: string): void {
-        this.contentAdTrackerChange.emit({
-            target: this.contentAdTracker,
+        this.trackerChange.emit({
+            target: this.tracker,
             changes: {
                 url: url,
             },
@@ -106,8 +104,8 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onFallbackUrlChanged(fallbackUrl: string): void {
-        this.contentAdTrackerChange.emit({
-            target: this.contentAdTracker,
+        this.trackerChange.emit({
+            target: this.tracker,
             changes: {
                 fallbackUrl: fallbackUrl,
             },
@@ -115,8 +113,8 @@ export class ContentAdTrackerFormComponent implements OnChanges {
     }
 
     onTrackerOptionalChanged(trackerOptional: boolean): void {
-        this.contentAdTrackerChange.emit({
-            target: this.contentAdTracker,
+        this.trackerChange.emit({
+            target: this.tracker,
             changes: {
                 trackerOptional: trackerOptional,
             },

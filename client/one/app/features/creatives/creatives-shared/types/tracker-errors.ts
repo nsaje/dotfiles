@@ -1,4 +1,4 @@
-export interface ContentAdTrackerErrors {
+export interface TrackerErrors {
     eventType: string;
     method: string;
     url: string;

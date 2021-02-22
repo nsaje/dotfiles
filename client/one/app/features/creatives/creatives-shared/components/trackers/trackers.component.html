@@ -1,0 +1,39 @@
+<zem-tracker
+    class="zem-tracker zem-trackers__item"
+    [class.zem-tracker--error]="hasErrors[index]"
+    *ngFor="
+        let tracker of formattedTrackers;
+        index as index;
+        trackBy: trackByIndex
+    "
+    [index]="index"
+    [tracker]="tracker"
+    [trackerErrors]="trackersErrors ? trackersErrors[index] : undefined"
+    [isDisabled]="isDisabled"
+    (trackerRemove)="onTrackerRemove(index)"
+>
+    <zem-tracker-form
+        class="zem-tracker-form"
+        [tracker]="tracker"
+        [trackerErrors]="trackersErrors ? trackersErrors[index] : undefined"
+        [isDisabled]="isDisabled"
+        (trackerChange)="onTrackerChange($event, index)"
+    ></zem-tracker-form>
+</zem-tracker>
+
+<zem-button
+    *ngIf="formattedTrackers.length < maxTrackersLimit"
+    class="zem-button"
+    [isHighlighted]="true"
+    [isDisabled]="isLoading"
+    [icon]="'add'"
+    (click)="addTracker()"
+>
+    Add new tracker
+</zem-button>
+<div
+    *ngIf="formattedTrackers.length >= maxTrackersLimit"
+    class="zem-upload-edit-form__tracker-list-limit"
+>
+    You have reached the maximum number of tracking tags.
+</div>

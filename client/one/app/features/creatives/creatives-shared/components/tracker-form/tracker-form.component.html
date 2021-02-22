@@ -1,52 +1,48 @@
-<div class="zem-content-ad-tracker-form__item">
-    <button
+<div class="zem-tracker-form__item">
+    <zem-button
         *ngFor="let method of availableTrackerMethods"
-        class="zem-button-legacy zem-content-ad-tracker-form__method-button"
-        [class.zem-button-legacy--highlighted]="
-            contentAdTracker.method === method.value
-        "
-        [class.zem-button-legacy--outlined]="
-            contentAdTracker.method !== method.value
-        "
-        [disabled]="isDisabled"
+        class="zem-button zem-tracker-form__method-button"
+        [isHighlighted]="tracker.method === method.value"
+        [isOutlined]="tracker.method !== method.value"
+        [isDisabled]="isDisabled"
         (click)="onMethodChanged(method.value)"
     >
         {{ method.name }}
-    </button>
+    </zem-button>
 </div>
-<ng-container *ngIf="contentAdTracker.method">
+<ng-container *ngIf="tracker.method">
     <zem-select-input
-        class="zem-select-input zem-content-ad-tracker-form__item"
+        class="zem-select-input zem-tracker-form__item"
         bindLabel="name"
         bindValue="value"
         [placeholder]="'Please select Event type'"
         [isDisabled]="isDisabled"
-        [value]="contentAdTracker.eventType"
+        [value]="tracker.eventType"
         [items]="availableTrackerEventTypes"
         (valueChange)="onEventTypeChanged($event)"
     ></zem-select-input>
     <div
-        class="zem-content-ad-tracker-form__item zem-message zem-message--error"
-        *ngIf="contentAdTrackerErrors?.eventType"
+        class="zem-tracker-form__item zem-message zem-message--error"
+        *ngIf="trackerErrors?.eventType"
     >
-        {{ contentAdTrackerErrors?.eventType }}
+        {{ trackerErrors?.eventType }}
     </div>
     <zem-text-input
-        class="zem-text-input zem-content-ad-tracker-form__item"
+        class="zem-text-input zem-tracker-form__item"
         placeholder="Paste your tracker URL here"
         [isDisabled]="isDisabled"
-        [value]="contentAdTracker.url"
+        [value]="tracker.url"
         (inputBlur)="onUrlChanged($event)"
     ></zem-text-input>
     <div
-        class="zem-content-ad-tracker-form__item zem-message zem-message--error"
-        *ngIf="contentAdTrackerErrors?.url"
+        class="zem-tracker-form__item zem-message zem-message--error"
+        *ngIf="trackerErrors?.url"
     >
-        {{ contentAdTrackerErrors?.url }}
+        {{ trackerErrors?.url }}
     </div>
     <div
         *ngIf="showMacroFormatWarning"
-        class="zem-content-ad-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+        class="zem-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
     >
         There is a “$” before the macro in the URL. Are you sure this was
         intended? Learn more about how to use macros
@@ -58,7 +54,7 @@
     </div>
     <div
         *ngIf="showGdprWarning"
-        class="zem-content-ad-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+        class="zem-tracker-form__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
     >
         GDPR macros were not detected in the tracker you provided. We will not
         be able to append it to responses coming from GDPR restricted areas. You
@@ -70,22 +66,22 @@
         >.
     </div>
     <div
-        *ngIf="contentAdTracker.method === trackerMethod.JS"
-        class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__input-help"
+        *ngIf="tracker.method === trackerMethod.JS"
+        class="zem-tracker-form__item zem-tracker-form__input-help"
     >
         <a *ngIf="!showFallbackUrlInput" (click)="showFallbackUrlInput = true"
             >Add fallback image pixel tracker</a
         >
         <zem-text-input
             *ngIf="showFallbackUrlInput"
-            class="zem-text-input zem-content-ad-tracker-form__input-help-input"
+            class="zem-text-input zem-tracker-form__input-help-input"
             placeholder="Paste your image pixel tracker URL here"
             [isDisabled]="isDisabled"
-            [value]="contentAdTracker.fallbackUrl"
+            [value]="tracker.fallbackUrl"
             (inputBlur)="onFallbackUrlChanged($event)"
         ></zem-text-input>
         <zem-help-popover
-            class="zem-content-ad-tracker-form__input-help-icon"
+            class="zem-tracker-form__input-help-icon"
             [content]="
                 'Allows to insert image version of the tracker. Zemanta will pass this tracker where JavaScript tracking is not supported.'
             "
@@ -93,24 +89,22 @@
         </zem-help-popover>
     </div>
     <div
-        class="zem-text-input zem-content-ad-tracker-form__item zem-message zem-message--error"
-        *ngIf="contentAdTrackerErrors?.fallbackUrl"
+        class="zem-text-input zem-tracker-form__item zem-message zem-message--error"
+        *ngIf="trackerErrors?.fallbackUrl"
     >
-        {{ contentAdTrackerErrors?.fallbackUrl }}
+        {{ trackerErrors?.fallbackUrl }}
     </div>
-    <div
-        class="zem-content-ad-tracker-form__item zem-content-ad-tracker-form__description"
-    >
+    <div class="zem-tracker-form__item zem-tracker-form__description">
         Please make sure all trackers are GDPR compliant. Zemanta will not pass
         trackers in GDPR restricted areas if they are non-compliant. To limit
         your buying exclusively to traffic where tracking is supported, please
         deselect the checkbox below.
     </div>
     <zem-checkbox-input
-        class="zem-checkbox-input zem-content-ad-tracker-form__item"
+        class="zem-checkbox-input zem-tracker-form__item"
         label="Tracker optional"
         [isDisabled]="isDisabled"
-        [isChecked]="contentAdTracker.trackerOptional"
+        [isChecked]="tracker.trackerOptional"
         (toggle)="onTrackerOptionalChanged($event)"
     >
         Allow Zemanta to purchase traffic where 3rd party tracking is not

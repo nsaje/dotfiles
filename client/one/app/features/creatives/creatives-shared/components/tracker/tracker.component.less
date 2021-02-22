@@ -1,27 +1,27 @@
 @import 'variables';
 
-.zem-content-ad-tracker {
+.zem-tracker {
     display: block;
     border: 1px solid @color--lighter-neutral;
     border-radius: @border-radius--default;
 }
 
-.zem-content-ad-tracker--error {
+.zem-tracker--error {
     border: 1px solid @color--danger;
 }
 
-.zem-content-ad-tracker__item {
+.zem-tracker__item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 6px;
 }
 
-.zem-content-ad-tracker__item:first-child {
+.zem-tracker__item:first-child {
     border-bottom: 1px solid @color--lighter-neutral;
 }
 
-.zem-content-ad-tracker__item-event-type {
+.zem-tracker__item-event-type {
     flex: 0 0 100px;
     background-color: tint(@color--secondary, 90%);
     opacity: 0.4;
@@ -30,7 +30,7 @@
     height: 45px;
 }
 
-.zem-content-ad-tracker__item-url {
+.zem-tracker__item-url {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -38,14 +38,14 @@
     width: 100%;
 }
 
-.zem-content-ad-tracker__item-buttons {
+.zem-tracker__item-buttons {
     flex: 0 0 95px;
     padding-left: @spacing--default;
     display: flex;
     justify-content: space-between;
 }
 
-.zem-content-ad-tracker__item-index {
+.zem-tracker__item-index {
     text-align: center;
     color: @color--secondary;
     font-size: 22px;
@@ -54,7 +54,7 @@
     padding: 6px 10px 6px 6px;
 }
 
-.zem-content-ad-tracker__edit-form {
+.zem-tracker__edit-form {
     padding-top: 6px;
     background-color: @color--lightest-neutral;
 }

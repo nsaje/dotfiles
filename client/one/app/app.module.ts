@@ -34,7 +34,6 @@ import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 import {UsersModule} from './features/users/users.module';
 import {CreativesModule} from './features/creatives/creatives.module';
 import {CanActivatePermissionGuard} from './route-guards/canActivatePermission.guard';
-import {ContentAdModule} from './features/content-ad/content-ad.module';
 import {SharedModule} from './shared/shared.module';
 import {BidInsightsModule} from './features/bid-insights/bid-insights.module';
 
@@ -96,7 +95,6 @@ if (APP_CONFIG.env.prod) {
         NewEntityAnalyticsMockModule,
         UsersModule,
         CreativesModule,
-        ContentAdModule,
         SharedModule,
         BidInsightsModule,
 

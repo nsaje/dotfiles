@@ -1,0 +1,30 @@
+<div class="zem-tracker__item">
+    <div class="zem-tracker__item-index">{{ (index || 0) + 1 }}</div>
+    <div class="zem-tracker__item-event-type">
+        {{ trackerEventTypeNames[tracker.eventType] }}
+    </div>
+    <span class="zem-tracker__item-url">
+        {{ tracker.url }}
+    </span>
+
+    <div class="zem-tracker__item-buttons">
+        <zem-button
+            class="zem-button"
+            [isIconOnly]="true"
+            [icon]="isEditFormVisible ? 'collapse' : 'expand'"
+            (click)="isEditFormVisible = !isEditFormVisible"
+        >
+        </zem-button>
+        <zem-button
+            class="zem-button"
+            [isIconOnly]="true"
+            [icon]="'remove'"
+            [isDisabled]="isDisabled"
+            (click)="trackerRemove.emit()"
+        >
+        </zem-button>
+    </div>
+</div>
+<div class="zem-tracker__item zem-tracker__edit-form" *ngIf="isEditFormVisible">
+    <ng-content></ng-content>
+</div>

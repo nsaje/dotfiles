@@ -1,4 +1,4 @@
-import './content-ad-trackers.component.less';
+import './trackers.component.less';
 
 import {
     Component,
@@ -10,27 +10,27 @@ import {
     EventEmitter,
     OnInit,
 } from '@angular/core';
-import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {Tracker} from '../../../../core/creatives/types/tracker';
-import {ContentAdTrackerErrors} from '../../types/content-ad-tracker-errors';
+import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
+import {Tracker} from '../../../../../core/creatives/types/tracker';
+import {TrackerErrors} from '../../types/tracker-errors';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {
     MAX_TRACKERS_EXTRA_LIMIT,
     MAX_TRACKERS_LIMIT,
-} from '../../content-ad.config';
+} from '../../creatives-shared.config';
 import * as clone from 'clone';
-import {ChangeEvent} from '../../../../shared/types/change-event';
+import {ChangeEvent} from '../../../../../shared/types/change-event';
 
 @Component({
-    selector: 'zem-content-ad-trackers',
-    templateUrl: './content-ad-trackers.component.html',
+    selector: 'zem-trackers',
+    templateUrl: './trackers.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContentAdTrackersComponent implements OnInit, OnChanges {
+export class TrackersComponent implements OnInit, OnChanges {
     @Input()
-    contentAdTrackers: Tracker[];
+    trackers: Tracker[];
     @Input()
-    contentAdTrackersErrors: ContentAdTrackerErrors[];
+    trackersErrors: TrackerErrors[];
     @Input()
     isDisabled: boolean;
     @Input()
@@ -38,12 +38,10 @@ export class ContentAdTrackersComponent implements OnInit, OnChanges {
     @Input()
     canUseExtraTrackers: boolean = false;
     @Output()
-    contentAdTrackersChange: EventEmitter<Tracker[]> = new EventEmitter<
-        Tracker[]
-    >();
+    trackersChange: EventEmitter<Tracker[]> = new EventEmitter<Tracker[]>();
 
     maxTrackersLimit: number = MAX_TRACKERS_LIMIT;
-    trackers: Tracker[] = [];
+    formattedTrackers: Tracker[] = [];
     hasErrors: boolean[] = [];
 
     ngOnInit() {
@@ -53,12 +51,12 @@ export class ContentAdTrackersComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.contentAdTrackers) {
-            this.trackers = clone(this.contentAdTrackers);
+        if (changes.trackers) {
+            this.formattedTrackers = clone(this.trackers);
         }
 
-        if (changes.contentAdTrackersErrors) {
-            this.hasErrors = this.checkForErrors(this.contentAdTrackersErrors);
+        if (changes.trackersErrors) {
+            this.hasErrors = this.checkForErrors(this.trackersErrors);
         }
     }
 
@@ -66,33 +64,30 @@ export class ContentAdTrackersComponent implements OnInit, OnChanges {
         return index.toString();
     }
 
-    onContentAdTrackerChange(
-        changeEvent: ChangeEvent<Tracker>,
-        index: number
-    ): void {
-        const previousTrackerState = clone(this.trackers[index]);
+    onTrackerChange(changeEvent: ChangeEvent<Tracker>, index: number): void {
+        const previousTrackerState = clone(this.formattedTrackers[index]);
 
-        this.trackers[index] = {
-            ...this.trackers[index],
+        this.formattedTrackers[index] = {
+            ...this.formattedTrackers[index],
             ...changeEvent.changes,
         };
 
         if (
             (commonHelpers.isDefined(previousTrackerState.eventType) &&
                 commonHelpers.isDefined(previousTrackerState.method)) ||
-            commonHelpers.isDefined(this.trackers[index].url)
+            commonHelpers.isDefined(this.formattedTrackers[index].url)
         ) {
-            this.contentAdTrackersChange.emit(this.trackers);
+            this.trackersChange.emit(this.formattedTrackers);
         }
     }
 
-    onContentAdTrackerRemove(index: number): void {
-        this.trackers.splice(index, 1);
-        this.contentAdTrackersChange.emit(this.trackers);
+    onTrackerRemove(index: number): void {
+        this.formattedTrackers.splice(index, 1);
+        this.trackersChange.emit(this.formattedTrackers);
     }
 
     addTracker(): void {
-        this.trackers.push({
+        this.formattedTrackers.push({
             eventType: null,
             method: null,
             url: null,
@@ -101,7 +96,7 @@ export class ContentAdTrackersComponent implements OnInit, OnChanges {
         });
     }
 
-    checkForErrors(errors: ContentAdTrackerErrors[]): boolean[] {
+    checkForErrors(errors: TrackerErrors[]): boolean[] {
         const hasErrors: boolean[] = [];
         if (commonHelpers.isDefined(errors)) {
             errors.forEach(error => {
@@ -117,9 +112,9 @@ export class ContentAdTrackersComponent implements OnInit, OnChanges {
 
 declare var angular: angular.IAngularStatic;
 angular.module('one.downgraded').directive(
-    'zemContentAdTrackers',
+    'zemTrackers',
     downgradeComponent({
-        component: ContentAdTrackersComponent,
+        component: TrackersComponent,
         propagateDigest: false,
     })
 );
