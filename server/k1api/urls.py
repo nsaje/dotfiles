@@ -11,7 +11,6 @@ from .views import direct_deals
 from .views import ga_accounts
 from .views import geolocations
 from .views import outbrain
-from .views import publishers
 from .views import r1_mapping
 from .views import sources
 
@@ -74,13 +73,6 @@ urlpatterns = [
     ),
     url(r"^outbrain/marketer_id$", outbrain.OutbrainMarketerIdView.as_view(), name="k1api.outbrain_marketer_id"),
     url(r"^outbrain/sync_marketer$", outbrain.OutbrainMarketerSyncView.as_view(), name="k1api.outbrain_marketer_sync"),
-    url(r"^publisher_groups$", publishers.PublisherGroupsView.as_view(), name="k1api.publisher_groups"),
-    url(
-        r"^publisher_groups_entries$",
-        publishers.PublisherGroupsEntriesView.as_view(),
-        name="k1api.publisher_groups_entries",
-    ),
-    url(r"^publisherbidmodifiers$", publishers.PublisherBidModifiersView.as_view(), name="k1api.publisherbidmodifiers"),
     url(r"^bidmodifiers$", bid_modifiers.BidModifiersView.as_view(), name="k1api.bidmodifiers"),
     url(r"^geolocations$", geolocations.GeolocationsView.as_view(), name="k1api.geolocations"),
     url(r"^direct_deals$", direct_deals.DirectDealsView.as_view(), name="k1api.directdeals"),

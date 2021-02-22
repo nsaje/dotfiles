@@ -6,8 +6,12 @@ import os
 from collections import defaultdict
 
 from django.conf import settings
+from django.db.models import BooleanField
+from django.db.models import ExpressionWrapper
 from django.db.models import F
+from django.db.models import Q
 
+from core.features import source_groups
 from dash import models
 from utils import dates_helper
 from utils import s3helpers
@@ -55,12 +59,20 @@ def _get_data():
     }
     logger.info("Got publisher groups")
 
+    source_groups_id_slugs_mapping = source_groups.get_source_id_slugs_mapping()
+    uses_source_groups_condition = Q(publisher_group__account__isnull=True) & Q(
+        publisher_group__agency__uses_source_groups=True
+    ) | Q(publisher_group__account__agency__uses_source_groups=True)
+
     publisher_groups_entries = (
         models.PublisherGroupEntry.objects.filter(publisher_group_id__in=publisher_group_accounts.keys())
+        .exclude(uses_source_groups_condition, source_id__in=source_groups_id_slugs_mapping.keys())
         .order_by("pk")
         .annotate(source_slug=F("source__bidder_slug"))
+        .annotate(uses_source_groups=ExpressionWrapper(uses_source_groups_condition, output_field=BooleanField()))
         .values(
             "id",
+            "source_id",
             "source_slug",
             "publisher_group_id",
             "include_subdomains",
@@ -70,6 +82,7 @@ def _get_data():
             "outbrain_engage_publisher_id",
             "publisher",
             "placement",
+            "uses_source_groups",
         )
     )
 
@@ -80,8 +93,12 @@ def _get_data():
     for entry in publisher_groups_entries.iterator():
         entry["account_id"] = publisher_group_accounts[entry["publisher_group_id"]]
         _sanitize_names(entry)
-        _insert_into_lookup_trees(entry, groups_lookup_tree, subdomain_groups_lookup_tree)
-        _insert_into_annotations_lookup_tree(entry, annotations_lookup_tree)
+
+        grouped_entries = _get_grouped_entries(entry, source_groups_id_slugs_mapping)
+
+        for grouped_entry in grouped_entries:
+            _insert_into_lookup_trees(grouped_entry, groups_lookup_tree, subdomain_groups_lookup_tree)
+            _insert_into_annotations_lookup_tree(grouped_entry, annotations_lookup_tree)
 
     return {
         "publisherGroupsLookupTree": groups_lookup_tree,
@@ -93,6 +110,25 @@ def _get_data():
 
 def _sanitize_names(entry):
     entry["publisher"] = entry["publisher"].strip().lower()
+
+
+def _get_grouped_entries(entry, source_groups_id_slugs_mapping):
+    grouped_entries = []
+    source_group = settings.SOURCE_GROUPS.get(entry["source_id"])
+
+    if source_group and entry["uses_source_groups"]:
+        for source_id in source_group:
+            grouped_entry = entry.copy()
+            grouped_entry["source_slug"] = source_groups_id_slugs_mapping[source_id]["bidder_slug"]
+            grouped_entries.append(grouped_entry)
+
+    if (
+        entry["account_id"] != settings.HARDCODED_ACCOUNT_ID_OEN
+        or entry["source_id"] != settings.HARDCODED_SOURCE_ID_OUTBRAINRTB
+    ):
+        grouped_entries.append(entry)
+
+    return grouped_entries
 
 
 def _insert_into_lookup_trees(entry, groups_lookup_tree, subdomain_groups_lookup_tree):
@@ -132,6 +168,7 @@ def _insert_into_annotations_lookup_tree(entry, annotations_lookup_tree):
 
     if not entry["account_id"]:
         raise Exception("Annotation defined without accound id! %s" % annotation)
+
     annotations_lookup_tree[entry["account_id"]][entry["publisher"]][entry["source_slug"] or ""] = annotation
 
 

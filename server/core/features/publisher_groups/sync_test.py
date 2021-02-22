@@ -5,9 +5,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from unittest import mock
 
+from django.conf import settings
 from django.test import TestCase
 
+import core.features.publisher_groups
+import core.models
 from utils import s3helpers
+from utils.magic_mixer import magic_mixer
 
 from . import sync
 
@@ -251,3 +255,94 @@ syncedPublisherGroupIds:2
 
         mock_s3_helper.list.assert_has_calls([mock.call(sync.B1_S3_PUBLISHER_GROUPS_PREFIX + "/")])
         mock_s3_helper.delete.assert_has_calls([mock.call(str(i)) for i in reversed(range(sync.KEEP_LAST_UPDATES - 1))])
+
+
+@mock.patch("django.conf.settings.SOURCE_GROUPS", {settings.HARDCODED_SOURCE_ID_OUTBRAINRTB: [81]})
+class SyncBlacklistSourceGroupsTest(TestCase):
+    def setUp(self):
+        self.parent_source = magic_mixer.blend(core.models.Source, id=settings.HARDCODED_SOURCE_ID_OUTBRAINRTB)
+        self.grouped_source = magic_mixer.blend(core.models.Source, id=81)
+
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_source_groups=True)
+
+        self.publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account=self.ad_group.campaign.account
+        )
+        self.publisher_group_entry = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher_group=self.publisher_group,
+            source=self.parent_source,
+        )
+        # deprecated publisher group entry
+        magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher_group=self.publisher_group,
+            source=self.grouped_source,
+        )
+
+        self.ad_group.settings.update_unsafe(None, blacklist_publisher_groups=[self.publisher_group.id])
+
+    def test_sync_publisher_groups_source_groups(self):
+        data = sync._get_data()
+
+        self.assertCountEqual(
+            {
+                "publisherGroupsLookupTree": {
+                    self.grouped_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group.id)]
+                        }
+                    },
+                    self.parent_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group.id)]
+                        }
+                    },
+                },
+                "subdomainPublisherGroupsLookupTree": {
+                    self.grouped_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group)]
+                        }
+                    },
+                    self.parent_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group.id)]
+                        }
+                    },
+                },
+                "annotationsLookupTree": {},
+                "syncedPublisherGroupIds": [self.publisher_group],
+            },
+            data,
+        )
+
+    def test_sync_publisher_groups_source_groups_oen(self):
+        account = magic_mixer.blend(
+            core.models.Account, id=settings.HARDCODED_ACCOUNT_ID_OEN, agency__uses_source_groups=True
+        )
+        self.ad_group.campaign.account = account
+
+        data = sync._get_data()
+
+        self.assertCountEqual(
+            {
+                "publisherGroupsLookupTree": {
+                    self.grouped_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group.id)]
+                        }
+                    }
+                },
+                "subdomainPublisherGroupsLookupTree": {
+                    self.grouped_source.bidder_slug: {
+                        self.publisher_group_entry.publisher: {
+                            self.publisher_group_entry.placement: [str(self.publisher_group)]
+                        }
+                    }
+                },
+                "annotationsLookupTree": {},
+                "syncedPublisherGroupIds": [self.publisher_group],
+            },
+            data,
+        )
