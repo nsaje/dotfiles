@@ -561,7 +561,11 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
         column_names = self._get_column_names(rows[0])
 
         data = (dict(list(zip(column_names, row))) for row in rows[1:])
-        data = [self._remove_unnecessary_fields(row) for row in data if not self._is_example_row(row)]
+        data = [
+            self._remove_unnecessary_fields(row)
+            for row in data
+            if not self._is_example_row(row) and not self._is_empty_row(row)
+        ]
         data = [self._remap_joint_to_separate_fields(row) for row in data]
 
         if self.user.has_perm("zemauth.can_use_3rdparty_js_trackers"):
