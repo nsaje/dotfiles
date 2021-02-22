@@ -59,6 +59,7 @@ angular.module('one.widgets').component('zemChart', {
                         : null
                 );
                 $ctrl.chartDataService.initialize();
+                loadData();
             }
         };
 
