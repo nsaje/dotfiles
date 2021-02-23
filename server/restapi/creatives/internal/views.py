@@ -22,8 +22,11 @@ class CanUseCreativeView(rest_framework.permissions.BasePermission):
         return bool(request.user and request.user.has_perm("zemauth.can_see_creative_library"))
 
 
-class CreativeViewSet(RESTAPIBaseViewSet):
+class CreativeBaseViewSet(RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
+
+
+class CreativeViewSet(CreativeBaseViewSet):
     serializer = serializers.CreativeSerializer
 
     def get(self, request, creative_id):
@@ -87,8 +90,7 @@ class CreativeViewSet(RESTAPIBaseViewSet):
         return queryset.filter(tags__name__in=value)
 
 
-class CreativeBatchViewSet(RESTAPIBaseViewSet):
-    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
+class CreativeBatchViewSet(CreativeBaseViewSet):
     serializer = serializers.CreativeBatchSerializer
 
     def get(self, request, batch_id):
@@ -143,9 +145,41 @@ class CreativeBatchViewSet(RESTAPIBaseViewSet):
 
         return self.response_ok(self.serializer(batch, context={"request": request}).data)
 
+    def upload(self, request, batch_id):
+        batch = zemauth.access.get_creative_batch(request.user, Permission.WRITE, batch_id)
 
-class CreativeCandidateViewSet(RESTAPIBaseViewSet):
-    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreativeView)
+        candidates = []
+        for candidate in batch.creativecandidate_set.all():
+            candidate_dict = candidate.to_dict()
+
+            ad_type_serializer = serializers.AdTypeSerializer(data=candidate_dict)
+            ad_type_serializer.is_valid(raise_exception=True)
+            ad_type = ad_type_serializer.validated_data.get("type")
+
+            serializer_class = self._get_serializer_class(ad_type)
+            serializer = serializer_class(data=candidate_dict, context={"request": request})
+            serializer.is_valid(raise_exception=True)
+
+            candidates.append(serializer.validated_data)
+
+        with transaction.atomic():
+            core.features.creatives.Creative.objects.bulk_create_from_candidates(request, batch, candidates)
+            batch.mark_done(request)
+
+        return rest_framework.response.Response(None, status=201)
+
+    @staticmethod
+    def _get_serializer_class(ad_type):
+        if ad_type == dash.constants.AdType.VIDEO:
+            return serializers.VideoCreativeSerializer
+        if ad_type == dash.constants.AdType.IMAGE:
+            return serializers.ImageCreativeSerializer
+        if ad_type == dash.constants.AdType.AD_TAG:
+            return serializers.AdTagCreativeSerializer
+        return serializers.NativeCreativeSerializer
+
+
+class CreativeCandidateViewSet(CreativeBaseViewSet):
     serializer = serializers.CreativeCandidateSerializer
     parser_classes = (
         restapi.common.parsers.CamelCaseJSONMultiPartParser,

@@ -191,7 +191,6 @@ class DisplayAdSize(ConstantBase):
         LARGE_RECTANGLE: "Large rectangle",
         HALF_PAGE: "Half page",
         WIDESKYSCRAPER: "Wideskyscraper",
-        WIDESKYSCRAPER: "Wideskyscraper",
         LARGE_MOBILE_BANNER: "Large mobile banner",
         BANNER: "Banner",
         PORTRAIT: "Portrait",

@@ -1,5 +1,9 @@
 from django.db import transaction
 
+import dash.constants
+
+from . import exceptions
+
 
 class CreativeBatchInstanceMixin(object):
     def save(self, request=None, *args, **kwargs):
@@ -16,6 +20,28 @@ class CreativeBatchInstanceMixin(object):
             return
 
         self._apply_updates(cleaned_updates)
+        self.save(request)
+
+    def delete(self, using=None, keep_parents=False):
+        raise AssertionError("Deleting creative batch objects is not allowed.")
+
+    def mark_in_progress(self, request):
+        if self.status != dash.constants.CreativeBatchStatus.FAILED:
+            raise exceptions.BatchStatusInvalid()
+        self.status = dash.constants.CreativeBatchStatus.IN_PROGRESS
+        self.save(request)
+
+    def mark_done(self, request):
+        if self.status != dash.constants.CreativeBatchStatus.IN_PROGRESS:
+            raise exceptions.BatchStatusInvalid()
+        self.creativecandidate_set.all().delete()
+        self.status = dash.constants.CreativeBatchStatus.DONE
+        self.save(request)
+
+    def mark_failed(self, request):
+        if self.status != dash.constants.CreativeBatchStatus.IN_PROGRESS:
+            raise exceptions.BatchStatusInvalid()
+        self.status = dash.constants.CreativeBatchStatus.FAILED
         self.save(request)
 
     def _clean_updates(self, updates):

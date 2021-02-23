@@ -3,11 +3,11 @@ from parameterized import param
 from parameterized import parameterized
 
 import core.features.creatives
+import core.features.creatives.models.creative_batch.exceptions
 import core.models
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from . import exceptions
 from . import model
 
 CREATE_TEST_CASES = [
@@ -57,5 +57,5 @@ class CreativeCandidateManagerTestCase(TestCase):
         batch = magic_mixer.blend(
             core.features.creatives.CreativeBatch, agency=self.agency, status=dash.constants.CreativeBatchStatus.DONE
         )
-        with self.assertRaises(exceptions.BatchStatusInvalid):
+        with self.assertRaises(core.features.creatives.models.creative_batch.exceptions.BatchStatusInvalid):
             model.CreativeCandidate.objects.create(batch)

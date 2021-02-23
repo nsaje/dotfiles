@@ -23,7 +23,6 @@ class CreativeBatch(
 
     _update_fields = [
         "name",
-        "status",
         "original_filename",
         "image_crop",
         "display_url",

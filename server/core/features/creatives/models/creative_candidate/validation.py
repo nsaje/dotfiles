@@ -1,3 +1,4 @@
+import core.features.creatives.models.creative_batch.exceptions
 import dash.constants
 
 from ... import converters
@@ -12,7 +13,7 @@ class CreativeCandidateValidatorMixin(object):
 
     def _validate_batch_status(self):
         if self.batch.status != dash.constants.CreativeBatchStatus.IN_PROGRESS:
-            raise exceptions.BatchStatusInvalid()
+            raise core.features.creatives.models.creative_batch.exceptions.BatchStatusInvalid()
 
     def _validate_type(self):
         if self.batch.type != converters.ConstantsConverter.to_batch_type(self.type):

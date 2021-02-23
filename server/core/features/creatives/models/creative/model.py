@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+import core.models.tags.creative.shortcuts
 import dash.constants
 
 from . import entity_permission
@@ -12,6 +13,7 @@ from . import validation
 
 
 class Creative(
+    core.models.tags.creative.shortcuts.CreativeTagMixin,
     entity_permission.EntityPermissionMixin,
     instance.CreativeInstanceMixin,
     validation.CreativeValidatorMixin,
@@ -22,27 +24,45 @@ class Creative(
 
     objects = manager.CreativeManager.from_queryset(queryset.CreativeQuerySet)()
 
-    _update_fields = []
+    _update_fields = [
+        "batch",
+        "url",
+        "title",
+        "display_url",
+        "brand_name",
+        "description",
+        "call_to_action",
+        "image_crop",
+        "image_width",
+        "image_height",
+        "image",
+        "icon",
+        "video_asset",
+        "ad_tag",
+        "trackers",
+        "additional_data",
+    ]
 
     agency = models.ForeignKey("Agency", null=True, blank=True, on_delete=models.PROTECT)
     account = models.ForeignKey("Account", null=True, blank=True, on_delete=models.PROTECT)
 
     type = models.IntegerField(default=dash.constants.AdType.CONTENT, choices=dash.constants.AdType.get_choices())
 
-    url = models.CharField(max_length=2048, editable=False)
-    title = models.CharField(max_length=256, editable=False)
+    batch = models.ForeignKey("CreativeBatch", null=True, blank=True, on_delete=models.PROTECT)
+
+    url = models.CharField(max_length=2048, blank=True, default="")
+    title = models.CharField(max_length=256, blank=True, default="")
     display_url = models.CharField(max_length=35, blank=True, default="")
     brand_name = models.CharField(max_length=25, blank=True, default="")
     description = models.CharField(max_length=150, blank=True, default="")
     call_to_action = models.CharField(max_length=25, blank=True, default="")
 
-    tags = models.ManyToManyField("CreativeTag")
-
-    batch = models.ForeignKey("CreativeBatch", null=True, blank=True, on_delete=models.PROTECT)
-
-    image = models.ForeignKey("ImageAsset", null=True, on_delete=models.PROTECT)
     image_crop = models.CharField(max_length=25, default=dash.constants.ImageCrop.CENTER)
-    icon = models.ForeignKey("ImageAsset", null=True, related_name="creatives", on_delete=models.PROTECT)
+    image_width = models.PositiveIntegerField(null=True, blank=True)
+    image_height = models.PositiveIntegerField(null=True, blank=True)
+
+    image = models.ForeignKey("ImageAsset", null=True, blank=True, on_delete=models.PROTECT)
+    icon = models.ForeignKey("ImageAsset", null=True, blank=True, related_name="creatives", on_delete=models.PROTECT)
     video_asset = models.ForeignKey("VideoAsset", null=True, blank=True, on_delete=models.PROTECT)
     ad_tag = models.TextField(null=True, blank=True)
 
@@ -69,3 +89,9 @@ class Creative(
         null=True,
         blank=True,
     )
+
+    def get_agency(self):
+        return self.agency
+
+    def get_account(self):
+        return self.account

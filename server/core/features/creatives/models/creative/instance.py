@@ -8,17 +8,16 @@ class CreativeInstanceMixin(object):
                 self.created_by = request.user
             else:
                 self.modified_by = request.user
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @transaction.atomic
     def update(self, request, **updates):
-        self.clean(updates)
-
         cleaned_updates = self._clean_updates(updates)
         if not updates:
             return
 
-        self._apply_updates(request, cleaned_updates)
+        self._apply_updates(cleaned_updates)
         self.save(request)
 
     @property

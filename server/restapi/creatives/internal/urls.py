@@ -14,6 +14,11 @@ urlpatterns = [
         name="creative_batch_details",
     ),
     url(
+        r"^batch/(?P<batch_id>\d+)/upload/$",
+        views.CreativeBatchViewSet.as_view({"post": "upload"}),
+        name="creative_batch_upload",
+    ),
+    url(
         r"^batch/(?P<batch_id>\d+)/candidates/$",
         views.CreativeCandidateViewSet.as_view({"get": "list", "post": "create"}),
         name="creative_candidate_list",

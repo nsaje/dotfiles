@@ -359,6 +359,153 @@ class CreativeBatchViewSetTestCase(RESTAPITestCase):
         batch.refresh_from_db()
         self.assertEqual([x.name for x in batch.get_creative_tags()], after_tags)
 
+    def test_upload_native(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch,
+            agency=self.agency,
+            type=dash.constants.CreativeBatchType.NATIVE,
+            status=dash.constants.CreativeBatchStatus.IN_PROGRESS,
+        )
+        magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.CONTENT,
+            url="http://example.com",
+            title="My title",
+            display_url="http://example.com",
+            brand_name="My brand",
+            description="My description",
+            call_to_action="Read more...",
+            image_crop="center",
+            image_id="123456",
+            image_width=350,
+            image_height=350,
+            image_hash="123456",
+            image_file_size=256,
+            image_url="http://example.com/path/to/image",
+            icon_id="7891011",
+            icon_width=200,
+            icon_height=200,
+            icon_hash="7891011",
+            icon_file_size=128,
+            icon_url="http://example.com/path/to/icon",
+        )
+
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.IN_PROGRESS)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 0)
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_upload", kwargs={"batch_id": batch.id}))
+        self.assertEqual(r.status_code, 201)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.DONE)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 1)
+
+    def test_upload_video(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch,
+            agency=self.agency,
+            type=dash.constants.CreativeBatchType.VIDEO,
+            status=dash.constants.CreativeBatchStatus.IN_PROGRESS,
+        )
+        video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.VIDEO,
+            url="http://example.com",
+            title="My title",
+            display_url="http://example.com",
+            brand_name="My brand",
+            description="My description",
+            call_to_action="Read more...",
+            image_crop="center",
+            image_id="123456",
+            image_width=350,
+            image_height=350,
+            image_hash="123456",
+            image_file_size=256,
+            image_url="http://example.com/path/to/image",
+            icon_id="7891011",
+            icon_width=200,
+            icon_height=200,
+            icon_hash="7891011",
+            icon_file_size=128,
+            icon_url="http://example.com/path/to/icon",
+            video_asset=video_asset,
+        )
+
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.IN_PROGRESS)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 0)
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_upload", kwargs={"batch_id": batch.id}))
+        self.assertEqual(r.status_code, 201)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.DONE)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 1)
+
+    def test_upload_image(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch,
+            agency=self.agency,
+            type=dash.constants.CreativeBatchType.DISPLAY,
+            status=dash.constants.CreativeBatchStatus.IN_PROGRESS,
+        )
+        magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.IMAGE,
+            url="http://example.com",
+            title="My title",
+            display_url="http://example.com",
+            image_id="123456",
+            image_width=350,
+            image_height=350,
+            image_hash="123456",
+            image_file_size=256,
+            image_url="http://example.com/path/to/image",
+        )
+
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.IN_PROGRESS)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 0)
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_upload", kwargs={"batch_id": batch.id}))
+        self.assertEqual(r.status_code, 201)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.DONE)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 1)
+
+    def test_upload_ad_tag(self):
+        batch = magic_mixer.blend(
+            core.features.creatives.CreativeBatch,
+            agency=self.agency,
+            type=dash.constants.CreativeBatchType.DISPLAY,
+            status=dash.constants.CreativeBatchStatus.IN_PROGRESS,
+        )
+        magic_mixer.blend(
+            core.features.creatives.CreativeCandidate,
+            batch=batch,
+            type=dash.constants.AdType.AD_TAG,
+            url="http://example.com",
+            title="My title",
+            display_url="http://example.com",
+            ad_tag="My ad tag",
+            image_width=dash.constants.DisplayAdSize.BANNER[0],
+            image_height=dash.constants.DisplayAdSize.BANNER[1],
+        )
+
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.IN_PROGRESS)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 0)
+
+        r = self.client.post(reverse("restapi.creatives.internal:creative_batch_upload", kwargs={"batch_id": batch.id}))
+        self.assertEqual(r.status_code, 201)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, dash.constants.CreativeBatchStatus.DONE)
+        self.assertEqual(core.features.creatives.Creative.objects.filter(batch=batch).count(), 1)
+
 
 class CreativeCandidateViewSet(RESTAPITestCase):
     PUT_TYPE_VALIDATION_TEST_CASES = [

@@ -1,5 +1,6 @@
 from django.db import transaction
 
+import core.features.creatives.models.creative_batch.exceptions
 import dash.constants
 from dash import image_helper
 
@@ -23,33 +24,8 @@ class CreativeCandidateInstanceMixin(object):
 
     def delete(self, using=None, keep_parents=False):
         if self.batch.status != dash.constants.CreativeBatchStatus.IN_PROGRESS:
-            raise AssertionError("Batch status is not in progress")
+            raise core.features.creatives.models.creative_batch.exceptions.BatchStatusInvalid()
         super(CreativeCandidateInstanceMixin, self).delete()
-
-    def _clean_updates(self, updates):
-        new_updates = {}
-        for field, value in list(updates.items()):
-            if field in set(self._update_fields) and value != getattr(self, field):
-                new_updates[field] = value
-        return new_updates
-
-    def _apply_updates(self, updates):
-        for field, value in list(updates.items()):
-            setattr(self, field, value)
-
-    def _handle_image(self, updates):
-        image = updates.get("image")
-        if image is None:
-            return
-        image_url = image_helper.upload_image_to_s3(image, self.batch_id)
-        updates["image_url"] = image_url
-
-    def _handle_icon(self, updates):
-        icon = updates.get("icon")
-        if icon is None:
-            return
-        icon_url = image_helper.upload_image_to_s3(icon, self.batch_id)
-        updates["icon_url"] = icon_url
 
     @property
     def hosted_image_url(self):
@@ -86,3 +62,59 @@ class CreativeCandidateInstanceMixin(object):
         if size is None:
             size = self.icon.width
         return self.icon.get_url(width=size, height=size)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "batch_id": self.batch.id if self.batch is not None else None,
+            "type": dash.constants.AdType.get_name(self.type) if self.type is not None else None,
+            "url": self.url,
+            "title": self.title,
+            "display_url": self.display_url,
+            "brand_name": self.brand_name,
+            "description": self.description,
+            "call_to_action": self.call_to_action,
+            "image_crop": self.image_crop,
+            "image_id": self.image_id,
+            "image_hash": self.image_hash,
+            "image_width": self.image_width,
+            "image_height": self.image_height,
+            "image_file_size": self.image_file_size,
+            "image_url": self.image_url,
+            "icon_id": self.icon_id,
+            "icon_hash": self.icon_hash,
+            "icon_width": self.icon_width,
+            "icon_height": self.icon_height,
+            "icon_file_size": self.icon_file_size,
+            "icon_url": self.icon_url,
+            "video_asset_id": self.video_asset.id if self.video_asset is not None else None,
+            "ad_tag": self.ad_tag,
+            "tags": [tag.name for tag in self.get_creative_tags()],
+            "trackers": self.trackers,
+            "additional_data": self.additional_data,
+        }
+
+    def _clean_updates(self, updates):
+        new_updates = {}
+        for field, value in list(updates.items()):
+            if field in set(self._update_fields) and value != getattr(self, field):
+                new_updates[field] = value
+        return new_updates
+
+    def _apply_updates(self, updates):
+        for field, value in list(updates.items()):
+            setattr(self, field, value)
+
+    def _handle_image(self, updates):
+        image = updates.get("image")
+        if image is None:
+            return
+        image_url = image_helper.upload_image_to_s3(image, self.batch_id)
+        updates["image_url"] = image_url
+
+    def _handle_icon(self, updates):
+        icon = updates.get("icon")
+        if icon is None:
+            return
+        icon_url = image_helper.upload_image_to_s3(icon, self.batch_id)
+        updates["icon_url"] = icon_url

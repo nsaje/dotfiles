@@ -5,6 +5,7 @@ from parameterized import param
 from parameterized import parameterized
 
 import core.features.creatives.models
+import core.features.creatives.models.creative_batch.exceptions
 import core.features.videoassets.models
 import core.models
 import core.models.tags.creative.shortcuts
@@ -166,19 +167,6 @@ class CreativeCandidateInstanceTestCase(core.models.tags.creative.shortcuts.Crea
         self.assertIsNotNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
         item.delete()
         self.assertIsNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
-
-    def test_delete_with_error(self):
-        batch = magic_mixer.blend(
-            core.features.creatives.CreativeBatch, agency=self.agency, type=dash.constants.CreativeBatchType.VIDEO
-        )
-        item = magic_mixer.blend(
-            core.features.creatives.CreativeCandidate, batch=batch, type=dash.constants.AdType.VIDEO
-        )
-        self.assertIsNotNone(core.features.creatives.CreativeCandidate.objects.filter(pk=item.id).first())
-
-        batch.update(None, status=dash.constants.CreativeBatchStatus.DONE)
-        with self.assertRaises(AssertionError):
-            item.delete()
 
     def _get_model_with_agency_scope(self, agency: core.models.Agency):
         batch = magic_mixer.blend(core.features.creatives.models.CreativeBatch, agency=agency, account=None)
