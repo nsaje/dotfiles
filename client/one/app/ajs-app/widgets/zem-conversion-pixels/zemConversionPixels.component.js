@@ -82,7 +82,7 @@ angular.module('one.widgets').component('zemConversionPixels', {
                 name +
                 '-->\n<img src="' +
                 url +
-                '" height="1" width="1" border="0" alt="" />'
+                '" referrerpolicy="no-referrer-when-downgrade" height="1" width="1" border="0" alt="" />'
             );
         };
     },
