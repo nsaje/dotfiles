@@ -2011,12 +2011,14 @@ trackerOptional  | bool                                     | Allow Zemanta to p
         }
 
 
-### Get content ad details [GET /rest/v1/contentads/{contentAdId}{?includeApprovalStatus}]
+### Get content ad details [GET /rest/v1/contentads/{contentAdId}{?includeApprovalStatus,imageWidth,imageHeight}]
 
 + Parameters
     + contentAdId: 16805 (required)
     + includeApprovalStatus: true (bool, optional)
         + default: false
+    + imageWidth: 300 (integer, optional) - The width of the content ad image.
+    + imageHeight: 250 (integer, optional) - The height of the content ad image.
 
 + Response 200 (application/json)
 
@@ -2028,7 +2030,7 @@ trackerOptional  | bool                                     | Allow Zemanta to p
                 "label": "My label",
                 "url": "http://example.com/myblog",
                 "title": "My title",
-                "imageUrl": "http://example.com/myimage",
+                "imageUrl": "http://example.com/myimage?w=300&h=250",
                 "imageCrop": "faces",
                 "displayUrl": "http://example.com/mycompany",
                 "brandName": "My Company",
