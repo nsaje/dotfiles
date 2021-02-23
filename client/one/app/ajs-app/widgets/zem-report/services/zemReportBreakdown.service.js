@@ -8,24 +8,50 @@ angular
 
         function getAvailableBreakdowns(breakdown, metaData) {
             var availableBreakdowns = [];
+            var disabledDeliveryBreakdowns = [
+                'age',
+                'gender',
+                'age_gender',
+                'zem_placement_type',
+                'video_playback_method',
+            ];
 
             var structureBreakdowns = getReportStructureBreakdowns(metaData);
-            for (var i = 0; i < structureBreakdowns.length; i++) {
-                var dimension = structureBreakdowns[i];
+            structureBreakdowns.forEach(function(dimension) {
                 if (!isInBreakdown(breakdown, dimension)) {
-                    availableBreakdowns.push(dimension);
+                    availableBreakdowns.push(
+                        Object.assign({}, dimension, {
+                            breakdownType: 'Structure',
+                        })
+                    );
                 }
-            }
+            });
 
             if (!timeInBreakdown(breakdown)) {
                 availableBreakdowns = availableBreakdowns.concat(
-                    zemGridEndpointBreakdowns.TIME_BREAKDOWNS
+                    zemGridEndpointBreakdowns.TIME_BREAKDOWNS.map(function(
+                        dimension
+                    ) {
+                        return Object.assign({}, dimension, {
+                            breakdownType: 'Time',
+                        });
+                    })
                 );
             }
 
             if (!deliveryInBreakdown(breakdown)) {
                 availableBreakdowns = availableBreakdowns.concat(
-                    zemGridEndpointBreakdowns.DELIVERY_BREAKDOWNS
+                    zemGridEndpointBreakdowns.DELIVERY_BREAKDOWNS.filter(
+                        function(dimension) {
+                            return !disabledDeliveryBreakdowns.includes(
+                                dimension.query
+                            );
+                        }
+                    ).map(function(dimension) {
+                        return Object.assign({}, dimension, {
+                            breakdownType: 'Delivery',
+                        });
+                    })
                 );
             }
 

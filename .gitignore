@@ -148,3 +148,6 @@ server/src/
 
 server/**/.mypy_cache/
 scripts/.z1profiles
+
+# pyenv
+.python-version
