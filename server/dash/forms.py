@@ -484,7 +484,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
     def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
-        column_names = [col.strip(" _").lower().replace(" ", "_") for col in header]
+        column_names = [col.strip(" _").lower().replace(" ", "_") for col in header if col is not None]
 
         if len(column_names) > 1 and column_names[1] == "name":
             column_names[1] = "title"
