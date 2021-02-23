@@ -21,3 +21,12 @@ export function convertStringToDate(value: string): Date {
     }
     return moment(value).toDate();
 }
+
+export function convertDateTimeToUTCString(value: Date): string {
+    if (!commonHelpers.isDefined(value)) {
+        return null;
+    }
+    return moment(value)
+        .utc()
+        .format('YYYY-MM-DD[T]HH:mm');
+}

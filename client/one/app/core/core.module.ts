@@ -24,6 +24,7 @@ import {PosthogService} from './posthog/posthog.service';
 import {LocalStorageService} from './local-storage/local-storage.service';
 import {CreativesModule} from './creatives/creatives.module';
 import {WorkersService} from './workers/workers.service';
+import {BidInsightsModule} from './bid-insights/bid-insights.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -55,6 +56,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         AlertsModule,
         AuthModule,
         CreativesModule,
+        BidInsightsModule,
     ],
     providers: [
         GoogleAnalyticsService,
