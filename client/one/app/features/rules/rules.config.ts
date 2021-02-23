@@ -239,7 +239,7 @@ export const RULE_TARGET_TYPES = [
     },
 ];
 
-export const RULE_ACTIONS_OPTIONS = {
+export const RULE_ACTION_TYPES_OPTIONS = {
     [RuleActionType.IncreaseBid]: {
         valueLabel: 'Increase bid by',
         type: RuleActionType.IncreaseBid,

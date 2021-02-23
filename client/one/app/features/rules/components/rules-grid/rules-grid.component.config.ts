@@ -5,8 +5,9 @@ import {Rule} from '../../../../core/rules/types/rule';
 import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import {
     RULE_ACTION_FREQUENCY_OPTIONS,
-    RULE_ACTIONS_OPTIONS,
+    RULE_ACTION_TYPES_OPTIONS,
     RULE_NOTIFICATION_OPTIONS,
+    RULE_TARGET_TYPES,
 } from '../../rules.config';
 import {
     RuleNotificationType,
@@ -34,12 +35,11 @@ export const COLUMN_NAME: SmartGridColDef = {
     suppressSizeToFit: true,
 };
 
-export const COLUMN_ACTION_TYPE: SmartGridColDef = {
-    headerName: 'Action type',
-    field: 'actionType',
+export const COLUMN_ACTION: SmartGridColDef = {
+    headerName: 'Action',
     width: 160,
     suppressSizeToFit: true,
-    valueFormatter: actionTypeFormatter,
+    valueGetter: actionGetter,
 };
 
 export const COLUMN_STATUS: SmartGridColDef = {
@@ -152,9 +152,15 @@ function actionFrequencyFormatter(params: {
     return RULE_ACTION_FREQUENCY_OPTIONS[params.value]?.label || 'N/A';
 }
 
-function actionTypeFormatter(params: {value: RuleActionType}): string {
-    const actionConfig: RuleActionConfig = RULE_ACTIONS_OPTIONS[params.value];
-    return actionConfig?.valueLabel || 'N/A';
+function actionGetter(params: {data: Rule}): string {
+    const targetType = RULE_TARGET_TYPES.find(
+        targetType => targetType.value === params.data.targetType
+    );
+    return (
+        targetType.availableActions.find(
+            targetAction => targetAction.type === params.data.actionType
+        ).label || 'N/A'
+    );
 }
 
 function runsOnGetter(params: {data: Rule}): string {

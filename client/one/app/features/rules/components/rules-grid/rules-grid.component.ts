@@ -13,7 +13,7 @@ import {PaginationState} from '../../../../shared/components/smart-grid/types/pa
 import {Rule} from '../../../../core/rules/types/rule';
 import {
     COLUMN_NAME,
-    COLUMN_ACTION_TYPE,
+    COLUMN_ACTION,
     COLUMN_STATUS,
     COLUMN_ACTION_FREQUENCY,
     COLUMN_NOTIFICATION,
@@ -47,7 +47,7 @@ export class RulesGridComponent {
     columnDefs: SmartGridColDef[] = [
         COLUMN_STATUS,
         COLUMN_NAME,
-        COLUMN_ACTION_TYPE,
+        COLUMN_ACTION,
         COLUMN_ACTION_FREQUENCY,
         COLUMN_NOTIFICATION,
         COLUMN_RUNS_ON,

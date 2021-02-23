@@ -20,7 +20,7 @@ import {FieldErrors} from '../../../../shared/types/field-errors';
 import {
     EMAIL_MACROS,
     RULE_TARGET_TYPES,
-    RULE_ACTIONS_OPTIONS,
+    RULE_ACTION_TYPES_OPTIONS,
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_CURRENCY_HELP_TEXT,
     RULE_ACTION_DISABLED_HELP_TEXT,
@@ -140,7 +140,9 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
                 this.targetType,
                 this.actionType
             );
-            this.selectedActionConfig = this.getActionConfig(this.actionType);
+            this.selectedActionConfig = this.getActionTypeConfig(
+                this.actionType
+            );
             this.availableActionFrequencies = this.getAvailableActionFrequencies(
                 this.selectedActionConfig
             );
@@ -309,17 +311,17 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         }[] = [];
         RULE_TARGET_TYPES.forEach(target => {
             target.availableActions.forEach(action => {
-                const actionConfig = this.getActionConfig(action.type);
+                const actionTypeConfig = this.getActionTypeConfig(action.type);
                 availableActions.push({
                     group: target.label,
                     label: action.label,
-                    valueLabel: actionConfig.valueLabel,
+                    valueLabel: actionTypeConfig.valueLabel,
                     value: this.prepareSelectedTargetAndActionType(
                         target.value,
-                        actionConfig.type
+                        actionTypeConfig.type
                     ),
                     targetType: target.value,
-                    actionType: actionConfig.type,
+                    actionType: actionTypeConfig.type,
                 });
             });
         });
@@ -333,9 +335,9 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         return targetType + ':' + actionType;
     }
 
-    private getActionConfig(actionType: RuleActionType): RuleActionConfig {
+    private getActionTypeConfig(actionType: RuleActionType): RuleActionConfig {
         return (
-            RULE_ACTIONS_OPTIONS[actionType] || {
+            RULE_ACTION_TYPES_OPTIONS[actionType] || {
                 type: null,
                 frequencies: [],
             }
