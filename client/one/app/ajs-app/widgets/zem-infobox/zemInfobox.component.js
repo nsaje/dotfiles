@@ -1,4 +1,6 @@
 require('./zemInfobox.component.less');
+var BID_INSIGHTS_CONFIG = require('../../../features/bid-insights/bid-insights.config')
+    .BID_INSIGHTS_CONFIG;
 
 angular.module('one.widgets').component('zemInfobox', {
     bindings: {
@@ -15,11 +17,13 @@ angular.module('one.widgets').component('zemInfobox', {
         zemUtils,
         $location,
         $window,
-        zemEntitiesUpdatesService
+        zemEntitiesUpdatesService,
+        NgRouter
     ) {
         var $ctrl = this;
         $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.openHistory = openHistory;
+        $ctrl.openBidInsights = openBidInsights;
 
         var entityUpdateHandler;
         var actionExecutedHandler;
@@ -50,6 +54,10 @@ angular.module('one.widgets').component('zemInfobox', {
                         reloadInfoboxData();
                     }
                 });
+            $ctrl.canShowBidInsights =
+                $ctrl.entity &&
+                $ctrl.entity.type === constants.entityType.AD_GROUP &&
+                $ctrl.hasPermission('zemauth.can_see_bid_insights');
         };
 
         $ctrl.$onChanges = function(changes) {
@@ -143,6 +151,18 @@ angular.module('one.widgets').component('zemInfobox', {
             var tempLocation = angular.copy($location);
             tempLocation.search(param, true);
             $window.open(tempLocation.absUrl(), '_blank');
+        }
+
+        function openBidInsights() {
+            var queryParams = $location.search();
+            queryParams[BID_INSIGHTS_CONFIG.idQueryParam] = $ctrl.entity.id;
+
+            NgRouter.navigate(
+                [{outlets: {drawer: BID_INSIGHTS_CONFIG.outletName}}],
+                {
+                    queryParams: queryParams,
+                }
+            );
         }
     },
 });

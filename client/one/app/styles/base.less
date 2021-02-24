@@ -30,24 +30,23 @@ a:focus {
     color: inherit;
 }
 
-a.alternative-link,
-a.alternative-link:hover,
-a.alternative-link:active {
+a.zem-alternative-link,
+a.zem-alternative-link:hover,
+a.zem-alternative-link:active {
     color: @color--secondary;
 }
 
-a.link-with-icon {
-    padding-left: 22px;
+a.zem-link-with-icon {
+    display: inline-block;
+    padding-left: 18px;
 
     &::before {
         position: absolute;
         display: block;
-        content: '';
-        width: 16px;
-        height: 16px;
+        line-height: 1;
+        text-decoration: none;
         left: 0px;
         top: 50%;
-
         transform: translateY(-50%);
     }
 }
@@ -1148,16 +1147,6 @@ h4 {
         background-position: 4px center;
         width: 29px;
         height: auto;
-    }
-}
-
-.history-icon {
-    &.link-with-icon.alternative-link::before {
-        background-image: url('@{images-folder}/history-sec.svg');
-    }
-
-    &.link-with-icon::before {
-        //background-image: url('images/history-orange.svg');
     }
 }
 

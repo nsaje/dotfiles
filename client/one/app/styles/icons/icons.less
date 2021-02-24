@@ -9,14 +9,14 @@
 
 @font-face {
     font-family: '@{icomoon-font-family}';
-    src: url('@{icomoon-font-path}/@{icomoon-font-family}.eot?hzodas');
-    src: url('@{icomoon-font-path}/@{icomoon-font-family}.eot?hzodas#iefix')
+    src: url('@{icomoon-font-path}/@{icomoon-font-family}.eot?dwlzdb');
+    src: url('@{icomoon-font-path}/@{icomoon-font-family}.eot?dwlzdb#iefix')
             format('embedded-opentype'),
-        url('@{icomoon-font-path}/@{icomoon-font-family}.ttf?hzodas')
+        url('@{icomoon-font-path}/@{icomoon-font-family}.ttf?dwlzdb')
             format('truetype'),
-        url('@{icomoon-font-path}/@{icomoon-font-family}.woff?hzodas')
+        url('@{icomoon-font-path}/@{icomoon-font-family}.woff?dwlzdb')
             format('woff'),
-        url('@{icomoon-font-path}/@{icomoon-font-family}.svg?hzodas#@{icomoon-font-family}')
+        url('@{icomoon-font-path}/@{icomoon-font-family}.svg?dwlzdb#@{icomoon-font-family}')
             format('svg');
     font-weight: normal;
     font-style: normal;
@@ -25,7 +25,7 @@
 
 [class^='icon-'],
 [class*=' icon-'] {
-    &:before {
+    &::before {
         /* use !important to prevent issues with browser extensions that change fonts */
         font-family: '@{icomoon-font-family}' !important;
         speak: never;
@@ -38,6 +38,12 @@
         /* Better Font Rendering =========== */
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+.icon-funnel {
+    &:before {
+        content: @icon-funnel;
     }
 }
 

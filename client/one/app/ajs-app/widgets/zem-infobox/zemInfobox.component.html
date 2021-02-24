@@ -71,13 +71,18 @@
         is-internal="{{ row.internal }}"
     >
     </zem-infobox-data-row>
-    <hr
-        ng-if="$ctrl.isEntityAvailable"
-        class="zem-infobox__content-separator"
-    />
+</div>
+<div class="zem-infobox__footer">
+    <a
+        ng-if="$ctrl.isEntityAvailable && $ctrl.canShowBidInsights"
+        class="zem-alternative-link zem-link-with-icon icon-funnel"
+        ng-click="$ctrl.openBidInsights($event)"
+    >
+        Bidding insights
+    </a>
     <a
         ng-if="$ctrl.isEntityAvailable"
-        class="alternative-link link-with-icon history-icon"
+        class="zem-alternative-link zem-link-with-icon icon-history"
         ng-click="$ctrl.openHistory($event)"
     >
         View history

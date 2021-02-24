@@ -43,7 +43,9 @@
             class="two-columns-list__show-more"
             ng-if="$ctrl.selectedItemsBySection[section].length > $ctrl.getSectionLimit(section)"
         >
-            <a class="alternative-link" ng-click="$ctrl.expandSection(section)"
+            <a
+                class="zem-alternative-link"
+                ng-click="$ctrl.expandSection(section)"
                 >Show all ({{
                     $ctrl.selectedItemsBySection[section].length
                 }})</a
