@@ -852,8 +852,7 @@ export enum ConnectionType {
 export enum CategoryName {
     COSTS = 'Costs',
     TRAFFIC = 'Traffic Acquisition',
-    MRC50 = 'Viewability',
-    MRC100 = 'MRC100 Viewability',
+    MRC50 = 'Native Viewability',
     VAST4 = 'Video Viewability',
     AUDIENCE = 'Audience Metrics',
     VIDEO = 'Video Metrics',

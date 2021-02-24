@@ -1261,9 +1261,9 @@ angular
                 shown: true,
             },
 
-            // Viewability metrics
+            // Native Viewability metrics
             mrc50Measurable: {
-                name: 'Measurable Impressions',
+                name: 'Native Measurable Impressions',
                 field: 'mrc50_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: true,
@@ -1273,7 +1273,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50Viewable: {
-                name: 'Viewable Impressions',
+                name: 'Native Viewable Impressions',
                 field: 'mrc50_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: true,
@@ -1284,7 +1284,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonMeasurable: {
-                name: 'Not-Measurable Impr.',
+                name: 'Native Not-Measurable Impressions',
                 field: 'mrc50_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: true,
@@ -1295,7 +1295,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonViewable: {
-                name: 'Not-Viewable Impressions',
+                name: 'Native Not-Viewable Impressions',
                 field: 'mrc50_non_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: true,
@@ -1306,7 +1306,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50MeasurablePercent: {
-                name: '% Measurable Impressions',
+                name: '% Native Measurable Impressions',
                 field: 'mrc50_measurable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -1318,7 +1318,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50ViewablePercent: {
-                name: '% Viewable Impressions',
+                name: '% Native Viewable Impressions',
                 field: 'mrc50_viewable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -1330,7 +1330,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50ViewableDistribution: {
-                name: 'Impression Distribution (Viewable)',
+                name: 'Native Impression Distribution (Viewable)',
                 field: 'mrc50_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -1342,7 +1342,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonMeasurableDistribution: {
-                name: 'Impression Distribution (Not-Measurable)',
+                name: 'Native Impression Distribution (Not-Measurable)',
                 field: 'mrc50_non_measurable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -1354,7 +1354,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonViewableDistribution: {
-                name: 'Impression Distribution (Not-Viewable)',
+                name: 'Native Impression Distribution (Not-Viewable)',
                 field: 'mrc50_non_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -1366,7 +1366,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             etfmMrc50Vcpm: {
-                name: 'Avg. VCPM',
+                name: 'Avg. Native VCPM',
                 field: 'etfm_mrc50_vcpm',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 fractionSize: 3,
@@ -1378,134 +1378,8 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            mrc100Measurable: {
-                name: 'MRC100 Measurable Impressions',
-                field: 'mrc100_measurable',
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help: 'Impressions for which we measured viewability.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100Viewable: {
-                name: 'MRC100 Viewable Impressions',
-                field: 'mrc100_viewable',
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Number of impressions that were viewed by a person. Impression is counted as viewed when 100% of the ad is in view for 1 second. ',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100NonMeasurable: {
-                name: 'MRC100 Not-Measurable Impressions',
-                field: 'mrc100_non_measurable',
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Impressions for which we couldn’t measure viewability. Calculated as Impressions - Measurable Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100NonViewable: {
-                name: 'MRC100 Not-Viewable Impressions',
-                field: 'mrc100_non_viewable',
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Number of impressions that were not viewed by a person. Calculated as Measurable Impressions - Viewable Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100MeasurablePercent: {
-                name: '% MRC100 Measurable Impressions',
-                field: 'mrc100_measurable_percent',
-                type: 'percent',
-                fractionSize: 2,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Percentage of impressions that were measurable. Calculated as 100 * Measurable impressions / Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100ViewablePercent: {
-                name: '% MRC100 Viewable Impressions',
-                field: 'mrc100_viewable_percent',
-                type: 'percent',
-                fractionSize: 2,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Percentage of viewable impressions out of all measurable impressions. Calculated as 100 * Viewable Impressions / Measurable Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100ViewableDistribution: {
-                name: 'MRC100 Impression Distribution (Viewable)',
-                field: 'mrc100_viewable_distribution',
-                type: 'percent',
-                fractionSize: 2,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Percentage of Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100NonMeasurableDistribution: {
-                name: 'MRC100 Impression Distribution (Not-Measurable)',
-                field: 'mrc100_non_measurable_distribution',
-                type: 'percent',
-                fractionSize: 2,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Percentage of Not-Measurable impressions out of all impressions. Calculated as 100 * Not-Measurable Impressions / Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            mrc100NonViewableDistribution: {
-                name: 'MRC100 Impression Distribution (Not-Viewable)',
-                field: 'mrc100_non_viewable_distribution',
-                type: 'percent',
-                fractionSize: 2,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Percentage of Not-Viewable impressions out of all impressions. Calculated as 100 * Not-Viewable Impressions / Impressions.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-            etfmMrc100Vcpm: {
-                name: 'Avg. MRC100 VCPM',
-                field: 'etfm_mrc100_vcpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                costMode: constants.costMode.PUBLIC,
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
             vast4Measurable: {
-                name: 'Video Measurable Impressions',
+                name: 'Video Measurable Impr.',
                 field: 'vast4_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1527,7 +1401,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonMeasurable: {
-                name: 'Video Not-Measurable',
+                name: 'Video Not-Measurable Impressions',
                 field: 'vast4_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1539,7 +1413,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonViewable: {
-                name: 'Video Not-Viewable',
+                name: 'Video Not-Viewable Impressions',
                 field: 'vast4_non_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1616,7 +1490,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             etfmVast4Vcpm: {
-                name: 'Avg. VAST4 VCPM',
+                name: 'Avg. Video VCPM',
                 field: 'etfm_vast4_vcpm',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 fractionSize: 3,
@@ -1860,19 +1734,6 @@ angular
             COLUMNS.etfmMrc50Vcpm,
         ];
 
-        var MRC100_VIEWABILITY_METRICS_GROUP = [
-            COLUMNS.mrc100Measurable,
-            COLUMNS.mrc100Viewable,
-            COLUMNS.mrc100NonMeasurable,
-            COLUMNS.mrc100NonViewable,
-            COLUMNS.mrc100MeasurablePercent,
-            COLUMNS.mrc100ViewablePercent,
-            COLUMNS.mrc100ViewableDistribution,
-            COLUMNS.mrc100NonMeasurableDistribution,
-            COLUMNS.mrc100NonViewableDistribution,
-            COLUMNS.etfmMrc100Vcpm,
-        ];
-
         var VAST4_VIEWABILITY_METRICS_GROUP = [
             COLUMNS.vast4Measurable,
             COLUMNS.vast4Viewable,
@@ -1933,7 +1794,6 @@ angular
             COSTS_GROUP,
             TRAFFIC_ACQUISITION_GROUP,
             MRC50_VIEWABILITY_METRICS_GROUP,
-            MRC100_VIEWABILITY_METRICS_GROUP,
             VAST4_VIEWABILITY_METRICS_GROUP,
             AUDIENCE_METRICS_GROUP,
             PIXELS_GROUP,
@@ -2276,24 +2136,21 @@ angular
                 columns: PLACEMENT_GROUP,
             },
             {
-                name: 'Costs',
+                name: CategoryName.COSTS,
                 columns: COSTS_GROUP,
             },
             {
-                name: 'Traffic Acquisition',
+                name: CategoryName.TRAFFIC,
                 columns: TRAFFIC_ACQUISITION_GROUP,
             },
             {
-                name: 'Viewability',
+                name: CategoryName.MRC50,
                 columns: MRC50_VIEWABILITY_METRICS_GROUP,
+                helpText:
+                    'Native viewability is provided by the media source partner and measured according to MRC-50 standard.',
             },
             {
-                name: 'MRC100 Viewability',
-                columns: MRC100_VIEWABILITY_METRICS_GROUP,
-                isNewFeature: true,
-            },
-            {
-                name: 'Audience Metrics',
+                name: CategoryName.AUDIENCE,
                 columns: AUDIENCE_METRICS_GROUP,
             },
             {
@@ -2302,17 +2159,19 @@ angular
                 columns: PIXELS_GROUP,
             },
             {
-                name: 'Google & Adobe Analytics Goals',
+                name: CategoryName.CONVERSIONS,
                 columns: CONVERSION_GOALS_GROUP,
             },
             {
-                name: 'Video Metrics',
+                name: CategoryName.VIDEO,
                 columns: VIDEO_METRICS_GROUP,
             },
             {
-                name: 'Video Viewability',
+                name: CategoryName.VAST4,
                 columns: VAST4_VIEWABILITY_METRICS_GROUP,
                 isNewFeature: true,
+                helpText:
+                    'Video viewability is provided by video player on the publisher site. Video is considered viewed after 50% of the video is in view for 2 seconds.',
             },
         ];
 
@@ -2475,6 +2334,7 @@ angular
                     name: category.name,
                     fields: fields,
                     isNewFeature: category.isNewFeature,
+                    helpText: category.helpText,
                 };
 
                 if (category.description)

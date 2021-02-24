@@ -22,6 +22,11 @@
                     zem-new-feature="{{ category.isNewFeature === true }}"
                 >
                     {{ category.name }}
+                    <zem-help-popover
+                        ng-if="category.helpText"
+                        content="{{ category.helpText }}"
+                        placement="top"
+                    ></zem-help-popover>
                 </div>
                 <zem-conversion-pixel-selector
                     ng-if="category.name === $ctrl.categoryName.PIXELS"

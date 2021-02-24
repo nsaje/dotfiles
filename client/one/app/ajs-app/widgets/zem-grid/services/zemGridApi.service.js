@@ -170,6 +170,7 @@ angular
                     subcategories: subcategories,
                     columns: categoryColumns,
                     isNewFeature: category.isNewFeature,
+                    helpText: category.helpText,
                 };
             }
 

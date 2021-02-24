@@ -39,6 +39,11 @@
             zem-new-feature="{{ category.isNewFeature === true }}"
         >
             {{ category.name }}
+            <zem-help-popover
+                ng-if="category.helpText"
+                content="{{ category.helpText }}"
+                placement="top"
+            ></zem-help-popover>
         </div>
         <div
             class="dropdown-menu__category-description"
