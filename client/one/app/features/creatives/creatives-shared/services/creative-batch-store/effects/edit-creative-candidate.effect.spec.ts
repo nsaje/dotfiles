@@ -23,9 +23,12 @@ describe('EditCreativeCandidateActionEffect', () => {
         id: '2',
         title: 'Test candidate 2',
     };
-    const mockedNewCandidate2: CreativeCandidate = {
-        id: '2',
+    const mockedChanges: Partial<CreativeCandidate> = {
         title: 'This is the new test candidate 2',
+    };
+    const mockedNewCandidate2: CreativeCandidate = {
+        ...mockedCandidate2,
+        ...mockedChanges,
     };
     const mockedNewCandidate2FromServer: CreativeCandidate = {
         id: '2',
@@ -55,7 +58,8 @@ describe('EditCreativeCandidateActionEffect', () => {
         effect.effect(
             mockedStoreState,
             new EditCreativeCandidateAction({
-                candidate: mockedNewCandidate2,
+                candidate: mockedCandidate2,
+                changes: mockedChanges,
                 requestStateUpdater,
             })
         );
@@ -64,7 +68,11 @@ describe('EditCreativeCandidateActionEffect', () => {
         expect(creativesServiceStub.editCandidate).toHaveBeenCalledTimes(1);
         expect(creativesServiceStub.editCandidate).toHaveBeenCalledWith(
             mockedBatchId,
-            mockedNewCandidate2,
+            mockedCandidate2.id,
+            {
+                ...mockedChanges,
+                type: mockedNewCandidate2.type,
+            },
             requestStateUpdater
         );
 

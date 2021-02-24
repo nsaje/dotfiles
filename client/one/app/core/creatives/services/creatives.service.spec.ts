@@ -31,6 +31,7 @@ describe('CreativesService', () => {
     let mockedCandidateCreateParams: CreativeCandidate;
     let mockedCreativeCandidate: CreativeCandidate;
     let mockedCreativeCandidates: CreativeCandidate[];
+    let mockedChanges: Partial<CreativeCandidate>;
 
     beforeEach(() => {
         creativesEndpointStub = jasmine.createSpyObj(CreativesEndpoint.name, [
@@ -147,6 +148,7 @@ describe('CreativesService', () => {
 
         mockedCreativeCandidate = mockedCreativeCandidates[0];
         mockedCreativeCandidateId = mockedCreativeCandidate.id;
+        mockedChanges = {description: 'Teeest!'};
     });
 
     it('should get creatives via endpoint', () => {
@@ -334,7 +336,8 @@ describe('CreativesService', () => {
         service
             .editCandidate(
                 mockedBatchId,
-                mockedCreativeCandidate,
+                mockedCreativeCandidate.id,
+                mockedChanges,
                 requestStateUpdater
             )
             .subscribe(newCandidate => {
@@ -344,7 +347,8 @@ describe('CreativesService', () => {
         expect(creativesEndpointStub.editCandidate).toHaveBeenCalledTimes(1);
         expect(creativesEndpointStub.editCandidate).toHaveBeenCalledWith(
             mockedBatchId,
-            mockedCreativeCandidate,
+            mockedCreativeCandidate.id,
+            mockedChanges,
             requestStateUpdater
         );
     });

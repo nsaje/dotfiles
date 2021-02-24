@@ -101,12 +101,14 @@ export class CreativesService {
 
     editCandidate(
         batchId: string,
-        candidate: CreativeCandidate,
+        candidateId: string,
+        changes: Partial<CreativeCandidate>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreativeCandidate> {
         return this.endpoint.editCandidate(
             batchId,
-            candidate,
+            candidateId,
+            changes,
             requestStateUpdater
         );
     }

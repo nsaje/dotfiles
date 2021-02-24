@@ -11,6 +11,7 @@ import {replaceArrayItem} from '../../../../../../shared/helpers/array.helpers';
 
 export interface EditCreativeCandidateParams {
     candidate: CreativeCandidate;
+    changes: Partial<CreativeCandidate>;
     requestStateUpdater: RequestStateUpdater;
 }
 
@@ -37,7 +38,11 @@ export class EditCreativeCandidateActionEffect extends StoreEffect<
             this.service
                 .editCandidate(
                     state.entity.id,
-                    params.candidate,
+                    params.candidate.id,
+                    {
+                        type: params.candidate.type,
+                        ...params.changes,
+                    },
                     params.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

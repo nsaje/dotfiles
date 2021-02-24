@@ -64,6 +64,7 @@ import {
     RemoveCreativeCandidateAction,
     RemoveCreativeCandidateActionEffect,
 } from './effects/remove-creative-candidate.effect';
+import {ChangeEvent} from '../../../../../shared/types/change-event';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -189,10 +190,11 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
         );
     }
 
-    updateCandidate(candidate: CreativeCandidate) {
+    updateCandidate(changes: ChangeEvent<CreativeCandidate>) {
         this.dispatch(
             new EditCreativeCandidateAction({
-                candidate,
+                candidate: changes.target,
+                changes: changes.changes,
                 requestStateUpdater: this.requestStateUpdater,
             })
         );

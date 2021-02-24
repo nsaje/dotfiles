@@ -304,14 +304,15 @@ export class CreativesEndpoint {
 
     editCandidate(
         batchId: string,
-        candidate: CreativeCandidate,
+        candidateId: string,
+        changes: Partial<CreativeCandidate>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreativeCandidate> {
         const request = replaceUrl(
             CREATIVES_CONFIG.requests.creativeCandidates.edit,
             {
                 batchId,
-                candidateId: candidate.id,
+                candidateId,
             }
         );
         requestStateUpdater(request.name, {
@@ -319,7 +320,7 @@ export class CreativesEndpoint {
         });
 
         return this.http
-            .put<ApiResponse<CreativeCandidate>>(request.url, candidate)
+            .put<ApiResponse<CreativeCandidate>>(request.url, changes)
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
