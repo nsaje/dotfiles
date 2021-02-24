@@ -39,7 +39,7 @@ angular.module('one.widgets').component('zemCloneCampaignModal', {
                         $ctrl.modalInstance.close();
                     },
                     function(errors) {
-                        $ctrl.errors = errors;
+                        $ctrl.error = errors.error.details;
                     }
                 )
                 .finally(function() {
