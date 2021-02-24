@@ -1,0 +1,14 @@
+<div class="zem-ad-group-info__title">{{ title }}</div>
+<div
+    *ngFor="let section of formattedAdGroupInfo; let i = index"
+    class="zem-ad-group-info__setting"
+>
+    <div>{{ section.title }}:</div>
+    <ng-container *ngIf="!showAll[i] && section.isTruncated">
+        <strong>{{ section.truncatedItems }}</strong>
+        <a (click)="handleShowAll(i)"> … show more</a>
+    </ng-container>
+    <ng-container *ngIf="showAll[i] || !section.isTruncated">
+        <strong>{{ section.items }}</strong>
+    </ng-container>
+</div>

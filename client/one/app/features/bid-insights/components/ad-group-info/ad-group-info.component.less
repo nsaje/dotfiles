@@ -1,0 +1,44 @@
+@import 'variables';
+
+.zem-ad-group-info {
+    display: block;
+    background-color: white;
+    box-shadow: 0 0 10px 0 fade(black, 10%);
+    width: 100%;
+    padding: @spacing--default;
+
+    @media only screen and (min-width: @mobile-breakpoint) and (max-width: @desktop-common-breakpoint - 1) {
+        width: 50%;
+    }
+
+    @media only screen and (min-width: @desktop-common-breakpoint) {
+        width: calc(70% / 4 - 30px);
+    }
+
+    @media only screen and (min-width: @desktop-less-common-breakpoint) {
+        width: calc(70% / 4 - 50px);
+    }
+}
+
+.zem-ad-group-info__title {
+    color: @color--secondary;
+    font-size: @font-size--bigger;
+    font-weight: @font-weight--bold;
+    border-bottom: 1px solid fade(@color--secondary, 10%);
+    padding-bottom: @spacing--default;
+    margin-bottom: @spacing--default;
+}
+
+.zem-ad-group-info__setting {
+    color: @text-color--lighter;
+    margin-top: @spacing--small;
+
+    strong {
+        color: @text-color--default;
+    }
+
+    a {
+        color: @color--secondary;
+        white-space: nowrap;
+    }
+}
