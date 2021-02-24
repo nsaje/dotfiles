@@ -1,0 +1,33 @@
+@import 'variables';
+
+.zem-form-field-with-sidebar {
+    display: flex;
+    background-color: @color--lightest-neutral;
+    padding: @spacing--xsmall 0px;
+    flex-wrap: wrap;
+}
+
+.zem-form-field-with-sidebar__content {
+    flex: 1 1 @zem-form-group__min-content-width;
+}
+
+.zem-form-field-with-sidebar__sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 @zem-form-group__input-width;
+    font-size: @font-size--small;
+    line-height: @font-size--default;
+}
+.zem-form-field-with-sidebar__count {
+    color: @color--neutral;
+}
+
+.zem-form-field-with-sidebar__default_link a {
+    color: @color--secondary;
+}
+
+@media only screen and (min-width: @tablet-breakpoint) {
+    .zem-form-field-with-sidebar__sidebar {
+        padding-left: @spacing--default;
+    }
+}

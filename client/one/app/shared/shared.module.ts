@@ -96,6 +96,7 @@ import {MultiStepMenuComponent} from './components/multi-step-menu/multi-step-me
 import {ThumbnailCellComponent} from './components/thumbnail-cell/thumbnail-cell.component';
 import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
 import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
+import {FormFieldWithSidebarComponent} from './components/form-field-with-sidebar/form-field-with-sidebar.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -184,6 +185,7 @@ const EXPORTED_DECLARATIONS = [
     ThumbnailCellComponent,
     NativeAdPreviewComponent,
     DisplayAdPreviewComponent,
+    FormFieldWithSidebarComponent,
 ];
 
 @NgModule({

@@ -1,0 +1,16 @@
+<div class="zem-form-field-with-sidebar__content">
+    <ng-content></ng-content>
+</div>
+<div class="zem-form-field-with-sidebar__sidebar">
+    <div *ngIf="maxLength" class="zem-form-field-with-sidebar__count">
+        {{ length }}/{{ maxLength }}
+    </div>
+    <div
+        *ngIf="useAsDefaultClick.observers.length > 0"
+        class="zem-form-field-with-sidebar__default_link"
+    >
+        <a href tabindex="-1" (click)="useAsDefaultClick.emit()">
+            Use as default
+        </a>
+    </div>
+</div>
