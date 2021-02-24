@@ -1,0 +1,2 @@
+export const ELIGIBILITY_OK_LIMIT = 70;
+export const ELIGIBILITY_PROBLEM_LIMIT = 30;
