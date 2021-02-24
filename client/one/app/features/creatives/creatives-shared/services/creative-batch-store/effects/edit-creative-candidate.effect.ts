@@ -8,6 +8,10 @@ import {CreativeCandidate} from '../../../../../../core/creatives/types/creative
 import {takeUntil} from 'rxjs/operators';
 import {SetCandidatesAction} from '../reducers/set-candidates.reducer';
 import {replaceArrayItem} from '../../../../../../shared/helpers/array.helpers';
+import {SetCandidateErrorsAction} from '../reducers/set-candidate-errors.reducer';
+import {HttpErrorResponse} from '@angular/common/http';
+import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
+import {CreativeCandidateFieldsErrorsState} from '../../../types/creative-candidate-fields-errors-state';
 
 export interface EditCreativeCandidateParams {
     candidate: CreativeCandidate;
@@ -48,21 +52,50 @@ export class EditCreativeCandidateActionEffect extends StoreEffect<
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (candidate: CreativeCandidate) => {
-                        this.dispatch(
-                            new SetCandidatesAction(
-                                replaceArrayItem(
-                                    state.candidates,
-                                    candidate => candidate.id,
-                                    candidate
-                                )
-                            )
+                        this.setCandidateState(state, candidate);
+                        this.setCandidateErrors(
+                            params.candidate,
+                            new CreativeCandidateFieldsErrorsState()
                         );
                         resolve(true);
                     },
-                    () => {
+                    (error: HttpErrorResponse) => {
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new CreativeCandidateFieldsErrorsState(),
+                            error
+                        );
+                        this.setCandidateState(state, params.candidate);
+                        this.setCandidateErrors(params.candidate, fieldsErrors);
                         resolve(false);
                     }
                 );
         });
+    }
+
+    private setCandidateState(
+        state: CreativeBatchStoreState,
+        candidate: CreativeCandidate
+    ) {
+        this.dispatch(
+            new SetCandidatesAction(
+                replaceArrayItem(
+                    state.candidates,
+                    (candidate: CreativeCandidate) => candidate.id,
+                    candidate
+                )
+            )
+        );
+    }
+
+    private setCandidateErrors(
+        candidate: CreativeCandidate,
+        fieldsErrors: CreativeCandidateFieldsErrorsState
+    ) {
+        this.dispatch(
+            new SetCandidateErrorsAction({
+                candidateId: candidate.id,
+                fieldsErrors,
+            })
+        );
     }
 }

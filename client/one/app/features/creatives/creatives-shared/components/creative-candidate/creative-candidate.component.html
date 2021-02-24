@@ -34,3 +34,15 @@
         </div>
     </div>
 </div>
+<div *ngIf="isSelected" class="zem-creative-candidate__edit-and-preview">
+    <zem-creative-candidate-edit-form
+        class="zem-creative-candidate-edit-form"
+        [candidate]="candidate"
+        [candidateErrors]="candidateErrors"
+        [availableTags]="availableTags"
+        [isLoadingTags]="isLoadingTags"
+        [canUseExtraTrackers]="canUseExtraTrackers"
+        (candidateChange)="candidateChange.emit($event)"
+        (tagSearch)="tagSearch.emit($event)"
+    ></zem-creative-candidate-edit-form>
+</div>

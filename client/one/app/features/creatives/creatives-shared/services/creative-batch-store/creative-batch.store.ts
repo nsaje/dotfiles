@@ -65,6 +65,10 @@ import {
     RemoveCreativeCandidateActionEffect,
 } from './effects/remove-creative-candidate.effect';
 import {ChangeEvent} from '../../../../../shared/types/change-event';
+import {
+    SetCandidateErrorsAction,
+    SetCandidateErrorsActionReducer,
+} from './reducers/set-candidate-errors.reducer';
 
 @Injectable()
 export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
@@ -131,6 +135,10 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
             {
                 provide: RemoveCreativeCandidateAction,
                 useClass: RemoveCreativeCandidateActionEffect,
+            },
+            {
+                provide: SetCandidateErrorsAction,
+                useClass: SetCandidateErrorsActionReducer,
             },
         ];
     }

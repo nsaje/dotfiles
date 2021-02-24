@@ -1,0 +1,121 @@
+<div class="zem-creative-candidate-edit-form__section_title">Edit creative</div>
+<zem-text-form-group
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="'URL'"
+    [value]="candidate.url"
+    [placeholder]="'URL'"
+    [errors]="candidateErrors?.url"
+    (valueChange)="onFieldChange({url: $event})"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="adTitleFieldLabel"
+    [value]="candidate.title"
+    [placeholder]="adTitleFieldLabel"
+    [errors]="candidateErrors?.title"
+    (valueChange)="onFieldChange({title: $event})"
+></zem-text-form-group>
+<zem-select-form-group
+    *ngIf="adTypes.length > 1"
+    class="zem-select-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Ad Type'"
+    [value]="candidate.type"
+    [bindLabel]="'name'"
+    [bindValue]="'id'"
+    [items]="adTypes"
+    [isSearchable]="false"
+    [isClearable]="false"
+    (valueChange)="onFieldChange({type: $event})"
+    [appendTo]="'body'"
+></zem-select-form-group>
+<zem-textarea-form-group
+    *ngIf="candidate.type === AdType.AD_TAG"
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Ad Tag'"
+    [value]="candidate.adTag"
+    [placeholder]="'Ad Tag'"
+    [errors]="candidateErrors?.adTag"
+    (valueChange)="onFieldChange({adTag: $event})"
+></zem-textarea-form-group>
+<!--TODO: Image
+        *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO || candidate.type === AdType.IMAGE"-->
+<zem-select-form-group
+    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
+    class="zem-select-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Image crop'"
+    [value]="candidate.imageCrop"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="IMAGE_CROPS"
+    [isSearchable]="false"
+    [isClearable]="false"
+    (valueChange)="onFieldChange({imageCrop: $event})"
+    [appendTo]="'body'"
+></zem-select-form-group>
+<!--TODO: Brand logo
+        *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"-->
+<!--TODO: Video
+        *ngIf="candidate.type === AdType.VIDEO"-->
+<zem-textarea-form-group
+    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Description'"
+    [value]="candidate.description"
+    [placeholder]="'Description'"
+    [errors]="candidateErrors?.description"
+    (valueChange)="onFieldChange({description: $event})"
+></zem-textarea-form-group>
+<zem-text-form-group
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Display URL'"
+    [value]="candidate.displayUrl"
+    [placeholder]="'Display URL'"
+    [errors]="candidateErrors?.displayUrl"
+    (valueChange)="onFieldChange({displayUrl: $event})"
+></zem-text-form-group>
+<zem-text-form-group
+    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
+    class="zem-text-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Brand name'"
+    [value]="candidate.brandName"
+    [placeholder]="'Brand name'"
+    [errors]="candidateErrors?.brandName"
+    (valueChange)="onFieldChange({brandName: $event})"
+></zem-text-form-group>
+<zem-select-form-group
+    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
+    class="zem-select-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Call to action'"
+    [value]="candidate.callToAction"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="callsToAction"
+    [isSearchable]="true"
+    [addCustomItemFn]="createCallToActionItem"
+    [errors]="candidateErrors?.callToAction"
+    (valueChange)="onFieldChange({callToAction: $event})"
+></zem-select-form-group>
+<zem-tag-form-group
+    class="zem-tag-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Tags'"
+    [value]="candidate.tags"
+    [placeholder]="'Select tags'"
+    [items]="availableTags"
+    [canCreateTags]="true"
+    [isLoading]="isLoadingTags"
+    (valueChange)="onFieldChange({tags: $event})"
+    (search)="tagSearch.emit($event)"
+></zem-tag-form-group>
+<zem-trackers-form-group
+    *ngIf="
+        candidate.type === AdType.CONTENT ||
+        candidate.type === AdType.VIDEO ||
+        candidate.type === AdType.IMAGE
+    "
+    class="zem-trackers-form-group zem-creative-candidate-edit-form__item"
+    [label]="'Trackers'"
+    [value]="candidate.trackers"
+    [errors]="candidateErrors?.trackers"
+    [canUseExtraTrackers]="canUseExtraTrackers"
+    (valueChange)="onFieldChange({trackers: $event})"
+></zem-trackers-form-group>

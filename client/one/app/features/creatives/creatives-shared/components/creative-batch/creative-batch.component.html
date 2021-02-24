@@ -24,14 +24,23 @@
                 </div>
                 <div class="zem-creative-batch__candidates">
                     <zem-creative-candidate
-                        *ngFor="let candidate of state.candidates"
+                        *ngFor="
+                            let candidate of state.candidates;
+                            trackBy: trackCandidate
+                        "
                         class="zem-creative-candidate"
                         [candidate]="candidate"
+                        [candidateErrors]="state.candidateErrors[candidate.id]"
                         [isSelected]="
                             candidate.id === state.selectedCandidateId
                         "
+                        [availableTags]="tagsState.availableTags"
+                        [isLoadingTags]="tagsState.requests.list.inProgress"
+                        [canUseExtraTrackers]="canUseExtraTrackers"
                         (click)="store.selectCandidate(candidate)"
                         (remove)="store.deleteCandidate(candidate)"
+                        (candidateChange)="store.updateCandidate($event)"
+                        (tagSearch)="onTagsSearch($event)"
                     ></zem-creative-candidate>
                 </div>
                 <div class="zem-creative-batch__actions">

@@ -144,6 +144,16 @@ export enum AdSize {
     BUTTON = 15,
 }
 
+export enum ImageCrop {
+    CENTER = 'center',
+    FACES = 'faces',
+    ENTROPY = 'entropy',
+    LEFT = 'left',
+    RIGHT = 'right',
+    TOP = 'top',
+    BOTTOM = 'bottom',
+}
+
 export enum AdGroupState {
     ACTIVE = 'ACTIVE',
     INACTIVE = 'INACTIVE',
@@ -1584,15 +1594,7 @@ export const APP_CONSTANTS = {
     legacyAdType: LegacyAdType,
     adType: AdType,
     adSize: AdSize,
-    imageCrop: {
-        CENTER: 'center',
-        FACES: 'faces',
-        ENTROPY: 'entropy',
-        LEFT: 'left',
-        RIGHT: 'right',
-        TOP: 'top',
-        BOTTOM: 'bottom',
-    },
+    imageCrop: ImageCrop,
     videoAssetStatus: {
         INITIALIZED: 'INITIALIZED',
         NOT_UPLOADED: 'NOT_UPLOADED',

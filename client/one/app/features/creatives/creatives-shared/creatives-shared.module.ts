@@ -8,6 +8,7 @@ import {CreativeActionsCellComponent} from './components/creative-actions-cell/c
 import {CreativeBatchComponent} from './components/creative-batch/creative-batch.component';
 import {CreativeTagsCellComponent} from './components/creative-tags-cell/creative-tags-cell.component';
 import {CreativeCandidateComponent} from './components/creative-candidate/creative-candidate.component';
+import {CreativeCandidateEditFormComponent} from './components/creative-candidate-edit-form/creative-candidate-edit-form.component';
 import {TrackerFormComponent} from './components/tracker-form/tracker-form.component';
 import {TrackersComponent} from './components/trackers/trackers.component';
 import {TrackerComponent} from './components/tracker/tracker.component';
@@ -21,6 +22,7 @@ const EXPORTED_DECLARATIONS = [
     CreativeBatchComponent,
     CreativeTagsCellComponent,
     CreativeCandidateComponent,
+    CreativeCandidateEditFormComponent,
     TrackerFormComponent,
     TrackersComponent,
     TrackerComponent,

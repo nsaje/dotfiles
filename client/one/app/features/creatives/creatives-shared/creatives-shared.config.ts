@@ -1,6 +1,6 @@
 import {PaginationOptions} from '../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../shared/components/smart-grid/types/pagination-state';
-import {AdType} from '../../../app.constants';
+import {AdType, CreativeBatchType, ImageCrop} from '../../../app.constants';
 import {
     TrackerEventType,
     TrackerMethod,
@@ -21,11 +21,15 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
     ...DEFAULT_PAGINATION,
 };
 
-export const CREATIVE_TYPES: {id: AdType; name: string}[] = [
-    {id: AdType.CONTENT, name: 'Content'},
-    {id: AdType.VIDEO, name: 'Video'},
-    {id: AdType.IMAGE, name: 'Image'},
-    {id: AdType.AD_TAG, name: 'Ad tag'},
+export const CREATIVE_TYPES: {
+    id: AdType;
+    name: string;
+    batchType: CreativeBatchType;
+}[] = [
+    {id: AdType.CONTENT, name: 'Content', batchType: CreativeBatchType.NATIVE},
+    {id: AdType.VIDEO, name: 'Video', batchType: CreativeBatchType.VIDEO},
+    {id: AdType.IMAGE, name: 'Image', batchType: CreativeBatchType.DISPLAY},
+    {id: AdType.AD_TAG, name: 'Ad tag', batchType: CreativeBatchType.DISPLAY},
 ];
 
 export const MAX_LOADED_TAGS = 100;
@@ -79,3 +83,55 @@ export const TRACKER_METHOD_OPTIONS: {
 
 export const MAX_TRACKERS_LIMIT = 3;
 export const MAX_TRACKERS_EXTRA_LIMIT = 6;
+
+export const IMAGE_CROPS: {name: string; value: ImageCrop}[] = [
+    {name: 'Center', value: ImageCrop.CENTER},
+    {name: 'Faces', value: ImageCrop.FACES},
+    {name: 'Entropy', value: ImageCrop.ENTROPY},
+    {name: 'Left', value: ImageCrop.LEFT},
+    {name: 'Right', value: ImageCrop.RIGHT},
+    {name: 'Top', value: ImageCrop.TOP},
+    {name: 'Bottom', value: ImageCrop.BOTTOM},
+];
+
+export const CALLS_TO_ACTION: {name: string; value: string}[] = [
+    'Read More',
+    'Book Now',
+    'Contact Us',
+    'Learn More',
+    'Shop Now',
+    'Sign Up',
+    'Watch More',
+    'Download',
+    'Apply Now',
+    'Bet Now',
+    'Buy Now',
+    'Compare',
+    'Directions',
+    'Donate Now',
+    'Enroll Now',
+    'Follow Now',
+    'Get App',
+    'Get Coupon',
+    'Get Now',
+    'Get Offer',
+    'Get Quote',
+    'Get Rates',
+    'Get Sample',
+    'Install',
+    'Join Now',
+    'Launch',
+    'Listen Now',
+    'Play Now',
+    'Play Game',
+    'Record Now',
+    'Register',
+    'Remind Me',
+    'Save Now',
+    'Sell Now',
+    'Subscribe',
+    'Try Now',
+    'Use App',
+    'Vote Now',
+    'Watch Now',
+].map(x => ({name: x, value: x}));

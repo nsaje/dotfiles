@@ -7,6 +7,7 @@ import {
     Input,
     OnChanges,
     OnDestroy,
+    OnInit,
 } from '@angular/core';
 import {CreativeBatchStore} from '../../services/creative-batch-store/creative-batch.store';
 import {FetchCreativeBatchActionEffect} from '../../services/creative-batch-store/effects/fetch-creative-batch.effect';
@@ -32,6 +33,9 @@ import {EditCreativeCandidateActionEffect} from '../../services/creative-batch-s
 import {SetCandidatesActionReducer} from '../../services/creative-batch-store/reducers/set-candidates.reducer';
 import {SetSelectedCandidateActionReducer} from '../../services/creative-batch-store/reducers/set-selected-candidate.reducer';
 import {RemoveCreativeCandidateActionEffect} from '../../services/creative-batch-store/effects/remove-creative-candidate.effect';
+import {SetCandidateErrorsActionReducer} from '../../services/creative-batch-store/reducers/set-candidate-errors.reducer';
+import {CreativeCandidate} from '../../../../../core/creatives/types/creative-candidate';
+import {AuthStore} from '../../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-creative-batch',
@@ -51,19 +55,28 @@ import {RemoveCreativeCandidateActionEffect} from '../../services/creative-batch
         SetCandidatesActionReducer,
         SetSelectedCandidateActionReducer,
         RemoveCreativeCandidateActionEffect,
+        SetCandidateErrorsActionReducer,
     ],
 })
-export class CreativeBatchComponent implements OnChanges, OnDestroy {
+export class CreativeBatchComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     batchId: string;
 
+    canUseExtraTrackers: boolean = false;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         public store: CreativeBatchStore,
-        public tagsStore: CreativeTagsStore
+        public tagsStore: CreativeTagsStore,
+        public authStore: AuthStore
     ) {
         this.subscribeToStateUpdates();
+    }
+
+    ngOnInit() {
+        this.canUseExtraTrackers = this.authStore.hasPermission(
+            'zemauth.can_use_extra_trackers'
+        );
     }
 
     ngOnChanges() {
@@ -86,6 +99,10 @@ export class CreativeBatchComponent implements OnChanges, OnDestroy {
             this.store.state.entity
         );
         this.tagsStore.loadTags(batchScope, $event);
+    }
+
+    trackCandidate(index: number, candidate: CreativeCandidate): string {
+        return candidate.id;
     }
 
     private getBatchScope(batch: CreativeBatch): ScopeParams {

@@ -9,6 +9,8 @@ import {
 import {CreativeCandidate} from '../../../../../../core/creatives/types/creative-candidate';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
 import {SetCandidatesAction} from '../reducers/set-candidates.reducer';
+import {SetCandidateErrorsAction} from '../reducers/set-candidate-errors.reducer';
+import {CreativeCandidateFieldsErrorsState} from '../../../types/creative-candidate-fields-errors-state';
 
 describe('EditCreativeCandidateActionEffect', () => {
     let creativesServiceStub: jasmine.SpyObj<CreativesService>;
@@ -76,12 +78,18 @@ describe('EditCreativeCandidateActionEffect', () => {
             requestStateUpdater
         );
 
-        expect(effect.dispatch).toHaveBeenCalledTimes(1);
+        expect(effect.dispatch).toHaveBeenCalledTimes(2);
         expect(effect.dispatch).toHaveBeenCalledWith(
             new SetCandidatesAction([
                 mockedCandidate1,
                 mockedNewCandidate2FromServer,
             ])
+        );
+        expect(effect.dispatch).toHaveBeenCalledWith(
+            new SetCandidateErrorsAction({
+                candidateId: mockedNewCandidate2.id,
+                fieldsErrors: new CreativeCandidateFieldsErrorsState(),
+            })
         );
     }));
 });
