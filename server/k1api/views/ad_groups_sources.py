@@ -1,6 +1,7 @@
 from django.conf import settings
 
 import automation.campaignstop.service
+import core.features.source_groups
 import dash.constants
 import dash.features.custom_flags
 import dash.models
@@ -44,10 +45,16 @@ class AdGroupSourcesView(K1APIView):
         campaigns = set(ad_group.campaign for ad_group in ad_groups)
         campaignstop_map = automation.campaignstop.get_campaignstop_states(campaigns)
 
+        source_groups_id_slugs_mapping = core.features.source_groups.get_source_id_slugs_mapping()
+
         ad_group_sources = (
             dash.models.AdGroupSource.objects.all()
             .filter(ad_group__in=ad_groups)
             .filter(source__deprecated=False)
+            .exclude(
+                ad_group__campaign__account__agency__uses_source_groups=True,
+                source_id__in=source_groups_id_slugs_mapping.keys(),
+            )
             .select_related("settings", "source__source_type")
         )
 
@@ -92,6 +99,7 @@ class AdGroupSourcesView(K1APIView):
 
             if ad_group.is_blocked_by_custom_flag() or ad_group.is_disabled:
                 source_state = constants.AdGroupSettingsState.INACTIVE
+
             source = {
                 "ad_group_id": ad_group_source.ad_group_id,
                 "source_id": ad_group_source.source.id,
@@ -104,7 +112,20 @@ class AdGroupSourcesView(K1APIView):
             }
             if ad_group_source.ad_review_only:
                 source["ad_review_only"] = True
-            ad_group_source_dicts.append(source)
+
+            source_group = settings.SOURCE_GROUPS.get(ad_group_source.source_id)
+            if source_group and ad_group.campaign.account.agency.uses_source_groups:
+                for source_id in source_group:
+                    grouped_source = source.copy()
+                    grouped_source["source_id"] = source_id
+                    grouped_source["slug"] = source_groups_id_slugs_mapping[source_id]["bidder_slug"]
+                    ad_group_source_dicts.append(grouped_source)
+
+            if (
+                ad_group.campaign.account_id != settings.HARDCODED_ACCOUNT_ID_OEN
+                or ad_group_source.source_id != settings.HARDCODED_SOURCE_ID_OUTBRAINRTB
+            ):
+                ad_group_source_dicts.append(source)
 
         return self.response_ok(ad_group_source_dicts)
 
