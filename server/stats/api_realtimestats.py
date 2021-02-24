@@ -1,8 +1,10 @@
 import decimal
+from collections import defaultdict
 from collections import namedtuple
 
 import core.features.bcm
 import core.features.multicurrency
+import core.features.source_groups
 import core.models
 import realtimeapi.api
 
@@ -25,7 +27,14 @@ def groupby(
         ad_group_id=ad_group_id,
         content_ad_id=content_ad_id,
     )
-    return _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows)
+    uses_source_groups = _uses_source_groups(
+        breakdown=breakdown,
+        account_id=account_id,
+        campaign_id=campaign_id,
+        ad_group_id=ad_group_id,
+        content_ad_id=content_ad_id,
+    )
+    return _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows, uses_source_groups)
 
 
 def topn(*, breakdown, order, limit=100, campaign_id=None, ad_group_id=None, content_ad_id=None):
@@ -38,10 +47,42 @@ def topn(*, breakdown, order, limit=100, campaign_id=None, ad_group_id=None, con
         ad_group_id=ad_group_id,
         content_ad_id=content_ad_id,
     )
-    return _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows)
+    uses_source_groups = _uses_source_groups(
+        breakdown=breakdown, campaign_id=campaign_id, ad_group_id=ad_group_id, content_ad_id=content_ad_id
+    )
+    return _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows, uses_source_groups)
 
 
-def _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows):
+def _uses_source_groups(*, breakdown, account_id=None, campaign_id=None, ad_group_id=None, content_ad_id=None):
+    if not (breakdown and realtimeapi.constants.ValidTopNBreakdown.MEDIA_SOURCE in breakdown):
+        return False
+
+    if account_id:
+        return (
+            core.models.Account.objects.filter(id=account_id).values_list("agency__uses_source_groups", flat=True).get()
+        )
+    if campaign_id:
+        return (
+            core.models.Campaign.objects.filter(id=campaign_id)
+            .values_list("account__agency__uses_source_groups", flat=True)
+            .get()
+        )
+    if ad_group_id:
+        return (
+            core.models.AdGroup.objects.filter(id=ad_group_id)
+            .values_list("campaign__account__agency__uses_source_groups", flat=True)
+            .get()
+        )
+    if content_ad_id:
+        return (
+            core.models.ContentAd.objects.filter(id=content_ad_id)
+            .values_list("ad_group__campaign__account__agency__uses_source_groups", flat=True)
+            .get()
+        )
+    return False
+
+
+def _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows, uses_source_groups):
     entity_lookup_dict = _prepare_entity_lookup_dict(breakdown, campaign_id, ad_group_id, content_ad_id, rows)
     bcm_factors = _prepare_bcm_factors(entity_lookup_dict)
     currency_exchange_rates = _prepare_currency_exchange_rates(entity_lookup_dict)
@@ -54,6 +95,7 @@ def _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows):
         currency_exchange_rates,
         entity_lookup_dict,
         rows,
+        uses_source_groups,
     )
 
 
@@ -74,8 +116,19 @@ def _prepare_currency_exchange_rates(entity_lookup_dict):
 
 
 def _apply(
-    breakdown, campaign_id, ad_group_id, content_ad_id, bcm_factors, currency_exchange_rates, entity_lookup_dict, rows
+    breakdown,
+    campaign_id,
+    ad_group_id,
+    content_ad_id,
+    bcm_factors,
+    currency_exchange_rates,
+    entity_lookup_dict,
+    rows,
+    uses_source_groups,
 ):
+    if uses_source_groups:
+        rows = _group_source_row_stats(rows)
+
     for row in rows:
         entity_ids = _get_entity_ids_for_row(
             breakdown, campaign_id, ad_group_id, content_ad_id, entity_lookup_dict, row
@@ -84,6 +137,27 @@ def _apply(
         _apply_currency_exchange_rate(currency_exchange_rates, entity_ids.account_id, row)
         _add_calculated_columns(row)
     return rows
+
+
+def _group_source_row_stats(rows):
+    grouped_stats = defaultdict(lambda: defaultdict(int))
+    source_slug_group_slug_map = core.features.source_groups.get_source_slug_group_slug_mapping(include_group_slug=True)
+
+    for row in rows:
+        slug = row[realtimeapi.constants.ValidTopNBreakdown.MEDIA_SOURCE]
+        group_slug = source_slug_group_slug_map.get(slug)
+
+        if group_slug:
+            grouped_stats[group_slug][realtimeapi.constants.ValidTopNBreakdown.MEDIA_SOURCE] = group_slug
+            grouped_stats[group_slug]["clicks"] += row["clicks"]
+            grouped_stats[group_slug]["impressions"] += row["impressions"]
+            grouped_stats[group_slug]["price_nano"] += row["price_nano"]
+            grouped_stats[group_slug]["data_price_nano"] += row["data_price_nano"]
+            grouped_stats[group_slug]["spend"] += row["spend"]
+        else:
+            grouped_stats[slug] = row
+
+    return list(grouped_stats.values())
 
 
 def _apply_fees_and_margin(bcm_factors, campaign_id, row):
@@ -125,13 +199,21 @@ def _get_entity_ids_for_row(breakdown, campaign_id, ad_group_id, content_ad_id, 
 
 def _prepare_entity_lookup_dict(breakdown, campaign_id, ad_group_id, content_ad_id, rows):
     if campaign_id:
-        campaign = core.models.Campaign.objects.only("id", "account_id").get(id=campaign_id)
+        campaign = core.models.Campaign.objects.only("id", "account_id", "account__agency__uses_source_groups").get(
+            id=campaign_id
+        )
         return {str(campaign_id): EntityIds(campaign.account_id, campaign.id)}
     elif ad_group_id:
-        ad_group = core.models.AdGroup.objects.only("id", "campaign_id", "campaign__account_id").get(id=ad_group_id)
+        ad_group = core.models.AdGroup.objects.only(
+            "id", "campaign_id", "campaign__account_id", "campaign__account__agency__uses_source_groups"
+        ).get(id=ad_group_id)
         return {str(ad_group.id): EntityIds(ad_group.campaign.account_id, ad_group.campaign_id)}
     elif content_ad_id:
-        content_ad = core.models.ContentAd.objects.filter(id=content_ad_id).only("id", "ad_group__campaign_id").get()
+        content_ad = (
+            core.models.ContentAd.objects.filter(id=content_ad_id)
+            .only("id", "ad_group__campaign_id", "ad_group__campaign__account__agency__uses_source_groups")
+            .get()
+        )
         return {str(content_ad.id): EntityIds(content_ad.ad_group.campaign.account_id, content_ad.ad_group.campaign_id)}
     elif "campaign_id" in breakdown:
         campaign_ids = [row["campaign_id"] for row in rows]

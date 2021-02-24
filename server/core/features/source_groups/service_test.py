@@ -34,3 +34,23 @@ class SourceGroupsServiceTest(TestCase):
         mapping = service.get_source_slug_group_slug_mapping()
 
         self.assertCountEqual({"slug3": "slug1", "slug4": "slug1", "slug5": "slug2", "slug6": "slug2"}, mapping)
+
+    @mock.patch("django.conf.settings.SOURCE_GROUPS", {1: [3, 4], 2: [5, 6]})
+    def test_source_slug_group_slug_mapping_include_group_slug(self):
+        magic_mixer.cycle(7).blend(
+            core.models.Source, id=(sid for sid in range(1, 8)), bidder_slug=("slug" + str(i) for i in range(1, 8))
+        )
+
+        mapping = service.get_source_slug_group_slug_mapping(include_group_slug=True)
+
+        self.assertCountEqual(
+            {
+                "slug1": "slug1",
+                "slug3": "slug1",
+                "slug4": "slug1",
+                "slug2": "slug2",
+                "slug5": "slug2",
+                "slug6": "slug2",
+            },
+            mapping,
+        )

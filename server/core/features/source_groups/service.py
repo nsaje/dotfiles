@@ -12,7 +12,7 @@ def get_source_id_slugs_mapping():
     }
 
 
-def get_source_slug_group_slug_mapping():
+def get_source_slug_group_slug_mapping(include_group_slug=False):
     source_ids = set(settings.SOURCE_GROUPS.keys())
     for ids in settings.SOURCE_GROUPS.values():
         source_ids.update(ids)
@@ -24,6 +24,10 @@ def get_source_slug_group_slug_mapping():
 
     source_slug_group_slug_map = {}
     for group_id, source_ids in settings.SOURCE_GROUPS.items():
-        source_slug_group_slug_map.update({source_id_slug_map[sid]: source_id_slug_map[group_id] for sid in source_ids})
+        group_slug = source_id_slug_map[group_id]
+        source_slug_group_slug_map.update({source_id_slug_map[sid]: group_slug for sid in source_ids})
+
+        if include_group_slug:
+            source_slug_group_slug_map.update({group_slug: group_slug})
 
     return source_slug_group_slug_map
