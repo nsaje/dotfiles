@@ -23,6 +23,7 @@ import restapi.creatives.urls
 import restapi.credit.urls
 import restapi.creditrefund.urls
 import restapi.directdeal.urls
+import restapi.entityhistory.urls
 import restapi.geolocation.urls
 import restapi.inventory_planning.urls
 import restapi.publishergroup.urls
@@ -72,3 +73,4 @@ urlpatterns += restapi.bulkupload.urls.urlpatterns
 urlpatterns += restapi.realtimestats.urls.urlpatterns
 urlpatterns += restapi.creatives.urls.urlpatterns
 urlpatterns += restapi.creative_tags.urls.urlpatterns
+urlpatterns += restapi.entityhistory.urls.urlpatterns

@@ -22,6 +22,15 @@ export function convertStringToDate(value: string): Date {
     return moment(value).toDate();
 }
 
+export function convertDateToUTCString(value: Date): string {
+    if (!commonHelpers.isDefined(value)) {
+        return null;
+    }
+    return moment(value)
+        .utc()
+        .format('YYYY-MM-DD');
+}
+
 export function convertDateTimeToUTCString(value: Date): string {
     if (!commonHelpers.isDefined(value)) {
         return null;

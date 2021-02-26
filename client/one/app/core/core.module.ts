@@ -25,6 +25,7 @@ import {LocalStorageService} from './local-storage/local-storage.service';
 import {CreativesModule} from './creatives/creatives.module';
 import {WorkersService} from './workers/workers.service';
 import {BidInsightsModule} from './bid-insights/bid-insights.module';
+import {EntityHistoryModule} from './entity-history/entity-history.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -57,6 +58,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         AuthModule,
         CreativesModule,
         BidInsightsModule,
+        EntityHistoryModule,
     ],
     providers: [
         GoogleAnalyticsService,
