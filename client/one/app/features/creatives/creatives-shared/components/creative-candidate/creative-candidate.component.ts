@@ -13,6 +13,7 @@ import {CreativeCandidate} from '../../../../../core/creatives/types/creative-ca
 import {getTagColorCode} from '../../helpers/creatives-shared.helpers';
 import {ChangeEvent} from '../../../../../shared/types/change-event';
 import {CreativeCandidateFieldsErrorsState} from '../../types/creative-candidate-fields-errors-state';
+import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
 
 @Component({
     selector: 'zem-creative-candidate',
@@ -37,6 +38,10 @@ export class CreativeCandidateComponent implements OnChanges {
     remove: EventEmitter<void> = new EventEmitter<void>();
     @Output()
     candidateChange = new EventEmitter<ChangeEvent<CreativeCandidate>>();
+    @Output()
+    defaultsChange: EventEmitter<Partial<CreativeBatch>> = new EventEmitter<
+        Partial<CreativeBatch>
+    >();
     @Output()
     tagSearch: EventEmitter<string> = new EventEmitter<string>();
 

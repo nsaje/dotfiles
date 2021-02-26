@@ -40,6 +40,7 @@
                         (click)="store.selectCandidate(candidate)"
                         (remove)="store.deleteCandidate(candidate)"
                         (candidateChange)="store.updateCandidate($event)"
+                        (defaultsChange)="store.updateBatch($event)"
                         (tagSearch)="onTagsSearch($event)"
                     ></zem-creative-candidate>
                 </div>

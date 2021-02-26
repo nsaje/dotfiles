@@ -1,121 +1,209 @@
 <div class="zem-creative-candidate-edit-form__section_title">Edit creative</div>
-<zem-text-form-group
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="'URL'"
-    [value]="candidate.url"
-    [placeholder]="'URL'"
-    [errors]="candidateErrors?.url"
-    (valueChange)="onFieldChange({url: $event})"
-></zem-text-form-group>
-<zem-text-form-group
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="adTitleFieldLabel"
-    [value]="candidate.title"
-    [placeholder]="adTitleFieldLabel"
-    [errors]="candidateErrors?.title"
-    (valueChange)="onFieldChange({title: $event})"
-></zem-text-form-group>
-<zem-select-form-group
-    *ngIf="adTypes.length > 1"
-    class="zem-select-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Ad Type'"
-    [value]="candidate.type"
-    [bindLabel]="'name'"
-    [bindValue]="'id'"
-    [items]="adTypes"
-    [isSearchable]="false"
-    [isClearable]="false"
-    (valueChange)="onFieldChange({type: $event})"
-    [appendTo]="'body'"
-></zem-select-form-group>
-<zem-textarea-form-group
-    *ngIf="candidate.type === AdType.AD_TAG"
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Ad Tag'"
-    [value]="candidate.adTag"
-    [placeholder]="'Ad Tag'"
-    [errors]="candidateErrors?.adTag"
-    (valueChange)="onFieldChange({adTag: $event})"
-></zem-textarea-form-group>
-<!--TODO: Image
-        *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO || candidate.type === AdType.IMAGE"-->
-<zem-select-form-group
-    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
-    class="zem-select-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Image crop'"
-    [value]="candidate.imageCrop"
-    [bindLabel]="'name'"
-    [bindValue]="'value'"
-    [items]="IMAGE_CROPS"
-    [isSearchable]="false"
-    [isClearable]="false"
-    (valueChange)="onFieldChange({imageCrop: $event})"
-    [appendTo]="'body'"
-></zem-select-form-group>
-<!--TODO: Brand logo
-        *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"-->
-<!--TODO: Video
-        *ngIf="candidate.type === AdType.VIDEO"-->
-<zem-textarea-form-group
-    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Description'"
-    [value]="candidate.description"
-    [placeholder]="'Description'"
-    [errors]="candidateErrors?.description"
-    (valueChange)="onFieldChange({description: $event})"
-></zem-textarea-form-group>
-<zem-text-form-group
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Display URL'"
-    [value]="candidate.displayUrl"
-    [placeholder]="'Display URL'"
-    [errors]="candidateErrors?.displayUrl"
-    (valueChange)="onFieldChange({displayUrl: $event})"
-></zem-text-form-group>
-<zem-text-form-group
-    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
-    class="zem-text-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Brand name'"
-    [value]="candidate.brandName"
-    [placeholder]="'Brand name'"
-    [errors]="candidateErrors?.brandName"
-    (valueChange)="onFieldChange({brandName: $event})"
-></zem-text-form-group>
-<zem-select-form-group
-    *ngIf="candidate.type === AdType.CONTENT || candidate.type === AdType.VIDEO"
-    class="zem-select-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Call to action'"
-    [value]="candidate.callToAction"
-    [bindLabel]="'name'"
-    [bindValue]="'value'"
-    [items]="callsToAction"
-    [isSearchable]="true"
-    [addCustomItemFn]="createCallToActionItem"
-    [errors]="candidateErrors?.callToAction"
-    (valueChange)="onFieldChange({callToAction: $event})"
-></zem-select-form-group>
-<zem-tag-form-group
-    class="zem-tag-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Tags'"
-    [value]="candidate.tags"
-    [placeholder]="'Select tags'"
-    [items]="availableTags"
-    [canCreateTags]="true"
-    [isLoading]="isLoadingTags"
-    (valueChange)="onFieldChange({tags: $event})"
-    (search)="tagSearch.emit($event)"
-></zem-tag-form-group>
-<zem-trackers-form-group
-    *ngIf="
-        candidate.type === AdType.CONTENT ||
-        candidate.type === AdType.VIDEO ||
-        candidate.type === AdType.IMAGE
-    "
-    class="zem-trackers-form-group zem-creative-candidate-edit-form__item"
-    [label]="'Trackers'"
-    [value]="candidate.trackers"
-    [errors]="candidateErrors?.trackers"
-    [canUseExtraTrackers]="canUseExtraTrackers"
-    (valueChange)="onFieldChange({trackers: $event})"
-></zem-trackers-form-group>
+<ng-container *ngFor="let field of FIELDS_CONFIG">
+    <zem-form-field-with-sidebar
+        class="zem-form-field-with-sidebar"
+        *ngIf="field.shownForAdTypes.includes(candidate.type)"
+        [length]="candidate[field.field]?.length"
+        [maxLength]="field.maxLength"
+        [canUseAsDefault]="field.canUseAsDefault"
+        (useAsDefaultClick)="useCurrentFieldValueAsDefault(field.field)"
+    >
+        <ng-container *ngIf="field.template === 'text'">
+            <ng-container
+                *ngTemplateOutlet="
+                    textTemplate;
+                    context: {
+                        field: field
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+        <ng-container *ngIf="field.template === 'text-title'">
+            <ng-container
+                *ngTemplateOutlet="
+                    textTemplate;
+                    context: {
+                        field: field,
+                        label: adTitleFieldLabel
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="field.template === 'textarea'">
+            <ng-container
+                *ngTemplateOutlet="
+                    textareaTemplate;
+                    context: {
+                        field: field
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+        <ng-container *ngIf="field.template === 'textarea-adTag'">
+            <ng-container
+                *ngTemplateOutlet="
+                    textareaTemplate;
+                    context: {
+                        field: field
+                    }
+                "
+            >
+            </ng-container>
+            <div class="zem-creative-candidate-form-group__helptext">
+                Please check and test that you placed Zemanta macro for tracking
+                clicks in the ad tag. Instructions on placing the macro are
+                available
+                <a
+                    href="http://help.zemanta.com/article/show/89554-display-advertising"
+                    target="_blank"
+                    >here</a
+                >.
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="field.template === 'select-type'">
+            <ng-container
+                *ngTemplateOutlet="
+                    selectTemplate;
+                    context: {
+                        field: field,
+                        items: adTypes
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+        <ng-container *ngIf="field.template === 'select-imageCrop'">
+            <ng-container
+                *ngTemplateOutlet="
+                    selectTemplate;
+                    context: {
+                        field: field,
+                        items: IMAGE_CROPS
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+        <ng-container *ngIf="field.template === 'select-callToAction'">
+            <ng-container
+                *ngTemplateOutlet="
+                    selectTemplate;
+                    context: {
+                        field: field,
+                        items: callsToAction,
+                        isSearchable: true,
+                        isClearable: true,
+                        addCustomItemFn: createCallToActionItem
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="field.template === 'tags'">
+            <ng-container
+                *ngTemplateOutlet="
+                    tagsTemplate;
+                    context: {
+                        field: field,
+                        items: availableTags,
+                        isLoading: isLoadingTags,
+                        searchHandler: tagSearch.emit
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="field.template === 'trackers'">
+            <ng-container
+                *ngTemplateOutlet="
+                    trackersTemplate;
+                    context: {
+                        field: field,
+                        canUseExtraTrackers: canUseExtraTrackers
+                    }
+                "
+            ></ng-container>
+        </ng-container>
+    </zem-form-field-with-sidebar>
+</ng-container>
+
+<ng-template #textTemplate let-field="field" let-label="label">
+    <zem-text-form-group
+        class="zem-text-form-group"
+        [value]="candidate[field.field]"
+        [label]="label || field.label"
+        [placeholder]="label || field.placeholder || field.label"
+        [errors]="candidateErrors && candidateErrors[field.field]"
+        (valueChange)="onFieldChange(field.field, $event)"
+    ></zem-text-form-group>
+</ng-template>
+
+<ng-template #textareaTemplate let-field="field">
+    <zem-textarea-form-group
+        class="zem-text-form-group"
+        [value]="candidate[field.field]"
+        [label]="field.label"
+        [placeholder]="field.placeholder || field.label"
+        [errors]="candidateErrors && candidateErrors[field.field]"
+        (valueChange)="onFieldChange(field.field, $event)"
+    ></zem-textarea-form-group>
+</ng-template>
+
+<ng-template
+    #selectTemplate
+    let-field="field"
+    let-items="items"
+    let-isSearchable="isSearchable"
+    let-isClearable="isClearable"
+    let-addCustomItemFn="addCustomItemFn"
+>
+    <zem-select-form-group
+        class="zem-select-form-group"
+        [value]="candidate[field.field]"
+        [label]="field.label"
+        [placeholder]="field.placeholder || field.label"
+        [errors]="candidateErrors && candidateErrors[field.field]"
+        [bindLabel]="field.bindLabel"
+        [bindValue]="field.bindValue"
+        [items]="items"
+        [isSearchable]="false || isSearchable"
+        [isClearable]="false || isClearable"
+        [addCustomItemFn]="addCustomItemFn"
+        (valueChange)="onFieldChange(field.field, $event)"
+    ></zem-select-form-group>
+</ng-template>
+
+<ng-template
+    #tagsTemplate
+    let-field="field"
+    let-items="items"
+    let-isLoading="isLoading"
+    let-searchHandler="searchHandler"
+>
+    <zem-tag-form-group
+        class="zem-tag-form-group"
+        [value]="candidate[field.field]"
+        [label]="field.label"
+        [placeholder]="field.placeholder || field.label"
+        [items]="items"
+        [canCreateTags]="true"
+        [isLoading]="isLoading"
+        (valueChange)="onFieldChange(field.field, $event)"
+        (search)="searchHandler($event)"
+    ></zem-tag-form-group>
+</ng-template>
+
+<ng-template
+    #trackersTemplate
+    let-field="field"
+    let-canUseExtraTrackers="canUseExtraTrackers"
+>
+    <zem-trackers-form-group
+        class="zem-content-ad-trackers-form-group"
+        [value]="candidate[field.field]"
+        [label]="field.label"
+        [errors]="candidateErrors && candidateErrors[field.field]"
+        [canUseExtraTrackers]="canUseExtraTrackers"
+        (valueChange)="onFieldChange(field.field, $event)"
+    ></zem-trackers-form-group>
+</ng-template>

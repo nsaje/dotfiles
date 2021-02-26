@@ -27,6 +27,7 @@ const EXPORTED_DECLARATIONS = [
     TrackersComponent,
     TrackerComponent,
     TrackersFormGroupComponent,
+    CreativeCandidateEditFormComponent,
 ];
 
 @NgModule({

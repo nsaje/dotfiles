@@ -42,7 +42,7 @@ describe('SetSelectedCandidateActionReducer', () => {
         };
 
         const state = reducer.reduce(
-            new CreativeBatchStoreState(),
+            mockedState2,
             new SetSelectedCandidateAction(undefined)
         );
 

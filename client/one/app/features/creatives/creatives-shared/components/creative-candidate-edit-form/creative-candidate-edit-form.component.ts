@@ -23,6 +23,8 @@ import {
     IMAGE_CROPS,
     CALLS_TO_ACTION,
 } from '../../creatives-shared.config';
+import {FIELDS_CONFIG} from './creative-candidate-edit-form.config';
+import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
 
 interface ImageCropOption {
     name: string;
@@ -57,11 +59,19 @@ export class CreativeCandidateEditFormComponent implements OnChanges {
     @Input()
     canUseExtraTrackers: boolean = false;
     @Output()
-    candidateChange = new EventEmitter<ChangeEvent<CreativeCandidate>>();
+    candidateChange: EventEmitter<
+        ChangeEvent<CreativeCandidate>
+    > = new EventEmitter<ChangeEvent<CreativeCandidate>>();
+    @Output()
+    defaultsChange: EventEmitter<Partial<CreativeBatch>> = new EventEmitter<
+        Partial<CreativeBatch>
+    >();
     @Output()
     tagSearch: EventEmitter<string> = new EventEmitter<string>();
 
     AdType: typeof AdType = AdType;
+
+    FIELDS_CONFIG = FIELDS_CONFIG;
 
     IMAGE_CROPS: ImageCropOption[] = IMAGE_CROPS;
 
@@ -75,15 +85,25 @@ export class CreativeCandidateEditFormComponent implements OnChanges {
         this.adTitleFieldLabel = this.getAdTitleFieldLabel(this.candidate);
     }
 
-    onFieldChange(changes: Partial<CreativeCandidate>) {
+    onFieldChange(key: keyof CreativeCandidate, value: any) {
         this.candidateChange.emit({
             target: this.candidate,
-            changes,
+            changes: {
+                [key]: value,
+            },
         });
     }
 
     createCallToActionItem(name: string): CallToActionOption {
         return {name, value: name};
+    }
+
+    useCurrentFieldValueAsDefault(
+        fieldName: keyof CreativeCandidate & keyof CreativeBatch
+    ) {
+        this.defaultsChange.emit({
+            [fieldName]: this.candidate[fieldName],
+        });
     }
 
     private getAdTypeOptions(candidate: CreativeCandidate): AdTypeOption[] {

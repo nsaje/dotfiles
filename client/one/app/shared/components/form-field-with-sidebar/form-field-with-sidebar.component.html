@@ -6,7 +6,7 @@
         {{ length }}/{{ maxLength }}
     </div>
     <div
-        *ngIf="useAsDefaultClick.observers.length > 0"
+        *ngIf="canUseAsDefault"
         class="zem-form-field-with-sidebar__default_link"
     >
         <a href tabindex="-1" (click)="useAsDefaultClick.emit()">

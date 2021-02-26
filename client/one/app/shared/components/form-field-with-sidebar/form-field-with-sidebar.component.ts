@@ -18,6 +18,8 @@ export class FormFieldWithSidebarComponent {
     length: number = 0;
     @Input()
     maxLength: number;
+    @Input()
+    canUseAsDefault: boolean = false;
     @Output()
     useAsDefaultClick: EventEmitter<void> = new EventEmitter<void>();
 }

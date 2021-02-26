@@ -43,6 +43,7 @@
         [isLoadingTags]="isLoadingTags"
         [canUseExtraTrackers]="canUseExtraTrackers"
         (candidateChange)="candidateChange.emit($event)"
+        (defaultsChange)="defaultsChange.emit($event)"
         (tagSearch)="tagSearch.emit($event)"
     ></zem-creative-candidate-edit-form>
 </div>

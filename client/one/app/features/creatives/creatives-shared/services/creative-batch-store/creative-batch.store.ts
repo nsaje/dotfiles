@@ -229,7 +229,7 @@ export class CreativeBatchStore extends Store<CreativeBatchStoreState> {
         this.updateBatch({tags});
     }
 
-    private updateBatch(updates: Partial<CreativeBatch>) {
+    updateBatch(updates: Partial<CreativeBatch>) {
         this.dispatch(
             new SetEntityAction({...this.state.entity, ...updates})
         ).then(x => this.saveEntity());
