@@ -8,7 +8,10 @@ INSERT INTO mv_adgroup_placement (
         c.campaign_id,
         c.ad_group_id,
 
-        b.source_id,
+        CASE WHEN a.date < '2020-01-01' THEN b.parent_source_id --Date will be changed when merged
+            ELSE b.source_id
+        END as source_id,
+
         a.publisher,
         COALESCE(a.publisher, '') || '__' || b.source_id as publisher_source_id,
         a.placement_type,
@@ -124,7 +127,8 @@ INSERT INTO mv_adgroup_placement (
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_service_fee_nano,
         a.outbrain_publisher_id,
-        a.outbrain_section_id
+        a.outbrain_section_id,
+        b.source_id as original_source_id
     FROM
         (
             SELECT

@@ -763,6 +763,7 @@ DRUID_PASSWORD = (
     .decode("utf-8")
 )
 
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 

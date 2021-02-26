@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS mv_touchpointconversions (
       placement varchar(127),
       placement_type int,
       browser varchar(127),
-      connection_type varchar(127)
+      connection_type varchar(127),
+      original_source_id int2
       -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_touchpointconversions_main_idx ON mv_touchpointconversions (source_id, account_id, campaign_id, ad_group_id, content_ad_id, slug, conversion_window, date);

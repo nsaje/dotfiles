@@ -1,4 +1,5 @@
 import backtosql
+import core.features.source_groups
 import dash.models
 from etl import helpers
 from etl import redshift
@@ -32,5 +33,11 @@ class MVHelpersSource(Materialize):
     def generate_rows(self):
         sources = dash.models.Source.objects.all().order_by("id")
 
+        grouped_sources = core.features.source_groups.get_source_id_group_id_mapping()
         for source in sources:
-            yield (source.id, helpers.extract_source_slug(source.bidder_slug), source.bidder_slug)
+            yield (
+                source.id,
+                helpers.extract_source_slug(source.bidder_slug),
+                source.bidder_slug,
+                grouped_sources.get(source.id) or source.id,
+            )

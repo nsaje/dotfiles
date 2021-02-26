@@ -65,6 +65,8 @@ CREATE TABLE mv_adgroup_placement (
 
     -- kw::dimensions
     outbrain_publisher_id varchar(127) encode zstd,
-    outbrain_section_id varchar(127) encode zstd
+    outbrain_section_id varchar(127) encode zstd,
+    original_source_id int2 encode AZ64
     -- kw::end
+                                  
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement);

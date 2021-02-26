@@ -12,6 +12,10 @@ def get_source_id_slugs_mapping():
     }
 
 
+def get_source_id_group_id_mapping():
+    return {subsource: parent for parent, subsources in settings.SOURCE_GROUPS.items() for subsource in subsources}
+
+
 def get_source_slug_group_slug_mapping(include_group_slug=False):
     source_ids = set(settings.SOURCE_GROUPS.keys())
     for ids in settings.SOURCE_GROUPS.values():

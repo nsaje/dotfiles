@@ -63,6 +63,7 @@ class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
 class MVMaster(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column("date", BREAKDOWN)
     source_id = backtosql.Column("source_id", BREAKDOWN)
+    original_source_id = backtosql.Column("original_source_id", BREAKDOWN)
 
     account_id = backtosql.Column("account_id", BREAKDOWN)
     campaign_id = backtosql.Column("campaign_id", BREAKDOWN)
@@ -239,6 +240,7 @@ class MVConversions(backtosql.Model, RSBreakdownMixin):
 class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column("date", BREAKDOWN)
     source_id = backtosql.Column("source_id", BREAKDOWN)
+    original_source_id = backtosql.Column("original_source_id", BREAKDOWN)
 
     account_id = backtosql.Column("account_id", BREAKDOWN)
     campaign_id = backtosql.Column("campaign_id", BREAKDOWN)

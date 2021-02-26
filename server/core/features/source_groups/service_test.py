@@ -26,6 +26,13 @@ class SourceGroupsServiceTest(TestCase):
             self.assertEqual("track" + str(i), data["tracking_slug"])
 
     @mock.patch("django.conf.settings.SOURCE_GROUPS", {1: [3, 4], 2: [5, 6]})
+    def test_source_id_group_id_mapping(self):
+        magic_mixer.cycle(7).blend(core.models.Source, id=(sid for sid in range(1, 8)))
+
+        mapping = service.get_source_id_group_id_mapping()
+        self.assertEqual({3: 1, 4: 1, 5: 2, 6: 2}, mapping)
+
+    @mock.patch("django.conf.settings.SOURCE_GROUPS", {1: [3, 4], 2: [5, 6]})
     def test_source_slug_group_slug_mapping(self):
         magic_mixer.cycle(7).blend(
             core.models.Source, id=(sid for sid in range(1, 8)), bidder_slug=("slug" + str(i) for i in range(1, 8))

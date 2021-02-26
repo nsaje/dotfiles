@@ -1,3 +1,4 @@
+import datetime
 from collections import defaultdict
 from functools import partial
 
@@ -5,6 +6,7 @@ from dateutil import rrule
 
 import backtosql
 import dash.models
+from core.features import source_groups
 from etl import helpers
 from etl import models
 from etl import redshift
@@ -83,15 +85,14 @@ class MasterView(Materialize):
         }
 
     def get_postclickstats(self, cursor, date):
+        grouped_sources = source_groups.get_source_id_group_id_mapping()
 
         # group postclick rows by ad group and postclick source
         rows_by_ad_group = defaultdict(lambda: defaultdict(list))
         for row in self.get_postclickstats_query_results(cursor, date):
             postclick_source = helpers.extract_postclick_source(row.postclick_source)
             rows_by_ad_group[row.ad_group_id][postclick_source].append(row)
-
         for ad_group_id, rows_by_postclick_source in rows_by_ad_group.items():
-
             if len(list(rows_by_postclick_source.keys())) > 1:
                 logger.info(
                     "Postclick stats for a single ad group from different sources",
@@ -112,10 +113,12 @@ class MasterView(Materialize):
                     logger.info("Got postclick stats for unknown ad group", ad_group=row.ad_group_id)
                     continue
 
-                source_id = self.sources_slug_map[source_slug]
                 ad_group_id = row.ad_group_id
                 campaign_id, account_id = self.ad_groups_parents_map[ad_group_id]
-
+                source_id = self.sources_slug_map[source_slug]
+                parent_source_id = (
+                    source_id if date < datetime.date(2020, 1, 1) else grouped_sources.get(source_id, source_id)
+                )  # Date will be changed when merged
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
                 publisher = row.publisher
@@ -123,10 +126,10 @@ class MasterView(Materialize):
                     publisher = publisher.lower()
 
                 yield (
-                    helpers.get_breakdown_key_for_postclickstats(source_id, row.content_ad_id),
+                    helpers.get_breakdown_key_for_postclickstats(parent_source_id, row.content_ad_id),
                     (
                         date,
-                        source_id,
+                        parent_source_id,
                         account_id,
                         campaign_id,
                         ad_group_id,
@@ -191,6 +194,7 @@ class MasterView(Materialize):
                         dash.constants.ConnectionType.UNKNOWN,
                         None,  # outbrain_publisher_id
                         None,  # outbrain_section_id
+                        source_id,  # original_source_id
                     ),
                     (row.conversions, row.postclick_source),
                 )

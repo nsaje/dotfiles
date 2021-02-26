@@ -13,6 +13,7 @@ from .mv_helpers_source import MVHelpersSource
 @mock.patch("redshiftapi.db.get_write_stats_cursor")
 @mock.patch("redshiftapi.db.get_write_stats_transaction")
 @mock.patch("utils.s3helpers.S3Helper")
+@mock.patch("django.conf.settings.SOURCE_GROUPS", {10: [3]})
 class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ["test_materialize_views"]
 
@@ -27,10 +28,11 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
             "materialized_views/mvh_source/2016/07/03/mvh_source_asd.csv",
             textwrap.dedent(
                 """\
-            1\tadblade\tadblade\r
-            2\tadiant\tadiant\r
-            3\ttestsource\ttestsource\r
-            4\ttestsource2\ttestsource2\r
+            1\tadblade\tadblade\t1\r
+            2\tadiant\tadiant\t2\r
+            3\ttestsource\ttestsource\t10\r
+            4\ttestsource2\ttestsource2\t4\r
+            5\ttestgrouping\ttestgrouping\t5\r
             """
             ),
         )
@@ -41,9 +43,10 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_source (
-                source_id int2 encode bytedict,
-                bidder_slug varchar(127) encode lzo,
-                clean_slug varchar(127) encode lzo
+                source_id int2 encode AZ64,
+                bidder_slug varchar(127) encode zstd,
+                clean_slug varchar(127) encode zstd,
+                parent_source_id int2 encode AZ64
             )
             diststyle all
             sortkey(bidder_slug)"""

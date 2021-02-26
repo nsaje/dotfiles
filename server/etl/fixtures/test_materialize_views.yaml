@@ -192,6 +192,18 @@
         supports_retargeting: true
     model: dash.source
     pk: 4
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: testgrouping
+        bidder_slug: 'testgrouping'
+        source_type: 2
+        tracking_slug: 'testgrouping'
+        maintenance: false
+        deprecated: false
+        supports_retargeting: true
+    model: dash.source
+    pk: 5
 
 # test adgroupsettings
 

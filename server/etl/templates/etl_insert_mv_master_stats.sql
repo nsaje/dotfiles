@@ -3,7 +3,9 @@
 INSERT INTO mv_master (
     SELECT
         a.date,
-        b.source_id,
+        CASE WHEN a.date < '2020-01-01' THEN b.source_id --Date will be changed when merged
+            ELSE b.parent_source_id
+        END as source_id,
 
         c.account_id,
         c.campaign_id,
@@ -145,7 +147,8 @@ INSERT INTO mv_master (
         a.browser,
         a.connection_type,
         a.outbrain_publisher_id,
-        a.outbrain_section_id
+        a.outbrain_section_id,
+        b.source_id as original_source_id
     FROM
         (
             SELECT

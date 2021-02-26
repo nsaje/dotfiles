@@ -3,7 +3,10 @@
 INSERT INTO mv_touchpointconversions (
     SELECT
         a.date as date,
-        a.source_id as source_id,
+
+        CASE WHEN a.date < '2020-01-01' THEN a.source_id --Date will be changed when merged
+            ELSE b.parent_source_id
+        END as source_id,
 
         s.account_id as account_id,
         s.campaign_id as campaign_id,
@@ -83,7 +86,8 @@ INSERT INTO mv_touchpointconversions (
         CASE WHEN a.connection_type IN ('cableDSL', 'corporate', 'dialup') THEN 'wifi'
             WHEN a.connection_type = 'cellular' THEN 'cellular'
             ELSE NULL
-        END as connection_type
+        END as connection_type,
+        a.source_id as original_source_id
     FROM (
         SELECT
               c.date as date,
@@ -124,8 +128,11 @@ INSERT INTO mv_touchpointconversions (
               {% if account_id %}
                   AND c.account_id=%(account_id)s
               {% endif %}
-    ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24, 25, 26
+    ) a
+    left outer join mvh_source b on a.source_id=b.source_id
+    join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
+
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24, 25, 26, 27
 );
 
 {% endautoescape %}

@@ -85,7 +85,8 @@ CREATE TABLE IF NOT EXISTS mv_master (
     browser varchar(127),
     connection_type varchar(127),
     outbrain_publisher_id varchar(127),
-    outbrain_section_id varchar(127)
+    outbrain_section_id varchar(127),
+    original_source_id int2
 
     -- kw::end
 );
