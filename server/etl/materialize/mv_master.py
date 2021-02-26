@@ -75,8 +75,10 @@ class MasterView(Materialize):
         if self.account_id:
             ad_groups_qs = ad_groups_qs.filter(campaign__account_id=self.account_id)
         self.ad_groups_parents_map = {
-            x["id"]: (x["campaign_id"], x["campaign__account_id"])
-            for x in ad_groups_qs.values("id", "campaign_id", "campaign__account_id").iterator()
+            x["id"]: (x["campaign_id"], x["campaign__account_id"], x["campaign__account__agency__uses_source_groups"])
+            for x in ad_groups_qs.values(
+                "id", "campaign_id", "campaign__account_id", "campaign__account__agency__uses_source_groups"
+            ).iterator()
         }
 
         sources_qs = dash.models.Source.objects.all()
@@ -114,11 +116,13 @@ class MasterView(Materialize):
                     continue
 
                 ad_group_id = row.ad_group_id
-                campaign_id, account_id = self.ad_groups_parents_map[ad_group_id]
+                campaign_id, account_id, uses_source_groups = self.ad_groups_parents_map[ad_group_id]
                 source_id = self.sources_slug_map[source_slug]
-                parent_source_id = (
-                    source_id if date < datetime.date(2020, 1, 1) else grouped_sources.get(source_id, source_id)
-                )  # Date will be changed when merged
+                if date > datetime.date(2022, 1, 1) and uses_source_groups:  # Date will be changed when merged
+                    parent_source_id = grouped_sources.get(source_id, source_id)
+                else:
+                    parent_source_id = source_id
+
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
                 publisher = row.publisher

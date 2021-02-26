@@ -6,8 +6,10 @@ from django.test import TestCase
 from django.test import override_settings
 
 import backtosql
+from core import models
 from dash import constants
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 from .mv_master import MasterView
 
@@ -915,8 +917,9 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         date = datetime.date(2022, 5, 5)
 
+        adg = magic_mixer.blend(models.AdGroup, campaign__account__agency__uses_source_groups=True)
         mock_get_postclickstats_query_results.return_value = [
-            PostclickstatsResults(2, "omniture", 4, "testgrouping", "Trol", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(adg.id, "omniture", 4, "testgrouping", "Trol", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
         ]
 
         mv = MasterView("asd", datetime.date(2022, 7, 1), datetime.date(2022, 7, 3), account_id=None)
@@ -929,9 +932,9 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     (
                         datetime.date(2022, 5, 5),
                         10,
-                        2,
-                        2,
-                        2,
+                        adg.campaign.account.id,
+                        adg.campaign.id,
+                        adg.id,
                         4,
                         "trol",
                         "trol__5",

@@ -3,8 +3,9 @@
 INSERT INTO mv_master (
     SELECT
         a.date,
-        CASE WHEN a.date < '2020-01-01' THEN b.source_id --Date will be changed when merged
-            ELSE b.parent_source_id
+
+        CASE WHEN a.date > '2022-01-01' and c.uses_source_groups THEN b.parent_source_id --Date will be changed when merged
+            ELSE b.source_id
         END as source_id,
 
         c.account_id,

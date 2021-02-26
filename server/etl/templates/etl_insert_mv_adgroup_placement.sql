@@ -8,8 +8,8 @@ INSERT INTO mv_adgroup_placement (
         c.campaign_id,
         c.ad_group_id,
 
-        CASE WHEN a.date < '2020-01-01' THEN b.parent_source_id --Date will be changed when merged
-            ELSE b.source_id
+        CASE WHEN a.date > '2022-01-01' and c.uses_source_groups THEN b.parent_source_id --Date will be changed when merged
+          ELSE b.source_id
         END as source_id,
 
         a.publisher,

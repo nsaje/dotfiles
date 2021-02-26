@@ -4,8 +4,8 @@ INSERT INTO mv_touchpointconversions (
     SELECT
         a.date as date,
 
-        CASE WHEN a.date < '2020-01-01' THEN a.source_id --Date will be changed when merged
-            ELSE b.parent_source_id
+        CASE WHEN a.date > '2022-01-01' and s.uses_source_groups THEN b.parent_source_id --Date will be changed when merged
+            ELSE a.source_id
         END as source_id,
 
         s.account_id as account_id,

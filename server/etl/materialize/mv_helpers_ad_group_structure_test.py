@@ -6,6 +6,8 @@ from django.test import TestCase
 from django.test import override_settings
 
 import backtosql
+import core.models
+from utils.magic_mixer import magic_mixer
 
 from .mv_helpers_ad_group_structure import MVHelpersAdGroupStructure
 
@@ -18,6 +20,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS="test_bucket")
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+        magic_mixer.blend(core.models.AdGroup, campaign__account__agency__uses_source_groups=True)
         mv = MVHelpersAdGroupStructure("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
@@ -27,10 +30,11 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent(
                 """\
-            1\t1\t1\t1\r
-            1\t2\t2\t2\r
-            1\t1\t3\t3\r
-            1\t1\t1\t4\r
+            2\t3\t4\t5\tTrue\r
+            1\t1\t1\t1\tFalse\r
+            1\t2\t2\t2\tFalse\r
+            1\t1\t3\t3\tFalse\r
+            1\t1\t1\t4\tFalse\r
             """
             ),
         )
@@ -41,10 +45,11 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_adgroup_structure (
-                agency_id integer encode lzo,
-                account_id integer encode lzo,
-                campaign_id integer encode lzo,
-                ad_group_id integer encode lzo
+                agency_id integer encode AZ64,
+                account_id integer encode AZ64,
+                campaign_id integer encode AZ64,
+                ad_group_id integer encode AZ64,
+                uses_source_groups boolean encode raw
             )
             diststyle all
             sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
@@ -86,9 +91,9 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent(
                 """\
-            1\t1\t1\t1\r
-            1\t1\t3\t3\r
-            1\t1\t1\t4\r
+            1\t1\t1\t1\tFalse\r
+            1\t1\t3\t3\tFalse\r
+            1\t1\t1\t4\tFalse\r
             """
             ),
         )
@@ -99,10 +104,11 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_adgroup_structure (
-                agency_id integer encode lzo,
-                account_id integer encode lzo,
-                campaign_id integer encode lzo,
-                ad_group_id integer encode lzo
+                agency_id integer encode AZ64,
+                account_id integer encode AZ64,
+                campaign_id integer encode AZ64,
+                ad_group_id integer encode AZ64,
+                uses_source_groups boolean encode raw
             )
             diststyle all
             sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
