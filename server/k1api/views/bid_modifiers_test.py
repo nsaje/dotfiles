@@ -19,6 +19,7 @@ class BidModifiersTest(K1APIBaseTest):
 
     def repr(self, obj):
         return {
+            "id": obj.id,
             "ad_group_id": obj.ad_group_id,
             "type": obj.type,
             "target": obj.target,
@@ -151,6 +152,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
         self.assertCountEqual(
             [
                 {
+                    "id": self.source_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.source_bid_modifier.target,
                     "type": self.source_bid_modifier.type,
@@ -158,6 +160,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.source_bid_modifier.modifier,
                 },
                 {
+                    "id": self.source_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": str(self.grouped_source.id),
                     "type": self.source_bid_modifier.type,
@@ -165,6 +168,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.source_bid_modifier.modifier,
                 },
                 {
+                    "id": self.publisher_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.publisher_bid_modifier.target,
                     "type": self.publisher_bid_modifier.type,
@@ -172,6 +176,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.publisher_bid_modifier.modifier,
                 },
                 {
+                    "id": self.publisher_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.publisher_bid_modifier.target,
                     "type": self.publisher_bid_modifier.type,
@@ -179,6 +184,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.publisher_bid_modifier.modifier,
                 },
                 {
+                    "id": self.placement_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.placement_bid_modifier.target,
                     "type": self.placement_bid_modifier.type,
@@ -186,6 +192,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.placement_bid_modifier.modifier,
                 },
                 {
+                    "id": self.placement_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.placement_bid_modifier.target,
                     "type": self.placement_bid_modifier.type,
@@ -211,6 +218,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
         self.assertCountEqual(
             [
                 {
+                    "id": self.source_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.source_bid_modifier.target,
                     "type": self.source_bid_modifier.type,
@@ -218,6 +226,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.source_bid_modifier.modifier,
                 },
                 {
+                    "id": self.publisher_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.publisher_bid_modifier.target,
                     "type": self.publisher_bid_modifier.type,
@@ -225,6 +234,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.publisher_bid_modifier.modifier,
                 },
                 {
+                    "id": self.placement_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.placement_bid_modifier.target,
                     "type": self.placement_bid_modifier.type,
@@ -232,6 +242,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.placement_bid_modifier.modifier,
                 },
                 {
+                    "id": self.deprecated_source_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": str(self.grouped_source.id),
                     "type": self.deprecated_source_bid_modifier.type,
@@ -239,6 +250,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.deprecated_source_bid_modifier.modifier,
                 },
                 {
+                    "id": self.deprecated_publisher_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.deprecated_publisher_bid_modifier.target,
                     "type": self.deprecated_publisher_bid_modifier.type,
@@ -246,6 +258,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.deprecated_publisher_bid_modifier.modifier,
                 },
                 {
+                    "id": self.deprecated_placement_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.deprecated_placement_bid_modifier.target,
                     "type": self.deprecated_placement_bid_modifier.type,
@@ -273,6 +286,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
         self.assertCountEqual(
             [
                 {
+                    "id": self.source_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": str(self.grouped_source.id),
                     "type": self.source_bid_modifier.type,
@@ -280,6 +294,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.source_bid_modifier.modifier,
                 },
                 {
+                    "id": self.publisher_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.publisher_bid_modifier.target,
                     "type": self.publisher_bid_modifier.type,
@@ -287,6 +302,7 @@ class BidModifiersGroupsTest(K1APIBaseTest):
                     "modifier": self.publisher_bid_modifier.modifier,
                 },
                 {
+                    "id": self.placement_bid_modifier.id,
                     "ad_group_id": self.ad_group.id,
                     "target": self.placement_bid_modifier.target,
                     "type": self.placement_bid_modifier.type,

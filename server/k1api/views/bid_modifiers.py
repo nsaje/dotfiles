@@ -44,6 +44,7 @@ class BidModifiersView(K1APIView):
         response = []
         for bid_modifier in qs:
             item = {
+                "id": bid_modifier.id,
                 "ad_group_id": bid_modifier.ad_group_id,
                 "target": bid_modifier.target,
                 "type": bid_modifier.type,
