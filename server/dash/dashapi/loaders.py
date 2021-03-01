@@ -1,6 +1,7 @@
 import calendar
 import collections
 
+from django.db.models import Sum
 from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.utils.functional import cached_property
@@ -19,6 +20,7 @@ from dash import models
 from dash import publisher_helpers
 from dash.dashapi import data_helper
 from dash.views import helpers as view_helpers
+from utils import dates_helper
 from utils import outbrain_internal_helper
 from utils import zlogging
 from zemauth.models import User as ZemUser
@@ -149,14 +151,12 @@ class AccountsLoader(Loader):
         user_map = {x.id: x for x in ZemUser.objects.filter(pk__in=user_ids)}
 
         settings_obj_map = {x.account_id: x for x in settings_qs}
-        status_map = self._get_status_map()
-
         settings_map = {}
         for account_id in self.objs_ids:
             settings = settings_obj_map.get(account_id)
 
             settings_dict = {
-                "status": status_map[account_id],
+                "status": self._status_map[account_id]["status"],
                 "archived": False,
                 "default_account_manager": None,
                 "default_sales_representative": None,
@@ -195,7 +195,19 @@ class AccountsLoader(Loader):
 
         return settings_map
 
-    def _get_status_map(self):
+    @cached_property
+    def daily_budgets_map(self):
+        return {
+            account_id: self._local_to_view_currency(status["local_daily_budget"], self.objs_map[account_id].currency)
+            for account_id, status in self._status_map.items()
+        }
+
+    def _local_to_view_currency(self, amount, local_currency):
+        exchange_rate = self._calculate_view_currency_exchange_rate(local_currency, dates_helper.local_today())
+        return amount * exchange_rate
+
+    @cached_property
+    def _status_map(self):
         return core.features.entity_status.get_accounts_statuses_cached(self.objs_ids)
 
     @cached_property
@@ -230,16 +242,14 @@ class AccountsLoader(Loader):
         ).select_related("credit")
 
     def _calculate_refund_splits(self, refund):
-        currency_exchange_rate = self._refund_exchange_rate(refund)
+        currency_exchange_rate = self._calculate_view_currency_exchange_rate(refund.account.currency, refund.start_date)
         return refund.calculate_cost_splits(currency_exchange_rate)
 
-    def _refund_exchange_rate(self, refund):
+    def _calculate_view_currency_exchange_rate(self, item_currency, date):
         view_currency = stats.helpers.get_report_currency(self.user, [account for account in self.objs_map.values()])
-        view_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(refund.start_date, view_currency)
-        account_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(
-            refund.start_date, refund.account.currency
-        )
-        return view_currency_exchange_rate / account_currency_exchange_rate
+        view_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(date, view_currency)
+        item_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(date, item_currency)
+        return view_currency_exchange_rate / item_currency_exchange_rate
 
 
 class CampaignsLoader(Loader):
@@ -312,6 +322,18 @@ class CampaignsLoader(Loader):
                 status_map[campaign_id] = state
 
         return status_map
+
+    @cached_property
+    def daily_budgets_map(self):
+        qs = (
+            models.AdGroup.objects.filter(campaign_id__in=self.objs_ids)
+            .filter_current_and_active()
+            .filter_allowed_to_run()
+            .order_by()
+            .annotate(local_daily_budget=Sum("settings__local_daily_budget"))
+            .values("campaign_id", "local_daily_budget")
+        )
+        return {row["campaign_id"]: row["local_daily_budget"] for row in qs}
 
     @cached_property
     def refunds_totals(self):

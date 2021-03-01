@@ -105,6 +105,7 @@ def augment_account(row, loader, is_base_level=False):
 
         refunds = loader.refunds_map.get(account_id)
 
+        row["daily_budget"] = loader.daily_budgets_map.get(account_id, 0)
         if loader.include_entity_tags:
             if account.agency:
                 row.update(
@@ -116,6 +117,7 @@ def augment_account(row, loader, is_base_level=False):
             row.update({"account_tags": tag_helpers.entity_tag_query_set_to_string(account.entity_tags.all())})
 
     else:
+        row["daily_budget"] = sum([daily_budget for daily_budget in loader.daily_budgets_map.values()])
         refunds = loader.refunds_totals
 
     if refunds:
@@ -157,10 +159,12 @@ def augment_campaign(row, loader, is_base_level=False):
         settings = loader.settings_map[campaign_id]
         copy_fields_if_exists(["status", "archived", "campaign_manager"], settings, row)
 
+        row["daily_budget"] = loader.daily_budgets_map.get(campaign_id, 0)
         if loader.include_entity_tags:
             row.update({"campaign_tags": tag_helpers.entity_tag_query_set_to_string(campaign.entity_tags.all())})
 
     else:
+        row["daily_budget"] = sum([daily_budget for daily_budget in loader.daily_budgets_map.values()])
         refunds = loader.refunds_totals
 
     if refunds:
