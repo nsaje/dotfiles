@@ -65,8 +65,10 @@ def _refresh(update_since, views, account_id=None, skip_daily_statements=False, 
 
     total_spend = {}
     if not skip_daily_statements:
-        total_spend = daily_statements.reprocess_daily_statements(update_since.date(), account_id)
-    effective_spend_factors = daily_statements.get_effective_spend(total_spend, update_since.date(), account_id)
+        with metrics_compat.block_timer("etl.refresh_k1.daily_statements"):
+            total_spend = daily_statements.reprocess_daily_statements(update_since.date(), account_id)
+    with metrics_compat.block_timer("etl.refresh_k1.spend_factors"):
+        effective_spend_factors = daily_statements.get_effective_spend(total_spend, update_since.date(), account_id)
 
     dates = sorted(effective_spend_factors.keys())
     date_from, date_to = dates[0], (update_to or dates[-1])
@@ -154,11 +156,13 @@ def mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, accou
 
 
 def update_table(db_name, s3_path, table_name, date_from, date_to, account_id):
-    redshift.update_table_from_s3(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
+    with metrics_compat.block_timer("etl.refresh_k1.copy_to_replica", table=table_name, db_name=db_name):
+        redshift.update_table_from_s3(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
 
 
 def update_table_postgres(db_name, s3_path, table_name, date_from, date_to, account_id):
-    redshift.update_table_from_s3_postgres(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
+    with metrics_compat.block_timer("etl.refresh_k1.copy_to_replica", table=table_name, db_name=db_name):
+        redshift.update_table_from_s3_postgres(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
 
 
 def get_all_views_table_names(temporary=False):
