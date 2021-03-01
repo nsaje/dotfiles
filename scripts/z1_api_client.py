@@ -9,6 +9,7 @@ CAMPAIGNS_URL = "/rest/v1/campaigns/"
 ADGROUPS_URL = "/rest/v1/adgroups/"
 ADGROUP_SOURCES = "/rest/v1/adgroups/%s/sources/"
 ADGROUP_REALTIMESTATS = "/rest/v1/adgroups/%s/realtimestats/"
+REALTIMESTATS_URL = "/rest/v1/realtimestats/%s"
 ALLRTB_SOURCES = "/rest/v1/adgroups/%s/sources/rtb/"
 REPORTS_URL = "/rest/v1/reports/"
 CONTENTADS_URL = "/rest/v1/contentads/?adGroupId=%s"
@@ -169,6 +170,33 @@ def update_adgroup(adgroup_id, data):
 
 def get_adgroup_realtimestats(adgroup_id):
     r = get_session().get((get_base_url() + ADGROUP_REALTIMESTATS) % adgroup_id)
+    return _try_json(r)
+
+
+# realtimestats
+
+
+def get_realtimestats(
+    top=False,
+    breakdown=None,
+    limit=None,
+    marker=None,
+    account_id=None,
+    campaign_id=None,
+    ad_group_id=None,
+    content_ad_id=None,
+):
+    params = {
+        "breakdown": breakdown,
+        "account_id": account_id,
+        "campaign_id": campaign_id,
+        "ad_group_id": ad_group_id,
+        "content_ad_id": content_ad_id,
+        "limit": limit,
+        "marker": marker,
+    }
+    url = (get_base_url() + REALTIMESTATS_URL) % ("top/" if top else "",)
+    r = get_session().get(url, params=params)
     return _try_json(r)
 
 
