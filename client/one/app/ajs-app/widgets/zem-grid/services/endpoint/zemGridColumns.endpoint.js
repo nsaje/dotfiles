@@ -294,6 +294,20 @@ angular
                 shown: 'zemauth.supply_dash_link_view',
             },
 
+            // AdGroup Media Sources
+            dailyBudgetSetting: {
+                name: 'Daily Spend Cap',
+                field: 'daily_budget',
+                fractionSize: 0,
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                shown: true,
+                help: 'Maximum media spend cap per day.',
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                defaultValue: '',
+            },
+
             // Content Ad
             imageUrls: {
                 name: 'Thumbnail',
@@ -1021,18 +1035,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            dailyBudget: {
-                name: 'Daily Budget',
-                field: 'daily_budget',
-                fractionSize: 0,
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                help: 'Maximum daily budget.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                defaultValue: '',
-            },
 
             // placeholders that are never shown
             conversionGoalsPlaceholder: {
@@ -1708,7 +1710,7 @@ angular
             COLUMNS.etCost,
             COLUMNS.etfCost,
             COLUMNS.etfmCost,
-            COLUMNS.dailyBudget,
+            COLUMNS.dailyBudgetSetting,
         ];
 
         var TRAFFIC_ACQUISITION_GROUP = [
@@ -2004,16 +2006,14 @@ angular
         COLUMNS.supplyDashUrl.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
-        COLUMNS.dailyBudget.exceptions.custom.push({
-            level: constants.level.ALL_ACCOUNTS,
-            breakdown: constants.breakdown.ACCOUNT,
-            shown: true,
-        });
-        COLUMNS.dailyBudget.exceptions.custom.push({
-            level: constants.level.ACCOUNTS,
-            breakdown: constants.breakdown.CAMPAIGN,
-            shown: true,
-        });
+        // Exceptions (source editable fields)
+        COLUMNS.dailyBudgetSetting.exceptions = {
+            levels: [constants.level.AD_GROUPS],
+            breakdowns: [constants.breakdown.MEDIA_SOURCE],
+            breakdownBaseLevelOnly: true,
+            custom: [], // custom exceptions -> level/breakdown pairs; overwrites previous properties
+        };
+
         COLUMNS.bidModifier.exceptions.breakdowns = [
             constants.breakdown.CONTENT_AD,
             constants.breakdown.COUNTRY,

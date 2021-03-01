@@ -30,7 +30,6 @@ ACCOUNT_1 = {
     "agency": "",
     "account_type": "Activated",
     "sspd_url": settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=1),
-    "daily_budget": 0,
 }
 
 CAMPAIGN_1 = {
@@ -45,7 +44,6 @@ CAMPAIGN_1 = {
     "campaign_manager": "supertestuser@test.com",
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
     "campaign_type": constants.CampaignType.get_text(constants.CampaignType.CONTENT),
-    "daily_budget": 0,
 }
 CAMPAIGN_2 = {
     "campaign": "test campaign 2",
@@ -59,7 +57,6 @@ CAMPAIGN_2 = {
     "campaign_manager": "mad.max@zemanta.com",
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
     "campaign_type": constants.CampaignType.get_text(constants.CampaignType.CONTENT),
-    "daily_budget": 0,
 }
 
 AD_GROUP_1 = {

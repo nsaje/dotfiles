@@ -46,7 +46,7 @@ _FIELD_MAPPING = {
     "source_slug": ("Media Source Slug", "Source Slug"),
     "bid_cpc": ("Bid CPC",),
     "bid_cpm": ("Bid CPM",),
-    "daily_budget": ("Daily Spend Cap", "Daily Budget"),
+    "daily_budget": ("Daily Spend Cap",),
     "supply_dash_url": ("Link",),
     "status": ("Status",),
     "account_status": ("Account Status",),

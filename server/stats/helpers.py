@@ -386,9 +386,6 @@ def should_query_dashapi_first(order, target_dimension):
     if order_field == "status" and target_dimension in constants.StructureDimension._ALL:
         return True
 
-    if order_field == "daily_budget" and target_dimension in constants.StructureDimension._ALL:
-        return True
-
     if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == constants.StructureDimension.CONTENT_AD:
         return True
 
