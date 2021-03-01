@@ -267,6 +267,8 @@ angular
                 );
             }
 
-            return NgRouter.createUrlTree([RoutePathName.APP_BASE, itemPath]);
+            return NgRouter.createUrlTree([RoutePathName.APP_BASE, itemPath], {
+                queryParamsHandling: 'preserve',
+            });
         }
     });

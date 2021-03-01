@@ -2,6 +2,7 @@ angular.module('one.widgets').component('zemHeaderMenu', {
     template: require('./zemHeaderMenu.component.html'),
     controller: function(
         config,
+        $rootScope,
         zemHeaderMenuService,
         zemNavigationNewService,
         zemAuthStore,
@@ -9,6 +10,7 @@ angular.module('one.widgets').component('zemHeaderMenu', {
     ) {
         var activeEntityUpdateHandler;
         var agencyFilterUpdateHandler;
+        var zemNavigationEndHandler;
 
         var $ctrl = this;
         $ctrl.config = config;
@@ -23,11 +25,16 @@ angular.module('one.widgets').component('zemHeaderMenu', {
             agencyFilterUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(
                 refreshMenu
             );
+            zemNavigationEndHandler = $rootScope.$on(
+                '$zemNavigationEnd',
+                refreshMenu
+            );
         };
 
         $ctrl.$onDestroy = function() {
             if (activeEntityUpdateHandler) activeEntityUpdateHandler();
             if (agencyFilterUpdateHandler) agencyFilterUpdateHandler();
+            if (zemNavigationEndHandler) zemNavigationEndHandler();
         };
 
         function setUserInfo() {
