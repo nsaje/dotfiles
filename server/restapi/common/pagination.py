@@ -12,13 +12,13 @@ class StandardPagination(pagination.BasePagination):
     or LimitOffsetPagination when using "offset" URL parameter.
 
     URLs to be handled by MarkerOffsetPagination:
-    - http://example.org/respirce/?limit=100
-    - http://example.org/respirce/?marker=100
-    - http://example.org/respirce/?marker=400&limit=100
+    - http://example.org/resource/?limit=100
+    - http://example.org/resource/?marker=100
+    - http://example.org/resource/?marker=400&limit=100
 
     URLs to be handled by LimitOffsetPagination:
-    - http://example.org/respirce/?offset=400
-    - http://example.org/respirce/?offset=400&limit=100
+    - http://example.org/resource/?offset=400
+    - http://example.org/resource/?offset=400&limit=100
     """
 
     selected_pagination = None

@@ -37,6 +37,19 @@ def groupby(
     return _augment_rows(breakdown, campaign_id, ad_group_id, content_ad_id, rows, uses_source_groups)
 
 
+def count_rows(
+    *, breakdown=None, marker=None, limit=100, account_id=None, campaign_id=None, ad_group_id=None, content_ad_id=None
+):
+    rows = realtimeapi.api.count_rows(
+        breakdown=breakdown,
+        account_id=account_id,
+        campaign_id=campaign_id,
+        ad_group_id=ad_group_id,
+        content_ad_id=content_ad_id,
+    )
+    return rows[0]["count"]
+
+
 def topn(*, breakdown, order, limit=100, campaign_id=None, ad_group_id=None, content_ad_id=None):
     assert campaign_id or ad_group_id or content_ad_id
     rows = realtimeapi.api.topn(

@@ -17,6 +17,7 @@ from . import constants
 
 WINNOTICE_DATASOURCES = ["b1-lcl-winnotice1-ny", "b1-lcl-winnotice1-chi"]
 CLICK_DATASOURCES = ["r1-click-ny"]
+UNION_DATASOURCE = WINNOTICE_DATASOURCES + CLICK_DATASOURCES
 
 INTERVAL_TEMPLATE = "{from_:%Y-%m-%dT%H:%M:%S}/{to:%Y-%m-%dT%H:%M:%S}"
 
@@ -42,7 +43,7 @@ def groupby(
         content_ad_id=content_ad_id,
     )
     query = client.groupby(
-        datasource=WINNOTICE_DATASOURCES + CLICK_DATASOURCES,  # union datasource
+        datasource=UNION_DATASOURCE,
         dimensions=breakdown,
         granularity="all",
         intervals=_get_current_day_interval(),
@@ -100,6 +101,45 @@ def _prepare_groupby_having(breakdown):
     return Having(type="filter", filter=Filter.build_filter(Dimension(breakdown[0]) != None))  # noqa: E711
 
 
+def count_rows(*, breakdown=None, account_id=None, campaign_id=None, ad_group_id=None, content_ad_id=None):
+    client = _get_client()
+
+    # HACK: the query is built and posted manually because of a bug in the pydruid library
+    query = client.query_builder.groupby(
+        dict(
+            dimensions=[],
+            granularity="all",
+            intervals=_get_current_day_interval(),
+            aggregations={"count": count(breakdown[0])},
+        )
+    )
+    query.query_dict["dataSource"] = _prepare_count_subquery(
+        client,
+        breakdown=breakdown,
+        account_id=account_id,
+        campaign_id=campaign_id,
+        ad_group_id=ad_group_id,
+        content_ad_id=content_ad_id,
+    )
+    query = client._post(query)
+    return [row["event"] for row in query.result]
+
+
+def _prepare_count_subquery(
+    client, *, breakdown=None, account_id=None, campaign_id=None, ad_group_id=None, content_ad_id=None
+):
+    query = client.sub_query(
+        datasource=UNION_DATASOURCE,
+        dimensions=breakdown,
+        filter=_prepare_entity_filter(
+            account_id=account_id, campaign_id=campaign_id, ad_group_id=ad_group_id, content_ad_id=content_ad_id
+        ),
+        granularity="all",
+        intervals=_get_current_day_interval(),
+    )
+    return query
+
+
 def topn(*, breakdown, order, limit=100, campaign_id=None, ad_group_id=None, content_ad_id=None):
     # TODO: IMPORTANT - check why union datasources don't work well with topn
 
@@ -118,7 +158,7 @@ def topn(*, breakdown, order, limit=100, campaign_id=None, ad_group_id=None, con
 
     client = _get_client()
     query = client.topn(
-        datasource=WINNOTICE_DATASOURCES + CLICK_DATASOURCES,  # union datasource
+        datasource=UNION_DATASOURCE,
         dimension=breakdown[0],
         granularity="all",
         intervals=_get_current_day_interval(),
@@ -154,9 +194,9 @@ def _prepare_aggregations():
     return {
         "impressions": longsum("impressions"),
         "clicks": filtered(
-            (Dimension("account_id_filter") != None)
+            (Dimension("account_id_filter") != None)  # noqa: E711
             & (Dimension("blacklisted") != "true")
-            & (Dimension("publisher") != ""),  # noqa: E711
+            & (Dimension("publisher") != ""),
             count("account_id_filter"),
         ),
         "price_nano": doublesum("billing_price_sum"),

@@ -52,6 +52,28 @@ class GroupByTest(BaseTestCase):
             )
 
 
+class CountRowsTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+    @mock.patch("realtimeapi.api._get_client")
+    def test_count_rows(self, mock_client):
+        row = {
+            "version": "v1",
+            "timestamp": "2020-11-25T05:00:00.000Z",
+            "event": {
+                "count": 20,
+            },
+        }
+        mock_client.return_value._post.return_value = MockResult(result=[row])
+
+        result = api.count_rows(
+            breakdown=["ad_group_id"], account_id=10, campaign_id=100, ad_group_id=1000, content_ad_id=10000
+        )
+        self.assertEqual(1, len(result))
+        self.assertEqual(row["event"], result[0])
+
+
 class TopNTest(BaseTestCase):
     def setUp(self):
         super().setUp()
