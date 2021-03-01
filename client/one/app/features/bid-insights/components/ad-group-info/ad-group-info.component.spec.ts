@@ -1,7 +1,7 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {SharedModule} from '../../../../shared/shared.module';
-import {AdGroupInfoStep} from '../../bid-insights.constants';
-import {AdGroupSectionInfo} from '../../types/ad-group-section-info';
+import {FunnelStep} from '../../bid-insights.constants';
+import {AdGroupInfoSection} from '../../types/ad-group-info-section';
 import {AdGroupInfoComponent} from './ad-group-info.component';
 
 describe('AdGroupInfoComponent', () => {
@@ -18,7 +18,7 @@ describe('AdGroupInfoComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(AdGroupInfoComponent);
         component = fixture.componentInstance;
-        component.step = AdGroupInfoStep.TARGETING;
+        component.step = FunnelStep.TARGETING;
     });
 
     it('should be correctly initialized', () => {
@@ -26,7 +26,7 @@ describe('AdGroupInfoComponent', () => {
     });
 
     it('should correctly format ad group info items', () => {
-        const adGroupInfo: AdGroupSectionInfo[] = [
+        const adGroupInfo: AdGroupInfoSection[] = [
             {
                 title: 'Geolocation Targeting',
                 items: [

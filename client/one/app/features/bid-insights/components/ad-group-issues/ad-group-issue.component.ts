@@ -11,7 +11,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {
     ELIGIBILITY_OK_LIMIT,
     ELIGIBILITY_PROBLEM_LIMIT,
-} from './ad-group-issue.component.config';
+} from './../../bid-insights.config';
 
 @Component({
     selector: 'zem-ad-group-issue',
@@ -30,7 +30,7 @@ export class AdGroupIssueComponent implements OnChanges {
     @HostBinding('class.zem-ad-group-issue--orange') get orange() {
         return (
             this.eligibleRate >= ELIGIBILITY_PROBLEM_LIMIT &&
-            this.eligibleRate < ELIGIBILITY_OK_LIMIT - 1
+            this.eligibleRate < ELIGIBILITY_OK_LIMIT - 0.01
         );
     }
     @HostBinding('class.zem-ad-group-issue--red') get red() {
@@ -43,11 +43,11 @@ export class AdGroupIssueComponent implements OnChanges {
         return !commonHelpers.isDefined(this.eligibleRate);
     }
 
-    lostRate: number;
+    lostPercentage: number;
     showArrow: boolean;
 
     ngOnChanges() {
-        this.lostRate = 100 - this.eligibleRate;
+        this.lostPercentage = 100 - this.eligibleRate * 100;
         this.showArrow = commonHelpers.isDefined(this.eligibleRate);
     }
 }

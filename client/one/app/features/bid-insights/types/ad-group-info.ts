@@ -1,9 +1,9 @@
-import {AdGroupInfoStep} from '../bid-insights.constants';
-import {AdGroupSectionInfo} from './ad-group-section-info';
+import {FunnelStep} from '../bid-insights.constants';
+import {AdGroupInfoSection} from './ad-group-info-section';
 
 export interface AdGroupInfo {
-    [AdGroupInfoStep.TARGETING]: AdGroupSectionInfo[];
-    [AdGroupInfoStep.BUDGET]: AdGroupSectionInfo[];
-    [AdGroupInfoStep.EXTERNAL_BLOCKS]: AdGroupSectionInfo[];
-    [AdGroupInfoStep.INTERNAL_AUCTION]: AdGroupSectionInfo[];
+    [FunnelStep.TARGETING]: AdGroupInfoSection[];
+    [FunnelStep.BUDGET]: AdGroupInfoSection[];
+    [FunnelStep.EXTERNAL_BLOCKS]: AdGroupInfoSection[];
+    [FunnelStep.INTERNAL_AUCTION]: AdGroupInfoSection[];
 }

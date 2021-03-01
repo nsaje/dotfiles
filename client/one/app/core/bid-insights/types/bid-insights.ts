@@ -4,7 +4,7 @@ export interface BidInsights {
     budgetEligibleRate: number;
     creativesEligibleRate: number;
     internalAutctionEligibleRate: number;
-    totalElibigleRate: number;
+    totalEligibleRate: number;
     totalEligible: number;
     winRate: number;
     totalWins: number;

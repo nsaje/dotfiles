@@ -7,14 +7,12 @@ import {
     ChangeDetectionStrategy,
     OnChanges,
 } from '@angular/core';
-import {AdGroupInfoStep} from '../../bid-insights.constants';
-import {
-    ITEM_LENGTH_DISPLAY_LIMIT,
-    STEP_TO_TITLE,
-} from './ad-group-info.component.config';
-import {AdGroupSectionInfo} from '../../types/ad-group-section-info';
-import {FormattedAdGroupSectionInfo} from '../../types/formatted-ad-group-section-info';
+import {FunnelStep} from '../../bid-insights.constants';
+import {ITEM_LENGTH_DISPLAY_LIMIT} from './ad-group-info.component.config';
+import {AdGroupInfoSection} from '../../types/ad-group-info-section';
+import {FormattedAdGroupInfoSection} from '../../types/formatted-ad-group-section-info';
 import * as clone from 'clone';
+import {STEP_TO_TITLE} from '../../bid-insights.config';
 
 @Component({
     selector: 'zem-ad-group-info',
@@ -23,12 +21,12 @@ import * as clone from 'clone';
 })
 export class AdGroupInfoComponent implements OnInit, OnChanges {
     @Input()
-    step: AdGroupInfoStep;
+    step: FunnelStep;
     @Input()
-    adGroupInfo: AdGroupSectionInfo[];
+    adGroupInfo: AdGroupInfoSection[];
 
     title: string;
-    formattedAdGroupInfo: FormattedAdGroupSectionInfo[];
+    formattedAdGroupInfo: FormattedAdGroupInfoSection[];
     showAll: boolean[];
 
     ngOnInit() {
@@ -51,8 +49,8 @@ export class AdGroupInfoComponent implements OnInit, OnChanges {
     }
 
     private getFormattedAdGroupInfo(
-        adGroupInfo: AdGroupSectionInfo[]
-    ): FormattedAdGroupSectionInfo[] {
+        adGroupInfo: AdGroupInfoSection[]
+    ): FormattedAdGroupInfoSection[] {
         return adGroupInfo.map(section => {
             let isTruncated = false;
             let itemsLength = 0;

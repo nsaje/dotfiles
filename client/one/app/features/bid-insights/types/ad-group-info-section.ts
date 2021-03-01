@@ -1,4 +1,4 @@
-export interface AdGroupSectionInfo {
+export interface AdGroupInfoSection {
     title: string;
     items: string[];
 }

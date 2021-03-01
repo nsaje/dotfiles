@@ -1,4 +1,4 @@
-export interface FormattedAdGroupSectionInfo {
+export interface FormattedAdGroupInfoSection {
     title: string;
     items: string;
     truncatedItems: string;

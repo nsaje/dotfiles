@@ -18,7 +18,7 @@ describe('BidInsightsService', () => {
         budgetEligibleRate: 0.7,
         creativesEligibleRate: 0.6,
         internalAutctionEligibleRate: 0.5,
-        totalElibigleRate: 0.4,
+        totalEligibleRate: 0.4,
         totalEligible: 400,
         winRate: 0.3,
         totalWins: 300,
