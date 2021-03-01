@@ -38,9 +38,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "one",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEq3kEJ0eoln3+w8+wIBEIAsPxFGPXwAjacFfKXiQj9Wdf9oiFHtZtYka01DQtbu5MpChJCZiy33pjHEvhU="  # noqa
         )
         .get()
         .decode("utf-8"),
@@ -51,9 +51,9 @@ DATABASES = {
     "read-replica": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "one",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEq3kEJ0eoln3+w8+wIBEIAsPxFGPXwAjacFfKXiQj9Wdf9oiFHtZtYka01DQtbu5MpChJCZiy33pjHEvhU="  # noqa
         )
         .get()
         .decode("utf-8"),
@@ -63,9 +63,9 @@ DATABASES = {
     "read-replica-2": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "one",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEq3kEJ0eoln3+w8+wIBEIAsPxFGPXwAjacFfKXiQj9Wdf9oiFHtZtYka01DQtbu5MpChJCZiy33pjHEvhU="  # noqa
         )
         .get()
         .decode("utf-8"),
@@ -75,9 +75,9 @@ DATABASES = {
     "read-replica-3": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "one",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEq3kEJ0eoln3+w8+wIBEIAsPxFGPXwAjacFfKXiQj9Wdf9oiFHtZtYka01DQtbu5MpChJCZiy33pjHEvhU="  # noqa
         )
         .get()
         .decode("utf-8"),
@@ -87,9 +87,9 @@ DATABASES = {
     "read-replica-4": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "one",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDEq3kEJ0eoln3+w8+wIBEIAsPxFGPXwAjacFfKXiQj9Wdf9oiFHtZtYka01DQtbu5MpChJCZiy33pjHEvhU="  # noqa
         )
         .get()
         .decode("utf-8"),
