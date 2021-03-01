@@ -840,7 +840,6 @@ class MVJointMaster(MVMaster):
                         "planned_value": planned_value,
                         "metric_column": metric_column or "-1",
                         "cost_column": "etfm_cost",
-                        "metric_val_decimal_places": dash.campaign_goals.NR_DECIMALS[campaign_goal.type],
                     },
                     alias="etfm_performance_" + campaign_goal.get_view_key(),
                     group=column_group,

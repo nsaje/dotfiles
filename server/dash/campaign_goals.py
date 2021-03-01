@@ -1,5 +1,4 @@
 import datetime
-from decimal import ROUND_DOWN
 from decimal import Decimal
 from functools import partial
 
@@ -151,10 +150,9 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPCV,
 )
 
-ROUNDING = ROUND_DOWN
-
 
 def _get_performance_value(goal_type, metric_value, target_value):
+    metric_value = Decimal(metric_value)
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
         performance = (2 * target_value - metric_value) / target_value
     else:
@@ -228,9 +226,7 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
             request,
             campaign,
             constants.HistoryActionType.GOAL_CHANGE,
-            'Deleted conversion goal "{}"'.format(
-                conversion_goal.name, constants.ConversionGoalType.get_text(conversion_goal.type)
-            ),
+            'Deleted conversion goal "{}"'.format(conversion_goal.name),
         )
 
 
@@ -299,21 +295,14 @@ def get_goal_performance_category(performance):
     return constants.CampaignGoalPerformance.AVERAGE
 
 
-def _round_by_goal_type(goal_type, value):
-    zeros = "0" * (NR_DECIMALS[goal_type] - 1)
-    return Decimal(value).quantize(Decimal(".{}1".format(zeros)), rounding=ROUNDING)
-
-
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    rounded_cost = (cost and Decimal(cost) or Decimal("0")).quantize(Decimal(".01"), rounding=ROUNDING)
+    rounded_cost = (cost and Decimal(cost) or Decimal("0")).quantize(Decimal(".01"))
 
     if goal_type in COST_DEPENDANT_GOALS and rounded_cost and not metric_value:
         return get_goal_performance_category(0)
     if planned_value is None or metric_value is None:
         return get_goal_performance_category(None)
-
-    rounded_metric_value = _round_by_goal_type(goal_type, metric_value)
-    performance = _get_performance_value(goal_type, rounded_metric_value, planned_value)
+    performance = _get_performance_value(goal_type, metric_value, planned_value)
 
     return get_goal_performance_category(performance)
 
