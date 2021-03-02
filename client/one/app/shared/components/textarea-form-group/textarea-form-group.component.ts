@@ -11,6 +11,7 @@ import {
     OnInit,
 } from '@angular/core';
 import * as commonHelpers from '../../helpers/common.helpers';
+import {StatusIconType} from '../../types/status-icon-type';
 
 @Component({
     selector: 'zem-textarea-form-group',
@@ -24,6 +25,8 @@ export class TextAreaFormGroupComponent implements OnInit, OnChanges {
     helpMessage: string;
     @Input()
     value: string;
+    @Input()
+    statusIcon: StatusIconType;
     @Input()
     placeholder: string;
     @Input()

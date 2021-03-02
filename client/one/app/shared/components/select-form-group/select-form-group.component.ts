@@ -9,6 +9,7 @@ import {
     Output,
     Input,
 } from '@angular/core';
+import {StatusIconType} from '../../types/status-icon-type';
 
 @Component({
     selector: 'zem-select-form-group',
@@ -22,6 +23,8 @@ export class SelectFormGroupComponent implements OnChanges {
     helpMessage: string;
     @Input()
     value: string;
+    @Input()
+    statusIcon: StatusIconType;
     @Input()
     bindLabel: string;
     @Input()
