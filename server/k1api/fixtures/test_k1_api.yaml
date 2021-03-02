@@ -858,7 +858,7 @@
         source: 1
         content_ad: 1
         submission_status: 1
-        state: 1
+        state: 2
         source_state: 1
         source_content_ad_id: '987654321'
         created_dt: '2015-02-23T00:00:00'

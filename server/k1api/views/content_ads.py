@@ -1,8 +1,10 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.http import Http404
 
 import core.features.ad_review
+import core.features.source_groups
 import core.features.videoassets.constants
 import dash.constants
 import dash.features.submission_filters
@@ -174,11 +176,15 @@ class ContentAdSourcesView(K1APIView):
         include_state = request.GET.get("include_state", "true").lower() == "true"
         include_blocked = request.GET.get("include_blocked", "true").lower() == "true"
         exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
-        include_deprecated = request.GET.get("include_deprecated", "false").lower() == "true"
 
         should_get_review_information = include_state or not include_blocked
 
-        content_ad_sources = dash.models.ContentAdSource.objects.all()
+        source_groups_id_slugs_mapping = core.features.source_groups.get_source_id_slugs_mapping()
+
+        content_ad_sources = dash.models.ContentAdSource.objects.exclude(source__deprecated=True).exclude(
+            content_ad__ad_group__campaign__account__agency__uses_source_groups=True,
+            source_id__in=source_groups_id_slugs_mapping.keys(),
+        )
 
         if not content_ad_ids:  # exclude archived if not querying by id explicitly
             content_ad_sources = content_ad_sources.filter(content_ad__archived=False)
@@ -195,8 +201,6 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(","))
         if exclude_display:
             content_ad_sources = content_ad_sources.exclude_display()
-        if not include_deprecated:
-            content_ad_sources = content_ad_sources.filter(source__deprecated=False)
 
         if modified_dt_from:
             try:
@@ -208,15 +212,17 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(modified_dt__gte=modified_dt)
 
         content_ad_sources = content_ad_sources.select_related(
-            "content_ad", "source", "content_ad__ad_group__campaign__account"
+            "content_ad", "source", "content_ad__ad_group__campaign__account__agency"
         ).values(
             "id",
             "content_ad_id",
+            "content_ad__state",
             "content_ad__ad_group_id",
             "content_ad__ad_group__campaign_id",
             "content_ad__ad_group__campaign__type",
             "content_ad__ad_group__campaign__account_id",
             "content_ad__ad_group__campaign__account__agency_id",
+            "content_ad__ad_group__campaign__account__agency__uses_source_groups",
             "content_ad__ad_group__amplify_review",
             "content_ad__amplify_review",
             "source_id",
@@ -225,7 +231,6 @@ class ContentAdSourcesView(K1APIView):
             "source__tracking_slug",
             "source_content_ad_id",
             "submission_status",
-            "state",
         )
 
         if request.GET.get("use_filters", "false") == "true":
@@ -249,7 +254,6 @@ class ContentAdSourcesView(K1APIView):
         response = []
         for content_ad_source in content_ad_sources:
             item = {
-                "id": content_ad_source["id"],
                 "content_ad_id": content_ad_source["content_ad_id"],
                 "source_id": content_ad_source["source_id"],
                 "ad_group_id": content_ad_source["content_ad__ad_group_id"],
@@ -261,7 +265,23 @@ class ContentAdSourcesView(K1APIView):
             if include_state:
                 item["state"] = self._get_content_ad_source_state(content_ad_source, amplify_review_statuses)
 
-            response.append(item)
+            source_group = settings.SOURCE_GROUPS.get(content_ad_source["source_id"])
+            if (
+                source_group
+                and content_ad_source["content_ad__ad_group__campaign__account__agency__uses_source_groups"]
+            ):
+                for source_id in source_group:
+                    grouped_item = item.copy()
+                    grouped_item["source_id"] = source_id
+                    grouped_item["source_slug"] = source_groups_id_slugs_mapping[source_id]["bidder_slug"]
+                    grouped_item["tracking_slug"] = source_groups_id_slugs_mapping[source_id]["tracking_slug"]
+                    response.append(grouped_item)
+
+            if (
+                content_ad_source["content_ad__ad_group__campaign__account_id"] != settings.HARDCODED_ACCOUNT_ID_OEN
+                or content_ad_source["source_id"] != settings.HARDCODED_SOURCE_ID_OUTBRAINRTB
+            ):
+                response.append(item)
 
         return self.response_ok(response)
 
@@ -276,7 +296,7 @@ class ContentAdSourcesView(K1APIView):
         if self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
-            return content_ad_source["state"]
+            return content_ad_source["content_ad__state"]
 
     @staticmethod
     def _is_blocked_conditionally_allowed(content_ad_source):

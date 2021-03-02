@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 
 import mock
+from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -339,7 +340,6 @@ class ContentAdsTest(K1APIBaseTest):
 
         expected = [
             {
-                "id": 1,
                 "content_ad_id": 1,
                 "ad_group_id": 1,
                 "source_id": 1,
@@ -439,7 +439,6 @@ class ContentAdsTest(K1APIBaseTest):
 
             expected = [
                 {
-                    "id": content_ad_sources[0].id,
                     "ad_group_id": content_ads[0].ad_group_id,
                     "content_ad_id": content_ads[0].id,
                     "source_id": other_ad_group_source.source_id,
@@ -450,7 +449,6 @@ class ContentAdsTest(K1APIBaseTest):
                     "tracking_slug": content_ad_sources[0].source.tracking_slug,
                 },
                 {
-                    "id": content_ad_sources[1].id,
                     "ad_group_id": content_ads[1].ad_group_id,
                     "content_ad_id": content_ads[1].id,
                     "source_id": other_ad_group_source.source_id,
@@ -461,7 +459,6 @@ class ContentAdsTest(K1APIBaseTest):
                     "tracking_slug": content_ad_sources[1].source.tracking_slug,
                 },
                 {
-                    "id": content_ad_sources[2].id,
                     "ad_group_id": content_ads[2].ad_group_id,
                     "content_ad_id": content_ads[2].id,
                     "source_id": other_ad_group_source.source_id,
@@ -539,7 +536,9 @@ class ContentAdsTest(K1APIBaseTest):
         )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
+        self.assertEqual(
+            set(cads.source.bidder_slug for cads in cadss), set([ca["source_slug"] for ca in data["response"]])
+        )
 
         # do not include blocked - all blocked, none returned
         set_blocked(mock_amplify, cadss)
@@ -557,7 +556,9 @@ class ContentAdsTest(K1APIBaseTest):
         )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
+        self.assertEqual(
+            set(cads.source.bidder_slug for cads in cadss), set([ca["source_slug"] for ca in data["response"]])
+        )
 
         # do not include blocked - some blocked, some returned
         set_blocked(mock_amplify, cadss[0:3])
@@ -566,7 +567,7 @@ class ContentAdsTest(K1APIBaseTest):
         )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        self.assertEqual(set([cadss[3].id]), set([ca["id"] for ca in data["response"]]))
+        self.assertEqual(set([cadss[3].source.bidder_slug]), set([ca["source_slug"] for ca in data["response"]]))
 
         # block even if approved
         set_blocked(mock_amplify, cadss[0:3])
@@ -577,7 +578,7 @@ class ContentAdsTest(K1APIBaseTest):
         )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        self.assertEqual(set([cadss[3].id]), set([ca["id"] for ca in data["response"]]))
+        self.assertEqual(set([cadss[3].source.bidder_slug]), set([ca["source_slug"] for ca in data["response"]]))
 
         # do not block if aproved and TL - some blocked, but were already approved in the past
         tl = magic_mixer.blend(dash.models.Source, bidder_slug="triplelift")
@@ -591,7 +592,10 @@ class ContentAdsTest(K1APIBaseTest):
         )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        self.assertEqual(set([tl_cadss[0].id, tl_cadss[3].id]), set([ca["id"] for ca in data["response"]]))
+        self.assertEqual(
+            set([tl_cadss[0].source.bidder_slug, tl_cadss[3].source.bidder_slug]),
+            set([ca["source_slug"] for ca in data["response"]]),
+        )
 
     def test_update_content_ad_status(self):
         cas = dash.models.ContentAdSource.objects.get(pk=1)
@@ -723,25 +727,152 @@ class ContentAdsTest(K1APIBaseTest):
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
         data = data["response"]
-        self.assertEqual(set([obj["id"] for obj in data]), set([obj.id for obj in content_ad_sources_native]))
-
-    def test_get_content_ad_sources_include_deprecated(self):
-        ad = magic_mixer.blend(dash.models.ContentAd)
-        cas_nondeprecated = magic_mixer.blend(dash.models.ContentAdSource, content_ad=ad, source__deprecated=False)
-        cas_deprecated = magic_mixer.blend(dash.models.ContentAdSource, content_ad=ad, source__deprecated=True)
-
-        # no flag
-        response = self.client.get(reverse("k1api.content_ads.sources"), {"content_ad_ids": str(ad.id)})
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-        self.assertEqual(set([obj["id"] for obj in data]), set([cas_nondeprecated.id]))
-
-        # flag set to true
-        response = self.client.get(
-            reverse("k1api.content_ads.sources"), {"content_ad_ids": str(ad.id), "include_deprecated": True}
+        self.assertEqual(
+            set([obj["source_slug"] for obj in data]),
+            set([obj.source.bidder_slug for obj in content_ad_sources_native]),
         )
+
+
+@mock.patch(
+    "django.conf.settings.SOURCE_GROUPS", {settings.HARDCODED_SOURCE_ID_OUTBRAINRTB: [81, 82, 83], 90: [91, 92]}
+)
+class ContentAdsSourcesGroupsTest(K1APIBaseTest):
+    def setUp(self):
+        super().setUp()
+
+        main_source_1 = magic_mixer.blend(dash.models.Source, id=settings.HARDCODED_SOURCE_ID_OUTBRAINRTB)
+        main_source_2 = magic_mixer.blend(dash.models.Source, id=90)
+        grouped_sources = magic_mixer.cycle(5).blend(dash.models.Source, id=(sid for sid in [81, 82, 83, 91, 92]))
+
+        self.content_ad = magic_mixer.blend(
+            dash.models.ContentAd, ad_group__campaign__account__agency__uses_source_groups=True
+        )
+
+        self.parent_content_ad_source_1 = magic_mixer.blend(
+            dash.models.ContentAdSource,
+            content_ad=self.content_ad,
+            source=main_source_1,
+            submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
+            source_content_ad_id="source_content_ad_id_1",
+        )
+        self.parent_content_ad_source_2 = magic_mixer.blend(
+            dash.models.ContentAdSource,
+            content_ad=self.content_ad,
+            source=main_source_2,
+            submission_status=dash.constants.ContentAdSubmissionStatus.LIMIT_REACHED,
+            source_content_ad_id="source_content_ad_id_2",
+        )
+
+        # deprecated content ad sources
+        magic_mixer.cycle(5).blend(
+            dash.models.ContentAdSource,
+            content_ad=self.content_ad,
+            source=(s for s in grouped_sources),
+            submission_status=dash.constants.ContentAdSubmissionStatus.REJECTED,
+            source_content_ad_id=("scid" + str(i) for i in range(5)),
+        )
+
+    def test_get_grouped_content_ads_sources(self):
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"content_ad_ids": self.content_ad.id})
+
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
         data = data["response"]
-        self.assertEqual(set([obj["id"] for obj in data]), set([cas_nondeprecated.id, cas_deprecated.id]))
+
+        self.assertEqual(len(data), 7)
+
+        for entry in data:
+            source_id = entry["source_id"]
+
+            if source_id in [settings.HARDCODED_SOURCE_ID_OUTBRAINRTB, 81, 82, 83]:
+                target_content_ad_source = self.parent_content_ad_source_1
+            if source_id in [90, 91, 92]:
+                target_content_ad_source = self.parent_content_ad_source_2
+
+            if source_id in [settings.HARDCODED_SOURCE_ID_OUTBRAINRTB, 90]:
+                self.assertEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+            else:
+                self.assertNotEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertNotEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertNotEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+
+            self.assertEqual(target_content_ad_source.content_ad_id, entry["content_ad_id"])
+            self.assertEqual(target_content_ad_source.content_ad.ad_group_id, entry["ad_group_id"])
+            self.assertEqual(target_content_ad_source.submission_status, entry["submission_status"])
+            self.assertEqual(target_content_ad_source.source_content_ad_id, entry["source_content_ad_id"])
+
+    def test_get_grouped_content_ads_sources_no_flag(self):
+        self.content_ad.ad_group.campaign.account.agency.uses_source_groups = False
+        self.content_ad.ad_group.campaign.account.agency.save(None)
+
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"content_ad_ids": self.content_ad.id})
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(len(data), 7)
+
+        for entry in data:
+            source_id = entry["source_id"]
+
+            if source_id in [settings.HARDCODED_SOURCE_ID_OUTBRAINRTB, 81, 82, 83]:
+                target_content_ad_source = self.parent_content_ad_source_1
+            if source_id in [90, 91, 92]:
+                target_content_ad_source = self.parent_content_ad_source_2
+
+            if source_id in [settings.HARDCODED_SOURCE_ID_OUTBRAINRTB, 90]:
+                self.assertEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+                self.assertEqual(target_content_ad_source.content_ad_id, entry["content_ad_id"])
+                self.assertEqual(target_content_ad_source.content_ad.ad_group_id, entry["ad_group_id"])
+                self.assertEqual(target_content_ad_source.submission_status, entry["submission_status"])
+                self.assertEqual(target_content_ad_source.source_content_ad_id, entry["source_content_ad_id"])
+            else:
+                self.assertNotEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertNotEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertNotEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+                self.assertNotEqual(target_content_ad_source.submission_status, entry["submission_status"])
+                self.assertNotEqual(target_content_ad_source.source_content_ad_id, entry["source_content_ad_id"])
+
+            self.assertEqual(target_content_ad_source.content_ad_id, entry["content_ad_id"])
+            self.assertEqual(target_content_ad_source.content_ad.ad_group_id, entry["ad_group_id"])
+
+    def test_get_grouped_content_ads_sources_oen(self):
+        self.content_ad.ad_group.campaign.account = magic_mixer.blend(
+            dash.models.Account, id=settings.HARDCODED_ACCOUNT_ID_OEN, agency__uses_source_groups=True
+        )
+        self.content_ad.ad_group.campaign.save(None)
+
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"content_ad_ids": self.content_ad.id})
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(len(data), 6)
+
+        for entry in data:
+            source_id = entry["source_id"]
+
+            if source_id in [81, 82, 83]:
+                target_content_ad_source = self.parent_content_ad_source_1
+            if source_id in [90, 91, 92]:
+                target_content_ad_source = self.parent_content_ad_source_2
+
+            if source_id == 90:
+                self.assertEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+            else:
+                self.assertNotEqual(target_content_ad_source.source_id, entry["source_id"])
+                self.assertNotEqual(target_content_ad_source.source.bidder_slug, entry["source_slug"])
+                self.assertNotEqual(target_content_ad_source.source.tracking_slug, entry["tracking_slug"])
+
+            self.assertEqual(target_content_ad_source.content_ad_id, entry["content_ad_id"])
+            self.assertEqual(target_content_ad_source.content_ad.ad_group_id, entry["ad_group_id"])
+            self.assertEqual(target_content_ad_source.source_content_ad_id, entry["source_content_ad_id"])
+            self.assertEqual(target_content_ad_source.submission_status, entry["submission_status"])
