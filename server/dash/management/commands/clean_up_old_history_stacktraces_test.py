@@ -34,13 +34,9 @@ class CleanUpOldHistoryStackTracesTest(TestCase):
         """
                 ),
                 mock.call("SET lock_timeout TO '2s';"),
-                mock.call(
-                    "ALTER TABLE dash_historystacktrace DETACH PARTITION IF EXISTS dash_historystacktrace_20200909;"
-                ),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200909;"),
                 mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200909;"),
-                mock.call(
-                    "ALTER TABLE dash_historystacktrace DETACH PARTITION IF EXISTS dash_historystacktrace_20200908;"
-                ),
+                mock.call("ALTER TABLE dash_historystacktrace DETACH PARTITION dash_historystacktrace_20200908;"),
                 mock.call("DROP TABLE IF EXISTS dash_historystacktrace_20200908;"),
             ],
         )
