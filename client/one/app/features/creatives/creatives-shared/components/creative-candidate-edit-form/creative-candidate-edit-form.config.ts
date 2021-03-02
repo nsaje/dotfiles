@@ -47,13 +47,14 @@ export const FIELDS_CONFIG: FieldConfig[] = [
         bindLabel: 'name',
         bindValue: 'id',
     },
-    /* TODO: Ad Size
     {
         field: 'size',
         label: 'Ad Size',
         shownForAdTypes: [AdType.AD_TAG],
         template: 'select-size',
-    },*/
+        bindLabel: 'name',
+        bindValue: 'size',
+    },
     {
         field: 'adTag',
         label: 'Ad Tag',

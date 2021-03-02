@@ -4,6 +4,7 @@ import {
     SetCandidatesActionReducer,
 } from './set-candidates.reducer';
 import {CreativeBatchStoreState} from '../creative-batch.store.state';
+import {AdSize} from '../../../../../../app.constants';
 
 describe('SetCandidatesActionReducer', () => {
     let reducer: SetCandidatesActionReducer;
@@ -18,6 +19,22 @@ describe('SetCandidatesActionReducer', () => {
         },
     ];
 
+    const mockedSizeOnBackend: Partial<CreativeCandidate> = {
+        imageWidth: 300,
+        imageHeight: 600,
+    };
+    const mockedSizeOnFrontend: Partial<CreativeCandidate> = {
+        size: AdSize.HALF_PAGE,
+    };
+    const mockedCandidateWithSizeOnBackend: CreativeCandidate = {
+        ...mockedCandidates[0],
+        ...mockedSizeOnBackend,
+    };
+    const mockedCandidateWithSizeOnFrontend: CreativeCandidate = {
+        ...mockedCandidates[0],
+        ...mockedSizeOnFrontend,
+    };
+
     beforeEach(() => {
         reducer = new SetCandidatesActionReducer();
     });
@@ -29,5 +46,14 @@ describe('SetCandidatesActionReducer', () => {
         );
 
         expect(state.candidates).toEqual(mockedCandidates);
+    });
+
+    it('should correctly map size to frontend', () => {
+        const state = reducer.reduce(
+            new CreativeBatchStoreState(),
+            new SetCandidatesAction([mockedCandidateWithSizeOnBackend])
+        );
+
+        expect(state.candidates).toEqual([mockedCandidateWithSizeOnFrontend]);
     });
 });

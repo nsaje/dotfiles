@@ -98,6 +98,17 @@
                 "
             ></ng-container>
         </ng-container>
+        <ng-container *ngIf="field.template === 'select-size'">
+            <ng-container
+                *ngTemplateOutlet="
+                    selectTemplate;
+                    context: {
+                        field: field,
+                        items: AD_SIZES
+                    }
+                "
+            ></ng-container>
+        </ng-container>
 
         <ng-container *ngIf="field.template === 'tags'">
             <ng-container
@@ -134,6 +145,7 @@
         [label]="label || field.label"
         [placeholder]="label || field.placeholder || field.label"
         [errors]="candidateErrors && candidateErrors[field.field]"
+        [errors]="candidateErrors && candidateErrors[field.field]"
         (valueChange)="onFieldChange(field.field, $event)"
     ></zem-text-form-group>
 </ng-template>
@@ -144,6 +156,7 @@
         [value]="candidate[field.field]"
         [label]="field.label"
         [placeholder]="field.placeholder || field.label"
+        [errors]="candidateErrors && candidateErrors[field.field]"
         [errors]="candidateErrors && candidateErrors[field.field]"
         (valueChange)="onFieldChange(field.field, $event)"
     ></zem-textarea-form-group>

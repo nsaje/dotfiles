@@ -12,6 +12,9 @@ import {SetCandidateErrorsAction} from '../reducers/set-candidate-errors.reducer
 import {HttpErrorResponse} from '@angular/common/http';
 import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
 import {CreativeCandidateFieldsErrorsState} from '../../../types/creative-candidate-fields-errors-state';
+import {AD_SIZES} from '../../../creatives-shared.config';
+import {AdSizeConfig} from '../../../types/ad-size-config';
+import {isDefined} from '../../../../../../shared/helpers/common.helpers';
 
 export interface EditCreativeCandidateParams {
     candidate: CreativeCandidate;
@@ -45,7 +48,7 @@ export class EditCreativeCandidateActionEffect extends StoreEffect<
                     params.candidate.id,
                     {
                         type: params.candidate.type,
-                        ...params.changes,
+                        ...this.mapCandidateToBackend(params.changes),
                     },
                     params.requestStateUpdater
                 )
@@ -97,5 +100,20 @@ export class EditCreativeCandidateActionEffect extends StoreEffect<
                 fieldsErrors,
             })
         );
+    }
+
+    private mapCandidateToBackend(
+        candidate: Partial<CreativeCandidate>
+    ): Partial<CreativeCandidate> {
+        const result: Partial<CreativeCandidate> = {...candidate};
+        if (isDefined(candidate.size)) {
+            const dimensions: AdSizeConfig = AD_SIZES.find(
+                x => x.size === candidate.size
+            );
+            delete result.size;
+            result.imageWidth = dimensions.width;
+            result.imageHeight = dimensions.height;
+        }
+        return result;
     }
 }

@@ -22,9 +22,11 @@ import {
     CREATIVE_TYPES,
     IMAGE_CROPS,
     CALLS_TO_ACTION,
+    AD_SIZES,
 } from '../../creatives-shared.config';
 import {FIELDS_CONFIG} from './creative-candidate-edit-form.config';
 import {CreativeBatch} from '../../../../../core/creatives/types/creative-batch';
+import {AdSizeConfig} from '../../types/ad-size-config';
 
 interface ImageCropOption {
     name: string;
@@ -72,7 +74,7 @@ export class CreativeCandidateEditFormComponent implements OnChanges {
     AdType: typeof AdType = AdType;
 
     FIELDS_CONFIG = FIELDS_CONFIG;
-
+    AD_SIZES: AdSizeConfig[] = AD_SIZES;
     IMAGE_CROPS: ImageCropOption[] = IMAGE_CROPS;
 
     adTypes: AdTypeOption[] = [];

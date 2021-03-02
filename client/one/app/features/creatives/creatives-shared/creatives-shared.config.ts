@@ -1,10 +1,16 @@
 import {PaginationOptions} from '../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../shared/components/smart-grid/types/pagination-state';
-import {AdType, CreativeBatchType, ImageCrop} from '../../../app.constants';
+import {
+    AdSize,
+    AdType,
+    CreativeBatchType,
+    ImageCrop,
+} from '../../../app.constants';
 import {
     TrackerEventType,
     TrackerMethod,
 } from '../../../core/creatives/creatives.constants';
+import {AdSizeConfig} from './types/ad-size-config';
 
 export const DEFAULT_PAGINATION: PaginationState = {
     page: 1,
@@ -135,3 +141,21 @@ export const CALLS_TO_ACTION: {name: string; value: string}[] = [
     'Vote Now',
     'Watch Now',
 ].map(x => ({name: x, value: x}));
+
+export const AD_SIZES: AdSizeConfig[] = [
+    {size: AdSize.MOBILE_LEADERBOARD, width: 320, height: 50},
+    {size: AdSize.INLINE_RECTANGLE, width: 300, height: 250},
+    {size: AdSize.LEADERBOARD, width: 728, height: 90},
+    {size: AdSize.LARGE_RECTANGLE, width: 336, height: 280},
+    {size: AdSize.HALF_PAGE, width: 300, height: 600},
+    {size: AdSize.WIDESKYSCRAPER, width: 120, height: 600},
+    {size: AdSize.LARGE_MOBILE_BANNER, width: 320, height: 100},
+    {size: AdSize.BANNER, width: 468, height: 60},
+    {size: AdSize.PORTRAIT, width: 300, height: 1050},
+    {size: AdSize.LARGE_LEADERBOARD, width: 970, height: 90},
+    {size: AdSize.BILLBOARD, width: 970, height: 250},
+    {size: AdSize.SQUARE, width: 250, height: 250},
+    {size: AdSize.SMALL_SQUARE, width: 200, height: 200},
+    {size: AdSize.SMALL_RECTANGLE, width: 180, height: 150},
+    {size: AdSize.BUTTON, width: 125, height: 125},
+].map(x => ({...x, name: `${x.width}x${x.height}`}));

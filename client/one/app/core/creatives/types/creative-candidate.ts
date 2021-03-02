@@ -1,4 +1,4 @@
-import {AdType} from '../../../app.constants';
+import {AdSize, AdType} from '../../../app.constants';
 import {Tracker} from './tracker';
 
 export interface CreativeCandidate {
@@ -23,5 +23,8 @@ export interface CreativeCandidate {
     imageUrl?: string;
     iconUrl?: string;
     // AdTagCreativeCandidateSerializer
+    imageWidth?: number;
+    imageHeight?: number;
+    size?: AdSize; // This is a client-side property, mapped from imageWidth and imageHeight
     adTag?: string;
 }
