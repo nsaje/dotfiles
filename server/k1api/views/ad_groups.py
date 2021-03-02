@@ -268,7 +268,9 @@ class AdGroupsView(K1APIView):
             ad_groups = ad_groups.filter(pk__gt=int(marker))
 
         if source_types or slugs:
-            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)
+            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups).filter(
+                source__deprecated=False
+            )
             if source_types:
                 ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
             if slugs:
