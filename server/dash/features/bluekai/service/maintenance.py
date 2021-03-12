@@ -10,8 +10,8 @@ logger = zlogging.getLogger(__name__)
 
 RECENCY_ALL = 500
 
-AUDIENCE_ID = 549424
-CAMPAIGN_ID = 456928
+AUDIENCE_ID = 636435
+CAMPAIGN_ID = 552848
 STATUS_ACTIVE = "active"
 
 
@@ -23,8 +23,13 @@ def is_bluekai_campaign_running(campaign_id=CAMPAIGN_ID):
 def update_dynamic_audience():
     audience = bluekaiapi.get_audience(AUDIENCE_ID)
     segments_categories = []
-    for category in _get_ad_group_settings_for_bluekai():
-        segments_categories.append({"cat": int(category), "freq": [1, None]})
+    z1_categories = _get_ad_group_settings_for_bluekai()
+    # only take categories from basic Oracle taxonomy. Other categories are synced by audiences created manually by CS
+    z1_categories_filtered = models.BlueKaiCategory.objects.filter(category_id__in=z1_categories).values_list(
+        "category_id", flat=True
+    )
+    for category in z1_categories_filtered:
+        segments_categories.append({"cat": category, "freq": [1, None]})
     segments = {"AND": [{"AND": [{"OR": segments_categories}]}]}
     data = {
         "name": audience["name"],
@@ -57,7 +62,7 @@ def _get_ad_group_settings_for_bluekai():
         .exclude(settings__bluekai_targeting=[])
     )
     return {
-        elem.partition(":")[2]
+        int(elem.partition(":")[2])
         for elem in flatten_bluekai_rule(
             [elem.settings.bluekai_targeting for elem in active_ad_groups if elem.settings.bluekai_targeting]
         )

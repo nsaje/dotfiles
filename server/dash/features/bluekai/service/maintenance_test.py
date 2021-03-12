@@ -167,6 +167,8 @@ class UpdateDynamicAudienceTestCase(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
+        for category in (111, 222, 333, 444, 555, 666):  # 777 should not be in to check filtering
+            magic_mixer.blend(models.BlueKaiCategory, category_id=category)
         self.ad_group.settings.update_unsafe(
             None,
             archived=False,
@@ -176,7 +178,7 @@ class UpdateDynamicAudienceTestCase(TestCase):
             bluekai_targeting=[
                 "and",
                 ["or", "bluekai:111", "bluekai:222", "bluekai:333", "bluekai:444", "category_888"],
-                ["not", ["or", "bluekai:555", "bluekai:666", "category_999"]],
+                ["not", ["or", "bluekai:555", "bluekai:666", "bluekai:777", "category_999"]],
             ],
         )
         self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
