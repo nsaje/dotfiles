@@ -158,6 +158,7 @@ genpasswd() {
 eval "$(fasd --init auto)"
 
 alias gcom="git checkout master"
+alias gcob="git branch --sort=-committerdate | fzf | xargs git checkout"
 alias dcp="docker-compose"
 
 # >>> conda initialize >>>
@@ -177,3 +178,14 @@ unset __conda_setup
 
 export PATH=$PATH:/usr/local/go/bin:/home/nsaje/go/bin
 export GOPRIVATE=github.com/Zemanta/,*.outbrain.com
+
+export LIBRARY_PATH=$LIBRARY_PATH:~/b1/tflib/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/b1/tflib/lib
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/b1/tflib/lib
+export CPATH=$CPATH:~/b1/tflib/include
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# set term title to pwd
+TERM_SET_TITLE_COMMAND='echo -ne "\033]0;${PWD}\007"'
+PROMPT_COMMAND="$TERM_SET_TITLE_COMMAND;$PROMPT_COMMAND"

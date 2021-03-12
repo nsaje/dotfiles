@@ -72,7 +72,8 @@ floating_modifier $mod
 
 # start a terminal
 #bindsym $mod+Return exec i3-sensible-terminal
-bindsym $mod+Return exec gnome-terminal --hide-menubar
+#bindsym $mod+Return exec gnome-terminal --hide-menubar
+bindsym $mod+Return exec kitty
 
 # start browser
 #bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25
@@ -103,6 +104,7 @@ exec --no-startup-id xautolock -time 5 -locker "bash ~/.local/bin/fuzzy_lock.sh"
 # thinkpad touchpad
 #exec --no-startup-id xinput --set-prop 11 "Synaptics Finger" 5 20 0
 exec_always --no-startup-id xinput --set-prop "ETPS/2 Elantech TrackPoint" "libinput Accel Speed" 0
+exec_always --no-startup-id xinput --set-prop "TrackPoint Keyboard II Mouse" "libinput Accel Speed" 0
 
 set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
 mode "$mode_system" {
@@ -136,6 +138,13 @@ bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
 bindsym $mod+Tab focus right
+
+# change focus to output
+bindsym $mod+Control+h focus output left
+bindsym $mod+Control+j focus output down
+bindsym $mod+Control+k focus output up
+bindsym $mod+Control+l focus output right
+bindsym $mod+Control+Tab focus output right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
