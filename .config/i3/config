@@ -81,7 +81,7 @@ bindsym $mod+Return exec kitty
 #bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Default"
 #bindsym $mod+bracketright exec firefox -P "Zemanta"
 bindsym $mod+backslash exec firefox
-bindsym $mod+apostrophe exec emacsclient -c
+bindsym $mod+apostrophe exec emacsclient --create-frame --alternate-editor='' --frame-parameters='(quote (name . "capture"))' --no-wait --eval "(my/org-capture-frame)"
 # firefox:
 # devpixelsperpx 1.25
 # doubleclickselectsall false

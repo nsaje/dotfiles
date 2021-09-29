@@ -489,6 +489,30 @@ you should place your code here."
 
     ;; ; flycheck custom
     ;; (setq flycheck-check-syntax-automatically '(idle-change))
+
+
+    ; Emacs as an Org capture server
+    ; https://gist.github.com/progfolio/af627354f87542879de3ddc30a31adc1
+    (defun my/delete-capture-frame (&rest _)
+      "Delete frame with its name frame-parameter set to \"capture\"."
+      (if (equal "capture" (frame-parameter nil 'name))
+          (delete-frame)))
+
+    (advice-add 'org-capture-finalize :after #'my/delete-capture-frame)
+
+    (defun my/org-capture-frame ()
+      "Run org-capture in its own frame."
+      (interactive)
+      (require 'cl-lib)
+      (select-frame-by-name "capture")
+      (delete-other-windows)
+      (cl-letf (((symbol-function 'switch-to-buffer-other-window) #'switch-to-buffer))
+        (condition-case err
+            (org-capture)
+          ;; "q" signals (error "Abort") in `org-capture'
+          ;; delete the newly created frame in this scenario.
+          (user-error (when (string= (cadr err) "Abort")
+                        (delete-frame))))))
 )
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
